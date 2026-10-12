@@ -5,7 +5,7 @@ cannot work without). It is a **demonstration, not a live system**.
 
 ## What it is and is not
 
-- Anyone with the link can open the staff area by choosing a sample role (Owner, Manager, Sales, Workshop, Finance). **There is no password.**
+- Anyone with the link can open the staff area as the sample Owner (the only role offered in the demo). **There is no password.**
 - Everything in it is sample data labelled `[Sample]`. Do not type real customer or business information into it.
 - Photo uploads are switched off (there is no file storage); products and the gallery show without photos.
 - It switches itself off safely: the demo sign-in stops working once (a) any Supabase setting is added, or (b) a real business name is saved in Settings.
@@ -21,7 +21,7 @@ cannot work without). It is a **demonstration, not a live system**.
    - Add `CRON_SECRET` = another long random string
    - Leave `DEMO_MODE` unset.
 3. **Deploy the latest code.** Deployments → **Create Deployment** → branch `claude/kind-galileo-v21uuw`. During the build the system creates its own tables and loads the sample data (you will see `[demo] migrations applied` in the build log). Re-deploying later does not duplicate the data.
-4. Open the link → **Staff area** → choose a role.
+4. Open the link → **Staff area** → Continue as Owner.
 
 ## Resetting the demo
 

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { demoSignInAllowed } from "@/lib/auth/demo";
-import { ROLES } from "@/lib/auth/permissions";
 import { getBusinessSettings } from "@/lib/settings";
 import { LoginForm } from "./login-form";
 
@@ -46,28 +45,14 @@ function AuthFrame({ name, heading, sub, children }: { name: string; heading: st
   );
 }
 
-const ROLE_BLURB: Record<string, string> = {
-  owner: "Everything, including users and settings",
-  manager: "Runs the business day to day",
-  sales: "Enquiries, customers, quotations, orders",
-  workshop: "Assigned jobs, materials, deliveries",
-  finance: "Payments, expenses, reports",
-};
-
-/** Public demo only (see lib/auth/demo-deployment.ts): pick a sample role, no password. */
+/** Public demo only (see lib/auth/demo-deployment.ts): sign in as the sample owner, no password. */
 function DemoSignIn({ name }: { name: string }) {
   return (
-    <AuthFrame name={name} heading="Demo: choose a role" sub="A demonstration with sample data only. There is no password: anyone with this link can open it. Do not enter real customer or business information.">
-      <ul className="space-y-3">
-        {ROLES.map((r) => (
-          <li key={r}>
-            <a href={`/demo/start?role=${r}`} className="card-lift flex min-h-14 flex-col justify-center border border-border-strong bg-surface px-4 py-2.5">
-              <span className="font-medium capitalize">Continue as {r}</span>
-              <span className="text-sm text-text-muted">{ROLE_BLURB[r]}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+    <AuthFrame name={name} heading="Demo sign in" sub="A demonstration with sample data only. There is no password: anyone with this link can open it. Do not enter real customer or business information.">
+      <a href="/demo/start?role=owner" className="card-lift flex min-h-14 flex-col justify-center border border-border-strong bg-surface px-4 py-2.5">
+        <span className="font-medium">Continue as Owner</span>
+        <span className="text-sm text-text-muted">Everything, including users and settings</span>
+      </a>
     </AuthFrame>
   );
 }
