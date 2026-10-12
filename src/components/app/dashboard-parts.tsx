@@ -24,9 +24,9 @@ export function KpiCard({
 }) {
   const flagged = tone && Number(value) > 0;
   return (
-    <div className={"relative flex min-w-0 flex-col border bg-surface p-4 shadow-[var(--shadow-sm)] transition-colors " + (href ? "hover:border-green " : "") + (flagged && tone === "danger" ? "border-danger/40" : "border-border")}>
+    <div className={"relative flex min-w-0 flex-col border bg-surface p-4 shadow-[var(--shadow-sm)] transition-colors " + (href ? "hover:border-brand " : "") + (flagged && tone === "danger" ? "border-danger/40" : "border-border")}>
       <div className="flex items-center gap-2 text-[0.8125rem] text-text-muted">
-        <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center bg-green-soft text-green-text">
+        <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center bg-mint text-brand">
           <Icon className="size-3.5" strokeWidth={1.75} />
         </span>
         {href ? (

@@ -37,7 +37,7 @@ export function AppShell({
   ) : null;
 
   return (
-    <div className="app-ui min-h-dvh bg-paper-deep lg:grid lg:grid-cols-[14.5rem_1fr]">
+    <div className="app-ui min-h-dvh bg-white lg:grid lg:grid-cols-[14.5rem_1fr]">
       {/* Desktop sidebar */}
       <aside className="hidden border-r border-border bg-surface text-text lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
         <div className="flex h-[var(--header-height)] items-center border-b border-border px-5">

@@ -214,6 +214,8 @@ test.describe("housekeeping cron", () => {
 });
 
 test.describe("accessibility with real data", () => {
+  // Contrast is measured at rest: a section caught mid-fade by the scroll reveal would be read at partial opacity.
+  test.use({ reducedMotion: "reduce" });
   for (const path of ["/products", "/products/sample-oak-table", "/custom", "/contact"]) {
     test(`no serious axe violations on ${path}`, async ({ page }) => {
       await page.goto(path);

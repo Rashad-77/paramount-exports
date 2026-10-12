@@ -16,9 +16,9 @@ export const PUBLIC_LINKS: NavLink[] = [
 export function PlaceholderNotice({ business }: { business: BusinessSettings }) {
   if (!isPlaceholderBusiness(business)) return null;
   return (
-    <div className="bg-walnut-dark text-[0.8125rem] text-ivory">
+    <div className="bg-brand-dark text-[0.8125rem] text-ivory">
       <p className="container-page flex items-start gap-2 py-2">
-        <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-linen-dark" strokeWidth={1.75} />
+        <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-ivory/95" strokeWidth={1.75} />
         <span>
           Preview build: the business name, photography, wording and contact details on this site are placeholders until the
           real content is supplied.
@@ -30,16 +30,16 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
 
 export function SiteHeader({ business }: { business: BusinessSettings }) {
   return (
-    <header className="glass-header border-b border-border">
+    <header className="sticky top-0 z-40 border-b border-border bg-white">
       <div className="container-page flex h-[var(--header-height)] items-center justify-between gap-8">
-        <Link href="/" className="font-display text-[1.25rem] leading-none tracking-[0.01em] text-walnut md:text-[1.375rem]" aria-label={`${business.name} — home`}>
+        <Link href="/" className="font-display text-[1.25rem] leading-none tracking-[-0.01em] text-brand md:text-[1.375rem]" aria-label={`${business.name} — home`}>
           {business.name}
         </Link>
         <nav aria-label="Primary" className="hidden md:block">
-          <ul className="flex items-center gap-7 text-[0.75rem] font-medium uppercase tracking-[0.12em]">
+          <ul className="flex items-center gap-8 text-[0.875rem] font-medium">
             {PUBLIC_LINKS.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="link-draw-hover py-2 text-text hover:text-walnut">
+                <Link href={l.href} className="link-draw-hover py-2 text-text hover:text-brand">
                   {l.label}
                 </Link>
               </li>
@@ -54,19 +54,19 @@ export function SiteHeader({ business }: { business: BusinessSettings }) {
 
 export function SiteFooter({ business }: { business: BusinessSettings }) {
   return (
-    <footer className="wood-dark-bg mt-[var(--section-space)] text-ivory">
+    <footer className="wood-dark-bg mt-[var(--section-space)] bg-brand text-ivory">
       <div className="container-page grid gap-8 py-9 md:grid-cols-[2fr_1fr_1fr] md:py-11">
         <div>
           <p className="font-display text-[1.5rem] leading-none">{business.name}</p>
-          <p className="mt-4 max-w-sm text-sm text-ivory/75">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
+          <p className="mt-4 max-w-sm text-sm text-ivory/95">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
         </div>
         <div className="text-sm">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-linen-dark">Visit</p>
-          <p className="mt-3 whitespace-pre-line text-ivory/85">{business.address ?? "Showroom address to be added."}</p>
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-ivory/95">Visit</p>
+          <p className="mt-3 whitespace-pre-line text-ivory/95">{business.address ?? "Showroom address to be added."}</p>
         </div>
         <div className="text-sm">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-linen-dark">Contact</p>
-          <ul className="mt-3 space-y-1.5 text-ivory/85">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-ivory/95">Contact</p>
+          <ul className="mt-3 space-y-1.5 text-ivory/95">
             {business.phone ? (
               <li>
                 <a className="link-draw" href={`tel:${business.phone.replace(/\s+/g, "")}`}>
@@ -85,11 +85,8 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           </ul>
         </div>
       </div>
-      <div aria-hidden="true" className="container-page overflow-hidden pb-2 select-none">
-        <p className="font-display whitespace-nowrap text-[clamp(2.5rem,9vw,6.5rem)] leading-[0.9] tracking-[-0.03em] text-ivory/[0.07]">{business.name}</p>
-      </div>
       <div className="border-t border-ivory/15">
-        <p className="container-page py-5 text-xs text-ivory/70">
+        <p className="container-page py-5 text-xs text-ivory/95">
           © {new Date().getFullYear()} {business.name}
           <span className="mx-3" aria-hidden="true">
             ·

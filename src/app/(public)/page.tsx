@@ -1,7 +1,6 @@
-import { ArrowRight, ArrowUpRight, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
-import { Marquee } from "@/components/public/marquee";
 import { ProductCard } from "@/components/public/product-card";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
@@ -14,8 +13,8 @@ import { listFeaturedProducts, listPublicCategories, type PublicCard } from "@/s
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
 
-const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three"];
-const MARQUEE_FALLBACK = ["Dining", "Seating", "Storage", "Made to measure", "Showroom", "Workshop"];
+const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three", "Category four"];
+const PLACEHOLDER_PIECES = ["Featured piece one", "Featured piece two", "Featured piece three", "Featured piece four"];
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -27,149 +26,92 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-/** Splits a headline into words that rise out of a mask one after another (see .words in globals.css). */
-function Words({ text }: { text: string }) {
+function SectionHead({ id, eyebrow, title, link }: { id: string; eyebrow: string; title: string; link?: { href: string; label: string } }) {
   return (
-    <span className="words">
-      {text.split(" ").map((w, i) => (
-        <span key={`${w}-${i}`} className="w" aria-hidden="true">
-          <span style={{ ["--i" as string]: i }}>{w}</span>
-        </span>
-      ))}
-    </span>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <Reveal>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id={id} className="font-display mt-3 text-headline text-brand">
+          {title}
+        </h2>
+      </Reveal>
+      {link ? (
+        <Reveal variant="fade">
+          <Link href={link.href} className="link-draw inline-flex items-center gap-2 text-sm font-semibold text-brand">
+            {link.label} <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </Reveal>
+      ) : null}
+    </div>
   );
 }
-
-const WAYS = [
-  { n: "01", title: "Ready-made", body: "Pieces you can see and sit at in the showroom, and take home without the wait.", href: "/products", cta: "Browse the collection" },
-  { n: "02", title: "Made to measure", body: "Tell us the piece, the dimensions and the wood. We build it in our workshop and quote before we start.", href: "/custom", cta: "Start an enquiry" },
-  { n: "03", title: "Visit the showroom", body: "Come and see the timber, the finishes and the joinery for yourself, and talk it through with us.", href: "/contact", cta: "Plan a visit" },
-];
 
 export default async function HomePage() {
   const [business, categories, featured] = await Promise.all([
     getBusinessSettings(),
     safe(() => listPublicCategories(), []),
-    safe<PublicCard[]>(() => listFeaturedProducts(3), []),
+    safe<PublicCard[]>(() => listFeaturedProducts(8), []),
   ]);
-  const shown = categories.filter((c) => c.count > 0).slice(0, 3);
-  const marqueeItems = categories.length > 0 ? categories.map((c) => c.name) : MARQUEE_FALLBACK;
+  const shown = categories.filter((c) => c.count > 0).slice(0, 4);
 
   return (
     <>
-      {/* Hero */}
-      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden border-b border-border bg-white">
-        <div aria-hidden="true" className="hero-glow" />
-        <div className="container-page relative grid items-center gap-9 py-[clamp(2.5rem,1.5rem+4vw,4.75rem)] md:grid-cols-12">
-          <div className="md:col-span-7">
-            <p className="eyebrow rise-in">Furniture · Showroom · Workshop</p>
-            <h1 id="hero-title" aria-label="Wood furniture for the way you live." className="font-display mt-5 text-display text-walnut">
-              <Words text="Wood furniture for the way you live." />
+      {/* Hero: a short welcome beside a wall of photographs */}
+      <section aria-labelledby="hero-title" className="border-b border-border bg-gradient-to-b from-white to-mint">
+        <div className="container-page grid items-center gap-8 py-8 md:grid-cols-12 md:gap-10 md:py-12">
+          <div className="md:col-span-5">
+            <p className="eyebrow rise-in">Showroom and workshop</p>
+            <h1 id="hero-title" className="font-display rise-in rise-in-2 mt-4 text-display text-brand">
+              Wood furniture for the way you live.
             </h1>
-            <p className="rise-in rise-in-3 mt-5 max-w-md text-base leading-relaxed text-text-muted">
+            <p className="rise-in rise-in-3 mt-4 max-w-md text-base leading-relaxed text-text-muted">
               Choose from ready-made pieces in our showroom, or have something built to your measurements in our workshop.
             </p>
-            <div className="rise-in rise-in-3 mt-7 flex flex-wrap gap-4">
-              <ButtonLink href="/custom" size="cta">
-                Start a custom enquiry
-              </ButtonLink>
-              <ButtonLink href="/products" size="cta" variant="secondary">
+            <div className="rise-in rise-in-3 mt-6 flex flex-wrap gap-3">
+              <ButtonLink href="/products" size="cta">
                 Browse the collection
               </ButtonLink>
+              <ButtonLink href="/custom" size="cta" variant="secondary">
+                Start a custom enquiry
+              </ButtonLink>
             </div>
           </div>
-          <div className="rise-in rise-in-3 md:col-span-5">
-            <div className="float-slow">
-              <div className="frame-offset">
-                <div className="relative">
-                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" className="aspect-[5/4] w-full" />
-                  <div className="glass absolute inset-x-5 top-5 z-10 px-5 py-4 text-walnut sm:-left-8 sm:right-auto sm:top-8 sm:w-[14rem]">
-                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-green-text">Made to measure</p>
-                    <p className="font-display mt-2 text-lg leading-snug">Quoted before we start.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="relative border-t border-border py-3 text-text-muted">
-          <Marquee items={marqueeItems} />
-        </div>
-      </section>
-
-      {/* Three ways in: hairline container grid */}
-      <section aria-labelledby="ways-title" className="orbs section-y">
-        <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">How we work</p>
-            <h2 id="ways-title" className="font-display mt-5 max-w-2xl text-headline text-walnut">
-              Three ways to find the right piece.
-            </h2>
-          </Reveal>
-          <div className="bento mt-9 md:grid-cols-3">
-            {WAYS.map((w, i) => (
-              <Reveal key={w.n} delay={i * 120}>
-                <Link href={w.href} className="bento-cell group h-full min-h-[14rem]">
-                  <span className="bento-num numeral text-[2.5rem] md:text-[3rem]">{w.n}</span>
-                  <h3 className="font-display mt-auto pt-16 text-[1.5rem] leading-tight">{w.title}</h3>
-                  <p className="bento-muted mt-3 max-w-xs text-sm leading-relaxed text-text-muted">{w.body}</p>
-                  <span className="mt-8 inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.14em]">
-                    {w.cta}
-                    <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-[var(--duration-base)] ease-[var(--ease-out)] group-hover:translate-x-1.5" />
-                  </span>
-                </Link>
-              </Reveal>
-            ))}
+          <div className="rise-in rise-in-3 grid h-[22rem] grid-cols-5 grid-rows-2 gap-3 sm:h-[28rem] md:col-span-7">
+            <ImagePlaceholder label="Hero — a finished piece in a lived-in room" className="col-span-3 row-span-2" />
+            <ImagePlaceholder label="Hero — detail of the joinery" className="col-span-2" />
+            <ImagePlaceholder label="Hero — a second piece in the showroom" className="col-span-2" />
           </div>
         </div>
       </section>
 
-      {/* Collections: staggered full-bleed tiles */}
-      <section aria-labelledby="collections-title" className="bg-paper-deep/55 section-y">
+      {/* Categories */}
+      <section aria-labelledby="categories-title" className="section-y">
         <div className="container-page">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <Reveal>
-              <p className="eyebrow">The collection</p>
-              <h2 id="collections-title" className="font-display mt-5 text-headline text-walnut">
-                Browse by category
-              </h2>
-            </Reveal>
-            {shown.length > 0 ? (
-              <Reveal variant="fade">
-                <Link href="/products" className="link-draw inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.14em]">
-                  View everything <ArrowRight aria-hidden="true" className="size-4" />
-                </Link>
-              </Reveal>
-            ) : (
-              <p className="max-w-sm text-sm text-text-muted">Placeholder categories, replaced automatically once products are published.</p>
-            )}
-          </div>
-          <ul className="mt-9 grid gap-6 sm:grid-cols-3 md:gap-5">
-            {(shown.length > 0 ? shown.map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, sub: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` })) : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "" }))).map((c, i) => {
+          <SectionHead id="categories-title" eyebrow="The collection" title="Shop by category" link={shown.length > 0 ? { href: "/products", label: "View everything" } : undefined} />
+          <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
+            {(shown.length > 0
+              ? shown.map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, sub: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }))
+              : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "" }))
+            ).map((c, i) => {
               const inner = (
                 <>
-                  <div className="tile-media">
-                    <ImagePlaceholder label={`${c.name} — category photograph`} className="size-full" compact />
+                  <div className="zoom-frame relative aspect-[4/3]">
+                    <ImagePlaceholder label={`${c.name} — category photograph`} className="absolute inset-0" />
                   </div>
-                  {c.href ? (
-                    <span className="tile-arrow" aria-hidden="true">
-                      <ArrowUpRight className="size-5" strokeWidth={1.5} />
-                    </span>
-                  ) : null}
-                  <span className="tile-body">
-                    <span className="font-display block text-[1.5rem] leading-tight">{c.name}</span>
-                    {c.sub ? <span className="mt-1 block text-sm text-ivory/80">{c.sub}</span> : null}
-                  </span>
+                  <p className="mt-3 text-base font-semibold text-text">
+                    <span className="link-draw-hover">{c.name}</span>
+                  </p>
+                  {c.sub ? <p className="text-[0.8125rem] text-text-muted">{c.sub}</p> : null}
                 </>
               );
               return (
-                <Reveal as="li" key={c.key} delay={i * 130}>
+                <Reveal as="li" key={c.key} delay={i * 80}>
                   {c.href ? (
-                    <Link href={c.href} className="tile group aspect-[4/3]">
+                    <Link href={c.href} className="group block">
                       {inner}
                     </Link>
                   ) : (
-                    <div className="tile aspect-[4/3]">{inner}</div>
+                    <div className="group">{inner}</div>
                   )}
                 </Reveal>
               );
@@ -178,153 +120,117 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured pieces */}
-      {featured.length > 0 ? (
-        <section aria-labelledby="featured-title" className="orbs section-y">
-          <div className="container-page">
-            <Reveal>
-              <p className="eyebrow">Selected work</p>
-              <h2 id="featured-title" className="font-display mt-5 text-headline text-walnut">
-                Featured pieces
-              </h2>
-            </Reveal>
-            <ul className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((p, i) => (
-                <Reveal as="li" key={p.id} delay={i * 120}>
-                  <ProductCard product={p} currency={business.currency} />
-                </Reveal>
-              ))}
-            </ul>
-          </div>
-        </section>
-      ) : null}
-
-      {/* Process: four steps joined by a line that draws itself */}
-      <section id="custom" aria-labelledby="custom-title" className="relative isolate scroll-mt-4 overflow-hidden border-y border-border bg-green-soft/60">
-        <div aria-hidden="true" className="hero-glow" />
-        <div className="container-page relative section-y">
-          <div className="grid gap-8 md:grid-cols-12 md:items-end">
-            <Reveal className="md:col-span-8">
-              <p className="eyebrow">Made to order</p>
-              <h2 id="custom-title" className="font-display mt-5 text-headline text-walnut">
-                Made to your measurements.
-              </h2>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-text-muted">
-                Have something specific in mind? Tell us the piece, the dimensions and the wood you prefer, and we will respond with a quotation.
-              </p>
-            </Reveal>
-            <Reveal variant="fade" className="md:col-span-4 md:text-right">
-              <ButtonLink href="/custom" size="cta">
-                Request a quotation
-                <ArrowRight aria-hidden="true" className="size-4" />
-              </ButtonLink>
-            </Reveal>
-          </div>
-          <div className="relative mt-12">
-          <Reveal variant="fade" delay={200} className="rule-line absolute inset-x-0 top-[1.1rem] hidden h-px md:block" />
-          <ol className="relative grid gap-10 md:grid-cols-4 md:gap-8">
-            {CUSTOM_STEPS.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={250 + i * 160} className="glass relative p-6">
-                <span aria-hidden="true" className="relative z-10 mb-8 grid size-9 place-items-center border border-green bg-white text-sm font-semibold text-green-text">
-                  {i + 1}
-                </span>
-                <h3 className="font-display text-[1.25rem] leading-tight text-walnut">{s.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-text-muted">{s.body}</p>
-              </Reveal>
-            ))}
-          </ol>
-          </div>
+      {/* Featured pieces: the showroom floor */}
+      <section aria-labelledby="featured-title" className="border-y border-border bg-white section-y">
+        <div className="container-page">
+          <SectionHead id="featured-title" eyebrow="On the showroom floor" title="Featured pieces" link={featured.length > 0 ? { href: "/products", label: "See the full collection" } : undefined} />
+          <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-9 lg:grid-cols-4">
+            {featured.length > 0
+              ? featured.map((p, i) => (
+                  <Reveal as="li" key={p.id} delay={(i % 4) * 80}>
+                    <ProductCard product={p} currency={business.currency} />
+                  </Reveal>
+                ))
+              : PLACEHOLDER_PIECES.map((n, i) => (
+                  <Reveal as="li" key={n} delay={i * 80}>
+                    <div className="aspect-[4/5]">
+                      <ImagePlaceholder label={n} className="size-full" />
+                    </div>
+                    <p className="mt-3.5 text-base font-semibold text-text">{n}</p>
+                    <p className="text-[0.8125rem] text-text-muted">Name and details appear once products are published.</p>
+                  </Reveal>
+                ))}
+          </ul>
         </div>
       </section>
 
-      {/* Workshop */}
-      {/* overflow-x-clip: the slide-in reveals start 40px off to the side and must not widen the page */}
-      <section id="workshop" aria-labelledby="workshop-title" className="section-y scroll-mt-4 overflow-x-clip">
-        <div className="container-page grid items-center gap-10 md:grid-cols-12 md:gap-12">
-          <Reveal variant="right" className="md:order-2 md:col-span-6">
-            <p className="eyebrow">The workshop</p>
-            <h2 id="workshop-title" className="font-display mt-5 text-headline text-walnut">
-              Craftsmanship, up close.
-            </h2>
-            <p className="mt-6 max-w-lg leading-relaxed text-text-muted">
-              This section is for the story of the workshop: the people, the timber and the methods. Wording and photography will be supplied by the business.
-            </p>
-            <p className="mt-8">
-              <Link href="/about" className="link-draw inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.14em]">
-                About the workshop <ArrowRight aria-hidden="true" className="size-4" />
-              </Link>
-            </p>
+      {/* Made to measure */}
+      <section id="custom" aria-labelledby="custom-title" className="scroll-mt-4 bg-mint/60 section-y">
+        <div className="container-page grid items-center gap-8 md:grid-cols-2 md:gap-12">
+          <Reveal variant="zoom">
+            <ImagePlaceholder label="Made to order — a piece in the workshop" className="aspect-[4/3] w-full" />
           </Reveal>
-          <Reveal variant="left" className="md:order-1 md:col-span-6">
-            <div className="frame-offset frame-offset-left">
-              <ImagePlaceholder label="Workshop — joinery or finishing detail" className="aspect-[4/3] w-full" />
+          <Reveal>
+            <p className="eyebrow">Made to order</p>
+            <h2 id="custom-title" className="font-display mt-3 text-headline text-brand">
+              Made to your measurements.
+            </h2>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-text-muted">
+              Have something specific in mind? Tell us the piece, the dimensions and the wood you prefer, and we will respond with a quotation.
+            </p>
+            <ol className="mt-6 space-y-4">
+              {CUSTOM_STEPS.map((s, i) => (
+                <li key={s.title} className="flex gap-4">
+                  <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center border border-brand text-sm font-semibold text-brand">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-base font-semibold text-text">{s.title}</h3>
+                    <p className="mt-0.5 text-sm leading-relaxed text-text-muted">{s.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-7">
+              <ButtonLink href="/custom" size="cta">
+                Request a quotation
+              </ButtonLink>
             </div>
           </Reveal>
         </div>
       </section>
 
       {/* Showroom */}
-      <section id="showroom" aria-labelledby="showroom-title" className="bg-paper-deep/55 section-y scroll-mt-4">
-        <div className="container-page grid gap-9 md:grid-cols-12 md:gap-10">
+      <section id="showroom" aria-labelledby="showroom-title" className="scroll-mt-4 section-y">
+        <div className="container-page grid items-center gap-8 md:grid-cols-12 md:gap-12">
           <Reveal className="md:col-span-5">
             <p className="eyebrow">The showroom</p>
-            <h2 id="showroom-title" className="font-display mt-5 text-headline text-walnut">
+            <h2 id="showroom-title" className="font-display mt-3 text-headline text-brand">
               Visit the showroom.
             </h2>
-            <dl className="mt-7 space-y-8 border-t border-border pt-8 text-sm">
+            <dl className="mt-6 space-y-6 border-t border-border pt-6 text-sm">
               <div>
-                <dt className="flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.16em]">
-                  <MapPin aria-hidden="true" className="size-4 text-walnut" strokeWidth={1.5} />
+                <dt className="flex items-center gap-2 text-[0.8125rem] font-semibold text-text">
+                  <MapPin aria-hidden="true" className="size-4 text-brand" strokeWidth={1.75} />
                   Address
                 </dt>
-                <dd className="mt-2 whitespace-pre-line text-base text-text-muted">{business.address ?? "Showroom address to be added."}</dd>
+                <dd className="mt-1.5 whitespace-pre-line text-base text-text-muted">{business.address ?? "Showroom address to be added."}</dd>
                 {business.address && business.mapUrl ? (
-                  <dd className="mt-3">
-                    <a href={business.mapUrl} className="link-draw" target="_blank" rel="noopener noreferrer">
+                  <dd className="mt-2">
+                    <a href={business.mapUrl} className="link-draw text-brand" target="_blank" rel="noopener noreferrer">
                       View on map<span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   </dd>
                 ) : null}
               </div>
               <div>
-                <dt className="text-[0.75rem] font-semibold uppercase tracking-[0.16em]">Opening hours</dt>
-                <dd className="mt-2 whitespace-pre-line text-base text-text-muted">{business.openingHours ?? "Opening hours to be added."}</dd>
+                <dt className="text-[0.8125rem] font-semibold text-text">Opening hours</dt>
+                <dd className="mt-1.5 whitespace-pre-line text-base text-text-muted">{business.openingHours ?? "Opening hours to be added."}</dd>
               </div>
             </dl>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <ButtonLink href="/contact" size="cta">
+                Send an enquiry
+              </ButtonLink>
+              {business.phone ? (
+                <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} variant="secondary" size="cta">
+                  <Phone aria-hidden="true" className="size-4" />
+                  {business.phone}
+                </ButtonLink>
+              ) : null}
+              {business.whatsapp ? (
+                <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="secondary" size="cta" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle aria-hidden="true" className="size-4" />
+                  WhatsApp
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </ButtonLink>
+              ) : null}
+            </div>
           </Reveal>
           <Reveal variant="zoom" delay={100} className="md:col-span-7">
             <ImagePlaceholder label="Showroom interior" className="aspect-[16/11] w-full" />
           </Reveal>
         </div>
-      </section>
-
-      {/* Contact */}
-      <section id="contact" aria-labelledby="contact-title" className="orbs section-y text-center">
-        <Reveal className="container-page">
-          <p className="eyebrow justify-center">Contact</p>
-          <h2 id="contact-title" className="font-display mx-auto mt-6 max-w-3xl text-display text-walnut">
-            Let&rsquo;s talk about your piece.
-          </h2>
-          <p className="mx-auto mt-6 max-w-lg text-text-muted">Ask about a piece, request a quotation, or arrange a visit.</p>
-          <div className="mt-7 flex flex-wrap justify-center gap-4">
-            <ButtonLink href="/contact" size="cta">
-              Send an enquiry
-            </ButtonLink>
-            {business.phone ? (
-              <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} variant="secondary" size="cta">
-                <Phone aria-hidden="true" className="size-4" />
-                {business.phone}
-              </ButtonLink>
-            ) : null}
-            {business.whatsapp ? (
-              <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="secondary" size="cta" target="_blank" rel="noopener noreferrer">
-                <MessageCircle aria-hidden="true" className="size-4" />
-                WhatsApp
-                <span className="sr-only"> (opens in a new tab)</span>
-              </ButtonLink>
-            ) : null}
-          </div>
-        </Reveal>
       </section>
     </>
   );

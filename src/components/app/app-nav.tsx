@@ -23,7 +23,7 @@ export function AppNav({ groups, previewPath }: { groups: VisibleGroup[]; previe
                     aria-current={current ? "page" : undefined}
                     className={
                       "flex min-h-9 items-center border-l-2 px-3 text-[0.8125rem] transition-colors duration-[var(--duration-fast)] " +
-                      (current ? "border-green bg-walnut font-medium text-ivory" : "border-transparent text-text hover:bg-linen")
+                      (current ? "border-brand bg-walnut font-medium text-ivory" : "border-transparent text-text hover:bg-linen")
                     }
                   >
                     {m.label}

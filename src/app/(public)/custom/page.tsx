@@ -20,7 +20,7 @@ export default function CustomPage() {
         eyebrow="Made to order"
         lead="Send us the details of what you have in mind. There is no obligation, and an enquiry does not create an order."
       />
-      <div className="orbs">
+      <div>
         <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
           <Reveal
             as="section"
@@ -38,7 +38,7 @@ export default function CustomPage() {
                 <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-4">
                   <span
                     aria-hidden="true"
-                    className="numeral text-[2rem] !text-linen-dark"
+                    className="text-[2rem] font-bold leading-none text-ivory/95"
                   >
                     {i + 1}
                   </span>
@@ -46,14 +46,14 @@ export default function CustomPage() {
                     <h3 className="font-display text-[1.25rem] leading-tight">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-ivory/75">
+                    <p className="mt-2 text-sm leading-relaxed text-ivory/95">
                       {s.body}
                     </p>
                   </div>
                 </li>
               ))}
             </ol>
-            <p className="mt-7 text-sm text-ivory/70">
+            <p className="mt-7 text-sm text-ivory/95">
               Timescales and prices depend on the piece and are confirmed in
               your quotation.
             </p>
@@ -63,7 +63,7 @@ export default function CustomPage() {
             as="section"
             aria-labelledby="request-title"
             delay={120}
-            className="glass p-6 md:p-12"
+            className="border border-border bg-white p-6 md:p-10"
           >
             <h2
               id="request-title"

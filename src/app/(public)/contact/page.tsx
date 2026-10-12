@@ -23,7 +23,7 @@ export default async function ContactPage() {
         title="Showroom & contact"
         lead="Ask about a piece, request a quotation, or arrange a visit."
       />
-      <div className="orbs">
+      <div>
         <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
           <Reveal
             as="section"
@@ -46,7 +46,7 @@ export default async function ContactPage() {
                   />{" "}
                   Address
                 </dt>
-                <dd className="mt-1 whitespace-pre-line pl-7 text-ivory/80">
+                <dd className="mt-1 whitespace-pre-line pl-7 text-ivory/95">
                   {b.address ?? "Showroom address to be added."}
                 </dd>
                 {b.address && b.mapUrl ? (
@@ -65,7 +65,7 @@ export default async function ContactPage() {
               </div>
               <div>
                 <dt className="font-medium">Opening hours</dt>
-                <dd className="mt-1 whitespace-pre-line text-ivory/80">
+                <dd className="mt-1 whitespace-pre-line text-ivory/95">
                   {b.openingHours ?? "Opening hours to be added."}
                 </dd>
               </div>
@@ -101,7 +101,7 @@ export default async function ContactPage() {
                     </a>
                   ) : null}
                   {!b.phone && !b.whatsapp && !b.email ? (
-                    <span className="text-ivory/80">
+                    <span className="text-ivory/95">
                       Contact details to be added.
                     </span>
                   ) : null}
@@ -114,7 +114,7 @@ export default async function ContactPage() {
             as="section"
             aria-labelledby="send-title"
             delay={120}
-            className="glass p-6 md:p-12"
+            className="border border-border bg-white p-6 md:p-10"
           >
             <h2
               id="send-title"

@@ -236,7 +236,7 @@ export function BarChart({ rows, color = CHART_COLORS[0], format = (n: number) =
               {r.hint ? <span className="ml-1.5 text-xs font-normal text-text-muted">{r.hint}</span> : null}
             </span>
           </div>
-          <div className="mt-1.5 h-2.5 bg-green-soft">
+          <div className="mt-1.5 h-2.5 bg-mint">
             <div className="chart-grow h-full origin-left rounded-r-[4px]" style={{ width: `${(r.value / max) * 100}%`, background: color, animationDelay: `${i * 70}ms` }} />
           </div>
         </li>
@@ -259,7 +259,7 @@ export function Donut({ segments, centre, caption, currency }: { segments: { lab
     <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${caption}: ${segments.map((s) => `${s.label} ${format(s.value)}`).join(", ")}`} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-green-soft)" strokeWidth={sw} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-mint)" strokeWidth={sw} />
           {total > 0
             ? segments.map((s, i) => {
                 const len = (s.value / total) * c;

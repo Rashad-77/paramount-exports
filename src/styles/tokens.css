@@ -12,21 +12,21 @@
  */
 @theme {
   /* Surfaces and ink */
-  --color-ivory: #fdfcfa;
-  --color-paper-deep: #f6f4ef;
-  --color-linen: #efece4;
-  --color-linen-dark: #d6cbb9;
-  --color-walnut: #3a2c23;
-  --color-walnut-dark: #281e17;
+  --color-ivory: #ffffff;
+  --color-paper-deep: #f5faf6;
+  --color-linen: #edf5ef;
+  --color-linen-dark: #cfe0d4;
+  --color-walnut: #6e3511;
+  --color-walnut-dark: #4f2509;
   --color-charcoal: #1d1b18;
   --color-stone: #77776c;
   --color-olive: #53634d;
   --color-olive-dark: #44523f;
-  /* Green accent: a clear leaf green for marks, chips and charts; green-text clears 4.5:1 on white for text. */
-  --color-green: #1f8a5b;
-  --color-green-text: #166a47;
-  --color-green-dark: #0f4f35;
-  --color-green-soft: #e7f4ed;
+  /* Brand: a deep saddle brown. Mint is the light green used for soft backgrounds and the page gradient. */
+  --color-brand: #6e3511;
+  --color-brand-dark: #4f2509;
+  --color-mint: #e6f2ea;
+  --color-mint-deep: #d3e8da;
   --color-surface: #ffffff;
 
   /* Accent: a muted brass. Decorative (rules, hover lines, small marks); use brass-text for any text. */
@@ -35,8 +35,8 @@
 
   /* Semantic */
   --color-text: #1d1b18;
-  --color-text-muted: #5a5a50;
-  --color-border: #e0d8c9;
+  --color-text-muted: #55584f;
+  --color-border: #e1e8e3;
   --color-border-strong: #77776c;
   --color-danger: #8f2d26;
   --color-danger-bg: #f6e4e1;
