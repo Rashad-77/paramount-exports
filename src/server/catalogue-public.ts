@@ -81,6 +81,22 @@ export interface CatalogueQuery {
   page?: number;
 }
 
+
+/**
+ * Pages that are pre-built at deploy time read the database while `next build` runs. On a brand-new deployment the database may be
+ * reachable but still empty (migrations not run yet), which must not fail the whole deployment. During the build ONLY, a failed
+ * read is logged and replaced with an empty result; at runtime errors still surface normally.
+ */
+async function duringBuildSafe<T>(label: string, fallback: T, read: () => Promise<T>): Promise<T> {
+  try {
+    return await read();
+  } catch (e) {
+    if (process.env.NEXT_PHASE !== "phase-production-build") throw e;
+    console.warn(`[build] ${label} unavailable (database not set up yet?); building with empty content.`, e instanceof Error ? e.message.slice(0, 160) : "");
+    return fallback;
+  }
+}
+
 export async function listPublicProducts(query: CatalogueQuery) {
   if (!hasDatabase()) return { items: [] as PublicCard[], total: 0, page: 1, pageCount: 1 };
   const db = getDb();
@@ -120,7 +136,7 @@ export async function listPublicProducts(query: CatalogueQuery) {
   };
 }
 
-export async function listFeaturedProducts(limit = 3): Promise<PublicCard[]> {
+async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
@@ -132,7 +148,7 @@ export async function listFeaturedProducts(limit = 3): Promise<PublicCard[]> {
   return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
 }
 
-export async function listPublicCategories(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; count: number }>> {
+async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; count: number }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({
@@ -161,7 +177,7 @@ export async function listPublicMaterials(): Promise<string[]> {
   return rows.map((r) => r.material!).filter(Boolean);
 }
 
-export async function getPublicProduct(slugValue: string) {
+async function getPublicProductImpl(slugValue: string) {
   if (!hasDatabase()) return null;
   const db = getDb();
   const [row] = await db
@@ -205,7 +221,7 @@ export async function getPublicProduct(slugValue: string) {
   };
 }
 
-export async function listGalleryProjects() {
+async function listGalleryProjectsImpl() {
   if (!hasDatabase()) return [];
   const db = getDb();
   const projects = await db
@@ -229,7 +245,7 @@ export async function listGalleryProjects() {
   }));
 }
 
-export async function listPublishedProductSlugs(): Promise<Array<{ slug: string; updatedAt: Date }>> {
+async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; updatedAt: Date }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({ slug: products.slug, updatedAt: products.updatedAt })
@@ -238,3 +254,10 @@ export async function listPublishedProductSlugs(): Promise<Array<{ slug: string;
     .where(visible);
   return rows;
 }
+
+/* Build-safe public readers (see duringBuildSafe). */
+export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
+export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesImpl(...args));
+export const getPublicProduct = (...args: Parameters<typeof getPublicProductImpl>) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(...args));
+export const listGalleryProjects = (...args: Parameters<typeof listGalleryProjectsImpl>) => duringBuildSafe("listGalleryProjects", [] as Awaited<ReturnType<typeof listGalleryProjectsImpl>>, () => listGalleryProjectsImpl(...args));
+export const listPublishedProductSlugs = (...args: Parameters<typeof listPublishedProductSlugsImpl>) => duringBuildSafe("listPublishedProductSlugs", [] as Awaited<ReturnType<typeof listPublishedProductSlugsImpl>>, () => listPublishedProductSlugsImpl(...args));
