@@ -15,6 +15,8 @@ import { PAYMENT_METHODS, PAYMENT_METHOD_LABEL, orderStatusLabel, orderTypeLabel
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { getOrder } from "@/server/orders";
+import { getJobStatusForOrder } from "@/server/production";
+import { STAGE_LABEL, STAGE_TONE, type JobStage } from "@/lib/production";
 import { advanceOrderAction, cancelOrderAction, confirmOrderAction, recordPaymentAction, updateTermsAction, voidPaymentAction } from "../actions";
 
 export const metadata = { title: "Order" };
@@ -30,6 +32,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     throw e;
   }
   const business = await getBusinessSettings();
+  const job = d.order.type === "custom" ? await getJobStatusForOrder(actor, d.order.id) : null;
   const { order: o, items, money } = d;
   const cur = o.currency;
   const canWrite = can(actor, "orders:write");
@@ -64,6 +67,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         {o.requestedCompletionDate ? <span className="text-sm text-text-muted">Wanted by {formatDate(o.requestedCompletionDate, business.timezone)}</span> : null}
         {o.status === "cancelled" ? <span className="text-sm text-text-muted">Reason: {o.cancelReason}</span> : null}
       </div>
+
+      {job ? (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-sm">
+          <span className="font-medium">Workshop</span>
+          <StatusBadge tone={STAGE_TONE[job.stage as JobStage]}>{STAGE_LABEL[job.stage as JobStage]}</StatusBadge>
+          <span className="text-text-muted">Job {job.reference}{job.targetDate ? ` · due ${formatDate(job.targetDate, business.timezone)}` : ""}</span>
+          {job.linkable ? <Link className="inline-flex min-h-10 items-center underline" href={`/app/production/${job.id}`}>Open job</Link> : null}
+        </div>
+      ) : null}
 
       {o.status === "draft" && short.length > 0 ? (
         <Alert tone="warning" title="Not enough stock to confirm yet" className="mb-6">

@@ -51,15 +51,18 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 
 | Table | Notes |
 |---|---|
-| `production_jobs` | `reference`, `order_id`, `quotation_id?`, `customer_id`, `description`, `specification jsonb`, `priority`, `target_date`, `stage`, `assigned_to`, `completed_at` |
-| `production_stage_history` | `job_id`, `from_stage`, `to_stage`, `changed_by`, `note`, `changed_at` |
-| `production_issues` | delays / rework notes per job |
-| `bills_of_materials`, `bom_items` | planned materials per product or job: `item_id`, `planned_qty`, `estimated_unit_cost` |
-| `material_consumption` | `job_id`, `item_id`, `location_id`, `quantity`, `waste_quantity`, `movement_id` (unique per consumption record → no double deduction) |
-| `labour_entries` | optional manual labour cost per job |
+| `production_jobs` | `reference` (JOB-…), `order_id` (unique: one job per order), `customer_id`, `description`, `specification jsonb` (copied from the order lines), `priority`, `target_date`, `stage`, `stage_before_hold`, `completed_at`; optional finished-goods fields `output_item_id/quantity/location_id`, `output_recorded_at`, `output_sold_at` (one-way flags enforced by trigger → output added once, removed once) |
+| `production_job_assignees` | who may see/update the job (workshop scope "own") |
+| `production_job_files` | reference images/drawings (copied from the quotation/enquiry, or attached) |
+| `production_stage_history` | append-only: `from_stage`, `to_stage`, `changed_by`, `note`, `changed_at` |
+| `production_issues` | delay / rework / issue notes per job, resolvable |
+| `job_materials` | per-job material **plan**: `planned_quantity`, `estimated_unit_cost` (an estimate only; there are no product-level BOM templates in v1) |
+| `material_consumption` | append-only record of what was **actually** used/wasted: `consume_movement_id`, `waste_movement_id` (unique), `request_key` (unique uuid → a repeated submission cannot deduct twice), `unit_cost` snapshot |
+| `labour_entries` | optional manual labour cost per job (only when the setting is on) |
 | `suppliers` | contact details, supplied materials, notes |
-| `purchase_orders` / `purchase_order_items` | `reference`, `supplier_id`, `status`, `expected_on`, qty ordered, expected unit cost, supplier invoice ref/amount/paid |
-| `goods_receipts` / `goods_receipt_items` | received qty per PO line → `receipt` movements; remaining = ordered − Σ received |
+| `purchase_orders` / `purchase_order_items` | `reference`, `supplier_id`, `status` (draft → sent → partially_received → received / cancelled), `location_id` (where goods are received), `expected_on`, qty ordered, expected unit cost, `supplier_invoice_ref/amount` (lines are locked once sent, by trigger) |
+| `goods_receipts` / `goods_receipt_items` | received qty per PO line, each tied to its unique `receipt` movement; remaining = ordered − Σ received (checked under the PO row lock) |
+| `supplier_payments` | append-only payments against a PO, capped at the supplier invoice (or the order value when no invoice is recorded) |
 
 ## Step 6 — Delivery, expenses, after-sales
 

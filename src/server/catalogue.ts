@@ -1,4 +1,5 @@
 import "server-only";
+import { outer } from "@/lib/db/outer";
 import { and, asc, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -116,7 +117,7 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
   if (f.categoryId) where.push(eq(products.categoryId, f.categoryId));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
-    where.push(or(ilike(products.name, like), sql`EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = ${products.id} AND v.sku ILIKE ${like})`)!);
+    where.push(or(ilike(products.name, like), sql`EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = ${outer(products.id)} AND v.sku ILIKE ${like})`)!);
   }
   const cond = and(...where);
   const db = getDb();
@@ -132,8 +133,8 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
         categoryName: productCategories.name,
         archivedAt: products.archivedAt,
         updatedAt: products.updatedAt,
-        skus: sql<string>`coalesce((SELECT string_agg(v.sku, ', ' ORDER BY v.sort_order, v.sku) FROM product_variants v WHERE v.product_id = ${products.id}), '')`,
-        imageCount: sql<number>`(SELECT count(*)::int FROM product_images i WHERE i.product_id = ${products.id})`,
+        skus: sql<string>`coalesce((SELECT string_agg(v.sku, ', ' ORDER BY v.sort_order, v.sku) FROM product_variants v WHERE v.product_id = ${outer(products.id)}), '')`,
+        imageCount: sql<number>`(SELECT count(*)::int FROM product_images i WHERE i.product_id = ${outer(products.id)})`,
       })
       .from(products)
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
@@ -363,7 +364,7 @@ export async function listGalleryAdmin(actor: Actor) {
       isPublished: galleryProjects.isPublished,
       completedOn: galleryProjects.completedOn,
       archivedAt: galleryProjects.archivedAt,
-      imageCount: sql<number>`(SELECT count(*)::int FROM gallery_images g WHERE g.project_id = ${galleryProjects.id})`,
+      imageCount: sql<number>`(SELECT count(*)::int FROM gallery_images g WHERE g.project_id = ${outer(galleryProjects.id)})`,
     })
     .from(galleryProjects)
     .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.createdAt));

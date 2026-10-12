@@ -1,12 +1,14 @@
 import { asc } from "drizzle-orm";
 import { DashboardView, type SetupCheck } from "@/components/app/dashboard-view";
 import { SalesMetrics } from "@/components/app/sales-metrics";
-import { can } from "@/lib/auth/permissions";
+import { can, scopeOf } from "@/lib/auth/permissions";
 import { addDaysLocal, todayLocal } from "@/lib/time";
 import { one, type SP } from "@/lib/list-params";
 import { getSalesDashboard } from "@/server/crm-dashboard";
 import { LowStockPanel } from "@/components/app/low-stock-panel";
 import { lowStockAlerts } from "@/server/inventory";
+import { WorkshopPanel } from "@/components/app/workshop-panel";
+import { getWorkshopSummary } from "@/server/production";
 import { getDb } from "@/lib/db/client";
 import { locations } from "@/lib/db/schema";
 import { requireActor } from "@/lib/auth/session";
@@ -44,6 +46,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <>
         {metrics}
         <LowStockPanel rows={alerts.map((a) => ({ id: a.id, name: a.name, location: a.location, available: a.available, threshold: a.threshold, unit: a.unit }))} />
+      </>
+    );
+  }
+
+  if (can(actor, "production:view")) {
+    const w = await getWorkshopSummary(actor);
+    metrics = (
+      <>
+        {metrics}
+        <WorkshopPanel byStage={w.byStage} overdue={w.overdue} active={w.active} own={scopeOf(actor, "production:view") === "own"} />
       </>
     );
   }

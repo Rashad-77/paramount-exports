@@ -8,14 +8,17 @@ import { validation } from "@/lib/errors";
 import {
   DEFAULT_BUSINESS,
   DEFAULT_PAGES,
+  DEFAULT_PRODUCTION,
   DEFAULT_SALES,
   businessSchema,
   crmSettingsSchema,
   pagesSchema,
+  productionSettingsSchema,
   salesSettingsSchema,
   type BusinessSettings,
   type CrmSettings,
   type PageContent,
+  type ProductionSettings,
   type SalesSettings,
 } from "@/lib/settings";
 import { recordAudit } from "./audit";
@@ -32,15 +35,16 @@ async function writeRow(tx: DbOrTx, key: string, value: unknown, actorId: string
     .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedBy: actorId } });
 }
 
-export async function getSettingsForAdmin(actor: Actor): Promise<{ business: BusinessSettings; pages: PageContent; crm: CrmSettings; sales: SalesSettings }> {
+export async function getSettingsForAdmin(actor: Actor): Promise<{ business: BusinessSettings; pages: PageContent; crm: CrmSettings; sales: SalesSettings; production: ProductionSettings }> {
   requirePermission(actor, "settings:view");
   const db = getDb();
-  const [b, p, c, sa] = await Promise.all([readRow(db, "business"), readRow(db, "pages"), readRow(db, "crm"), readRow(db, "sales")]);
+  const [b, p, c, sa, pr] = await Promise.all([readRow(db, "business"), readRow(db, "pages"), readRow(db, "crm"), readRow(db, "sales"), readRow(db, "production")]);
   return {
     business: businessSchema.parse({ ...DEFAULT_BUSINESS, ...b }),
     pages: pagesSchema.parse({ ...DEFAULT_PAGES, ...p }),
     crm: crmSettingsSchema.parse({ defaultAssigneeId: null, ...c }),
     sales: salesSettingsSchema.parse({ ...DEFAULT_SALES, ...sa }),
+    production: productionSettingsSchema.parse({ ...DEFAULT_PRODUCTION, ...pr }),
   };
 }
 
@@ -105,5 +109,21 @@ export async function updateSalesSettings(actor: Actor, input: SalesSettings): P
     const before = await readRow(tx, "sales");
     await writeRow(tx, "sales", next, actor.id);
     await recordAudit(tx, actor, { action: "settings.sales_updated", entityType: "site_settings", entityId: "sales", before, after: next });
+  });
+}
+
+export async function getProductionSettings(db: DbOrTx): Promise<ProductionSettings> {
+  const row = await readRow(db, "production");
+  const parsed = productionSettingsSchema.safeParse({ ...DEFAULT_PRODUCTION, ...row });
+  return parsed.success ? parsed.data : DEFAULT_PRODUCTION;
+}
+
+export async function updateProductionSettings(actor: Actor, input: ProductionSettings): Promise<void> {
+  requirePermission(actor, "settings:manage");
+  const next = productionSettingsSchema.parse(input);
+  await withTx(async (tx) => {
+    const before = await readRow(tx, "production");
+    await writeRow(tx, "production", next, actor.id);
+    await recordAudit(tx, actor, { action: "settings.production_updated", entityType: "site_settings", entityId: "production", before, after: next });
   });
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import { outer } from "@/lib/db/outer";
 import { and, asc, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { can, requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -41,8 +42,8 @@ export class InsufficientStockError extends AppError {
  *     take on-hand or available stock below zero;
  *  4. append the movements. A trigger updates balances; CHECK constraints are the last line of defence.
  */
-export async function applyMovements(tx: DbOrTx, actorId: string | null, movements: MovementInput[]): Promise<void> {
-  if (movements.length === 0) return;
+export async function applyMovements(tx: DbOrTx, actorId: string | null, movements: MovementInput[]): Promise<string[]> {
+  if (movements.length === 0) return [];
   const key = (m: { itemId: string; locationId: string }) => `${m.itemId}|${m.locationId}`;
   const pairs = [...new Map(movements.map((m) => [key(m), { itemId: m.itemId, locationId: m.locationId }])).values()].sort((a, b) => (a.itemId + a.locationId < b.itemId + b.locationId ? -1 : 1));
 
@@ -77,7 +78,7 @@ export async function applyMovements(tx: DbOrTx, actorId: string | null, movemen
     throw new InsufficientStockError([...short.entries()].map(([itemId, v]) => ({ itemId, name: names.find((n) => n.id === itemId)?.name ?? "item", ...v })));
   }
 
-  await tx.insert(inventoryMovements).values(
+  const inserted = await tx.insert(inventoryMovements).values(
     movements.map((m) => ({
       itemId: m.itemId,
       locationId: m.locationId,
@@ -89,7 +90,8 @@ export async function applyMovements(tx: DbOrTx, actorId: string | null, movemen
       refId: m.refId ?? null,
       actorId,
     })),
-  );
+  ).returning({ id: inventoryMovements.id });
+  return inserted.map((r) => r.id); // same order as the input movements
 }
 
 /* ───────────────────────────── locations ───────────────────────────── */
@@ -216,7 +218,7 @@ export async function listStock(actor: Actor, f: StockFilters) {
     const like = `%${escapeLike(f.q)}%`;
     where.push(or(ilike(inventoryItems.name, like), ilike(inventoryItems.sku, like))!);
   }
-  const lowSql = sql`EXISTS (SELECT 1 FROM inventory_balances b WHERE b.item_id = ${inventoryItems.id} AND b.low_stock_threshold IS NOT NULL AND (b.on_hand - b.reserved) <= b.low_stock_threshold ${f.locationId ? sql`AND b.location_id = ${f.locationId}` : sql``})`;
+  const lowSql = sql`EXISTS (SELECT 1 FROM inventory_balances b WHERE b.item_id = ${outer(inventoryItems.id)} AND b.low_stock_threshold IS NOT NULL AND (b.on_hand - b.reserved) <= b.low_stock_threshold ${f.locationId ? sql`AND b.location_id = ${f.locationId}` : sql``})`;
   if (f.lowOnly) where.push(lowSql);
   const cond = and(...where);
 
@@ -365,7 +367,7 @@ export async function listTransfers(actor: Actor, page = 1, pageSize = 20) {
         fromName: from,
         toName: to,
         byName: profiles.fullName,
-        lines: sql<string>`(SELECT string_agg(i.name || ' × ' || trim(trailing '.' from trim(trailing '0' from ti.quantity::text)), ', ' ORDER BY i.name) FROM stock_transfer_items ti JOIN inventory_items i ON i.id = ti.item_id WHERE ti.transfer_id = ${stockTransfers.id})`,
+        lines: sql<string>`(SELECT string_agg(i.name || ' × ' || trim(trailing '.' from trim(trailing '0' from ti.quantity::text)), ', ' ORDER BY i.name) FROM stock_transfer_items ti JOIN inventory_items i ON i.id = ti.item_id WHERE ti.transfer_id = ${outer(stockTransfers.id)})`,
       })
       .from(stockTransfers)
       .leftJoin(profiles, eq(profiles.id, stockTransfers.createdBy))

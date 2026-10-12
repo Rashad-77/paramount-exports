@@ -91,3 +91,13 @@ export type CrmSettings = z.infer<typeof crmSettingsSchema>;
 export const salesSettingsSchema = z.object({ maxDiscountPercent: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/) });
 export type SalesSettings = z.infer<typeof salesSettingsSchema>;
 export const DEFAULT_SALES: SalesSettings = { maxDiscountPercent: "0" };
+
+/** Workshop policy switches (Owner). Both default to off: the business opts in. */
+export const productionSettingsSchema = z.object({
+  /** When a custom job is completed, add the finished piece to stock (and take it out again on delivery). */
+  createsFinishedStock: z.boolean(),
+  /** Show the labour-cost panel on jobs. Direct labour only; payroll is out of scope. */
+  trackLabour: z.boolean(),
+});
+export type ProductionSettings = z.infer<typeof productionSettingsSchema>;
+export const DEFAULT_PRODUCTION: ProductionSettings = { createsFinishedStock: false, trackLabour: false };

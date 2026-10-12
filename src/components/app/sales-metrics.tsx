@@ -9,21 +9,23 @@ import type { SalesDashboard } from "@/server/crm-dashboard";
 
 function Stat({ label, value, href, tone }: { label: string; value: string | number; href?: string; tone?: "danger" | "warning" }) {
   const long = String(value).length > 9; // money amounts and phrases get a smaller size so they never collide with the next stat
-  const body = (
-    <>
-      <dt className="text-sm text-text-muted">{label}</dt>
+  // A <dl> may only contain <div> groups of <dt>/<dd>, so a linked tile uses a "stretched" link inside the term.
+  return (
+    <div className={"relative min-w-0 rounded-[var(--radius-md)] p-2" + (href ? " hover:bg-linen" : "")}>
+      <dt className="text-sm text-text-muted">
+        {href ? (
+          <Link href={href} className="after:absolute after:inset-0 after:content-['']">
+            {label}
+          </Link>
+        ) : (
+          label
+        )}
+      </dt>
       <dd className={"tabular mt-0.5 flex flex-wrap items-center gap-x-2 font-semibold break-words " + (long ? "text-lg" : "text-2xl")}>
         {value}
         {tone && Number(value) > 0 ? <StatusBadge tone={tone}>{tone === "danger" ? "Needs attention" : "Check"}</StatusBadge> : null}
       </dd>
-    </>
-  );
-  return href ? (
-    <Link href={href} className="block min-w-0 rounded-[var(--radius-md)] p-2 hover:bg-linen">
-      {body}
-    </Link>
-  ) : (
-    <div className="min-w-0 p-2">{body}</div>
+    </div>
   );
 }
 

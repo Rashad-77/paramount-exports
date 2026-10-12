@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { businessFormSchema, crmFormSchema, pagesFormSchema } from "@/lib/schemas/settings";
-import { updateBusiness, updateCrmSettings, updatePages, updateSalesSettings } from "@/server/settings";
+import { productionSettingsFormSchema } from "@/lib/schemas/production";
+import { updateBusiness, updateCrmSettings, updatePages, updateProductionSettings, updateSalesSettings } from "@/server/settings";
 import { z } from "zod";
 
 const refresh = () => {
@@ -49,5 +50,13 @@ export async function updateSalesAction(_p: ActionState, fd: FormData): Promise<
     await updateSalesSettings(actor!, input);
     refresh();
     return { message: "Discount limit saved." };
+  });
+}
+
+export async function updateProductionAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(fd, productionSettingsFormSchema, async (input, { actor }) => {
+    await updateProductionSettings(actor!, input);
+    refresh();
+    return { message: "Workshop settings saved. They apply to jobs created from now on." };
   });
 }

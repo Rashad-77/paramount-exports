@@ -1,4 +1,4 @@
-import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
@@ -6,13 +6,13 @@ import { requireActor } from "@/lib/auth/session";
 import { DEFAULT_ABOUT, DEFAULT_PRIVACY, DEFAULT_TERMS } from "@/lib/default-pages";
 import { getSettingsForAdmin } from "@/server/settings";
 import { listAssignableStaff } from "@/server/leads";
-import { updateBusinessAction, updateCrmAction, updatePagesAction, updateSalesAction } from "./actions";
+import { updateBusinessAction, updateCrmAction, updatePagesAction, updateProductionAction, updateSalesAction } from "./actions";
 
 export const metadata = { title: "Business & pages" };
 
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business, pages, crm, sales } = await getSettingsForAdmin(actor);
+  const { business, pages, crm, sales, production } = await getSettingsForAdmin(actor);
   const canManage = can(actor, "settings:manage");
   const canPages = can(actor, "website:manage");
   const staff = canManage ? await listAssignableStaff(actor) : [];
@@ -71,6 +71,16 @@ export default async function SettingsPage() {
             <ActionForm action={updateSalesAction}>
               <FField name="maxDiscountPercent" label="Maximum discount (%)" inputMode="decimal" defaultValue={sales.maxDiscountPercent} required className="max-w-xs" />
               <SubmitButton>Save discount limit</SubmitButton>
+            </ActionForm>
+          </Panel>
+        ) : null}
+
+        {canManage ? (
+          <Panel title="Workshop" description="Optional workflows. Both start switched off; the workshop works without them.">
+            <ActionForm action={updateProductionAction}>
+              <FCheckbox name="createsFinishedStock" label="Add finished custom pieces to stock" hint="When a job reaches “Ready for delivery” the finished piece is added to the workshop stock, and taken out again when the order is delivered. Applies to jobs created from now on." defaultChecked={production.createsFinishedStock} />
+              <FCheckbox name="trackLabour" label="Record labour cost on jobs" hint="Adds a labour panel for managers and finance. Direct labour only — payroll is not part of this system." defaultChecked={production.trackLabour} />
+              <SubmitButton>Save workshop settings</SubmitButton>
             </ActionForm>
           </Panel>
         ) : null}

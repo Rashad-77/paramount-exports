@@ -58,7 +58,7 @@ describe.skipIf(!hasTestDb)("inventory, orders and payments (real Postgres)", ()
       expect(await reconcileInventory(t.db)).toEqual([]);
       await expect(t.sql`UPDATE inventory_movements SET on_hand_delta = 99 WHERE item_id = ${p.itemId}`).rejects.toThrow(/append-only/);
       await expect(t.sql`DELETE FROM inventory_movements WHERE item_id = ${p.itemId}`).rejects.toThrow(/append-only/);
-      await expect(t.sql`TRUNCATE inventory_movements`).rejects.toThrow(/append-only/);
+      await expect(t.sql`TRUNCATE inventory_movements`).rejects.toThrow(/append-only|cannot truncate a table referenced/);
     });
 
     it("rejects impossible movements at the database level, even if the application is bypassed", async () => {

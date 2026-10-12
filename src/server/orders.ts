@@ -1,4 +1,5 @@
 import "server-only";
+import { outer } from "@/lib/db/outer";
 import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { can, requirePermission, scopeOf, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -11,6 +12,7 @@ import { recordAudit } from "./audit";
 import { fulfilReservations, releaseReservations, reserveForOrder } from "./inventory";
 import { escapeLike } from "./leads";
 import { computeAndCheck, specification, type Computed } from "./pricing";
+import { cancelJobForOrder, createJobForOrder, releaseJobOutputOnDelivery } from "./production";
 
 export type OrderStatus = (typeof salesOrders.$inferSelect)["status"];
 export type OrderType = (typeof salesOrders.$inferSelect)["type"];
@@ -238,7 +240,7 @@ export async function convertQuotationToOrder(actor: Actor, quotationId: string,
 
 /**
  * Confirm a draft. Ready-made: reserves the stock in the same transaction, or fails with exact shortages and changes
- * nothing. Custom: confirmation is where the production job is created (added with the workshop module).
+ * nothing. Custom: confirmation creates the production job in the same transaction.
  */
 export async function confirmOrder(actor: Actor, id: string, now: Date = new Date()): Promise<void> {
   requirePermission(actor, "orders:confirm");
@@ -255,20 +257,9 @@ export async function confirmOrder(actor: Actor, id: string, now: Date = new Dat
       await reserveForOrder(tx, actor.id, id, o.locationId, reserveLines);
     }
     await tx.update(salesOrders).set({ status: "confirmed", confirmedAt: now }).where(eq(salesOrders.id, id));
-    await onOrderConfirmed(tx, actor, o);
+    if (o.type === "custom") await createJobForOrder(tx, actor, o);
     await recordAudit(tx, actor, { action: "order.confirmed", entityType: "sales_order", entityId: id, after: { reference: o.reference, total: o.total } });
   });
-}
-
-/** Extension point: the workshop module creates a production job here for custom orders (same transaction). */
-type ConfirmedOrder = typeof salesOrders.$inferSelect;
-type ConfirmHook = (tx: DbOrTx, actor: Actor, order: ConfirmedOrder) => Promise<void>;
-let confirmHook: ConfirmHook | null = null;
-export function registerOrderConfirmedHook(fn: ConfirmHook | null) {
-  confirmHook = fn;
-}
-async function onOrderConfirmed(tx: DbOrTx, actor: Actor, order: ConfirmedOrder) {
-  if (confirmHook) await confirmHook(tx, actor, order);
 }
 
 const FORWARD: Record<string, OrderStatus[]> = {
@@ -284,6 +275,7 @@ export async function advanceOrder(actor: Actor, id: string, to: "preparing" | "
     const o = await lockOrder(tx, id);
     if (!(FORWARD[o.status] ?? []).includes(to)) throw invalidState(`An order that is ${o.status} cannot move to ${to}.`);
     if (to === "delivered" && o.type === "ready_made") await fulfilReservations(tx, actor.id, id);
+    if (to === "delivered" && o.type === "custom") await releaseJobOutputOnDelivery(tx, actor, id);
     await tx.update(salesOrders).set({ status: to, deliveredAt: to === "delivered" ? now : null }).where(eq(salesOrders.id, id));
     await recordAudit(tx, actor, { action: `order.${to}`, entityType: "sales_order", entityId: id, before: { status: o.status }, after: { status: to } });
   });
@@ -301,6 +293,7 @@ export async function cancelOrder(actor: Actor, id: string, reason: string, now:
     const paid = dec(await netPaid(tx, id));
     if (paid.gt(0) && !can(actor, "orders:cancel_paid")) throw forbidden("Money has already been received on this order. A manager or the owner must cancel it (and refund the customer).");
     const released = await releaseReservations(tx, actor.id, id, `Order cancelled: ${why}`);
+    await cancelJobForOrder(tx, actor, id, why);
     await tx.update(salesOrders).set({ status: "cancelled", cancelledAt: now, cancelReason: why }).where(eq(salesOrders.id, id));
     // A converted quotation stays converted; the cancelled order keeps the history.
     await recordAudit(tx, actor, { action: "order.cancelled", entityType: "sales_order", entityId: id, before: { status: o.status, netPaid: paid.toFixed(2) }, after: { reservationsReleased: released }, reason: why });
@@ -382,8 +375,8 @@ export async function listOrders(actor: Actor, f: OrderFilters) {
     const like = `%${escapeLike(f.q)}%`;
     where.push(or(ilike(salesOrders.reference, like), ilike(customers.name, like), ilike(customers.company, like))!);
   }
-  const paidSql = sql<string>`coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${salesOrders.id}), 0)::text`;
-  if (f.withBalanceOnly) where.push(sql`${salesOrders.status} <> 'cancelled' AND ${salesOrders.status} <> 'draft' AND ${salesOrders.total} > coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${salesOrders.id}), 0)`);
+  const paidSql = sql<string>`coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${outer(salesOrders.id)}), 0)::text`;
+  if (f.withBalanceOnly) where.push(sql`${salesOrders.status} <> 'cancelled' AND ${salesOrders.status} <> 'draft' AND ${salesOrders.total} > coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${outer(salesOrders.id)}), 0)`);
   const cond = where.length ? and(...where) : undefined;
   const db = getDb();
   const [rows, countRows] = await Promise.all([

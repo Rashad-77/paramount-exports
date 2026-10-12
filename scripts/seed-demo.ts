@@ -48,7 +48,7 @@ async function main() {
   const { createQuotation, sendQuotation, decideQuotation } = await import("../src/server/quotations");
   const { addDaysLocal } = await import("../src/lib/time");
   const { enableStockTracking, recordManualMovement, setLowStockThreshold, transferStock, createInventoryItem } = await import("../src/server/inventory");
-  const { createReadyMadeOrder, confirmOrder, recordPayment, advanceOrder } = await import("../src/server/orders");
+  const { createReadyMadeOrder, confirmOrder, recordPayment, advanceOrder, convertQuotationToOrder } = await import("../src/server/orders");
   const { getDb: db2 } = await import("../src/lib/db/client");
 
   const upload = async (purpose: "catalogue" | "gallery", actor: Actor, top: [number, number, number], bottom: [number, number, number], w = 640, h = 800) => {
@@ -146,6 +146,24 @@ async function main() {
   await confirmOrder(sales, delivered);
   await recordPayment(sales, { orderId: delivered, amount: "29000.00", method: "cash" });
   await advanceOrder(sales, delivered, "delivered");
+
+  // Workshop and purchasing (sample)
+  const workshopStaff: Actor = { id: DEMO_STAFF.workshop, fullName: DEMO_STAFF_NAMES.workshop, roles: ["workshop"], isActive: true };
+  const { saveSupplier, createPurchaseOrder, markPurchaseOrderSent, receiveGoods, getPurchaseOrder } = await import("../src/server/purchasing");
+  const { setAssignees, changeStage, planMaterial, recordConsumption, addIssue } = await import("../src/server/production");
+  const supplier = await saveSupplier(manager, { name: "[Sample] Timber supplier", contactName: "Sample contact", suppliedMaterials: "Hardwood planks (sample)" });
+  const po = await createPurchaseOrder(manager, { supplierId: supplier, locationId: workshopLoc, expectedOn: addDaysLocal(5, "Asia/Colombo"), notes: "Sample purchase order", items: [{ itemId: timber, quantity: "40", expectedUnitCost: "1800.00" }] });
+  await markPurchaseOrderSent(manager, po);
+  const poLine = (await getPurchaseOrder(manager, po)).lines[0]!;
+  await receiveGoods(workshopStaff, po, { note: "Sample: first delivery", lines: [{ purchaseOrderItemId: poLine.id, quantity: "25" }] });
+  const customOrder = await convertQuotationToOrder(sales, won, { requestedCompletionDate: addDaysLocal(14, "Asia/Colombo"), depositTerms: "Sample: half now, half on delivery" });
+  await confirmOrder(sales, customOrder);
+  const [{ id: jobId }] = (await db2().execute(sql`SELECT id FROM production_jobs WHERE order_id = ${customOrder}`)) as unknown as [{ id: string }];
+  await setAssignees(manager, jobId, [workshopStaff.id]);
+  await planMaterial(manager, jobId, { itemId: timber, plannedQuantity: "12" });
+  await changeStage(workshopStaff, jobId, "cutting_preparation");
+  await recordConsumption(workshopStaff, { jobId, itemId: timber, locationId: workshopLoc, quantity: "8", wasteQuantity: "1", note: "Sample usage", requestKey: crypto.randomUUID() });
+  await addIssue(workshopStaff, jobId, "delay", "Sample: waiting for the varnish delivery.");
   console.log("Sample data created: categories, products, a gallery project, enquiries, customers, follow-ups and quotations. All labelled [Sample].");
   process.exit(0);
 }

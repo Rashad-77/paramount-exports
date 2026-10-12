@@ -50,15 +50,15 @@ export const NAV: NavGroup[] = [
   {
     label: "Workshop",
     items: [
-      { label: "Production jobs", href: "/app/jobs", permission: "production:view", available: false },
+      { label: "Production jobs", href: "/app/production", permission: "production:view", available: true },
       { label: "Materials", href: "/app/materials", permission: "inventory:view_materials", available: true },
     ],
   },
   {
     label: "Purchasing",
     items: [
-      { label: "Suppliers", href: "/app/suppliers", permission: "suppliers:view", available: false },
-      { label: "Purchase orders", href: "/app/purchase-orders", permission: "purchasing:write", available: false },
+      { label: "Suppliers", href: "/app/suppliers", permission: "suppliers:view", available: true },
+      { label: "Purchase orders", href: "/app/purchase-orders", permission: "purchasing:view", available: true },
     ],
   },
   { label: "Deliveries", items: [{ label: "Deliveries", href: "/app/deliveries", permission: "deliveries:view", available: false }] },

@@ -4,3 +4,5 @@ export * from "./catalogue";
 export * from "./crm";
 export * from "./quotations";
 export * from "./sales";
+export * from "./production";
+export * from "./purchasing";

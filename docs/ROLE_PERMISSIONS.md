@@ -47,6 +47,7 @@ A unit test fails if this table and the code disagree, so review changes to the 
 | `production:view_costs` | ✓ | ✓ | — | — | ✓ |
 | `suppliers:view` | ✓ | ✓ | — | ✓ | ✓ |
 | `suppliers:write` | ✓ | ✓ | — | — | — |
+| `purchasing:view` | ✓ | ✓ | — | ✓ | ✓ |
 | `purchasing:write` | ✓ | ✓ | — | — | — |
 | `purchasing:receive` | ✓ | ✓ | — | ✓ | — |
 | `purchasing:record_payment` | ✓ | ✓ | — | — | ✓ |

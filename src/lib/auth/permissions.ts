@@ -74,6 +74,7 @@ export const PERMISSIONS = {
   // Purchasing
   "suppliers:view": { ...OM, workshop: "all", finance: "all" },
   "suppliers:write": OM,
+  "purchasing:view": { ...OM, workshop: "all", finance: "all" },
   "purchasing:write": OM,
   "purchasing:receive": { ...OM, workshop: "all" },
   "purchasing:record_payment": OMF,

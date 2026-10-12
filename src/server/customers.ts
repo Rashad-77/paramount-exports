@@ -1,4 +1,5 @@
 import "server-only";
+import { outer } from "@/lib/db/outer";
 import { and, asc, desc, eq, ilike, isNotNull, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { normaliseEmail, phoneKey } from "@/lib/contact";
@@ -68,8 +69,8 @@ export async function listCustomers(actor: Actor, f: CustomerFilters) {
         phone: customers.phone,
         email: customers.email,
         createdAt: customers.createdAt,
-        leadCount: sql<number>`(SELECT count(*)::int FROM leads l WHERE l.customer_id = ${customers.id})`,
-        quotationCount: sql<number>`(SELECT count(*)::int FROM quotations q WHERE q.customer_id = ${customers.id})`,
+        leadCount: sql<number>`(SELECT count(*)::int FROM leads l WHERE l.customer_id = ${outer(customers.id)})`,
+        quotationCount: sql<number>`(SELECT count(*)::int FROM quotations q WHERE q.customer_id = ${outer(customers.id)})`,
       })
       .from(customers)
       .where(cond)
