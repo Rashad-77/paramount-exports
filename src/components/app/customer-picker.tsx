@@ -25,7 +25,7 @@ export async function CustomerPicker({ actor, basePath, q, extraParams }: { acto
         results.rows.length === 0 ? (
           <EmptyState title="No customers match" description="Check the spelling or try the phone number. New customers are added under Customers." action={<Link className="underline" href="/app/customers/new">Add a customer</Link>} />
         ) : (
-          <ul className="divide-y divide-border rounded-[var(--radius-lg)] border border-border bg-surface">
+          <ul className="divide-y divide-border border border-border bg-surface">
             {results.rows.map((c) => (
               <li key={c.id}>
                 <Link href={href(c.id)} className="flex min-h-14 flex-col justify-center px-4 py-2 hover:bg-linen">

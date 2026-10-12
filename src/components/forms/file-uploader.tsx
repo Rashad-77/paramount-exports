@@ -115,14 +115,14 @@ export function FileUploader({
           void onPick(e.target.files);
           e.target.value = "";
         }}
-        className="block w-full cursor-pointer rounded-[var(--radius-md)] border border-border-strong bg-surface text-sm file:mr-4 file:min-h-10 file:cursor-pointer file:border-0 file:bg-linen file:px-4 file:text-sm file:font-medium hover:border-walnut"
+        className="block w-full cursor-pointer border border-border-strong bg-surface text-sm file:mr-4 file:min-h-10 file:cursor-pointer file:border-0 file:bg-linen file:px-4 file:text-sm file:font-medium hover:border-walnut"
       />
       {hint ? <p className="text-sm text-text-muted">{hint}</p> : null}
 
       {items.length > 0 ? (
         <ul className="mt-1 space-y-2" aria-label="Attached files">
           {items.map((i) => (
-            <li key={i.key} className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-border bg-surface px-3 py-2 text-sm">
+            <li key={i.key} className="flex items-center justify-between gap-3 border border-border bg-surface px-3 py-2 text-sm">
               <span className="flex min-w-0 items-center gap-2">
                 <Paperclip aria-hidden="true" className="size-4 shrink-0 text-stone" />
                 <span className="truncate">{i.name}</span>
@@ -136,7 +136,7 @@ export function FileUploader({
                   type="button"
                   onClick={() => setItems((cur) => cur.filter((x) => x.key !== i.key))}
                   aria-label={`Remove ${i.name}`}
-                  className="inline-flex size-8 items-center justify-center rounded-[var(--radius-sm)] hover:bg-linen"
+                  className="inline-flex size-8 items-center justify-center hover:bg-linen"
                 >
                   <X aria-hidden="true" className="size-4" />
                 </button>

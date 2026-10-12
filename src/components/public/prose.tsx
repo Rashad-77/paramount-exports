@@ -10,7 +10,7 @@ export function Prose({ text }: { text: string }) {
   blocks.forEach((block, i) => {
     if (block.startsWith("## ")) {
       out.push(
-        <h2 key={i} className="font-display mt-10 text-2xl text-walnut first:mt-0">
+        <h2 key={i} className="font-display mt-12 text-[1.875rem] leading-tight text-walnut first:mt-0">
           {block.slice(3)}
         </h2>,
       );
@@ -36,7 +36,7 @@ export function Prose({ text }: { text: string }) {
 export function PageIntro({ title, lead }: { title: string; lead?: string }) {
   return (
     <header className="container-page pt-12 pb-8 md:pt-20 md:pb-12">
-      <h1 className="font-display text-4xl text-walnut md:text-5xl">{title}</h1>
+      <h1 className="font-display text-headline text-walnut">{title}</h1>
       {lead ? <p className="mt-4 max-w-xl text-lg text-text-muted">{lead}</p> : null}
     </header>
   );

@@ -34,7 +34,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
         description="Ready-made sales and custom orders. Money is tracked as payments received against each order."
         actions={can(actor, "orders:write") ? <ButtonLink href="/app/orders/new">New ready-made order</ButtonLink> : undefined}
       />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or customer" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={ORDER_STATUSES.map((s) => ({ value: s, label: orderStatusLabel(s, "ready_made") }))} />
         <SelectField label="Type" name="type" showOptional={false} defaultValue={type ?? ""} placeholder="All" options={[{ value: "ready_made", label: "Ready-made" }, { value: "custom", label: "Custom" }]} />
@@ -67,7 +67,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             <tbody>
               {result.rows.map((r) => (
                 <TR key={r.id}>
-                  <TD><Link className="font-medium text-walnut underline" href={`/app/orders/${r.id}`}>{r.reference}</Link></TD>
+                  <TD className="whitespace-nowrap"><Link className="font-medium text-walnut underline" href={`/app/orders/${r.id}`}>{r.reference}</Link></TD>
                   <TD>{r.customerName}</TD>
                   <TD className="hidden md:table-cell">{orderTypeLabel(r.type)}</TD>
                   <TD><StatusBadge tone={ORDER_TONE[r.status]}>{orderStatusLabel(r.status, r.type)}</StatusBadge></TD>

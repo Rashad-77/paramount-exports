@@ -33,7 +33,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title={own ? "My deliveries" : "Deliveries"} description={own ? "Deliveries assigned to you." : "Schedule deliveries from an order's page. Marking one delivered also marks its order delivered."} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference, order, contact, address" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={DELIVERY_STATUSES.map((s) => ({ value: s, label: DELIVERY_STATUS_LABEL[s] }))} />
         <TextField label="From" name="from" type="date" showOptional={false} defaultValue={from} />

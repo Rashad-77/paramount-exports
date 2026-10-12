@@ -29,7 +29,7 @@ export function AppShell({
   const roles = actor.roles.map((r) => ROLE_LABEL[r] ?? r).join(", ");
   const signOut = signOutAction ? (
     <form action={signOutAction}>
-      <button type="submit" className="inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] px-3 text-sm hover:bg-linen">
+      <button type="submit" className="inline-flex min-h-10 items-center gap-2 border border-transparent px-3 text-sm transition-colors hover:border-border-strong">
         <LogOut aria-hidden="true" className="size-4" strokeWidth={1.75} />
         Sign out
       </button>
@@ -41,7 +41,7 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden border-r border-border bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
         <div className="flex h-[var(--header-height)] items-center border-b border-border px-5">
-          <Link href="/app" className="font-display text-lg text-walnut">
+          <Link href="/app" className="font-display text-[1.5rem] leading-none text-walnut">
             {businessName}
           </Link>
         </div>
@@ -58,7 +58,7 @@ export function AppShell({
       <div className="min-w-0">
         {/* Mobile / tablet top bar */}
         <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-surface px-[var(--gutter)] lg:hidden">
-          <Link href="/app" className="font-display truncate text-lg text-walnut">
+          <Link href="/app" className="font-display truncate text-[1.5rem] leading-none text-walnut">
             {businessName}
           </Link>
           <AppNavMobile>
@@ -71,7 +71,7 @@ export function AppShell({
           </AppNavMobile>
         </header>
 
-        <main id="main" className="mx-auto w-full max-w-[84rem] px-[var(--gutter)] py-6 md:py-8">
+        <main id="main" className="mx-auto w-full max-w-[84rem] px-[var(--gutter)] py-8 md:py-12">
           {children}
         </main>
       </div>

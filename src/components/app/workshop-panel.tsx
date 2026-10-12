@@ -13,7 +13,7 @@ export function WorkshopPanel({ byStage, overdue, active, own }: { byStage: Reco
       ) : (
         <ul className="grid gap-2 sm:grid-cols-2">
           {stages.filter((s) => byStage[s]).map((s) => (
-            <li key={s} className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-border px-3 py-2 text-sm">
+            <li key={s} className="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm">
               <StatusBadge tone={STAGE_TONE[s]}>{STAGE_LABEL[s]}</StatusBadge>
               <span className="tabular font-semibold">{byStage[s]}</span>
             </li>

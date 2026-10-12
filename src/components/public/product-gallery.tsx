@@ -11,7 +11,7 @@ export function ProductGallery({ images, name }: { images: Array<{ id: string; u
   const current = images[active]!;
   return (
     <div>
-      <div className="relative aspect-[4/5] overflow-hidden rounded-[var(--radius-md)] border border-border bg-linen">
+      <div className="relative aspect-[4/5] overflow-hidden bg-linen">
         <SiteImage src={current.url} alt={current.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
       </div>
       {images.length > 1 ? (
@@ -23,7 +23,7 @@ export function ProductGallery({ images, name }: { images: Array<{ id: string; u
                 onClick={() => setActive(i)}
                 aria-label={`Show photograph ${i + 1} of ${images.length}`}
                 aria-pressed={i === active}
-                className={cn("relative block aspect-square w-full overflow-hidden rounded-[var(--radius-sm)] border bg-linen", i === active ? "border-walnut border-2" : "border-border hover:border-walnut")}
+                className={cn("relative block aspect-square w-full overflow-hidden border bg-linen", i === active ? "border-walnut border-2" : "border-border hover:border-walnut")}
               >
                 <SiteImage src={img.url} alt="" fill sizes="96px" className="object-cover" />
               </button>

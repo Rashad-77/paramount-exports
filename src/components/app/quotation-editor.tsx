@@ -84,7 +84,7 @@ export function QuotationEditor({
 
       <ol className="space-y-4">
         {items.map((it, i) => (
-          <li key={i} className="rounded-[var(--radius-lg)] border border-border bg-surface p-4">
+          <li key={i} className=" border border-border bg-surface p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold">
                 Item {i + 1} · {it.kind === "ready_made" ? "Ready-made" : "Custom"}

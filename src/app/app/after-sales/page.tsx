@@ -28,7 +28,7 @@ export default async function AfterSalesPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title="After-sales" description="Warranty claims, repairs and complaints. Closing a case needs a written resolution." actions={can(actor, "aftersales:manage") ? <ButtonLink href="/app/after-sales/new">New case</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference, subject or customer" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={effective} options={[{ value: "active", label: "Open and in progress" }, { value: "all", label: "All" }, ...CASE_STATUSES.map((s) => ({ value: s, label: CASE_STATUS_LABEL[s] }))]} />
         <SelectField label="Type" name="type" showOptional={false} defaultValue={type ?? ""} placeholder="All" options={CASE_TYPES.map((t) => ({ value: t, label: CASE_TYPE_LABEL[t] }))} />

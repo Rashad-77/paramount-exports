@@ -41,7 +41,7 @@ export default function CustomPage() {
           <p className="mt-8 text-sm text-text-muted">Timescales and prices depend on the piece and are confirmed in your quotation.</p>
         </section>
 
-        <section aria-labelledby="request-title" className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 md:p-8">
+        <section aria-labelledby="request-title" className=" border border-border bg-surface p-6 md:p-8">
           <h2 id="request-title" className="font-display text-2xl text-walnut">
             Request a quotation
           </h2>

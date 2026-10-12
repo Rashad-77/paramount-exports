@@ -38,7 +38,7 @@ export default async function ProductsAdminPage({ searchParams }: { searchParams
           </>
         }
       />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
         <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Name or SKU" />
         <SelectField showOptional={false} label="Category" name="category" defaultValue={categoryId ?? ""} placeholder="All" options={cats.filter((c) => !c.archivedAt).map((c) => ({ value: c.id, label: c.name }))} />
         <SelectField showOptional={false} label="Status" name="status" defaultValue={status ?? ""} placeholder="Active (published and draft)" options={[{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }, { value: "archived", label: "Archived" }]} />

@@ -21,7 +21,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHeader title="Suppliers" description="Who you buy materials from." actions={can(actor, "suppliers:write") ? <ButtonLink href="/app/suppliers/new">New supplier</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Name or materials supplied" />
         <label className="flex min-h-10 items-center gap-2 text-sm"><input type="checkbox" name="archived" value="1" defaultChecked={archived} className="size-5 accent-[var(--color-walnut)]" /> Include archived</label>
         <div className="flex gap-2"><Button type="submit">Apply</Button>{q || archived ? <ButtonLink href="/app/suppliers" variant="ghost">Clear</ButtonLink> : null}</div>

@@ -73,7 +73,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {job ? (
-        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-[var(--radius-md)] border border-border bg-surface px-4 py-3 text-sm">
+        <div className="mb-6 flex flex-wrap items-center gap-3 border border-border bg-surface px-4 py-3 text-sm">
           <span className="font-medium">Workshop</span>
           <StatusBadge tone={STAGE_TONE[job.stage as JobStage]}>{STAGE_LABEL[job.stage as JobStage]}</StatusBadge>
           <span className="text-text-muted">Job {job.reference}{job.targetDate ? ` · due ${formatDate(job.targetDate, business.timezone)}` : ""}</span>

@@ -10,7 +10,7 @@ export function TableWrap({ label, children, className }: { label: string; child
       role="region"
       aria-label={label}
       tabIndex={0}
-      className={cn("relative overflow-x-auto rounded-[var(--radius-lg)] border border-border bg-surface", className)}
+      className={cn("relative overflow-x-auto border border-border bg-surface", className)}
     >
       {children}
     </div>
@@ -22,16 +22,16 @@ export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>)
 }
 
 export function THead(props: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className="border-b border-border bg-ivory" {...props} />;
+  return <thead className="border-b border-border bg-paper-deep" {...props} />;
 }
 
 export function TR({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn("border-b border-border last:border-b-0 hover:bg-ivory/60", className)} {...props} />;
+  return <tr className={cn("border-b border-border transition-colors duration-[var(--duration-fast)] last:border-b-0 hover:bg-paper-deep/70", className)} {...props} />;
 }
 
 export function TH({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th scope="col" className={cn("px-4 py-3 text-xs font-semibold uppercase tracking-wide text-text-muted whitespace-nowrap", className)} {...props} />
+    <th scope="col" className={cn("px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted whitespace-nowrap", className)} {...props} />
   );
 }
 
@@ -56,7 +56,7 @@ export function SortHeader({
     <th
       scope="col"
       aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
-      className={cn("px-4 py-3 text-xs font-semibold uppercase tracking-wide text-text-muted whitespace-nowrap", className)}
+      className={cn("px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted whitespace-nowrap", className)}
     >
       <Link href={href} className="inline-flex items-center gap-1 hover:text-text">
         {label}
@@ -78,8 +78,8 @@ export function Pagination({
 }) {
   if (pageCount <= 1) return null;
   const linkClass =
-    "inline-flex min-h-10 items-center rounded-[var(--radius-md)] border border-border-strong px-3 text-sm hover:bg-linen";
-  const disabledClass = "inline-flex min-h-10 items-center rounded-[var(--radius-md)] border border-border px-3 text-sm text-text-muted opacity-60";
+    "inline-flex min-h-10 items-center border border-border-strong px-3 text-sm hover:bg-linen";
+  const disabledClass = "inline-flex min-h-10 items-center border border-border px-3 text-sm text-text-muted opacity-60";
   return (
     <nav aria-label="Pagination" className="mt-4 flex items-center justify-between gap-3">
       {page > 1 ? (

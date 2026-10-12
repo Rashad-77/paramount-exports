@@ -32,6 +32,15 @@ async function main() {
       if (process.env.DEMO_ROLE) await page.goto(new URL(`/dev/demo-role?role=${process.env.DEMO_ROLE}`, baseUrl).toString());
       for (const target of targets) {
         const res = await page.goto(new URL(target, baseUrl).toString(), { waitUntil: "networkidle" });
+        // Scroll through the page so lazy-loaded images are fetched before the full-page capture.
+        await page.evaluate(async () => {
+          for (let y = 0; y < document.body.scrollHeight; y += 500) {
+            window.scrollTo(0, y);
+            await new Promise((r) => setTimeout(r, 60));
+          }
+          window.scrollTo(0, 0);
+        });
+        await page.waitForTimeout(400);
         const slug = target === "/" ? "home" : target.replace(/^\/|\/$/g, "").replace(/[/?=&]/g, "-");
         const file = path.join(outDir, `${slug}.${vp.name}.png`);
         await page.screenshot({ path: file, fullPage: true });

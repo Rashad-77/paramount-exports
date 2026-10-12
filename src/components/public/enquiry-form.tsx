@@ -100,7 +100,7 @@ export function EnquiryForm({
       {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
 
       <FCheckbox name="consent" label="I agree to be contacted about this enquiry." hint="We use your details only to reply to you. See the Privacy notice." />
-      <SubmitButton size="lg" pendingLabel="Sending…">
+      <SubmitButton size="cta" pendingLabel="Sending…">
         {submitLabel}
       </SubmitButton>
     </ActionForm>

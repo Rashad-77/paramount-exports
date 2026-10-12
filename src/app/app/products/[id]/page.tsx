@@ -110,7 +110,7 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
             <ul className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {images.map((img, i) => (
                 <li key={img.id} className="space-y-2">
-                  <div className="relative aspect-square overflow-hidden rounded-[var(--radius-md)] border border-border bg-linen">
+                  <div className="relative aspect-square overflow-hidden border border-border bg-linen">
                     <SiteImage src={img.url} alt={img.alt} fill sizes="240px" className="object-cover" />
                   </div>
                   <p className="text-xs text-text-muted">{i === 0 ? <StatusBadge tone="info">Main image</StatusBadge> : null} {img.alt}</p>

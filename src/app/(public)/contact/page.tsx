@@ -63,7 +63,7 @@ export default async function ContactPage() {
           </dl>
         </section>
 
-        <section aria-labelledby="send-title" className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 md:p-8">
+        <section aria-labelledby="send-title" className=" border border-border bg-surface p-6 md:p-8">
           <h2 id="send-title" className="font-display text-2xl text-walnut">
             Send an enquiry
           </h2>

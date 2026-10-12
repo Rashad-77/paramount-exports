@@ -30,7 +30,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title="Reports" description="Operational figures for a date range you choose. Each section says exactly what is counted." />
-      <form method="get" className="mb-6 flex flex-col gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:flex-row sm:items-end">
+      <form method="get" className="mb-6 flex flex-col gap-4 border border-border bg-surface p-4 sm:flex-row sm:items-end">
         <TextField label="From" name="from" type="date" showOptional={false} defaultValue={range.from} />
         <TextField label="To" name="to" type="date" showOptional={false} defaultValue={range.to} />
         <Button type="submit">Show report</Button>

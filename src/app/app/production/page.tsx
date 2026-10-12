@@ -19,7 +19,7 @@ type JobRow = Awaited<ReturnType<typeof listBoard>>["rows"][number];
 
 function JobCard({ j, tz }: { j: JobRow; tz: string }) {
   return (
-    <li className="rounded-[var(--radius-md)] border border-border bg-surface p-3">
+    <li className=" border border-border bg-surface p-3">
       <Link href={`/app/production/${j.id}`} className="block min-h-11 font-medium text-walnut underline">
         {j.reference}
       </Link>
@@ -75,10 +75,10 @@ export default async function ProductionPage({ searchParams }: { searchParams: P
           {columns.map((stage) => {
             const jobs = rows.filter((r) => r.stage === stage);
             return (
-              <section key={stage} aria-labelledby={`col-${stage}`} className="min-w-0 rounded-[var(--radius-lg)] border border-border bg-linen/50 p-3">
+              <section key={stage} aria-labelledby={`col-${stage}`} className="min-w-0 border border-border bg-linen/50 p-3">
                 <h2 id={`col-${stage}`} className="mb-3 flex items-center justify-between gap-2 text-sm font-semibold">
                   {STAGE_LABEL[stage]}
-                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted">{jobs.length}</span>
+                  <span className="border border-border bg-surface px-2 py-0.5 text-xs text-text-muted">{jobs.length}</span>
                 </h2>
                 {jobs.length === 0 ? <p className="px-1 py-3 text-sm text-text-muted">Nothing here.</p> : <ul className="space-y-2">{jobs.map((j) => <JobCard key={j.id} j={j} tz={business.timezone} />)}</ul>}
               </section>
@@ -99,7 +99,7 @@ export default async function ProductionPage({ searchParams }: { searchParams: P
   return (
     <>
       {header}
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <input type="hidden" name="view" value="list" />
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or description" className="lg:col-span-2" />
         <SelectField label="Stage" name="stage" showOptional={false} defaultValue={stage ?? ""} placeholder="All" options={JOB_STAGES.map((s) => ({ value: s, label: STAGE_LABEL[s] }))} />

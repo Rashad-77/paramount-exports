@@ -40,7 +40,7 @@ export function Dialog({
       }}
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-[var(--radius-lg)] border border-border bg-surface p-0 text-text shadow-[var(--shadow-md)] backdrop:bg-charcoal/50"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/50"
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>
@@ -57,7 +57,7 @@ export function Dialog({
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="inline-flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] hover:bg-linen"
+          className="inline-flex size-10 shrink-0 items-center justify-center hover:bg-linen"
         >
           <X aria-hidden="true" className="size-5" />
         </button>

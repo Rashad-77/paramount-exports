@@ -43,7 +43,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           </>
         }
       />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <TextField label="From" name="from" type="date" showOptional={false} defaultValue={from} />
         <TextField label="To" name="to" type="date" showOptional={false} defaultValue={to} />
         <SelectField label="Category" name="category" showOptional={false} defaultValue={categoryId ?? ""} placeholder="All" options={cats.map((c) => ({ value: c.id, label: c.name }))} />

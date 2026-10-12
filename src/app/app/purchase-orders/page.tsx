@@ -28,7 +28,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   return (
     <>
       <PageHeader title="Purchase orders" description="Materials ordered from suppliers. Stock increases only when goods are received." actions={can(actor, "purchasing:write") ? <ButtonLink href="/app/purchase-orders/new">New purchase order</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or supplier" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={PO_STATUSES.map((s) => ({ value: s, label: PO_STATUS_LABEL[s] }))} />
         <div className="flex gap-2"><Button type="submit">Apply</Button>{filtered ? <ButtonLink href="/app/purchase-orders" variant="ghost">Clear</ButtonLink> : null}</div>

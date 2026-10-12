@@ -21,7 +21,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHeader title="Customers" description="People and companies you have dealt with or quoted." actions={can(actor, "customers:write") ? <ButtonLink href="/app/customers/new">Add customer</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 flex flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:flex-row sm:items-end">
+      <form method="get" className="mb-6 flex flex-col gap-3 border border-border bg-surface p-4 sm:flex-row sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Name, company, phone or email" className="flex-1" />
         <label className="flex min-h-10 items-center gap-2 text-sm">
           <input type="checkbox" name="archived" value="1" defaultChecked={archived} className="size-5 accent-[var(--color-walnut)]" /> Show archived

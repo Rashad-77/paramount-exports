@@ -45,7 +45,7 @@ function DemoSignIn({ name }: { name: string }) {
         <ul className="space-y-3">
           {ROLES.map((r) => (
             <li key={r}>
-              <a href={`/demo/start?role=${r}`} className="flex min-h-14 flex-col justify-center rounded-[var(--radius-md)] border border-border-strong bg-surface px-4 py-2 hover:bg-linen">
+              <a href={`/demo/start?role=${r}`} className="flex min-h-14 flex-col justify-center border border-border-strong bg-surface px-4 py-2 hover:bg-linen">
                 <span className="font-medium capitalize">Continue as {r}</span>
                 <span className="text-sm text-text-muted">{ROLE_BLURB[r]}</span>
               </a>

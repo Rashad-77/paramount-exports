@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/cormorant-garamond";
 @import "../styles/tokens.css";
 
 @layer base {
@@ -10,12 +10,18 @@
     font-family: var(--font-sans);
     font-size: 100%;
     -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-optical-sizing: auto;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   body {
     min-height: 100dvh;
     background: var(--color-ivory);
-    line-height: 1.6;
+    line-height: 1.65;
+    letter-spacing: 0.002em;
   }
   h1, h2, h3, h4 {
     text-wrap: balance;
@@ -24,18 +30,27 @@
     text-wrap: pretty;
   }
   a {
-    text-underline-offset: 0.2em;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
   }
 
   /* One consistent, always-visible keyboard focus treatment */
   :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
     outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
+    outline-offset: 3px;
   }
 
   ::selection {
-    background: var(--color-linen-dark);
+    background: color-mix(in srgb, var(--color-brass) 35%, white);
+    color: var(--color-charcoal);
+  }
+
+  /* Square, quiet form controls everywhere (also removes iOS's rounded defaults) */
+  :where(input, select, textarea, button) {
+    border-radius: 0;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--color-walnut);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -55,14 +70,106 @@
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
+  /* Editorial serif. Cormorant has a small x-height, so it is optically scaled up to sit properly beside the sans. */
   .font-display {
     font-family: var(--font-serif);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    font-size-adjust: 0.46;
+    /* Cormorant defaults to old-style figures, which look wrong in prices and measurements. */
+    font-variant-numeric: lining-nums;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Small tracked label above a heading, with a short brass rule */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 2.25rem;
+    height: 1px;
+    background: var(--color-brass);
+  }
+
+  /* Vertical rhythm for public sections */
+  .section-y {
+    padding-block: var(--section-space);
+  }
+
+  /* Link with an underline that draws in. Static underline remains for forced-colors/print. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 0.15em;
+    transition: background-size var(--duration-base) var(--ease-out);
+  }
+  .link-draw:hover {
+    background-size: 100% 2px;
+  }
+
+  /* Same, but the line only appears on hover/focus — for card titles and navigation, where the layout already signals a link. */
+  .link-draw-hover {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 0.15em;
+    transition: background-size var(--duration-base) var(--ease-out);
+  }
+  .link-draw-hover:hover,
+  .link-draw-hover:focus-visible,
+  :where(.group:hover, a:hover) .link-draw-hover {
+    background-size: 100% 1px;
+  }
+
+  /* Image frame: slow, subtle zoom on hover (never on touch-only devices) */
+  .zoom-frame {
+    overflow: hidden;
+    background: var(--color-linen);
+  }
+  .zoom-frame > * {
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .zoom-frame:hover > *,
+    a:hover .zoom-frame > * {
+      transform: scale(1.035);
+    }
+  }
+
+  /* One gentle entrance for the hero copy */
+  .rise-in {
+    animation: rise-in 900ms var(--ease-out) both;
+  }
+  .rise-in-2 {
+    animation-delay: 120ms;
+  }
+  .rise-in-3 {
+    animation-delay: 240ms;
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   .skip-link {
     position: absolute;
     left: 0.5rem;
@@ -70,8 +177,7 @@
     z-index: 100;
     background: var(--color-walnut);
     color: var(--color-ivory);
-    padding: 0.5rem 0.875rem;
-    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
   }
   .skip-link:focus {
     top: 0.5rem;

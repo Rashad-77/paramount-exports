@@ -2,24 +2,30 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "md" | "lg";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "light";
+type Size = "md" | "lg" | "cta";
 
+// Square, hairline, quiet. Hover is a considered inversion rather than a colour flash; press nudges 1px.
 const base =
-  "inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap select-none " +
-  "rounded-[var(--radius-md)] border transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)] " +
+  "inline-flex items-center justify-center gap-2.5 font-medium whitespace-nowrap select-none " +
+  "border transition-[background-color,color,border-color] duration-[var(--duration-base)] ease-[var(--ease-out)] " +
+  "active:translate-y-px motion-reduce:active:translate-y-0 " +
   "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-walnut text-ivory border-walnut hover:bg-walnut-dark hover:border-walnut-dark",
-  secondary: "bg-transparent text-walnut border-walnut hover:bg-linen",
+  primary: "bg-walnut text-ivory border-walnut hover:bg-transparent hover:text-walnut",
+  secondary: "bg-transparent text-walnut border-walnut hover:bg-walnut hover:text-ivory",
   ghost: "bg-transparent text-text border-transparent hover:bg-linen",
-  danger: "bg-danger text-ivory border-danger hover:brightness-90",
+  danger: "bg-danger text-ivory border-danger hover:bg-transparent hover:text-danger",
+  // For use on dark (walnut) bands
+  light: "bg-ivory text-walnut border-ivory hover:bg-transparent hover:text-ivory",
 };
 
 const sizes: Record<Size, string> = {
-  md: "min-h-10 px-4 text-sm",
-  lg: "min-h-[var(--touch-target)] px-6 text-base",
+  md: "min-h-10 px-4 text-sm tracking-[0.01em]",
+  lg: "min-h-[var(--touch-target)] px-6 text-base tracking-[0.01em]",
+  // Public calls to action: small caps-style label, generous padding.
+  cta: "min-h-12 px-8 text-[0.8125rem] font-semibold uppercase tracking-[0.14em]",
 };
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {

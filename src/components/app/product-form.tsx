@@ -54,7 +54,7 @@ export function ProductForm({
       </div>
       <FTextArea name="description" label="Description" rows={5} defaultValue={values.description ?? ""} />
 
-      <fieldset className="space-y-3 rounded-[var(--radius-md)] border border-border p-4">
+      <fieldset className="space-y-3 border border-border p-4">
         <legend className="px-1 text-sm font-medium">Website</legend>
         <FCheckbox name="isPublished" label="Published" hint="Visible on the public website." defaultChecked={values.isPublished} />
         <FCheckbox name="isFeatured" label="Featured on the homepage" defaultChecked={values.isFeatured} />

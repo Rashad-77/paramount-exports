@@ -18,7 +18,7 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-dashed border-border px-6 py-12 text-center", className)}>
+    <div className={cn("flex flex-col items-center gap-3 border border-dashed border-border px-6 py-12 text-center", className)}>
       <Icon aria-hidden="true" className="size-8 text-stone" strokeWidth={1.25} />
       <div className="max-w-md">
         <p className="font-medium text-text">{title}</p>
@@ -42,7 +42,7 @@ export function ErrorState({
   className?: string;
 }) {
   return (
-    <div role="alert" className={cn("flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-danger/30 bg-danger-bg px-6 py-12 text-center", className)}>
+    <div role="alert" className={cn("flex flex-col items-center gap-3 border border-danger/30 bg-danger-bg px-6 py-12 text-center", className)}>
       <TriangleAlert aria-hidden="true" className="size-8 text-danger" strokeWidth={1.25} />
       <div className="max-w-md">
         <p className="font-medium text-text">{title}</p>
@@ -55,7 +55,7 @@ export function ErrorState({
 
 /** Skeleton block for loading.tsx files. Decorative; announces nothing. */
 export function Skeleton({ className }: { className?: string }) {
-  return <div aria-hidden="true" className={cn("animate-pulse rounded-[var(--radius-md)] bg-linen", className)} />;
+  return <div aria-hidden="true" className={cn("animate-pulse bg-linen", className)} />;
 }
 
 export function LoadingState({ label = "Loading" }: { label?: string }) {

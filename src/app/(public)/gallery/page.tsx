@@ -29,7 +29,7 @@ export default async function GalleryPage() {
                 {p.description ? <p className="mt-3 max-w-prose text-text-muted">{p.description}</p> : null}
                 <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {p.images.map((img) => (
-                    <li key={img.id} className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)] border border-border bg-linen">
+                    <li key={img.id} className="relative aspect-[4/3] overflow-hidden border border-border bg-linen">
                       <SiteImage src={img.url} alt={img.alt} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                     </li>
                   ))}

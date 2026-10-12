@@ -1,27 +1,37 @@
 /*
  * Design tokens — single source for colour, type, spacing rhythm, borders, radii, shadows, focus and motion.
- * Palette starts from the brief (ivory / linen / walnut / charcoal / stone / muted olive) and is verified for contrast:
- *   charcoal on ivory 13.9:1 · walnut on ivory 10.2:1 · ivory on olive 5.8:1 · text-muted on ivory 5.9:1
- * NOTE: the brief's stone (#77776C) is only 4.1:1 on ivory, so it is used for borders/icons (>=3:1 needed),
- * and the darker --color-text-muted is used for secondary TEXT. Replace with real brand tokens when supplied.
+ *
+ * Direction: "quiet gallery". Warm paper, deep walnut ink, a single brass accent used only for hairlines and small
+ * details. Square corners throughout. Hierarchy comes from scale, spacing and thin rules rather than boxes and colour.
+ * Research notes behind these choices (consistent spacing scale, small set of type sizes, restraint, layered low-opacity
+ * shadows tinted to the background, motion only on key interactions) are summarised in docs/DESIGN_NOTES.md.
+ *
+ * Contrast (computed): charcoal on paper 15.8:1 · walnut on paper 12.3:1 · text-muted on paper 6.4:1 (5.6:1 on linen) ·
+ * brass-text on paper 6.8:1 · paper on walnut 12.3:1 · paper on olive 5.9:1.
+ * `stone` (4.2:1) and `brass` (3.9:1) clear the 3:1 needed for borders and icons but NOT for text, so they are never used for text.
  */
 @theme {
-  /* Brand palette */
-  --color-ivory: #f6f3ed;
-  --color-linen: #e6ded1;
-  --color-linen-dark: #cfc4b3;
-  --color-walnut: #49372c;
-  --color-walnut-dark: #382a21;
-  --color-charcoal: #252522;
+  /* Surfaces and ink */
+  --color-ivory: #f8f5ef;
+  --color-paper-deep: #f1ece2;
+  --color-linen: #ece5d8;
+  --color-linen-dark: #d6cbb9;
+  --color-walnut: #3a2c23;
+  --color-walnut-dark: #281e17;
+  --color-charcoal: #1d1b18;
   --color-stone: #77776c;
   --color-olive: #53634d;
   --color-olive-dark: #44523f;
   --color-surface: #ffffff;
 
+  /* Accent: a muted brass. Decorative (rules, hover lines, small marks); use brass-text for any text. */
+  --color-brass: #9a7440;
+  --color-brass-text: #6b5126;
+
   /* Semantic */
-  --color-text: #252522;
-  --color-text-muted: #5e5e54;
-  --color-border: #d9d0c1;
+  --color-text: #1d1b18;
+  --color-text-muted: #5a5a50;
+  --color-border: #e0d8c9;
   --color-border-strong: #77776c;
   --color-danger: #8f2d26;
   --color-danger-bg: #f6e4e1;
@@ -31,11 +41,11 @@
   --color-success-bg: #e3e9df;
   --color-info: #3b4a57;
   --color-info-bg: #e2e8ed;
-  --color-focus: #49372c;
+  --color-focus: #3a2c23;
 
-  /* Type */
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: "Newsreader Variable", ui-serif, Georgia, "Times New Roman", serif;
+  /* Type: an editorial serif for display, a precise grotesque for everything else */
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Cormorant Garamond Variable", ui-serif, Georgia, "Times New Roman", serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -46,33 +56,45 @@
   --text-3xl: 2.25rem;
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
+  /* Fluid display sizes for the public site (use with font-display) */
+  --text-headline: clamp(2.125rem, 1.35rem + 2.6vw, 3.5rem);
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.015em;
+  --text-display: clamp(2.75rem, 1.4rem + 4.8vw, 5.25rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.022em;
 
-  /* Radii: small to moderate, never pill-shaped by default */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
+  /* Radii: none. Square edges are part of the identity. */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
 
-  /* Shadows: restrained */
-  --shadow-sm: 0 1px 2px rgb(37 37 34 / 0.06);
-  --shadow-md: 0 4px 16px rgb(37 37 34 / 0.08);
+  /* Shadows: layered, low-opacity, tinted to the paper (never pure black). Used rarely — hairlines do most of the work. */
+  --shadow-sm: 0 1px 1px rgb(58 44 35 / 0.04), 0 2px 4px rgb(58 44 35 / 0.04);
+  --shadow-md: 0 1px 2px rgb(58 44 35 / 0.04), 0 4px 8px rgb(58 44 35 / 0.05), 0 12px 24px rgb(58 44 35 / 0.06);
+  --shadow-lg: 0 2px 4px rgb(58 44 35 / 0.04), 0 8px 16px rgb(58 44 35 / 0.05), 0 24px 48px rgb(58 44 35 / 0.08);
 
-  /* Motion */
+  /* Motion: slow-in, long-out. Short for controls, long for imagery. Disabled under prefers-reduced-motion. */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --duration-fast: 120ms;
-  --duration-base: 180ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 700ms;
 }
 
 :root {
   /* Layout rules */
-  --content-width: 76rem; /* public site max width */
-  --reading-width: 42rem;
-  --gutter: 1rem;
-  --header-height: 4rem;
+  --content-width: 80rem; /* public site max width */
+  --reading-width: 40rem;
+  --gutter: 1.25rem;
+  --header-height: 4.5rem;
   --touch-target: 2.75rem; /* 44px minimum for workshop/phone use */
+  /* Vertical rhythm for public sections */
+  --section-space: clamp(4.5rem, 3rem + 6vw, 9rem);
 }
 
 @media (min-width: 48rem) {
   :root {
-    --gutter: 2rem;
+    --gutter: 2.5rem;
   }
 }

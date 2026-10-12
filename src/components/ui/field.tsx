@@ -7,9 +7,10 @@ import { cn } from "@/lib/cn";
  */
 
 const control =
-  "block w-full min-h-10 rounded-[var(--radius-md)] border border-border-strong bg-surface px-3 py-2 text-base " +
-  "text-text placeholder:text-text-muted/70 transition-colors duration-[var(--duration-fast)] " +
-  "hover:border-walnut disabled:bg-linen disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:border-2";
+  "block w-full min-h-11 border border-border-strong bg-surface px-3.5 py-2 text-base " +
+  "text-text placeholder:text-text-muted/70 transition-[border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out)] " +
+  "hover:border-walnut focus:border-walnut focus:shadow-[inset_0_-2px_0_var(--color-brass)] " +
+  "disabled:bg-linen disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:border-2";
 
 interface FieldShellProps {
   label: string;
@@ -41,7 +42,7 @@ function Shell({
 }: FieldShellProps & { id: string; hintId: string; errorId: string; children: ReactNode }) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={id} className="text-sm font-medium text-text">
+      <label htmlFor={id} className="text-sm font-medium tracking-[0.01em] text-text">
         {label}
         {required ? (
           <span aria-hidden="true" className="text-danger">

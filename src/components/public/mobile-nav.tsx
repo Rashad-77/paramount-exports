@@ -29,7 +29,7 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         aria-controls={panelId}
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex size-11 items-center justify-center rounded-[var(--radius-md)] hover:bg-linen"
+        className="inline-flex size-11 items-center justify-center border border-transparent hover:border-border-strong"
       >
         {open ? <X aria-hidden="true" className="size-6" strokeWidth={1.5} /> : <Menu aria-hidden="true" className="size-6" strokeWidth={1.5} />}
       </button>
@@ -37,12 +37,12 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         id={panelId}
         aria-label="Mobile"
         hidden={!open}
-        className="absolute inset-x-0 top-full border-b border-border bg-ivory px-[var(--gutter)] pb-4 shadow-[var(--shadow-md)]"
+        className="absolute inset-x-0 top-full z-30 border-b border-border bg-ivory px-[var(--gutter)] pb-4 shadow-[var(--shadow-lg)]"
       >
         <ul className="divide-y divide-border">
           {links.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-12 items-center text-base">
+              <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-14 items-center font-display text-2xl text-walnut">
                 {l.label}
               </Link>
             </li>

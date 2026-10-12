@@ -29,7 +29,7 @@ export default async function QuotationsPage({ searchParams }: { searchParams: P
   return (
     <>
       <PageHeader title="Quotations" description="Drafts, quotations awaiting a reply, and decided ones." actions={can(actor, "quotations:write") ? <ButtonLink href="/app/quotations/new">New quotation</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or customer" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={QUOTATION_STATUSES.map((s) => ({ value: s, label: QUOTATION_STATUS_LABEL[s] }))} />
         <div className="flex gap-2">

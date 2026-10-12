@@ -23,7 +23,7 @@ export function AppNavMobile({ children }: { children: ReactNode }) {
         aria-controls={id}
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex size-11 items-center justify-center rounded-[var(--radius-md)] hover:bg-linen"
+        className="inline-flex size-11 items-center justify-center hover:bg-linen"
       >
         {open ? <X aria-hidden="true" className="size-6" strokeWidth={1.5} /> : <Menu aria-hidden="true" className="size-6" strokeWidth={1.5} />}
       </button>

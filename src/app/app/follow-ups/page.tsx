@@ -24,7 +24,7 @@ export default async function FollowUpsPage({ searchParams }: { searchParams: Pr
   const [business, result] = await Promise.all([getBusinessSettings(), listFollowUps(actor, { assignee, status, page, pageSize: 25 })]);
   const href = (over: Record<string, string | undefined>) => buildHref("/app/follow-ups", { who: assignee, status, ...over });
   const tab = (label: string, active: boolean, to: string) => (
-    <Link href={to} aria-current={active ? "page" : undefined} className={"inline-flex min-h-10 items-center rounded-[var(--radius-md)] border px-4 text-sm " + (active ? "border-walnut bg-walnut text-ivory" : "border-border-strong hover:bg-linen")}>
+    <Link href={to} aria-current={active ? "page" : undefined} className={"inline-flex min-h-10 items-center border px-4 text-sm " + (active ? "border-walnut bg-walnut text-ivory" : "border-border-strong hover:bg-linen")}>
       {label}
     </Link>
   );

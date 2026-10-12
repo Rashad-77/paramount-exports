@@ -37,7 +37,7 @@ export default async function GalleryProjectPage({ params }: { params: Promise<{
             <ul className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {images.map((img) => (
                 <li key={img.id} className="space-y-2">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)] border border-border bg-linen">
+                  <div className="relative aspect-[4/3] overflow-hidden border border-border bg-linen">
                     <SiteImage src={img.url} alt={img.alt} fill sizes="240px" className="object-cover" />
                   </div>
                   <p className="text-xs text-text-muted">{img.alt}</p>

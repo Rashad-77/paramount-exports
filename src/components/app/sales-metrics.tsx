@@ -11,7 +11,7 @@ function Stat({ label, value, href, tone }: { label: string; value: string | num
   const long = String(value).length > 9; // money amounts and phrases get a smaller size so they never collide with the next stat
   // A <dl> may only contain <div> groups of <dt>/<dd>, so a linked tile uses a "stretched" link inside the term.
   return (
-    <div className={"relative min-w-0 rounded-[var(--radius-md)] p-2" + (href ? " hover:bg-linen" : "")}>
+    <div className={"relative min-w-0 p-2" + (href ? " hover:bg-linen" : "")}>
       <dt className="text-sm text-text-muted">
         {href ? (
           <Link href={href} className="after:absolute after:inset-0 after:content-['']">

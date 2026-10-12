@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: Props) {
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{p.categoryName}</p>
-          <h1 className="font-display mt-2 text-4xl text-walnut md:text-5xl">{p.name}</h1>
+          <h1 className="font-display mt-3 text-headline text-walnut">{p.name}</h1>
           {p.availability ? (
             <p className="mt-4">
               <StatusBadge tone="neutral">{p.availability}</StatusBadge>
@@ -110,8 +110,8 @@ export default async function ProductPage({ params }: Props) {
             </div>
           </dl>
 
-          <section id="enquire" aria-labelledby="enquire-title" className="mt-10 scroll-mt-6 rounded-[var(--radius-lg)] border border-border bg-surface p-6">
-            <h2 id="enquire-title" className="font-display text-2xl text-walnut">
+          <section id="enquire" aria-labelledby="enquire-title" className="mt-10 scroll-mt-6 border border-border bg-surface p-6">
+            <h2 id="enquire-title" className="font-display text-[1.875rem] leading-tight text-walnut">
               Enquire about this piece
             </h2>
             <p className="mt-1 mb-5 text-sm text-text-muted">Tell us how to reach you and we will get back to you about {p.name}.</p>

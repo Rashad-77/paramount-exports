@@ -36,7 +36,7 @@ export async function StockView({ searchParams, materials = false }: { searchPar
           </>
         }
       />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Name or SKU" className="lg:col-span-2" />
         {materials ? null : <SelectField label="Type" name="kind" showOptional={false} defaultValue={kind ?? ""} placeholder="All" options={ITEM_KINDS.map((k) => ({ value: k, label: ITEM_KIND_LABEL[k]! }))} />}
         <SelectField label="Location" name="location" showOptional={false} defaultValue={locationId ?? ""} placeholder="All" options={result.locations.map((l) => ({ value: l.id, label: l.name }))} />

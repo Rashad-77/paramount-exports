@@ -34,52 +34,55 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section aria-labelledby="hero-title" className="container-page grid items-center gap-10 py-14 md:grid-cols-12 md:gap-12 md:py-24">
-        <div className="md:col-span-6">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-text-muted">Furniture · Showroom · Workshop</p>
-          <h1 id="hero-title" className="font-display mt-5 text-4xl leading-[1.08] text-walnut md:text-5xl lg:text-[3.5rem]">
+      <section aria-labelledby="hero-title" className="container-page grid items-center gap-12 py-14 md:grid-cols-12 md:gap-16 md:py-[clamp(4rem,2rem+6vw,8rem)]">
+        <div className="md:col-span-7">
+          <p className="eyebrow rise-in">Furniture · Showroom · Workshop</p>
+          <h1 id="hero-title" className="font-display rise-in rise-in-2 mt-7 text-display text-walnut">
             Wood furniture for the way you live.
           </h1>
-          <p className="mt-6 max-w-md text-lg text-text-muted">
+          <p className="rise-in rise-in-3 mt-8 max-w-md text-lg leading-relaxed text-text-muted">
             Choose from ready-made pieces in our showroom, or have something built to your measurements in our workshop.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/custom" size="lg">
+          <div className="rise-in rise-in-3 mt-10 flex flex-wrap gap-4">
+            <ButtonLink href="/custom" size="cta">
               Start a custom enquiry
             </ButtonLink>
-            <ButtonLink href="/products" variant="secondary" size="lg">
+            <ButtonLink href="/products" variant="secondary" size="cta">
               Browse the collection
             </ButtonLink>
           </div>
         </div>
-        <div className="md:col-span-6">
+        <div className="md:col-span-5">
           <ImagePlaceholder label="Hero image — a finished piece in a lived-in room" className="aspect-[4/5] w-full md:aspect-[5/6]" />
         </div>
       </section>
 
       {/* Categories */}
       <section aria-labelledby="collections-title" className="border-t border-border">
-        <div className="container-page py-16 md:py-24">
-          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-            <h2 id="collections-title" className="font-display text-3xl text-walnut md:text-4xl">
-              Browse by category
-            </h2>
+        <div className="container-page section-y">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="eyebrow">The collection</p>
+              <h2 id="collections-title" className="font-display mt-5 text-headline text-walnut">
+                Browse by category
+              </h2>
+            </div>
             {shownCategories.length === 0 ? (
               <p className="max-w-sm text-sm text-text-muted">Placeholder categories, replaced automatically once products are published.</p>
             ) : (
-              <Link href="/products" className="inline-flex items-center gap-1 text-sm underline">
+              <Link href="/products" className="link-draw inline-flex items-center gap-2 text-[0.8125rem] font-medium uppercase tracking-[0.14em]">
                 View everything <ArrowRight aria-hidden="true" className="size-4" />
               </Link>
             )}
           </div>
-          <ul className="mt-10 grid gap-6 sm:grid-cols-3">
+          <ul className="mt-14 grid gap-x-8 gap-y-12 sm:grid-cols-3">
             {shownCategories.length > 0
               ? shownCategories.map((c) => (
                   <li key={c.id}>
                     <Link href={`/products?category=${c.slug}`} className="group block">
-                      <ImagePlaceholder label={`${c.name} — category photograph`} className="aspect-[16/10] w-full sm:aspect-[4/5]" />
-                      <p className="font-display mt-3 text-xl text-walnut group-hover:underline underline-offset-4">{c.name}</p>
-                      <p className="text-sm text-text-muted">
+                      <div className="zoom-frame"><ImagePlaceholder label={`${c.name} — category photograph`} className="aspect-[16/10] w-full sm:aspect-[4/5]" /></div>
+                      <p className="font-display mt-5 text-[1.75rem] leading-tight text-walnut"><span className="link-draw-hover">{c.name}</span></p>
+                      <p className="mt-1 text-sm text-text-muted">
                         {c.count} {c.count === 1 ? "piece" : "pieces"}
                       </p>
                     </Link>
@@ -88,7 +91,7 @@ export default async function HomePage() {
               : PLACEHOLDER_CATEGORIES.map((name) => (
                   <li key={name}>
                     <ImagePlaceholder label={name} className="aspect-[16/10] w-full sm:aspect-[4/5]" />
-                    <p className="font-display mt-3 text-xl text-walnut">{name}</p>
+                    <p className="font-display mt-5 text-[1.75rem] leading-tight text-walnut">{name}</p>
                   </li>
                 ))}
           </ul>
@@ -98,11 +101,12 @@ export default async function HomePage() {
       {/* Featured pieces — only when the business has featured some */}
       {featured.length > 0 ? (
         <section aria-labelledby="featured-title" className="border-t border-border">
-          <div className="container-page py-16 md:py-24">
-            <h2 id="featured-title" className="font-display text-3xl text-walnut md:text-4xl">
+          <div className="container-page section-y">
+            <p className="eyebrow">Selected work</p>
+            <h2 id="featured-title" className="font-display mt-5 text-headline text-walnut">
               Featured pieces
             </h2>
-            <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3">
+            <ul className="mt-14 grid grid-cols-2 gap-x-6 gap-y-14 lg:grid-cols-3 lg:gap-x-10">
               {featured.map((p) => (
                 <li key={p.id}>
                   <ProductCard product={p} currency={business.currency} />
@@ -114,18 +118,19 @@ export default async function HomePage() {
       ) : null}
 
       {/* Custom furniture */}
-      <section id="custom" aria-labelledby="custom-title" className="scroll-mt-4 bg-walnut text-ivory">
-        <div className="container-page grid gap-8 py-16 md:grid-cols-12 md:py-24">
+      <section id="custom" aria-labelledby="custom-title" className="scroll-mt-4 bg-walnut-dark text-ivory">
+        <div className="container-page grid gap-8 section-y md:grid-cols-12 ">
           <div className="md:col-span-7">
-            <h2 id="custom-title" className="font-display text-3xl md:text-4xl">
+            <p className="eyebrow !text-linen-dark">Made to order</p>
+            <h2 id="custom-title" className="font-display mt-5 text-headline">
               Made to your measurements
             </h2>
-            <p className="mt-5 max-w-xl text-lg text-ivory/85">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ivory/80">
               Have something specific in mind? Tell us the piece, the dimensions and the wood you prefer, and we will respond with a quotation.
             </p>
           </div>
           <div className="flex items-end md:col-span-5 md:justify-end">
-            <ButtonLink href="/custom" size="lg" className="border-ivory bg-ivory text-walnut hover:border-linen hover:bg-linen">
+            <ButtonLink href="/custom" size="cta" variant="light">
               Request a quotation
               <ArrowRight aria-hidden="true" className="size-4" />
             </ButtonLink>
@@ -135,16 +140,17 @@ export default async function HomePage() {
 
       {/* Workshop */}
       <section id="workshop" aria-labelledby="workshop-title" className="scroll-mt-4">
-        <div className="container-page grid items-center gap-10 py-16 md:grid-cols-12 md:gap-16 md:py-24">
+        <div className="container-page grid items-center gap-10 section-y md:grid-cols-12 md:gap-16 ">
           <div className="md:order-2 md:col-span-6">
-            <h2 id="workshop-title" className="font-display text-3xl text-walnut md:text-4xl">
+            <p className="eyebrow">The workshop</p>
+            <h2 id="workshop-title" className="font-display mt-5 text-headline text-walnut">
               Craftsmanship, up close
             </h2>
-            <p className="mt-5 max-w-lg text-text-muted">
+            <p className="mt-6 max-w-lg leading-relaxed text-text-muted">
               This section is for the story of the workshop: the people, the timber and the methods. Wording and photography will be supplied by the business.
             </p>
             <p className="mt-6">
-              <Link href="/about" className="inline-flex items-center gap-1 underline">
+              <Link href="/about" className="link-draw inline-flex items-center gap-2 text-[0.8125rem] font-medium uppercase tracking-[0.14em]">
                 About the workshop <ArrowRight aria-hidden="true" className="size-4" />
               </Link>
             </p>
@@ -156,10 +162,11 @@ export default async function HomePage() {
       </section>
 
       {/* Showroom */}
-      <section id="showroom" aria-labelledby="showroom-title" className="scroll-mt-4 border-t border-border bg-linen/50">
-        <div className="container-page grid gap-10 py-16 md:grid-cols-12 md:gap-16 md:py-24">
+      <section id="showroom" aria-labelledby="showroom-title" className="scroll-mt-4 border-t border-border bg-paper-deep">
+        <div className="container-page grid gap-10 section-y md:grid-cols-12 md:gap-16 ">
           <div className="md:col-span-5">
-            <h2 id="showroom-title" className="font-display text-3xl text-walnut md:text-4xl">
+            <p className="eyebrow">The showroom</p>
+            <h2 id="showroom-title" className="font-display mt-5 text-headline text-walnut">
               Visit the showroom
             </h2>
             <dl className="mt-8 space-y-6 text-sm">
@@ -171,7 +178,7 @@ export default async function HomePage() {
                 <dd className="mt-1 whitespace-pre-line pl-7 text-text-muted">{business.address ?? "Showroom address to be added."}</dd>
                 {business.address && business.mapUrl ? (
                   <dd className="mt-2 pl-7">
-                    <a href={business.mapUrl} className="underline" target="_blank" rel="noopener noreferrer">
+                    <a href={business.mapUrl} className="link-draw" target="_blank" rel="noopener noreferrer">
                       View on map<span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   </dd>
@@ -191,23 +198,24 @@ export default async function HomePage() {
 
       {/* Contact */}
       <section id="contact" aria-labelledby="contact-title" className="scroll-mt-4">
-        <div className="container-page py-16 md:py-24">
-          <h2 id="contact-title" className="font-display text-3xl text-walnut md:text-4xl">
+        <div className="container-page section-y">
+          <p className="eyebrow">Contact</p>
+          <h2 id="contact-title" className="font-display mt-5 text-headline text-walnut">
             Get in touch
           </h2>
           <p className="mt-4 max-w-xl text-text-muted">Ask about a piece, request a quotation, or arrange a visit.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/contact" size="lg">
+          <div className="mt-10 flex flex-wrap gap-4">
+            <ButtonLink href="/contact" size="cta">
               Send an enquiry
             </ButtonLink>
             {business.phone ? (
-              <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} variant="secondary" size="lg">
+              <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} variant="secondary" size="cta">
                 <Phone aria-hidden="true" className="size-4" />
                 {business.phone}
               </ButtonLink>
             ) : null}
             {business.whatsapp ? (
-              <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="secondary" size="lg" target="_blank" rel="noopener noreferrer">
+              <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="secondary" size="cta" target="_blank" rel="noopener noreferrer">
                 <MessageCircle aria-hidden="true" className="size-4" />
                 WhatsApp
                 <span className="sr-only"> (opens in a new tab)</span>

@@ -120,7 +120,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
 function chip(active: boolean) {
   return (
-    "inline-flex min-h-10 items-center rounded-[var(--radius-md)] border px-4 text-sm " +
+    "inline-flex min-h-10 items-center border px-4 text-sm " +
     (active ? "border-walnut bg-walnut text-ivory" : "border-border-strong hover:bg-linen")
   );
 }

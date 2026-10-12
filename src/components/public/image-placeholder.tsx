@@ -9,8 +9,8 @@ export function ImagePlaceholder({ label, className }: { label: string; classNam
   return (
     <figure
       className={cn(
-        "relative flex items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-border bg-linen",
-        "bg-[repeating-linear-gradient(135deg,transparent_0,transparent_14px,rgb(73_55_44/0.05)_14px,rgb(73_55_44/0.05)_15px)]",
+        "relative flex items-center justify-center overflow-hidden bg-linen",
+        "bg-[repeating-linear-gradient(135deg,transparent_0,transparent_14px,rgb(58_44_35/0.05)_14px,rgb(58_44_35/0.05)_15px)]",
         className,
       )}
     >

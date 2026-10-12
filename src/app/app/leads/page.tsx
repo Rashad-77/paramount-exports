@@ -37,7 +37,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Enquiries & leads" description="Every enquiry from the website and any you record by hand." actions={can(actor, "leads:write") ? <ButtonLink href="/app/leads/new">Record enquiry</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Name, phone, email, ref" className="lg:col-span-2" />
         <SelectField showOptional={false} label="Status" name="status" defaultValue={status ?? ""} placeholder="All" options={[{ value: "open", label: "Open (not won/lost)" }, ...LEAD_STATUSES.map((s) => ({ value: s, label: LEAD_STATUS_LABEL[s] }))]} />
         <SelectField showOptional={false} label="Source" name="source" defaultValue={source ?? ""} placeholder="All" options={LEAD_SOURCES.map((s) => ({ value: s, label: LEAD_SOURCE_LABEL[s] }))} />
