@@ -98,6 +98,8 @@ export const uploadedFiles = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     bucket: text("bucket").notNull(),
     objectKey: text("object_key").notNull(),
+    /** What the upload is for (enquiry, catalogue, gallery, attachment…). Decides who may upload and which types are allowed. */
+    purpose: text("purpose").notNull().default("general"),
     originalName: text("original_name").notNull(),
     contentType: text("content_type").notNull(),
     sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),

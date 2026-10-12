@@ -10,13 +10,17 @@ const labels = (a: Actor) => visibleNav(a, allBuilt).flatMap((g) => g.items.map(
 
 describe("navigation visibility", () => {
   it("never shows unbuilt destinations (no dead links)", () => {
+    const unbuilt = NAV.flatMap((g) => g.items).filter((i) => !i.available);
+    expect(unbuilt.length).toBeGreaterThan(0); // later modules are still planned
     const shown = visibleNav(actor(["owner"])).flatMap((g) => g.items.map((i) => i.href));
-    expect(shown).toEqual(["/app"]);
+    for (const i of unbuilt) expect(shown).not.toContain(i.href);
+    expect(shown).toContain("/app");
   });
 
   it("hides finance and customer areas from the workshop", () => {
     const l = labels(actor(["workshop"]));
     expect(l).toContain("Production jobs");
+    expect(l).not.toContain("Enquiries & leads");
     for (const hidden of ["Customers", "Payments", "Expenses", "Reports", "Quotations", "Orders", "Users"]) {
       expect(l, hidden).not.toContain(hidden);
     }

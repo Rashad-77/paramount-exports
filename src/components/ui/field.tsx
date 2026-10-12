@@ -16,6 +16,8 @@ interface FieldShellProps {
   hint?: string;
   error?: string;
   required?: boolean;
+  /** Set false for search/filter controls, where "(optional)" is just noise. */
+  showOptional?: boolean;
   className?: string;
 }
 
@@ -33,6 +35,7 @@ function Shell({
   hint,
   error,
   required,
+  showOptional = true,
   className,
   children,
 }: FieldShellProps & { id: string; hintId: string; errorId: string; children: ReactNode }) {
@@ -45,9 +48,9 @@ function Shell({
             {" "}
             *
           </span>
-        ) : (
+        ) : showOptional ? (
           <span className="font-normal text-text-muted"> (optional)</span>
-        )}
+        ) : null}
       </label>
       {children}
       {hint && !error ? (
@@ -73,10 +76,10 @@ export interface TextFieldProps extends FieldShellProps, Omit<InputHTMLAttribute
   inputClassName?: string;
 }
 
-export function TextField({ label, hint, error, required, className, inputClassName, id: idProp, ...props }: TextFieldProps) {
+export function TextField({ label, hint, error, required, showOptional, className, inputClassName, id: idProp, ...props }: TextFieldProps) {
   const ids = useFieldIds(idProp);
   return (
-    <Shell {...ids} {...{ label, hint, error, required, className }}>
+    <Shell {...ids} {...{ label, hint, error, required, showOptional, className }}>
       <input
         id={ids.id}
         required={required}
@@ -91,10 +94,10 @@ export function TextField({ label, hint, error, required, className, inputClassN
 
 export interface TextAreaFieldProps extends FieldShellProps, Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "className"> {}
 
-export function TextAreaField({ label, hint, error, required, className, id: idProp, rows = 4, ...props }: TextAreaFieldProps) {
+export function TextAreaField({ label, hint, error, required, showOptional, className, id: idProp, rows = 4, ...props }: TextAreaFieldProps) {
   const ids = useFieldIds(idProp);
   return (
-    <Shell {...ids} {...{ label, hint, error, required, className }}>
+    <Shell {...ids} {...{ label, hint, error, required, showOptional, className }}>
       <textarea
         id={ids.id}
         rows={rows}
@@ -113,10 +116,10 @@ export interface SelectFieldProps extends FieldShellProps, Omit<SelectHTMLAttrib
   placeholder?: string;
 }
 
-export function SelectField({ label, hint, error, required, className, id: idProp, options, placeholder, ...props }: SelectFieldProps) {
+export function SelectField({ label, hint, error, required, showOptional, className, id: idProp, options, placeholder, ...props }: SelectFieldProps) {
   const ids = useFieldIds(idProp);
   return (
-    <Shell {...ids} {...{ label, hint, error, required, className }}>
+    <Shell {...ids} {...{ label, hint, error, required, showOptional, className }}>
       <select
         id={ids.id}
         required={required}

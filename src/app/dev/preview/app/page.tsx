@@ -20,7 +20,7 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
   const actor: Actor = { id: "sample", fullName: "Sample Person", roles, isActive: true };
 
   return (
-    <AppShell actor={actor} businessName="[Business Name]">
+    <AppShell actor={actor} businessName="[Business Name]" currentPath="/app">
       <Alert tone="info" title="Sample preview">
         Sample user and sample data for design review only. Not connected to any real records.
       </Alert>

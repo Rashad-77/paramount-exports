@@ -15,6 +15,41 @@
       "when": 1791809652435,
       "tag": "0001_foundation_constraints_security",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791810592700,
+      "tag": "0002_security_enforcement_and_references",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791810682448,
+      "tag": "0003_catalogue_crm_gallery",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791810683464,
+      "tag": "0004_step2_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791810849349,
+      "tag": "0005_product_featured",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791811357140,
+      "tag": "0006_lead_preferred_contact",
+      "breakpoints": true
     }
   ]
 }

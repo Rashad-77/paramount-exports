@@ -24,7 +24,7 @@ export const NAV: NavGroup[] = [
   {
     label: "CRM",
     items: [
-      { label: "Enquiries & leads", href: "/app/leads", permission: "leads:view", available: false },
+      { label: "Enquiries & leads", href: "/app/leads", permission: "leads:view", available: true },
       { label: "Customers", href: "/app/customers", permission: "customers:view", available: false },
       { label: "Follow-ups", href: "/app/follow-ups", permission: "followups:manage", available: false },
       { label: "Quotations", href: "/app/quotations", permission: "quotations:view", available: false },
@@ -40,7 +40,8 @@ export const NAV: NavGroup[] = [
   {
     label: "Inventory",
     items: [
-      { label: "Products", href: "/app/products", permission: "products:view", available: false },
+      { label: "Products", href: "/app/products", permission: "products:view", available: true },
+      { label: "Categories", href: "/app/categories", permission: "products:view", available: true },
       { label: "Stock", href: "/app/stock", permission: "inventory:view", available: false },
       { label: "Transfers", href: "/app/transfers", permission: "inventory:transfer", available: false },
     ],
@@ -70,7 +71,8 @@ export const NAV: NavGroup[] = [
   {
     label: "Settings",
     items: [
-      { label: "Business & website", href: "/app/settings", permission: "settings:view", available: false },
+      { label: "Business & pages", href: "/app/settings", permission: "settings:view", available: true },
+      { label: "Website gallery", href: "/app/gallery", permission: "website:manage", available: true },
       { label: "Users", href: "/app/users", permission: "users:manage", available: false },
     ],
   },

@@ -3,46 +3,19 @@ import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Actor } from "@/lib/auth/permissions";
 import { visibleNav } from "@/lib/nav";
+import { AppNav } from "./app-nav";
 import { AppNavMobile } from "./app-nav-mobile";
 
 const ROLE_LABEL: Record<string, string> = { owner: "Owner", manager: "Manager", sales: "Sales", workshop: "Workshop", finance: "Finance" };
 
-function NavList({ actor, currentPath }: { actor: Actor; currentPath: string }) {
-  const groups = visibleNav(actor);
-  return (
-    <nav aria-label="Main" className="space-y-6">
-      {groups.map((g) => (
-        <div key={g.label}>
-          <p className="px-3 text-xs font-semibold uppercase tracking-wide text-text-muted">{g.label}</p>
-          <ul className="mt-2 space-y-0.5">
-            {g.items.map((i) => {
-              const current = i.href === "/app" ? currentPath === "/app" : currentPath.startsWith(i.href);
-              return (
-                <li key={i.href}>
-                  <Link
-                    href={i.href}
-                    aria-current={current ? "page" : undefined}
-                    className={
-                      "flex min-h-10 items-center rounded-[var(--radius-md)] px-3 text-sm " +
-                      (current ? "bg-walnut font-medium text-ivory" : "text-text hover:bg-linen")
-                    }
-                  >
-                    {i.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
-  );
+function NavList({ actor, currentPath }: { actor: Actor; currentPath?: string }) {
+  return <AppNav groups={visibleNav(actor)} previewPath={currentPath} />;
 }
 
 export function AppShell({
   actor,
   businessName,
-  currentPath = "/app",
+  currentPath,
   signOutAction,
   children,
 }: {
@@ -66,7 +39,7 @@ export function AppShell({
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
       {/* Desktop sidebar */}
-      <aside className="hidden border-r border-border bg-surface lg:flex lg:flex-col">
+      <aside className="hidden border-r border-border bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
         <div className="flex h-[var(--header-height)] items-center border-b border-border px-5">
           <Link href="/app" className="font-display text-lg text-walnut">
             {businessName}

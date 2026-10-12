@@ -19,6 +19,8 @@ const serverSchema = z.object({
   CRON_SECRET: z.string().min(16).optional(),
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
   DEMO_MODE: booleanString,
+  /** "local" stores uploads on disk and is refused in production. Default: Supabase Storage. */
+  STORAGE_DRIVER: z.enum(["supabase", "local"]).default("supabase"),
 });
 
 const publicSchema = z.object({

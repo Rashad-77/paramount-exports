@@ -14,6 +14,11 @@ export async function proxy(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const isInternal = request.nextUrl.pathname.startsWith("/app");
 
+  // Development-only demo identity (never true in production builds or on Vercel): see lib/auth/demo.ts.
+  const demo =
+    process.env.NODE_ENV === "development" && process.env.DEMO_MODE === "true" && !process.env.VERCEL && /^(postgres(ql)?:\/\/[^@]*@)?(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(process.env.DATABASE_URL ?? "");
+  if (demo) return NextResponse.next();
+
   if (!url || !key) {
     // Auth is not configured: the internal app cannot be used, the public site still works.
     return isInternal ? NextResponse.redirect(new URL("/login?error=not-configured", request.url)) : NextResponse.next();
@@ -48,5 +53,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Only run where a session matters; skips static assets and the public marketing pages entirely.
-  matcher: ["/app/:path*", "/login", "/api/uploads/:path*"],
+  matcher: ["/app/:path*", "/login", "/api/uploads/:path*", "/api/files/:path*"],
 };

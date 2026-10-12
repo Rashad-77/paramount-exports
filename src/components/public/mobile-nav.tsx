@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
 export interface NavLink {
@@ -41,9 +42,9 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         <ul className="divide-y divide-border">
           {links.map((l) => (
             <li key={l.href}>
-              <a href={l.href} onClick={() => setOpen(false)} className="flex min-h-12 items-center text-base">
+              <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-12 items-center text-base">
                 {l.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

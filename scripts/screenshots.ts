@@ -28,6 +28,8 @@ async function main() {
     for (const vp of VIEWPORTS) {
       const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
       const page = await context.newPage();
+      // Optional: DEMO_ROLE=owner|manager|sales|workshop|finance signs in as the dev-only sample identity (needs DEMO_MODE=true pnpm dev).
+      if (process.env.DEMO_ROLE) await page.goto(new URL(`/dev/demo-role?role=${process.env.DEMO_ROLE}`, baseUrl).toString());
       for (const target of targets) {
         const res = await page.goto(new URL(target, baseUrl).toString(), { waitUntil: "networkidle" });
         const slug = target === "/" ? "home" : target.replace(/^\/|\/$/g, "").replace(/[/?=&]/g, "-");

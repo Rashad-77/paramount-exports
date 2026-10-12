@@ -1,0 +1,27 @@
+import { z } from "zod";
+import { optText, reqText } from "@/lib/validation";
+
+const blankToNull = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? null : v), schema.nullable());
+
+export const businessFormSchema = z.object({
+  name: reqText("Business name", 120),
+  tagline: blankToNull(z.string().trim().max(200, "Keep the tagline under 200 characters.")),
+  email: blankToNull(z.email("Enter a valid email address.")),
+  phone: blankToNull(z.string().trim().max(40)),
+  whatsapp: blankToNull(z.string().trim().max(40)),
+  address: blankToNull(z.string().trim().max(400)),
+  mapUrl: blankToNull(z.url("Enter a full web address starting with https://").refine((u) => u.startsWith("https://"), "The map link must start with https://")),
+  openingHours: blankToNull(z.string().trim().max(600)),
+  currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Use a 3-letter currency code, e.g. LKR."),
+  timezone: reqText("Timezone", 60),
+  phoneCountryCode: z.string().trim().regex(/^\d{1,3}$/, "Digits only, e.g. 94."),
+});
+
+export const pagesFormSchema = z.object({
+  about: blankToNull(z.string().max(8000, "Keep this under 8,000 characters.")),
+  privacy: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
+  terms: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
+});
+
+export const crmFormSchema = z.object({ defaultAssigneeId: blankToNull(z.uuid("Choose a valid team member.")) });
+export { optText };

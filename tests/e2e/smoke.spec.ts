@@ -9,13 +9,15 @@ test.describe("public site", () => {
     await expect(page).toHaveTitle(/furniture/i);
   });
 
-  test("every in-page navigation link points at a section that exists", async ({ page }) => {
+  test("every primary navigation link leads to a real page with a heading", async ({ page, request }) => {
     await page.goto("/");
-    const hrefs = await page.locator('header nav[aria-label="Primary"] a').evaluateAll((els) => els.map((e) => e.getAttribute("href")));
-    expect(hrefs.length).toBeGreaterThan(0);
+    const hrefs = await page.locator('header nav[aria-label="Primary"] a').evaluateAll((els) => els.map((e) => e.getAttribute("href")!));
+    expect(hrefs.length).toBeGreaterThanOrEqual(5);
     for (const href of hrefs) {
-      const id = href!.replace("/#", "");
-      await expect(page.locator(`#${id}`), `section for ${href}`).toHaveCount(1);
+      const res = await request.get(href);
+      expect(res.status(), href).toBe(200);
+      await page.goto(href);
+      await expect(page.getByRole("heading", { level: 1 }), href).toBeVisible();
     }
   });
 
@@ -86,7 +88,7 @@ test.describe("access control", () => {
   test("health endpoint reveals no configuration", async ({ request }) => {
     const res = await request.get("/api/health");
     expect(res.status()).toBe(200);
-    expect(await res.json()).toEqual({ status: "ok", database: "not-configured" });
+    expect(await res.json()).toEqual({ status: "ok", database: process.env.TEST_ADMIN_DATABASE_URL ? "up" : "not-configured" });
     expect(res.headers()["cache-control"]).toContain("no-store");
   });
 
@@ -114,7 +116,7 @@ test.describe("access control", () => {
 });
 
 test.describe("accessibility (axe, WCAG 2.1 A/AA)", () => {
-  for (const path of ["/", "/login"]) {
+  for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/privacy", "/terms"]) {
     test(`no serious or critical violations on ${path}`, async ({ page }) => {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

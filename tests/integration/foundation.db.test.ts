@@ -44,6 +44,19 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
     }
   });
 
+  it("lets the anon and authenticated API roles execute no function in public (no RPC exposure)", async () => {
+    const fns = await t.sql`
+      SELECT p.oid::regprocedure::text AS sig FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE n.nspname = 'public'`;
+    expect(fns.length).toBeGreaterThan(0);
+    for (const role of ["anon", "authenticated"]) {
+      for (const { sig } of fns) {
+        const [r] = await t.sql.unsafe(`SELECT has_function_privilege('${role}', '${sig}', 'EXECUTE') AS x`);
+        expect({ role, fn: sig, canExecute: r!.x }).toEqual({ role, fn: sig, canExecute: false });
+      }
+    }
+  });
+
   it("makes audit_logs append-only (update, delete, truncate all rejected)", async () => {
     await t.sql`INSERT INTO audit_logs (action, entity_type) VALUES ('test.insert', 'test')`;
     await expect(t.sql`UPDATE audit_logs SET action = 'tampered'`).rejects.toThrow(/append-only/);

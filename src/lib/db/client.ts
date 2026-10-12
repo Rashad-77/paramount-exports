@@ -35,3 +35,9 @@ export function getDb(): Db {
 export function withTx<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
   return getDb().transaction(fn);
 }
+
+/** Test hook: lets integration tests point the service layer at a throwaway database. */
+export function __setDbForTests(db: Db | undefined): void {
+  if (process.env.NODE_ENV !== "test") throw new Error("__setDbForTests is only available when NODE_ENV=test");
+  globalForDb.__db = db;
+}

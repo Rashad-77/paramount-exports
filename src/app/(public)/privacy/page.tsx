@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import { PageIntro, Prose } from "@/components/public/prose";
+import { DEFAULT_PRIVACY } from "@/lib/default-pages";
+import { getPageContent } from "@/lib/settings";
+
+export const metadata: Metadata = { title: "Privacy notice", alternates: { canonical: "/privacy" } };
+export const revalidate = 300;
+
+export default async function Page() {
+  const pages = await getPageContent();
+  return (
+    <>
+      <PageIntro title="Privacy notice" />
+      <div className="container-page pb-20">
+        <Prose text={pages.privacy ?? DEFAULT_PRIVACY} />
+      </div>
+    </>
+  );
+}

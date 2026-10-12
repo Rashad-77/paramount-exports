@@ -15,7 +15,7 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 | `site_settings` | key/value jsonb: business name, logo file, address, hours, phones, WhatsApp, currency, timezone, policies |
 | `locations` | `name`, `kind` (showroom/workshop/warehouse), `is_active`; seeded: one showroom, one workshop |
 | `document_sequences` | Postgres sequences `seq_quotation`, `seq_order`, `seq_job`, `seq_po`, … + `next_reference(kind)` function |
-| `uploaded_files` | `bucket`, `object_key`, `original_name`, `content_type`, `size_bytes`, `visibility`, `uploaded_by`, `entity_type`, `entity_id`, `status` (quarantined/linked/purged) |
+| `uploaded_files` | `bucket`, `object_key`, `purpose` (enquiry, catalogue, gallery, …; decides who may upload and what is accepted), `original_name`, `content_type`, `size_bytes`, `visibility`, `uploaded_by`, `entity_type`, `entity_id`, `status` (quarantined/linked/purged) |
 | `rate_limits` | `key_hash`, `window_start`, `count` — public form throttling |
 
 ## Step 2/3 — CRM & quotations
@@ -23,7 +23,7 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 | Table | Key columns / relationships |
 |---|---|
 | `customers` | `name`, `company`, `phone`, `phone_normalised`, `email`, `email_lower`, `address`, `preferred_contact`, `notes`, `archived_at`; indexes on normalised phone/email (non-unique: duplicates are warned, not blocked) |
-| `leads` | `customer_id?`, `source` enum, `status` pipeline enum, `assigned_to`, `next_follow_up_on`, `lost_reason`, `kind` (general/custom/product_enquiry), `product_id?`, `payload jsonb` (custom spec as submitted), `possible_duplicate_customer_id?` |
+| `leads` | `reference` (ENQ-), `preferred_contact`, contact snapshot (name/phone/email) so public enquiries never create customers automatically, `customer_id?`, `source` enum, `status` pipeline enum, `assigned_to`, `next_follow_up_on`, `lost_reason`, `kind` (general/custom/product_enquiry), `product_id?`, `payload jsonb` (custom spec as submitted), `possible_duplicate_customer_id?` |
 | `lead_activities` | `lead_id`, `customer_id`, `type` (call/meeting/showroom_visit/message/note/status_change), `body`, `created_by`, `occurred_at` |
 | `follow_up_tasks` | `lead_id?`, `customer_id?`, `assigned_to`, `due_on`, `completed_at`, `title`; overdue = due_on < today AND completed_at IS NULL (computed) |
 | `quotations` | `reference`, `customer_id`, `lead_id?`, `status` (draft/sent/accepted/rejected/expired/converted), `current_revision`, `valid_until`, `currency`, `created_by`; accepted revision is immutable |
@@ -35,7 +35,7 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 | Table | Notes |
 |---|---|
 | `product_categories` | `name`, `slug`, `parent_id?`, `sort_order`, `is_active` |
-| `products` | `slug`, `name`, `description`, `category_id`, `kind` (stocked/made_to_order), `material`, `finish`, `dimensions jsonb`, `is_published`, `show_availability`, `seo` |
+| `products` | `slug`, `name`, `description`, `category_id`, `kind` (stocked/made_to_order), `material`, `finish`, `dimensions` (free text as shown to customers), `is_published`, `is_featured`, `show_price` and `show_availability` (+ `availability`) — both **off by default** so nothing is shown publicly unless approved, `seo_title/description` |
 | `product_variants` | `product_id`, `sku` unique, `label` (size/finish), `list_price`, `inventory_item_id?`, `is_active` |
 | `product_images` | `product_id`, `file_id`, `alt_text`, `position` |
 | `inventory_items` | `kind` (finished_good/raw_material/consumable), `sku`, `name`, `unit`, `cost_price?`, `is_active`; finished goods link from `product_variants.inventory_item_id` |
@@ -84,3 +84,7 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 
 Customers, products, suppliers, locations: archive (hide), never hard-delete once referenced. Orders: cancel, never delete.
 Payments, movements, audit logs: append-only. Uploaded files: marked `purged` after retention rules, metadata retained.
+
+## Security baseline (every migration)
+
+Each migration that adds tables or functions ends with `SELECT enforce_rls();` (defined in `0002`). It enables RLS on every public table, removes table/sequence privileges from `anon`/`authenticated`, and — importantly — revokes `EXECUTE` on every function from `PUBLIC` (Postgres grants it by default, and `anon` inherits it, which would expose functions as RPC endpoints). Tests assert all three for every table and function.

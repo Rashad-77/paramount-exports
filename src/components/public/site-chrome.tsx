@@ -4,12 +4,13 @@ import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
 import { MobileNav, type NavLink } from "./mobile-nav";
 
-/** Only destinations that exist. Extend as pages are built (Step 2 adds catalogue, custom, about, gallery, contact). */
+/** Only destinations that exist. */
 export const PUBLIC_LINKS: NavLink[] = [
-  { label: "Custom furniture", href: "/#custom" },
-  { label: "Workshop", href: "/#workshop" },
-  { label: "Showroom", href: "/#showroom" },
-  { label: "Contact", href: "/#contact" },
+  { label: "Collection", href: "/products" },
+  { label: "Custom furniture", href: "/custom" },
+  { label: "About", href: "/about" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Showroom & contact", href: "/contact" },
 ];
 
 export function PlaceholderNotice({ business }: { business: BusinessSettings }) {
@@ -38,9 +39,9 @@ export function SiteHeader({ business }: { business: BusinessSettings }) {
           <ul className="flex items-center gap-8 text-sm">
             {PUBLIC_LINKS.map((l) => (
               <li key={l.href}>
-                <a href={l.href} className="py-2 text-text hover:text-walnut hover:underline">
+                <Link href={l.href} className="py-2 text-text hover:text-walnut hover:underline">
                   {l.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -89,6 +90,18 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
       <div className="border-t border-border">
         <p className="container-page py-4 text-xs text-text-muted">
           © {new Date().getFullYear()} {business.name}
+          <span className="mx-2" aria-hidden="true">
+            ·
+          </span>
+          <Link href="/privacy" className="underline">
+            Privacy notice
+          </Link>
+          <span className="mx-2" aria-hidden="true">
+            ·
+          </span>
+          <Link href="/terms" className="underline">
+            Terms
+          </Link>
         </p>
       </div>
     </footer>
