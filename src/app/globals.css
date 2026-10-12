@@ -21,6 +21,7 @@
   body {
     min-height: 100dvh;
     background: var(--color-ivory);
+    isolation: isolate;
     line-height: 1.65;
     letter-spacing: 0.002em;
   }
@@ -345,20 +346,23 @@
     }
   }
 
-  /* Hairline grid: cells separated by 1px rules, each lighting up on hover */
+  /* Three glass cells over a soft backdrop; each lights up to dark walnut glass on hover */
   .bento {
     display: grid;
-    gap: 1px;
-    background: var(--color-border);
-    border: 1px solid var(--color-border);
+    gap: 1.25rem;
   }
   .bento-cell {
     position: relative;
     display: flex;
     flex-direction: column;
-    background: var(--color-surface);
+    overflow: hidden;
+    background: linear-gradient(140deg, rgb(255 255 255 / 0.64), rgb(248 245 239 / 0.34));
+    border: 1px solid rgb(255 255 255 / 0.7);
+    backdrop-filter: blur(22px) saturate(1.7);
+    -webkit-backdrop-filter: blur(22px) saturate(1.7);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 18px 48px -22px rgb(58 44 35 / 0.32);
     padding: clamp(1.75rem, 1rem + 2.5vw, 3rem);
-    transition: background-color var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out);
+    transition: background 400ms var(--ease-out), color var(--duration-base) var(--ease-out), transform var(--duration-slow) var(--ease-out), box-shadow var(--duration-slow) var(--ease-out);
   }
   .bento-cell::after {
     content: "";
@@ -374,14 +378,16 @@
   }
   @media (hover: hover) {
     .bento-cell:hover {
-      background: var(--color-walnut-dark);
+      background: linear-gradient(140deg, rgb(58 44 35 / 0.94), rgb(40 30 23 / 0.88));
       color: var(--color-ivory);
+      transform: translate3d(0, -6px, 0);
+      box-shadow: inset 0 1px 0 rgb(248 245 239 / 0.25), 0 28px 56px -24px rgb(40 30 23 / 0.6);
     }
     .bento-cell:hover::after {
       transform: scaleX(1);
     }
     .bento-cell:hover .bento-muted {
-      color: rgb(248 245 239 / 0.75);
+      color: rgb(248 245 239 / 0.78);
     }
     .bento-cell:hover .bento-num {
       color: var(--color-linen-dark);
@@ -411,9 +417,14 @@
   }
   .tile-body {
     position: absolute;
-    inset: auto 0 0 0;
+    inset: auto 0.75rem 0.75rem 0.75rem;
     z-index: 2;
-    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+    padding: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+    background: linear-gradient(140deg, rgb(248 245 239 / 0.2), rgb(248 245 239 / 0.06));
+    border: 1px solid rgb(248 245 239 / 0.28);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    box-shadow: inset 0 1px 0 rgb(248 245 239 / 0.35);
   }
   .tile-arrow {
     position: absolute;
@@ -518,13 +529,140 @@
     position: sticky;
     top: 0;
     z-index: 40;
-    background: rgb(248 245 239 / 0.82);
-    backdrop-filter: saturate(1.4) blur(14px);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    background: rgb(248 245 239 / 0.8);
+    backdrop-filter: saturate(1.6) blur(20px);
+    -webkit-backdrop-filter: saturate(1.6) blur(20px);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.6), 0 1px 0 rgb(58 44 35 / 0.08), 0 8px 24px -16px rgb(58 44 35 / 0.35);
   }
   @supports not (backdrop-filter: blur(1px)) {
     .glass-header {
       background: var(--color-ivory);
+    }
+  }
+
+  /* Ambient light behind the whole page: soft brass, olive and linen blooms that drift slowly, so glass has something to frost */
+  .ambient-page::before {
+    content: "";
+    position: fixed;
+    inset: -10vmax;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(38vmax 38vmax at 12% 8%, rgb(154 116 64 / 0.2), transparent 70%),
+      radial-gradient(34vmax 34vmax at 92% 30%, rgb(83 99 77 / 0.16), transparent 70%),
+      radial-gradient(42vmax 42vmax at 30% 95%, rgb(214 203 185 / 0.55), transparent 70%);
+    animation: ambient-drift 32s ease-in-out infinite alternate;
+  }
+  @keyframes ambient-drift {
+    from {
+      transform: translate3d(-2%, 1%, 0) scale(1);
+    }
+    to {
+      transform: translate3d(3%, -2%, 0) scale(1.08);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-page::before {
+      animation: none;
+    }
+  }
+
+  /* Soft coloured orbs behind a section's content, so the glass above them visibly frosts something */
+  .orbs {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .orbs::before,
+  .orbs::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 9999px;
+    filter: blur(48px);
+    animation: orb-drift 26s ease-in-out infinite alternate;
+  }
+  .orbs::before {
+    width: clamp(16rem, 34vw, 32rem);
+    aspect-ratio: 1;
+    top: 12%;
+    right: -6%;
+    background: radial-gradient(circle at 35% 35%, rgb(154 116 64 / 0.55), rgb(154 116 64 / 0.1) 70%);
+  }
+  .orbs::after {
+    width: clamp(14rem, 28vw, 26rem);
+    aspect-ratio: 1;
+    bottom: 14%;
+    left: -5%;
+    background: radial-gradient(circle at 60% 40%, rgb(83 99 77 / 0.42), rgb(83 99 77 / 0.08) 70%);
+    animation-delay: -9s;
+    animation-direction: alternate-reverse;
+  }
+  @keyframes orb-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(-6%, 8%, 0) scale(1.15);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orbs::before,
+    .orbs::after {
+      animation: none;
+    }
+  }
+
+  /* Frosted glass on light surfaces: translucent ivory, blurred backdrop, bright top edge, soft tinted shadow */
+  .glass {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(140deg, rgb(255 255 255 / 0.64), rgb(248 245 239 / 0.34));
+    border: 1px solid rgb(255 255 255 / 0.7);
+    backdrop-filter: blur(22px) saturate(1.7);
+    -webkit-backdrop-filter: blur(22px) saturate(1.7);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), inset 0 -1px 0 rgb(58 44 35 / 0.05), 0 18px 48px -20px rgb(58 44 35 / 0.32), 0 2px 6px rgb(58 44 35 / 0.05);
+  }
+  /* Frosted glass on dark surfaces */
+  .glass-dark {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(140deg, rgb(248 245 239 / 0.16), rgb(248 245 239 / 0.04));
+    border: 1px solid rgb(248 245 239 / 0.22);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    box-shadow: inset 0 1px 0 rgb(248 245 239 / 0.3), 0 20px 50px -24px rgb(0 0 0 / 0.6);
+  }
+  /* A diagonal sheen that sweeps across a glass surface on hover */
+  .glass-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.55) 50%, transparent 65%);
+    transform: translate3d(-120%, 0, 0);
+    transition: transform 900ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .glass-sheen:hover::after {
+      transform: translate3d(120%, 0, 0);
+    }
+    .glass.card-lift:hover {
+      background: linear-gradient(140deg, rgb(255 255 255 / 0.85), rgb(248 245 239 / 0.55));
+    }
+  }
+  .glass-sheen > * {
+    position: relative;
+    z-index: 1;
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass {
+      background: rgb(255 255 255 / 0.9);
+    }
+    .glass-dark {
+      background: rgb(58 44 35 / 0.85);
     }
   }
 

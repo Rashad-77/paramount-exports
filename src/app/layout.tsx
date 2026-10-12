@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Marks that scripting is available, so scroll-reveal content may start hidden (see Reveal). */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
-      <body>
+      <body className="ambient-page">
         <a href="#main" className="skip-link">
           Skip to main content
         </a>

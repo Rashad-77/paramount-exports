@@ -10,7 +10,7 @@ export function TableWrap({ label, children, className }: { label: string; child
       role="region"
       aria-label={label}
       tabIndex={0}
-      className={cn("relative overflow-x-auto border border-border bg-surface", className)}
+      className={cn("relative overflow-x-auto border border-white/70 bg-surface/90 shadow-[var(--shadow-sm)] backdrop-blur-md", className)}
     >
       {children}
     </div>

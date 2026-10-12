@@ -73,7 +73,7 @@ export default async function HomePage() {
               <ButtonLink href="/custom" size="cta" variant="light">
                 Start a custom enquiry
               </ButtonLink>
-              <ButtonLink href="/products" size="cta" className="!border-ivory/60 !bg-transparent !text-ivory hover:!bg-ivory hover:!text-walnut">
+              <ButtonLink href="/products" size="cta" className="!border-ivory/40 !bg-ivory/10 !text-ivory backdrop-blur-md hover:!bg-ivory hover:!text-walnut">
                 Browse the collection
               </ButtonLink>
             </div>
@@ -81,7 +81,13 @@ export default async function HomePage() {
           <div className="rise-in rise-in-3 md:col-span-5">
             <div className="float-slow">
               <div className="frame-offset">
-                <ImagePlaceholder label="Hero — a finished piece in a lived-in room" tone="wood-a" className="aspect-[4/5] w-full" />
+                <div className="relative">
+                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" tone="wood-a" className="aspect-[4/5] w-full" />
+                  <div className="glass-dark absolute inset-x-5 top-5 z-10 !bg-walnut-dark/55 px-5 py-4 text-ivory sm:-left-10 sm:right-auto sm:top-10 sm:w-[17rem]">
+                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-linen">Made to measure</p>
+                    <p className="font-display mt-2 text-xl leading-snug">Quoted before we start.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -92,7 +98,7 @@ export default async function HomePage() {
       </section>
 
       {/* Three ways in: hairline container grid */}
-      <section aria-labelledby="ways-title" className="section-y">
+      <section aria-labelledby="ways-title" className="orbs section-y">
         <div className="container-page">
           <Reveal>
             <p className="eyebrow">How we work</p>
@@ -119,7 +125,7 @@ export default async function HomePage() {
       </section>
 
       {/* Collections: staggered full-bleed tiles */}
-      <section aria-labelledby="collections-title" className="bg-paper-deep section-y">
+      <section aria-labelledby="collections-title" className="bg-paper-deep/55 section-y">
         <div className="container-page">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <Reveal>
@@ -174,7 +180,7 @@ export default async function HomePage() {
 
       {/* Featured pieces */}
       {featured.length > 0 ? (
-        <section aria-labelledby="featured-title" className="section-y">
+        <section aria-labelledby="featured-title" className="orbs section-y">
           <div className="container-page">
             <Reveal>
               <p className="eyebrow">Selected work</p>
@@ -218,7 +224,7 @@ export default async function HomePage() {
           <Reveal variant="fade" delay={200} className="rule-line absolute inset-x-0 top-[1.1rem] hidden h-px md:block" />
           <ol className="relative grid gap-10 md:grid-cols-4 md:gap-8">
             {CUSTOM_STEPS.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={250 + i * 160} className="relative">
+              <Reveal as="li" key={s.title} delay={250 + i * 160} className="glass-dark relative p-6">
                 <span aria-hidden="true" className="relative z-10 mb-8 grid size-9 place-items-center border border-brass bg-walnut-dark text-sm font-semibold text-linen-dark">
                   {i + 1}
                 </span>
@@ -258,7 +264,7 @@ export default async function HomePage() {
       </section>
 
       {/* Showroom */}
-      <section id="showroom" aria-labelledby="showroom-title" className="bg-paper-deep section-y scroll-mt-4">
+      <section id="showroom" aria-labelledby="showroom-title" className="bg-paper-deep/55 section-y scroll-mt-4">
         <div className="container-page grid gap-14 md:grid-cols-12 md:gap-16">
           <Reveal className="md:col-span-5">
             <p className="eyebrow">The showroom</p>
@@ -293,7 +299,7 @@ export default async function HomePage() {
       </section>
 
       {/* Contact */}
-      <section id="contact" aria-labelledby="contact-title" className="section-y text-center">
+      <section id="contact" aria-labelledby="contact-title" className="orbs section-y text-center">
         <Reveal className="container-page">
           <p className="eyebrow justify-center">Contact</p>
           <h2 id="contact-title" className="font-display mx-auto mt-6 max-w-3xl text-display text-walnut">

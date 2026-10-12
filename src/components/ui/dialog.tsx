@@ -40,7 +40,7 @@ export function Dialog({
       }}
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/50"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>
