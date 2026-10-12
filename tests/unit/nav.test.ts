@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Actor, Role } from "@/lib/auth/permissions";
 import { NAV, visibleNav, type NavGroup } from "@/lib/nav";
@@ -9,9 +11,12 @@ const allBuilt: NavGroup[] = NAV.map((g) => ({ ...g, items: g.items.map((i) => (
 const labels = (a: Actor) => visibleNav(a, allBuilt).flatMap((g) => g.items.map((i) => i.label));
 
 describe("navigation visibility", () => {
-  it("never shows unbuilt destinations (no dead links)", () => {
-    const unbuilt = NAV.flatMap((g) => g.items).filter((i) => !i.available);
-    expect(unbuilt.length).toBeGreaterThan(0); // later modules are still planned
+  it("never links to a page that does not exist (and hides anything marked unbuilt)", () => {
+    const all = NAV.flatMap((g) => g.items);
+    for (const i of all.filter((x) => x.available)) {
+      expect(existsSync(path.join(process.cwd(), "src/app", i.href, "page.tsx")), `${i.label} → ${i.href}`).toBe(true);
+    }
+    const unbuilt = all.filter((i) => !i.available);
     const shown = visibleNav(actor(["owner"])).flatMap((g) => g.items.map((i) => i.href));
     for (const i of unbuilt) expect(shown).not.toContain(i.href);
     expect(shown).toContain("/app");

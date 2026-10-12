@@ -75,7 +75,7 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Business & pages", href: "/app/settings", permission: "settings:view", available: true },
       { label: "Website gallery", href: "/app/gallery", permission: "website:manage", available: true },
-      { label: "Users", href: "/app/users", permission: "users:manage", available: false },
+      { label: "Users", href: "/app/users", permission: "users:manage", available: true },
     ],
   },
 ];

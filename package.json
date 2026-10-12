@@ -19,6 +19,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "create-owner": "tsx scripts/create-owner.ts",
+    "create-user": "tsx scripts/create-owner.ts",
     "docs:permissions": "tsx scripts/gen-permissions-doc.ts",
     "storage:setup": "tsx scripts/setup-storage.ts",
     "db:seed": "tsx --conditions=react-server scripts/seed-demo.ts"

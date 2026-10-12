@@ -1,10 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
+import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
 
 export interface LoginState {
@@ -37,6 +39,24 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
   }
   if (!hasSupabaseAuth()) {
     return { email: parsed.data.email, error: "Sign-in is not configured yet. Ask the system administrator to finish setup." };
+  }
+
+  // Throttle guessing before Supabase is even asked: per address (anyone targeting one account) and per IP (anyone trying many).
+  // The same wording as a wrong password is used, so the limit does not reveal whether an account exists.
+  try {
+    const db = getDb();
+    const ip = clientIp(await headers()) ?? "unknown";
+    const [byEmail, byIp] = await Promise.all([
+      hitRateLimit(db, { scope: "login-email", value: parsed.data.email.toLowerCase(), limit: 8, windowSeconds: 600 }),
+      hitRateLimit(db, { scope: "login-ip", value: ip, limit: 30, windowSeconds: 600 }),
+    ]);
+    if (!byEmail.allowed || !byIp.allowed) {
+      return { email: parsed.data.email, error: "Too many sign-in attempts. Please wait a few minutes and try again." };
+    }
+  } catch (e) {
+    // If the limiter itself is unavailable, fail closed in production rather than allow unlimited guessing.
+    console.error("Login rate limit unavailable", e instanceof Error ? e.message : e);
+    return { email: parsed.data.email, error: "Sign-in is temporarily unavailable. Please try again shortly." };
   }
 
   const supabase = await createSupabaseServerClient();

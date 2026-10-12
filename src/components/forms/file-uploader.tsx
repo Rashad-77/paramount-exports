@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { Paperclip, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { Alert } from "@/components/ui/status";
@@ -76,6 +75,8 @@ export function FileUploader({
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         if (!url || !anon) throw new Error("Uploads are not configured yet.");
+        // Loaded only when a file is actually uploaded, so pages with an uploader do not ship the Supabase client up front.
+        const { createClient } = await import("@supabase/supabase-js");
         const supabase = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
         const { error } = await supabase.storage.from(s.bucket).uploadToSignedUrl(s.key, s.token!, file, { contentType: file.type });
         if (error) throw new Error("The upload failed. Please try again.");

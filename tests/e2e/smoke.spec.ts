@@ -77,7 +77,7 @@ test.describe("access control", () => {
   });
 
   test("deep internal links and the print view are protected too", async ({ page }) => {
-    for (const path of ["/app/orders", "/app/quotations", "/app/customers", "/app/production", "/app/production/00000000-0000-4000-8000-000000000000", "/app/suppliers", "/app/purchase-orders", "/app/purchase-orders/new", "/app/deliveries", "/app/expenses", "/app/after-sales", "/app/reports", "/print/quotations/00000000-0000-4000-8000-000000000000"]) {
+    for (const path of ["/app/orders", "/app/quotations", "/app/customers", "/app/production", "/app/production/00000000-0000-4000-8000-000000000000", "/app/suppliers", "/app/purchase-orders", "/app/purchase-orders/new", "/app/deliveries", "/app/expenses", "/app/after-sales", "/app/reports", "/app/users", "/print/quotations/00000000-0000-4000-8000-000000000000"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/login/);
     }
@@ -85,6 +85,15 @@ test.describe("access control", () => {
 
   test("the sample preview route does not exist in production", async ({ request }) => {
     expect((await request.get("/dev/preview/app")).status()).toBe(404);
+  });
+
+  test("security headers are sent", async ({ request }) => {
+    const h = (await request.get("/")).headers();
+    expect(h["x-content-type-options"]).toBe("nosniff");
+    expect(h["x-frame-options"]).toBe("DENY");
+    expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
+    expect(h["strict-transport-security"]).toContain("max-age");
+    expect(h["x-powered-by"]).toBeUndefined();
   });
 
   test("health endpoint reveals no configuration", async ({ request }) => {

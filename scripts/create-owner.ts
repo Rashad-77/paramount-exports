@@ -1,8 +1,11 @@
 /* eslint-disable no-console */
 /**
- * Bootstrap the first Owner account (there is no public sign-up).
+ * Create a staff account (there is no public sign-up). Without --role it creates an Owner — use that for the first account.
  *
  *   OWNER_PASSWORD='a long passphrase' pnpm create-owner --email owner@example.com --name "Full Name"
+ *   OWNER_PASSWORD='a long passphrase' pnpm create-user  --email sam@example.com --name "Sam" --role sales,finance
+ *
+ * (The password variable keeps its name for both; give each new person a one-off password and ask them to change it.)
  *
  * Requires NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and DATABASE_DIRECT_URL (or DATABASE_URL).
  * Run it from a trusted machine only; the service-role key must never be present in browser code or CI logs.
@@ -12,14 +15,16 @@ import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 import postgres from "postgres";
 import { parseArgs } from "node:util";
+import { ROLES } from "../src/lib/auth/permissions";
 
 config({ path: ".env.local" });
 config();
 
 async function main() {
-  const { values } = parseArgs({ options: { email: { type: "string" }, name: { type: "string" } } });
+  const { values } = parseArgs({ options: { email: { type: "string" }, name: { type: "string" }, role: { type: "string" } } });
   const email = values.email?.trim().toLowerCase();
   const name = values.name?.trim();
+  const roles = (values.role ?? "owner").split(",").map((r) => r.trim().toLowerCase()).filter(Boolean);
   const password = process.env.OWNER_PASSWORD;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -28,6 +33,7 @@ async function main() {
   const problems: string[] = [];
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) problems.push("--email is required and must be a valid address");
   if (!name) problems.push('--name is required (e.g. --name "Full Name")');
+  if (roles.length === 0 || roles.some((r) => !(ROLES as readonly string[]).includes(r))) problems.push(`--role must be a comma-separated list of: ${ROLES.join(", ")}`);
   if (!password || password.length < 12) problems.push("OWNER_PASSWORD must be set to at least 12 characters");
   if (!url) problems.push("NEXT_PUBLIC_SUPABASE_URL is not set");
   if (!serviceKey) problems.push("SUPABASE_SERVICE_ROLE_KEY is not set");
@@ -51,11 +57,11 @@ async function main() {
   try {
     await sql.begin(async (tx) => {
       await tx`INSERT INTO profiles (id, full_name) VALUES (${userId}, ${name!})`;
-      await tx`INSERT INTO user_roles (user_id, role, granted_by) VALUES (${userId}, 'owner', ${userId})`;
+      for (const role of roles) await tx`INSERT INTO user_roles (user_id, role, granted_by) VALUES (${userId}, ${role}::app_role, ${userId})`;
       await tx`INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, after)
-               VALUES (${userId}, 'user.owner_bootstrapped', 'profile', ${userId}, ${tx.json({ email: email!, role: "owner" })})`;
+               VALUES (${userId}, 'user.bootstrapped', 'profile', ${userId}, ${tx.json({ email: email!, roles })})`;
     });
-    console.log(`Owner created: ${email} (${userId}). You can now sign in at /login.`);
+    console.log(`Account created: ${email} (${userId}) with role(s) ${roles.join(", ")}. They can now sign in at /login.`);
   } catch (err) {
     // Do not leave an orphaned auth user that has no profile.
     await admin.auth.admin.deleteUser(userId);

@@ -4,14 +4,26 @@ One Next.js application (deployed on **Vercel**) and one PostgreSQL database (**
 business: an enquiry-led public website, an internal CRM/sales area, and ERP-lite inventory, workshop, purchasing,
 delivery and operational finance. See `docs/` for the plan, architecture, data model, permission matrix and acceptance tests.
 
-> **Status: Step 6 (deliveries, expenses, after-sales, reports) complete.** Built so far: design system, the full public website
+> **Status: Steps 0–7 complete — feature-complete for the brief, awaiting a rehearsal deployment.** Built so far: design system, the full public website
 > (home, catalogue, product pages, custom-furniture request, about, gallery, contact, privacy/terms), the enquiry → CRM lead
 > pipeline with uploads and spam protection, staff sign-in, role/permission model, and staff screens for enquiries,
 > products, categories, gallery and settings; plus customers (with duplicate warnings), enquiry pipeline, activity history,
 > follow-ups, quotations with revisions and a print/PDF view, a sales dashboard, a stock ledger with reservations and transfers,
 > ready-made and custom orders (including quotation conversion), and payments, then workshop jobs (board, stage history, materials used, issues, cost estimate), suppliers, purchase orders
 > with partial goods receipts, and supplier invoice/payment tracking. Then deliveries (scheduling, status, proof, completing the order), expenses (void-only), after-sales cases, role dashboards and
-> operational reports with CSV export. Hardening and handover documents arrive in Step 7 — see `docs/PROJECT_PLAN.md`. Business name, photos and contact details are **placeholders** until supplied.
+> operational reports with CSV export. User management, sign-in throttling, a security review, operations (backup/restore) and limitations documents complete the hand-over. **Read `docs/KNOWN_LIMITATIONS.md` first**: Supabase, Storage, Vercel and GitHub CI have not been exercised against real services — see `docs/PROJECT_PLAN.md`. Business name, photos and contact details are **placeholders** until supplied.
+
+## Documentation
+
+| Doc | What it is |
+|---|---|
+| `docs/PROJECT_PLAN.md` | scope, decisions, step plan |
+| `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` | how it is built and what is stored |
+| `docs/ROLE_PERMISSIONS.md` | who can do what (generated from code) |
+| `docs/ACCEPTANCE_TESTS.md` | the acceptance flows and the automated test behind each |
+| `docs/OPERATIONS.md` | setup, releasing, backup and restore, troubleshooting |
+| `docs/SECURITY_REVIEW.md` | what was checked, what was not |
+| `docs/KNOWN_LIMITATIONS.md` | unverified areas, assumptions to confirm, out of scope, next phases |
 
 ## Requirements
 
@@ -25,6 +37,7 @@ cp .env.example .env.local        # fill in the Supabase values (see comments in
 pnpm db:migrate                   # applies ./drizzle migrations (uses DATABASE_DIRECT_URL)
 pnpm storage:setup                # creates the two Supabase Storage buckets with size/type limits
 OWNER_PASSWORD='a long passphrase' pnpm create-owner --email you@example.com --name "Your Name"
+# later, for staff:  OWNER_PASSWORD='one-off password' pnpm create-user --email sam@example.com --name Sam --role sales,finance
 pnpm dev                          # http://localhost:3000  (staff sign-in at /login)
 ```
 

@@ -6,6 +6,9 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+  // The parts of a Content-Security-Policy that cannot break Next.js's own inline scripts. A script-src policy needs
+  // per-request nonces and is listed under "future work" in docs/SECURITY_REVIEW.md.
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
 ];
 
 // Catalogue photos are served from the Supabase public bucket and optimised by next/image.
