@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "light";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "light" | "onDark";
 type Size = "md" | "lg" | "cta";
 
 // Square, hairline, quiet. Hover is a considered inversion rather than a colour flash; press nudges 1px.
@@ -13,12 +13,14 @@ const base =
   "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-walnut text-ivory border-walnut hover:bg-transparent hover:text-walnut",
+  primary: "btn-gloss text-ivory border-walnut-dark",
   secondary: "bg-transparent text-walnut border-walnut hover:bg-walnut hover:text-ivory",
   ghost: "bg-transparent text-text border-transparent hover:bg-linen",
   danger: "bg-danger text-ivory border-danger hover:bg-transparent hover:text-danger",
   // For use on dark (walnut) bands
-  light: "bg-ivory text-walnut border-ivory hover:bg-transparent hover:text-ivory",
+  light: "gloss bg-ivory text-walnut border-ivory hover:bg-ivory/90",
+  // Outline for use on dark (wood) bands
+  onDark: "bg-transparent text-ivory border-ivory/50 hover:bg-ivory/10 hover:border-ivory",
 };
 
 const sizes: Record<Size, string> = {

@@ -3,6 +3,7 @@
 @import "@fontsource-variable/inter";
 @import "../styles/tokens.css";
 @import "../styles/wood.css";
+@import "../styles/public.css";
 
 /*
  * Staff area: no theme. Plain white, neutral greys and an information-first typeface. Everything below the .app-ui wrapper reads
@@ -419,7 +420,7 @@
   .page-body {
     position: relative;
     isolation: isolate;
-    background: linear-gradient(180deg, #ffffff 0%, #ffffff 35%, var(--color-mint) 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #ffffff 60%, var(--color-mint) 100%);
   }
   .page-body::before {
     content: "";

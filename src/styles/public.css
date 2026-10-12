@@ -1,0 +1,640 @@
+/*
+ * Public site: a polished, woody showroom. Square edges, deep polished-wood bands, a light-green accent, gloss sweeps on
+ * hover and on the big dark surfaces, staggered scroll reveals and a calm marquee. Everything that moves is switched off
+ * under prefers-reduced-motion. None of this applies inside the staff area (.app-ui).
+ */
+:root {
+  --wood-0: #1b0e05;
+  --wood-1: #2d1608;
+  --wood-2: #4a2410;
+  --leaf: #c6ecd3;
+  --leaf-deep: #9fd6b3;
+}
+
+@layer components {
+  /* ── Gloss: a diagonal highlight that glides across a polished surface ───────────── */
+  .gloss {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .gloss::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 36%, rgb(255 255 255 / 0.26) 50%, transparent 64%);
+    transform: translate3d(-130%, 0, 0);
+    transition: transform 900ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .gloss:hover::after {
+      transform: translate3d(130%, 0, 0);
+    }
+  }
+  .gloss-loop::after {
+    animation: gloss-loop 9s ease-in-out infinite;
+  }
+  @keyframes gloss-loop {
+    0%,
+    55% {
+      transform: translate3d(-130%, 0, 0);
+    }
+    100% {
+      transform: translate3d(130%, 0, 0);
+    }
+  }
+
+  /* Buttons: polished brown with a top highlight (and the gloss glide on hover) */
+  .btn-gloss {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-walnut) 84%, white), var(--color-walnut) 55%, var(--color-walnut-dark));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 8px 18px -10px color-mix(in srgb, var(--color-walnut) 80%, black);
+  }
+  .btn-gloss::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 36%, rgb(255 255 255 / 0.3) 50%, transparent 64%);
+    transform: translate3d(-130%, 0, 0);
+    transition: transform 800ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .btn-gloss:hover {
+      filter: brightness(1.08);
+    }
+    .btn-gloss:hover::after {
+      transform: translate3d(130%, 0, 0);
+    }
+  }
+  .app-ui .btn-gloss {
+    background-image: none;
+    background-color: var(--color-walnut);
+    box-shadow: none;
+  }
+  .app-ui .btn-gloss::after {
+    display: none;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────────────────── */
+  .phead {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    color: #fff;
+    background: linear-gradient(180deg, rgb(45 22 8 / 0.97), rgb(27 14 5 / 0.97));
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.08);
+    transition: box-shadow var(--duration-base);
+  }
+  .phead.scrolled {
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.1), 0 14px 30px -16px rgb(0 0 0 / 0.6);
+  }
+  .phead .in {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1.05rem;
+    transition: padding var(--duration-base);
+  }
+  .phead.scrolled .in {
+    padding-block: 0.7rem;
+  }
+  .phead .logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1;
+  }
+  .phead nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .phead nav a {
+    position: relative;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgb(255 255 255 / 0.86);
+    transition: color 200ms;
+  }
+  .phead nav a::after {
+    content: "";
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.3rem;
+    height: 2px;
+    background: var(--leaf);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 350ms var(--ease-out);
+  }
+  .phead nav a:hover,
+  .phead nav a[aria-current="page"] {
+    color: #fff;
+  }
+  .phead nav a:hover::after,
+  .phead nav a[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+  .phead .toggle {
+    display: none;
+    margin-left: auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(255 255 255 / 0.3);
+    background: transparent;
+    color: #fff;
+  }
+  @media (max-width: 51.25rem) {
+    .phead .toggle {
+      display: inline-flex;
+    }
+    .phead nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.5rem var(--gutter) 1rem;
+      background: rgb(27 14 5 / 0.98);
+      border-top: 1px solid rgb(255 255 255 / 0.1);
+      opacity: 0;
+      visibility: hidden;
+      transform: translate3d(0, -8px, 0);
+      transition: opacity 220ms, transform 220ms, visibility 220ms;
+    }
+    .phead.open nav {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+    .phead nav a {
+      padding: 0.95rem 0.25rem;
+      font-size: 1rem;
+      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    }
+    .phead nav a::after {
+      display: none;
+    }
+  }
+
+  /* ── Polished wood band (hero, page heads, visit section, footer) ───────────────── */
+  .wood-band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: #fff;
+    background:
+      radial-gradient(70% 60% at 88% 0%, rgb(198 236 211 / 0.16), transparent 70%),
+      radial-gradient(60% 55% at 0% 100%, rgb(214 150 80 / 0.2), transparent 70%),
+      linear-gradient(160deg, var(--wood-2) 0%, var(--wood-1) 48%, var(--wood-0) 100%);
+  }
+  .wood-band::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--grain-b);
+    background-size: cover;
+    mix-blend-mode: soft-light;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .wood-band::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.07) 46%, transparent 60%);
+    transform: translate3d(-130%, 0, 0);
+    animation: gloss-loop 12s ease-in-out infinite;
+  }
+  .wood-band > * {
+    position: relative;
+    z-index: 1;
+  }
+  .on-wood-muted {
+    color: rgb(255 255 255 / 0.84);
+  }
+  .on-wood .eyebrow {
+    color: var(--leaf);
+  }
+  .on-wood .eyebrow::before {
+    background: var(--leaf);
+  }
+
+  /* ── Hero ───────────────────────────────────────────────────────────────────────── */
+  .phero {
+    min-height: calc(100svh - 5rem);
+    display: flex;
+    align-items: center;
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(4.5rem, 8vw, 6.5rem);
+  }
+  .phero h1 {
+    font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: #fff;
+  }
+  .phero h1 em {
+    font-style: normal;
+    background: linear-gradient(100deg, var(--leaf) 10%, #8fd3a8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .proof {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 2rem;
+    margin-top: 2.25rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .proof > div {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.875rem;
+    color: rgb(255 255 255 / 0.8);
+  }
+  .proof b {
+    display: block;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .scrollcue {
+    position: absolute;
+    left: 50%;
+    bottom: 3.2rem;
+    z-index: 2;
+    width: 1.6rem;
+    height: 2.6rem;
+    margin-left: -0.8rem;
+    border: 2px solid rgb(255 255 255 / 0.35);
+  }
+  .scrollcue::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0.5rem;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    background: var(--leaf);
+    animation: cue 1.8s infinite;
+  }
+  @keyframes cue {
+    0% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @media (max-width: 58.75rem) {
+    .scrollcue {
+      display: none;
+    }
+    .phero {
+      min-height: auto;
+    }
+  }
+
+  /* Photo collage in the hero: square frames drifting gently, never the same rhythm */
+  .collage {
+    position: relative;
+    height: 30rem;
+  }
+  .collage > * {
+    position: absolute;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    box-shadow: 0 30px 60px -24px rgb(0 0 0 / 0.7);
+  }
+  .collage .c1 {
+    left: 0;
+    top: 0;
+    width: 58%;
+    height: 78%;
+    animation: drift 8s ease-in-out infinite;
+  }
+  .collage .c2 {
+    right: 0;
+    top: 12%;
+    width: 46%;
+    height: 40%;
+    animation: drift 9s 1s ease-in-out infinite reverse;
+  }
+  .collage .c3 {
+    right: 8%;
+    bottom: 0;
+    width: 52%;
+    height: 38%;
+    animation: drift 10s 2s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -12px, 0);
+    }
+  }
+  @media (max-width: 58.75rem) {
+    .collage {
+      height: 22rem;
+      margin-top: 1.5rem;
+    }
+  }
+
+  /* ── Marquee: a light-green band across the seam, slightly tilted ───────────────── */
+  .marquee-wrap {
+    position: relative;
+    z-index: 5;
+    overflow: hidden;
+    margin-top: -1.75rem;
+    padding-block: 1.75rem;
+  }
+  .marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--leaf);
+    color: var(--wood-1);
+    transform: rotate(-1deg) scale(1.04);
+    box-shadow: 0 14px 40px -12px rgb(0 0 0 / 0.5);
+  }
+  .marquee-track {
+    display: inline-flex;
+    flex-shrink: 0;
+    animation: marq 36s linear infinite;
+    padding-block: 0.85rem;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  .marquee li {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.5rem;
+    padding-right: 2.5rem;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .marquee li::after {
+    content: "";
+    width: 9px;
+    height: 9px;
+    background: var(--color-brand);
+    transform: rotate(45deg);
+  }
+  @keyframes marq {
+    to {
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+
+  /* ── Tiles and cards ────────────────────────────────────────────────────────────── */
+  .cat {
+    display: block;
+  }
+  .cat .arrow {
+    transition: transform 350ms var(--ease-out), background-color 200ms, color 200ms;
+  }
+  @media (hover: hover) {
+    .cat:hover .arrow {
+      transform: translate3d(4px, -4px, 0);
+      background: var(--color-brand);
+      color: #fff;
+    }
+  }
+
+  /* Bento: a big dark wood card among light ones */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+  }
+  .bento > * {
+    grid-column: span 2;
+  }
+  .bento > .big {
+    grid-column: span 4;
+  }
+  .bento > .wide {
+    grid-column: span 6;
+  }
+  .bcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    border: 1px solid var(--color-border);
+    background: #fff;
+    transition: transform 400ms var(--ease-out), box-shadow 400ms, border-color 300ms;
+  }
+  @media (hover: hover) {
+    .bcard:hover {
+      transform: translate3d(0, -6px, 0);
+      box-shadow: 0 24px 50px -22px rgb(110 53 17 / 0.35);
+      border-color: var(--color-brand);
+    }
+  }
+  .bcard.wood {
+    border-color: transparent;
+    min-height: 18rem;
+    justify-content: flex-end;
+  }
+  .bcard .ico {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1.1rem;
+    background: var(--color-mint);
+    color: var(--color-brand);
+  }
+  .bcard.wood .ico {
+    background: rgb(198 236 211 / 0.16);
+    color: var(--leaf);
+  }
+  @media (max-width: 56.25rem) {
+    .bento {
+      grid-template-columns: 1fr 1fr;
+    }
+    .bento > *,
+    .bento > .big,
+    .bento > .wide {
+      grid-column: span 2;
+    }
+    .bento > .half {
+      grid-column: span 1;
+    }
+  }
+  @media (max-width: 35rem) {
+    .bento {
+      grid-template-columns: 1fr;
+    }
+    .bento > *,
+    .bento > .half {
+      grid-column: span 1;
+    }
+  }
+
+  /* Steps: numbered squares joined by a dashed line */
+  .steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 1.9rem;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, rgb(110 53 17 / 0.45) 0 8px, transparent 8px 16px);
+  }
+  .step .num {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.8rem;
+    height: 3.8rem;
+    margin-bottom: 1.2rem;
+    border: 2px solid var(--color-brand);
+    background: #fff;
+    color: var(--color-brand);
+    font-size: 1.4rem;
+    font-weight: 800;
+    box-shadow: 0 0 0 8px var(--color-mint);
+    transition: background-color 300ms, color 300ms, transform 400ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .step:hover .num {
+      background: var(--color-brand);
+      color: #fff;
+      transform: translate3d(0, -4px, 0);
+    }
+  }
+  @media (max-width: 56.25rem) {
+    .steps {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.2rem 1.5rem;
+    }
+    .steps::before {
+      display: none;
+    }
+  }
+  @media (max-width: 35rem) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Visit cards on wood */
+  .vcard {
+    padding: 1.4rem;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    background: rgb(255 255 255 / 0.05);
+    transition: background-color 300ms, transform 400ms var(--ease-out), border-color 300ms;
+  }
+  @media (hover: hover) {
+    .vcard:hover {
+      background: rgb(255 255 255 / 0.1);
+      border-color: rgb(198 236 211 / 0.5);
+      transform: translate3d(0, -4px, 0);
+    }
+  }
+
+  /* Closing band */
+  .ctaband {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(2.2rem, 6vw, 4.2rem);
+    color: #fff;
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgb(198 236 211 / 0.2), transparent 65%),
+      linear-gradient(135deg, #7a3a13, var(--color-brand) 55%, var(--wood-2));
+  }
+  .ctaband::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--grain-b);
+    background-size: cover;
+    mix-blend-mode: soft-light;
+    opacity: 0.8;
+  }
+
+  /* Footer wordmark: an outline of the business name along the bottom edge */
+  .bigword {
+    position: absolute;
+    left: 50%;
+    bottom: -0.2em;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 9vw, 8.5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(198 236 211 / 0.14);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gloss-loop::after,
+    .wood-band::after,
+    .collage > *,
+    .scrollcue::after {
+      animation: none;
+    }
+    .marquee {
+      transform: none;
+      white-space: normal;
+    }
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+    }
+    .marquee-track[aria-hidden="true"] {
+      display: none;
+    }
+    .gloss::after,
+    .btn-gloss::after {
+      transition: none;
+    }
+  }
+}

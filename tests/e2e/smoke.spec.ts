@@ -35,7 +35,7 @@ test.describe("public site", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();
     await expect(page.getByRole("button", { name: /close menu/i })).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("navigation", { name: "Mobile" }).getByRole("link", { name: "Contact" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /showroom/i })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: /open menu/i })).toHaveAttribute("aria-expanded", "false");
   });

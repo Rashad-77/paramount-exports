@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Info } from "lucide-react";
 import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
-import { MobileNav, type NavLink } from "./mobile-nav";
+import { PublicHeader, type NavLink } from "./public-nav";
 
 /** Only destinations that exist. */
 export const PUBLIC_LINKS: NavLink[] = [
@@ -29,44 +29,36 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
 }
 
 export function SiteHeader({ business }: { business: BusinessSettings }) {
+  return <PublicHeader name={business.name} links={PUBLIC_LINKS} />;
+}
+
+export function SiteFooter({ business }: { business: BusinessSettings }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white">
-      <div className="container-page flex h-[var(--header-height)] items-center justify-between gap-8">
-        <Link href="/" className="font-display text-[1.25rem] leading-none tracking-[-0.01em] text-brand md:text-[1.375rem]" aria-label={`${business.name} — home`}>
-          {business.name}
-        </Link>
-        <nav aria-label="Primary" className="hidden md:block">
-          <ul className="flex items-center gap-8 text-[0.875rem] font-medium">
+    <footer className="wood-band on-wood mt-0">
+      <div className="container-page grid gap-10 pt-14 pb-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div>
+          <p className="text-[1.4rem] font-extrabold leading-none tracking-tight">{business.name}</p>
+          <p className="mt-4 max-w-xs text-sm on-wood-muted">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
+        </div>
+        <div className="text-sm">
+          <p className="eyebrow">Explore</p>
+          <ul className="mt-4 space-y-2 on-wood-muted">
             {PUBLIC_LINKS.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="link-draw-hover py-2 text-text hover:text-brand">
+                <Link className="link-draw" href={l.href}>
                   {l.label}
                 </Link>
               </li>
             ))}
           </ul>
-        </nav>
-        <MobileNav links={PUBLIC_LINKS} />
-      </div>
-    </header>
-  );
-}
-
-export function SiteFooter({ business }: { business: BusinessSettings }) {
-  return (
-    <footer className="wood-dark-bg mt-[var(--section-space)] bg-brand text-ivory">
-      <div className="container-page grid gap-8 py-9 md:grid-cols-[2fr_1fr_1fr] md:py-11">
-        <div>
-          <p className="font-display text-[1.5rem] leading-none">{business.name}</p>
-          <p className="mt-4 max-w-sm text-sm text-ivory/95">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
         </div>
         <div className="text-sm">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-ivory/95">Visit</p>
-          <p className="mt-3 whitespace-pre-line text-ivory/95">{business.address ?? "Showroom address to be added."}</p>
+          <p className="eyebrow">Visit</p>
+          <p className="mt-4 whitespace-pre-line on-wood-muted">{business.address ?? "Showroom address to be added."}</p>
         </div>
         <div className="text-sm">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-ivory/95">Contact</p>
-          <ul className="mt-3 space-y-1.5 text-ivory/95">
+          <p className="eyebrow">Contact</p>
+          <ul className="mt-4 space-y-2 on-wood-muted">
             {business.phone ? (
               <li>
                 <a className="link-draw" href={`tel:${business.phone.replace(/\s+/g, "")}`}>
@@ -85,8 +77,11 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           </ul>
         </div>
       </div>
-      <div className="border-t border-ivory/15">
-        <p className="container-page py-5 text-xs text-ivory/95">
+      <div aria-hidden="true" className="container-page relative h-[clamp(2.6rem,8vw,7.5rem)] overflow-hidden">
+        <span className="bigword">{business.name}</span>
+      </div>
+      <div className="relative z-10 border-t border-ivory/15 bg-black/20">
+        <p className="container-page py-5 text-xs on-wood-muted">
           © {new Date().getFullYear()} {business.name}
           <span className="mx-3" aria-hidden="true">
             ·
