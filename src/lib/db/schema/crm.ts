@@ -15,6 +15,7 @@ export const leadStatus = pgEnum("lead_status", [
 ]);
 export const leadKind = pgEnum("lead_kind", ["general", "product_enquiry", "custom"]);
 export const contactMethod = pgEnum("contact_method", ["phone", "whatsapp", "email"]);
+export const activityType = pgEnum("activity_type", ["call", "meeting", "showroom_visit", "message", "note", "status_change"]);
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -83,5 +84,50 @@ export const leads = pgTable(
     index("leads_created_idx").on(t.createdAt),
     index("leads_phone_key_idx").on(t.contactPhoneKey),
     check("leads_lost_needs_reason", sql`${t.status} <> 'lost' OR ${t.lostReason} IS NOT NULL`),
+  ],
+);
+
+/** Calls, meetings, showroom visits, messages and notes. Append-only history: corrections are new notes. */
+export const leadActivities = pgTable(
+  "lead_activities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    leadId: uuid("lead_id").references(() => leads.id, { onDelete: "restrict" }),
+    customerId: uuid("customer_id").references(() => customers.id, { onDelete: "restrict" }),
+    type: activityType("type").notNull(),
+    body: text("body").notNull(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("lead_activities_lead_idx").on(t.leadId, t.occurredAt),
+    index("lead_activities_customer_idx").on(t.customerId, t.occurredAt),
+    check("lead_activities_has_subject", sql`${t.leadId} IS NOT NULL OR ${t.customerId} IS NOT NULL`),
+  ],
+);
+
+export const followUpTasks = pgTable(
+  "follow_up_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    leadId: uuid("lead_id").references(() => leads.id, { onDelete: "restrict" }),
+    customerId: uuid("customer_id").references(() => customers.id, { onDelete: "restrict" }),
+    assignedTo: uuid("assigned_to")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "restrict" }),
+    title: text("title").notNull(),
+    notes: text("notes"),
+    dueOn: date("due_on").notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    completedBy: uuid("completed_by").references(() => profiles.id, { onDelete: "restrict" }),
+    createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("follow_up_tasks_assignee_due_idx").on(t.assignedTo, t.dueOn),
+    index("follow_up_tasks_lead_idx").on(t.leadId),
+    index("follow_up_tasks_customer_idx").on(t.customerId),
+    check("follow_up_tasks_has_subject", sql`${t.leadId} IS NOT NULL OR ${t.customerId} IS NOT NULL`),
   ],
 );

@@ -2,9 +2,9 @@ import "server-only";
 import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { can, requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
-import { customers, leads, products, profiles, uploadedFiles, userRoles } from "@/lib/db/schema";
+import { customers, leadActivities, leads, products, profiles, uploadedFiles, userRoles } from "@/lib/db/schema";
 import { notFound, validation } from "@/lib/errors";
-import { LEAD_STATUSES, type LeadSource, type LeadStatus } from "@/lib/crm";
+import { LEAD_STATUSES, LEAD_STATUS_LABEL, type LeadSource, type LeadStatus } from "@/lib/crm";
 import { recordAudit } from "./audit";
 
 export interface PageParams {
@@ -129,6 +129,14 @@ export async function changeLeadStatus(actor: Actor, leadId: string, status: Lea
       .update(leads)
       .set({ status, lostReason: status === "lost" ? lostReason!.trim() : null, closedAt: closing ? new Date() : null })
       .where(eq(leads.id, leadId));
+    if (before.status !== status) {
+      await tx.insert(leadActivities).values({
+        leadId,
+        type: "status_change",
+        body: `Status changed from ${LEAD_STATUS_LABEL[before.status]} to ${LEAD_STATUS_LABEL[status]}${status === "lost" ? ` — ${lostReason!.trim()}` : ""}.`,
+        createdBy: actor.id,
+      });
+    }
     await recordAudit(tx, actor, { action: "lead.status_changed", entityType: "lead", entityId: leadId, before, after: { status, lostReason: status === "lost" ? lostReason!.trim() : null } });
   });
 }

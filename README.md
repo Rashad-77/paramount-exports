@@ -4,11 +4,12 @@ One Next.js application (deployed on **Vercel**) and one PostgreSQL database (**
 business: an enquiry-led public website, an internal CRM/sales area, and ERP-lite inventory, workshop, purchasing,
 delivery and operational finance. See `docs/` for the plan, architecture, data model, permission matrix and acceptance tests.
 
-> **Status: Step 2 (public website + enquiry pipeline) complete.** Built so far: design system, the full public website
+> **Status: Step 3 (CRM + quotations) complete.** Built so far: design system, the full public website
 > (home, catalogue, product pages, custom-furniture request, about, gallery, contact, privacy/terms), the enquiry → CRM lead
 > pipeline with uploads and spam protection, staff sign-in, role/permission model, and staff screens for enquiries,
-> products, categories, gallery and settings. CRM, quotations, inventory, workshop etc. arrive in Steps 3–6 — see
-> `docs/PROJECT_PLAN.md`. Business name, photos and contact details are **placeholders** until supplied.
+> products, categories, gallery and settings; plus customers (with duplicate warnings), enquiry pipeline, activity history,
+> follow-ups, quotations with revisions and a print/PDF view, and a sales dashboard. Inventory, orders, workshop etc. arrive in
+> Steps 4–6 — see `docs/PROJECT_PLAN.md`. Business name, photos and contact details are **placeholders** until supplied.
 
 ## Requirements
 

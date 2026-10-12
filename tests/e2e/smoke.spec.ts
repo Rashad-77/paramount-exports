@@ -76,9 +76,11 @@ test.describe("access control", () => {
     await expect(page.getByRole("heading", { name: /staff sign in/i })).toBeVisible();
   });
 
-  test("deep internal links are protected too", async ({ page }) => {
-    await page.goto("/app/orders");
-    await expect(page).toHaveURL(/\/login/);
+  test("deep internal links and the print view are protected too", async ({ page }) => {
+    for (const path of ["/app/orders", "/app/quotations", "/app/customers", "/print/quotations/00000000-0000-4000-8000-000000000000"]) {
+      await page.goto(path);
+      await expect(page, path).toHaveURL(/\/login/);
+    }
   });
 
   test("the sample preview route does not exist in production", async ({ request }) => {

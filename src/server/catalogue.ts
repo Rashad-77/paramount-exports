@@ -444,3 +444,15 @@ export async function removeGalleryImage(actor: Actor, imageId: string): Promise
   });
   await removeFileObject(fileId);
 }
+
+/** Active, non-archived product options for pickers (quotation / order editors). */
+export async function listVariantOptions(actor: Actor): Promise<Array<{ id: string; label: string; sku: string; price: string | null; name: string }>> {
+  requirePermission(actor, "products:view");
+  const rows = await getDb()
+    .select({ id: productVariants.id, sku: productVariants.sku, option: productVariants.label, price: productVariants.listPrice, name: products.name })
+    .from(productVariants)
+    .innerJoin(products, eq(products.id, productVariants.productId))
+    .where(and(eq(productVariants.isActive, true), isNull(products.archivedAt)))
+    .orderBy(asc(products.name), asc(productVariants.sortOrder));
+  return rows.map((r) => ({ id: r.id, sku: r.sku, price: r.price, name: r.name, label: `${r.name}${r.option !== "Standard" ? ` — ${r.option}` : ""} (${r.sku})` }));
+}

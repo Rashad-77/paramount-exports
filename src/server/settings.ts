@@ -8,12 +8,15 @@ import { validation } from "@/lib/errors";
 import {
   DEFAULT_BUSINESS,
   DEFAULT_PAGES,
+  DEFAULT_SALES,
   businessSchema,
   crmSettingsSchema,
   pagesSchema,
+  salesSettingsSchema,
   type BusinessSettings,
   type CrmSettings,
   type PageContent,
+  type SalesSettings,
 } from "@/lib/settings";
 import { recordAudit } from "./audit";
 
@@ -29,14 +32,15 @@ async function writeRow(tx: DbOrTx, key: string, value: unknown, actorId: string
     .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedBy: actorId } });
 }
 
-export async function getSettingsForAdmin(actor: Actor): Promise<{ business: BusinessSettings; pages: PageContent; crm: CrmSettings }> {
+export async function getSettingsForAdmin(actor: Actor): Promise<{ business: BusinessSettings; pages: PageContent; crm: CrmSettings; sales: SalesSettings }> {
   requirePermission(actor, "settings:view");
   const db = getDb();
-  const [b, p, c] = await Promise.all([readRow(db, "business"), readRow(db, "pages"), readRow(db, "crm")]);
+  const [b, p, c, sa] = await Promise.all([readRow(db, "business"), readRow(db, "pages"), readRow(db, "crm"), readRow(db, "sales")]);
   return {
     business: businessSchema.parse({ ...DEFAULT_BUSINESS, ...b }),
     pages: pagesSchema.parse({ ...DEFAULT_PAGES, ...p }),
     crm: crmSettingsSchema.parse({ defaultAssigneeId: null, ...c }),
+    sales: salesSettingsSchema.parse({ ...DEFAULT_SALES, ...sa }),
   };
 }
 
@@ -85,4 +89,21 @@ export async function getDefaultAssigneeId(db: DbOrTx): Promise<string | null> {
   const row = await readRow(db, "crm");
   const parsed = crmSettingsSchema.safeParse({ defaultAssigneeId: null, ...row });
   return parsed.success ? parsed.data.defaultAssigneeId : null;
+}
+
+export async function getSalesSettings(db: DbOrTx): Promise<SalesSettings> {
+  const row = await readRow(db, "sales");
+  const parsed = salesSettingsSchema.safeParse({ ...DEFAULT_SALES, ...row });
+  return parsed.success ? parsed.data : DEFAULT_SALES;
+}
+
+export async function updateSalesSettings(actor: Actor, input: SalesSettings): Promise<void> {
+  requirePermission(actor, "settings:manage");
+  const next = salesSettingsSchema.parse(input);
+  if (Number(next.maxDiscountPercent) > 100) throw validation("The discount limit cannot exceed 100%.", { maxDiscountPercent: ["Enter a percentage between 0 and 100."] });
+  await withTx(async (tx) => {
+    const before = await readRow(tx, "sales");
+    await writeRow(tx, "sales", next, actor.id);
+    await recordAudit(tx, actor, { action: "settings.sales_updated", entityType: "site_settings", entityId: "sales", before, after: next });
+  });
 }

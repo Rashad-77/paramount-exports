@@ -42,7 +42,11 @@ async function main() {
   const { submitEnquiry } = await import("../src/server/enquiries");
   const { enquirySchema } = await import("../src/lib/schemas/enquiry");
   const { changeLeadStatus, assignLead } = await import("../src/server/leads");
-  const { updateCrmSettings } = await import("../src/server/settings");
+  const { updateCrmSettings, updateSalesSettings } = await import("../src/server/settings");
+  const { createCustomerFromLead } = await import("../src/server/customers");
+  const { createFollowUp, addActivity } = await import("../src/server/crm");
+  const { createQuotation, sendQuotation, decideQuotation } = await import("../src/server/quotations");
+  const { addDaysLocal } = await import("../src/lib/time");
 
   const upload = async (purpose: "catalogue" | "gallery", actor: Actor, top: [number, number, number], bottom: [number, number, number], w = 640, h = 800) => {
     const bytes = samplePng(w, h, top, bottom);
@@ -94,7 +98,26 @@ async function main() {
   await changeLeadStatus(sales, ids[2]!, "quotation_sent");
   await changeLeadStatus(sales, ids[4]!, "lost", "Chose another supplier (sample)");
   await assignLead(manager, ids[3]!, null);
-  console.log("Sample data created: 3 categories, 5 products, 1 gallery project, 5 enquiries. All labelled [Sample].");
+
+  // CRM + quotations (sample)
+  await updateSalesSettings(owner, { maxDiscountPercent: "10" });
+  const c1 = await createCustomerFromLead(sales, ids[0]!);
+  const c3 = await createCustomerFromLead(sales, ids[2]!);
+  await addActivity(sales, { leadId: ids[0]!, customerId: undefined, type: "call", body: "Sample call: discussed dimensions and wood choice." });
+  await createFollowUp(sales, { leadId: ids[0]!, customerId: undefined, assignedTo: sales.id, title: "Sample: confirm table dimensions", dueOn: addDaysLocal(-2, "Asia/Colombo"), notes: undefined });
+  await createFollowUp(sales, { leadId: ids[2]!, customerId: undefined, assignedTo: sales.id, title: "Sample: chase wardrobe quotation", dueOn: addDaysLocal(3, "Asia/Colombo"), notes: undefined });
+  const q = (leadId: string | undefined, customerId: string, desc: string, price: string) =>
+    createQuotation(sales, {
+      customerId, leadId, validUntil: addDaysLocal(30, "Asia/Colombo"), deliveryCharge: "5000.00", terms: "Sample terms: 50% deposit, balance on delivery.", customerNotes: undefined, internalNotes: undefined,
+      items: [{ kind: "custom", variantId: undefined, description: desc, dimensions: "200 × 100 × 75 cm", material: "Sample timber", finish: "Sample finish", notes: undefined, quantity: "1.000", unitPrice: price, discountAmount: "0.00" }],
+    } as never);
+  await q(ids[0]!, c1, "[Sample] Custom dining table", "210000.00"); // stays a draft
+  const sent = await q(ids[2]!, c3, "[Sample] Custom wardrobe", "320000.00");
+  await sendQuotation(sales, sent);
+  const won = await q(undefined, c1, "[Sample] Console table", "98000.00");
+  await sendQuotation(sales, won);
+  await decideQuotation(sales, won, "accepted");
+  console.log("Sample data created: categories, products, a gallery project, enquiries, customers, follow-ups and quotations. All labelled [Sample].");
   process.exit(0);
 }
 

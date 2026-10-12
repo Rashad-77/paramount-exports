@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const isInternal = request.nextUrl.pathname.startsWith("/app");
+  const isInternal = request.nextUrl.pathname.startsWith("/app") || request.nextUrl.pathname.startsWith("/print");
 
   // Development-only demo identity (never true in production builds or on Vercel): see lib/auth/demo.ts.
   const demo =
@@ -53,5 +53,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Only run where a session matters; skips static assets and the public marketing pages entirely.
-  matcher: ["/app/:path*", "/login", "/api/uploads/:path*", "/api/files/:path*"],
+  matcher: ["/app/:path*", "/print/:path*", "/login", "/api/uploads/:path*", "/api/files/:path*"],
 };

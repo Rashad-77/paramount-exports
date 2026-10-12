@@ -88,3 +88,7 @@ Payments, movements, audit logs: append-only. Uploaded files: marked `purged` af
 ## Security baseline (every migration)
 
 Each migration that adds tables or functions ends with `SELECT enforce_rls();` (defined in `0002`). It enables RLS on every public table, removes table/sequence privileges from `anon`/`authenticated`, and — importantly — revokes `EXECUTE` on every function from `PUBLIC` (Postgres grants it by default, and `anon` inherits it, which would expose functions as RPC endpoints). Tests assert all three for every table and function.
+
+## Quotation immutability
+
+`quotation_revisions.frozen_at` is set when a quotation is sent. Database triggers (`forbid_frozen_revision_change`, `forbid_frozen_item_change`) then refuse any UPDATE/DELETE of that revision and any INSERT/UPDATE/DELETE of its items — so a sent version can only be superseded by a new revision, whatever code (or manual SQL) tries. Tests assert this with raw SQL.

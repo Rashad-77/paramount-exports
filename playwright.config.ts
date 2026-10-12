@@ -31,7 +31,7 @@ export default defineConfig({
     env: {
       NODE_ENV: "production",
       ...(dbUrl
-        ? { DATABASE_URL: dbUrl, STORAGE_DRIVER: "local", ALLOW_LOCAL_STORAGE: "e2e-only", LOCAL_STORAGE_DIR: ".e2e-storage", IP_HASH_SALT: "e2e-salt-e2e-salt-e2e-salt-12345" }
+        ? { DATABASE_URL: dbUrl, STORAGE_DRIVER: "local", ALLOW_LOCAL_STORAGE: "e2e-only", LOCAL_STORAGE_DIR: ".e2e-storage", IP_HASH_SALT: "e2e-salt-e2e-salt-e2e-salt-12345", CRON_SECRET: "e2e-cron-secret-e2e-cron-secret" }
         : {}),
     },
   },

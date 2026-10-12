@@ -6,13 +6,13 @@ import { requireActor } from "@/lib/auth/session";
 import { DEFAULT_ABOUT, DEFAULT_PRIVACY, DEFAULT_TERMS } from "@/lib/default-pages";
 import { getSettingsForAdmin } from "@/server/settings";
 import { listAssignableStaff } from "@/server/leads";
-import { updateBusinessAction, updateCrmAction, updatePagesAction } from "./actions";
+import { updateBusinessAction, updateCrmAction, updatePagesAction, updateSalesAction } from "./actions";
 
 export const metadata = { title: "Business & pages" };
 
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business, pages, crm } = await getSettingsForAdmin(actor);
+  const { business, pages, crm, sales } = await getSettingsForAdmin(actor);
   const canManage = can(actor, "settings:manage");
   const canPages = can(actor, "website:manage");
   const staff = canManage ? await listAssignableStaff(actor) : [];
@@ -21,7 +21,7 @@ export default async function SettingsPage() {
   return (
     <>
       <PageHeader title="Business & pages" description="Details shown on the website and on documents, and the wording of the About, Privacy and Terms pages." />
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <Panel title="Business details" description="Until a real business name is saved, the website shows placeholder content and asks search engines not to index it.">
           {canManage ? (
             <ActionForm action={updateBusinessAction}>
@@ -62,6 +62,15 @@ export default async function SettingsPage() {
               <FTextArea name="privacy" label="Privacy notice" rows={12} defaultValue={pages.privacy ?? ""} placeholder={DEFAULT_PRIVACY.slice(0, 200) + "…"} hint="The draft text describes what this website really collects. Have your final notice reviewed before launch." />
               <FTextArea name="terms" label="Terms" rows={8} defaultValue={pages.terms ?? ""} placeholder={DEFAULT_TERMS.slice(0, 200) + "…"} />
               <SubmitButton>Save page content</SubmitButton>
+            </ActionForm>
+          </Panel>
+        ) : null}
+
+        {canManage ? (
+          <Panel title="Discount limit for Sales staff" description="Sales staff can discount a quotation line up to this percentage of its value. Anything higher needs a Manager or the Owner. Starts at 0 until you set it.">
+            <ActionForm action={updateSalesAction}>
+              <FField name="maxDiscountPercent" label="Maximum discount (%)" inputMode="decimal" defaultValue={sales.maxDiscountPercent} required className="max-w-xs" />
+              <SubmitButton>Save discount limit</SubmitButton>
             </ActionForm>
           </Panel>
         ) : null}

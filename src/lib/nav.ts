@@ -25,9 +25,9 @@ export const NAV: NavGroup[] = [
     label: "CRM",
     items: [
       { label: "Enquiries & leads", href: "/app/leads", permission: "leads:view", available: true },
-      { label: "Customers", href: "/app/customers", permission: "customers:view", available: false },
-      { label: "Follow-ups", href: "/app/follow-ups", permission: "followups:manage", available: false },
-      { label: "Quotations", href: "/app/quotations", permission: "quotations:view", available: false },
+      { label: "Customers", href: "/app/customers", permission: "customers:view", available: true },
+      { label: "Follow-ups", href: "/app/follow-ups", permission: "followups:manage", available: true },
+      { label: "Quotations", href: "/app/quotations", permission: "quotations:view", available: true },
     ],
   },
   {

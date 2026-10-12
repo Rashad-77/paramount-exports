@@ -203,6 +203,16 @@ test.describe("access control for files and staff data", () => {
   });
 });
 
+test.describe("housekeeping cron", () => {
+  test("is closed without the secret and works with it", async ({ request }) => {
+    expect((await request.get("/api/cron/housekeeping")).status()).toBe(401);
+    expect((await request.get("/api/cron/housekeeping", { headers: { authorization: "Bearer wrong-secret-wrong-secret" } })).status()).toBe(401);
+    const ok = await request.get("/api/cron/housekeeping", { headers: { authorization: "Bearer e2e-cron-secret-e2e-cron-secret" } });
+    expect(ok.status()).toBe(200);
+    expect(await ok.json()).toMatchObject({ quotationsExpired: expect.any(Number), rateLimitRowsPurged: expect.any(Number), abandonedUploadsRemoved: expect.any(Number) });
+  });
+});
+
 test.describe("accessibility with real data", () => {
   for (const path of ["/products", "/products/sample-oak-table", "/custom", "/contact"]) {
     test(`no serious axe violations on ${path}`, async ({ page }) => {

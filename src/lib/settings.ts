@@ -86,3 +86,8 @@ export const getPageContent = cache(async (): Promise<PageContent> => {
 
 export const crmSettingsSchema = z.object({ defaultAssigneeId: z.uuid().nullable() });
 export type CrmSettings = z.infer<typeof crmSettingsSchema>;
+
+/** Sales policy. Sales staff may discount a line up to this percentage; more needs a manager/owner. Default 0 until the owner sets it. */
+export const salesSettingsSchema = z.object({ maxDiscountPercent: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/) });
+export type SalesSettings = z.infer<typeof salesSettingsSchema>;
+export const DEFAULT_SALES: SalesSettings = { maxDiscountPercent: "0" };

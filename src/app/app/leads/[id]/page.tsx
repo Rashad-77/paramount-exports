@@ -1,7 +1,9 @@
 import { MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ActionForm, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActivityPanel, FollowUpPanel } from "@/components/app/crm-panels";
+import { ActionForm, DuplicateConfirm, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { FileUploader } from "@/components/forms/file-uploader";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { Alert, StatusBadge } from "@/components/ui/status";
@@ -12,8 +14,10 @@ import { LEAD_KIND_LABEL, LEAD_SOURCE_LABEL, LEAD_STATUSES, LEAD_STATUS_LABEL, L
 import { isAppError } from "@/lib/errors";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
+import { listActivities, listFollowUpsFor } from "@/server/crm";
 import { getLead, listAssignableStaff } from "@/server/leads";
 import { assignLeadAction, changeLeadStatusAction } from "../actions";
+import { attachLeadFilesAction, createCustomerFromLeadAction, linkCustomerAction } from "../crm-actions";
 
 export const metadata = { title: "Enquiry" };
 
@@ -38,8 +42,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
     if (isAppError(e) && e.code === "NOT_FOUND") notFound();
     throw e;
   }
-  const [business, staff] = await Promise.all([getBusinessSettings(), listAssignableStaff(actor)]);
+  const [business, staff, activities, tasks] = await Promise.all([
+    getBusinessSettings(),
+    listAssignableStaff(actor),
+    listActivities(actor, { leadId: id }),
+    can(actor, "followups:manage") ? listFollowUpsFor(actor, { leadId: id }) : Promise.resolve([]),
+  ]);
   const { lead } = data;
+  const canWrite = can(actor, "leads:write");
   const payload = (lead.payload ?? {}) as Record<string, string | null>;
   const payloadRows = Object.entries(PAYLOAD_LABEL).filter(([k]) => payload[k]);
 
@@ -50,6 +60,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         description={`${LEAD_KIND_LABEL[lead.kind] ?? lead.kind} from ${LEAD_SOURCE_LABEL[lead.source]}, received ${formatDateTime(lead.createdAt, business.timezone)}`}
         actions={
           <>
+            {lead.customerId && can(actor, "quotations:write") ? <ButtonLink href={`/app/quotations/new?customerId=${lead.customerId}&leadId=${lead.id}`}>New quotation</ButtonLink> : null}
             <ButtonLink href={`tel:${lead.contactPhone.replace(/\s+/g, "")}`} variant="secondary">
               <Phone aria-hidden="true" className="size-4" /> Call
             </ButtonLink>
@@ -69,12 +80,12 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       {data.possibleDuplicate ? (
         <Alert tone="warning" title="This contact may already be a customer" className="mb-6">
           {data.possibleDuplicate.name} ({data.possibleDuplicate.phone}
-          {data.possibleDuplicate.email ? `, ${data.possibleDuplicate.email}` : ""}) has the same phone number or email. Check before creating another record; nothing has been merged.
+          {data.possibleDuplicate.email ? `, ${data.possibleDuplicate.email}` : ""}) has the same phone number or email. Nothing has been merged; choose what to do in the Customer panel.
         </Alert>
       ) : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <Panel title="Contact">
             <dl className="grid gap-4 text-sm sm:grid-cols-2">
               <Row k="Name" v={lead.contactName} />
@@ -121,9 +132,49 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               )}
             </Panel>
           ) : null}
+          {can(actor, "files:view_customer_private") && canWrite ? (
+            <Panel title="Add files">
+              <ActionForm action={attachLeadFilesAction}>
+                <input type="hidden" name="leadId" value={lead.id} />
+                <FileUploader purpose="lead_attachment" label="Photos, sketches or PDFs" accept="image/jpeg,image/png,image/webp,application/pdf" hint="Up to 10 MB each, up to 5 at a time." />
+                <SubmitButton>Attach files</SubmitButton>
+              </ActionForm>
+            </Panel>
+          ) : null}
+          <ActivityPanel subject={{ leadId: lead.id }} activities={activities} timezone={business.timezone} canWrite={canWrite} />
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
+          {can(actor, "followups:manage") ? <FollowUpPanel subject={{ leadId: lead.id }} tasks={tasks} staff={staff} timezone={business.timezone} currentUserId={actor.id} canWrite /> : null}
+          <Panel title="Customer">
+            {lead.customerId ? (
+              <p className="text-sm">
+                Linked to{" "}
+                <Link className="font-medium underline" href={`/app/customers/${lead.customerId}`}>
+                  the customer record
+                </Link>
+                .
+              </p>
+            ) : can(actor, "customers:write") && canWrite ? (
+              <div className="space-y-4">
+                <p className="text-sm text-text-muted">This enquiry is not linked to a customer yet. Public enquiries never create customers automatically.</p>
+                {data.possibleDuplicate ? (
+                  <ActionForm action={linkCustomerAction}>
+                    <input type="hidden" name="leadId" value={lead.id} />
+                    <input type="hidden" name="customerId" value={data.possibleDuplicate.id} />
+                    <SubmitButton variant="secondary">Link to {data.possibleDuplicate.name}</SubmitButton>
+                  </ActionForm>
+                ) : null}
+                <ActionForm action={createCustomerFromLeadAction}>
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <DuplicateConfirm label="Create a new customer anyway" />
+                  <SubmitButton variant={data.possibleDuplicate ? "ghost" : "primary"}>Create customer from this enquiry</SubmitButton>
+                </ActionForm>
+              </div>
+            ) : (
+              <p className="text-sm text-text-muted">Not linked to a customer.</p>
+            )}
+          </Panel>
           {can(actor, "leads:assign") ? (
             <Panel title="Assigned to">
               <ActionForm action={assignLeadAction}>

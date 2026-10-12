@@ -2,6 +2,7 @@ import type { Actor } from "@/lib/auth/permissions";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
+import type { ReactNode } from "react";
 
 export interface SetupCheck {
   label: string;
@@ -21,7 +22,7 @@ const KIND_LABEL: Record<string, string> = { showroom: "Showroom", workshop: "Wo
  * Overview screen. It shows only facts that exist today (setup progress, locations, the user's access).
  * Metrics such as leads, stock and sales are added with their modules — no placeholder numbers.
  */
-export function DashboardView({ actor, setup, locations }: { actor: Actor; setup: SetupCheck[]; locations: LocationRow[] }) {
+export function DashboardView({ actor, setup, locations, metrics }: { actor: Actor; setup: SetupCheck[]; locations: LocationRow[]; metrics?: ReactNode }) {
   const remaining = setup.filter((s) => !s.done).length;
   const firstName = actor.fullName.split(" ")[0];
 
@@ -31,6 +32,8 @@ export function DashboardView({ actor, setup, locations }: { actor: Actor; setup
         title={`Welcome, ${firstName}`}
         description="Overview of the system. Operational dashboards appear here as each module is switched on."
       />
+
+      {metrics ? <div className="mb-6 grid items-start gap-6 lg:grid-cols-2">{metrics}</div> : null}
 
       <div className="grid items-start gap-6 xl:grid-cols-3">
         <div className="xl:col-span-2">

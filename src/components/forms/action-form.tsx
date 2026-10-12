@@ -122,3 +122,18 @@ export function SubmitButton({
     </Button>
   );
 }
+
+/**
+ * Shown only after the server has warned that a record looks like a duplicate: lets the person confirm
+ * "this really is a different customer". (The warning text itself appears in the form's alert.)
+ */
+export function DuplicateConfirm({ name = "confirmDuplicate", label = "Create anyway — this is a different person" }: { name?: string; label?: string }) {
+  const { state } = useFormState();
+  if (!state.fieldErrors?.[name]) return null;
+  return (
+    <label className="flex min-h-10 items-start gap-3 rounded-[var(--radius-md)] border border-warning/40 bg-warning-bg p-3 text-sm">
+      <input type="checkbox" name={name} className="mt-0.5 size-5 shrink-0 accent-[var(--color-walnut)]" />
+      <span className="font-medium">{label}</span>
+    </label>
+  );
+}

@@ -42,7 +42,7 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
       {product.archivedAt ? <Alert tone="warning" title="Archived" className="mb-6">This product is hidden from the website.</Alert> : null}
       {!product.archivedAt && product.isPublished && images.length === 0 ? <Alert tone="warning" title="No photographs yet" className="mb-6">Published products look best with at least one photograph.</Alert> : null}
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <Panel title="Details">
           {canWrite ? (
             <ProductForm action={updateProductAction} categories={cats.filter((c) => !c.archivedAt || c.id === product.categoryId)} values={{ ...product }} submitLabel="Save changes" />

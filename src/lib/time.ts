@@ -34,3 +34,8 @@ export const todayLocal = (timeZone: string = DEFAULT_TIMEZONE, now: Date = new 
 export function isOverdue(dueOn: string, completed: boolean, timeZone: string = DEFAULT_TIMEZONE, now: Date = new Date()): boolean {
   return !completed && dueOn < todayLocal(timeZone, now);
 }
+
+/** Calendar date (YYYY-MM-DD) `days` after the local date of `from`, in the business timezone. */
+export function addDaysLocal(days: number, timeZone: string = DEFAULT_TIMEZONE, from: Date = new Date()): string {
+  return localDateString(new Date(from.getTime() + days * 86_400_000), timeZone);
+}
