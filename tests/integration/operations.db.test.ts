@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Actor } from "@/lib/auth/permissions";
 import { toCsv } from "@/lib/csv";
 import { customerSchema } from "@/lib/schemas/crm";
+import { todayLocal } from "@/lib/time";
 import { addCaseNote, changeCaseStatus, createCase, getCase, listCases, updateCase } from "@/server/aftersales";
 import { createCustomer } from "@/server/customers";
 import { createDelivery, deliveryDefaults, getDelivery, listDeliveries, rescheduleDelivery, setDeliveryStatus, updateDelivery } from "@/server/deliveries";
@@ -16,7 +17,8 @@ import { makeActor, setupApp } from "../helpers/app";
 import { makeLocations, makeTrackedProduct } from "../helpers/stock";
 
 const rm = (variantId: string, quantity = "1", unitPrice = "1000.00") => ({ kind: "ready_made" as const, variantId, description: "Line", quantity, unitPrice, discountAmount: "0.00" }) as never;
-const TODAY = new Date().toISOString().slice(0, 10);
+// Reports use the business timezone, so "today" must too (the UTC date is a day behind for part of every day).
+const TODAY = todayLocal();
 
 describe.skipIf(!hasTestDb)("deliveries, expenses, after-sales and reports (real Postgres)", () => {
   let t: Awaited<ReturnType<typeof setupApp>>;

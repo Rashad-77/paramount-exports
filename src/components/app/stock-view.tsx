@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -26,12 +26,8 @@ export async function StockView({ searchParams, materials = false }: { searchPar
   const filtered = Boolean(q || kind || locationId || lowOnly);
   return (
     <>
-      <PageHeader
-        title={materials ? "Materials" : "Stock"}
-        description="On hand is what is physically there; reserved is held for confirmed orders; available is what can still be promised."
-        actions={
+      <ModuleHeader href={materials ? "/app/materials" : "/app/stock"} actions={
           <>
-            {can(actor, "inventory:transfer") ? <ButtonLink href="/app/transfers" variant="secondary">Transfers</ButtonLink> : null}
             {can(actor, "inventory:adjust") ? <ButtonLink href="/app/stock/new">Add stock item</ButtonLink> : null}
           </>
         }

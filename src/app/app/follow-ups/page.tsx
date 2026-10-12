@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -30,7 +30,7 @@ export default async function FollowUpsPage({ searchParams }: { searchParams: Pr
   );
   return (
     <>
-      <PageHeader title="Follow-ups" description="Reminders to contact customers and chase quotations. Due dates use the business timezone." />
+      <ModuleHeader href="/app/follow-ups" />
       <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filters">
         {tab("Mine", assignee === "me", href({ who: "me", page: undefined }))}
         {tab("Everyone", assignee === "all", href({ who: "all", page: undefined }))}

@@ -2,7 +2,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
 import { ActionForm, FField } from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -33,16 +33,12 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const cur = business.currency;
   return (
     <>
-      <PageHeader
-        title="Expenses"
-        description="Money the business spent. Entries are never edited or deleted — a mistake is voided with a reason and entered again."
-        actions={
+      <ModuleHeader href="/app/expenses" actions={
           <>
             {can(actor, "expenses:manage_categories") ? <ButtonLink href="/app/expenses/categories" variant="secondary">Categories</ButtonLink> : null}
             {can(actor, "expenses:write") ? <ButtonLink href="/app/expenses/new">Record an expense</ButtonLink> : null}
           </>
-        }
-      />
+        } />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <TextField label="From" name="from" type="date" showOptional={false} defaultValue={from} />
         <TextField label="To" name="to" type="date" showOptional={false} defaultValue={to} />

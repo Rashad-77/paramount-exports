@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -14,7 +14,7 @@ import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, isOverdue } from "@/lib/time";
 import { listCases } from "@/server/aftersales";
 
-export const metadata = { title: "After-sales" };
+export const metadata = { title: "After-Sales Service" };
 
 export default async function AfterSalesPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -27,7 +27,7 @@ export default async function AfterSalesPage({ searchParams }: { searchParams: P
   const effective = status ?? (one(sp.status) === "all" ? "" : "active");
   return (
     <>
-      <PageHeader title="After-sales" description="Warranty claims, repairs and complaints. Closing a case needs a written resolution." actions={can(actor, "aftersales:manage") ? <ButtonLink href="/app/after-sales/new">New case</ButtonLink> : undefined} />
+      <ModuleHeader href="/app/after-sales" actions={can(actor, "aftersales:manage") ? <ButtonLink href="/app/after-sales/new">New case</ButtonLink> : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference, subject or customer" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={effective} options={[{ value: "active", label: "Open and in progress" }, { value: "all", label: "All" }, ...CASE_STATUSES.map((s) => ({ value: s, label: CASE_STATUS_LABEL[s] }))]} />

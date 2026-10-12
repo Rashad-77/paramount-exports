@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -11,7 +11,7 @@ import { ORDER_TONE } from "@/lib/order-ui";
 import { orderStatusLabel } from "@/lib/schemas/orders";
 import { listOrders } from "@/server/orders";
 
-export const metadata = { title: "Outstanding balances" };
+export const metadata = { title: "Invoicing" };
 
 /** Orders that still owe money. Open an order to record a payment against it. */
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -22,7 +22,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
   const r = { ...raw, rows: raw.rows.filter((o) => o.outstanding !== null) };
   return (
     <>
-      <PageHeader title="Outstanding balances" description="Confirmed orders that have not been paid in full. Open an order to record a payment or deposit." actions={<ButtonLink href="/app/orders" variant="secondary">All orders</ButtonLink>} />
+      <ModuleHeader href="/app/payments" actions={<ButtonLink href="/app/orders" variant="secondary">All orders</ButtonLink>} />
       {r.rows.length === 0 ? (
         <EmptyState title="Nothing outstanding" description="Every confirmed order you can see is paid in full." />
       ) : (

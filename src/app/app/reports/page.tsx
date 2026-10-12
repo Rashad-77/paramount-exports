@@ -1,6 +1,6 @@
 import { Button, ButtonLink } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { Definitions, Metric, Metrics, ReportSection } from "@/components/app/report-parts";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -29,7 +29,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title="Reports" description="Operational figures for a date range you choose. Each section says exactly what is counted." />
+      <ModuleHeader href="/app/reports" />
       <form method="get" className="mb-6 flex flex-col gap-4 border border-border bg-surface p-4 sm:flex-row sm:items-end">
         <TextField label="From" name="from" type="date" showOptional={false} defaultValue={range.from} />
         <TextField label="To" name="to" type="date" showOptional={false} defaultValue={range.to} />

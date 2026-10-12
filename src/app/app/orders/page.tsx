@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/time";
 import { getBusinessSettings } from "@/lib/settings";
 import { listOrders } from "@/server/orders";
 
-export const metadata = { title: "Orders" };
+export const metadata = { title: "Sales Orders" };
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -29,11 +29,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const filtered = Boolean(status || type || q || owing);
   return (
     <>
-      <PageHeader
-        title="Orders"
-        description="Ready-made sales and custom orders. Money is tracked as payments received against each order."
-        actions={can(actor, "orders:write") ? <ButtonLink href="/app/orders/new">New ready-made order</ButtonLink> : undefined}
-      />
+      <ModuleHeader href="/app/orders" actions={can(actor, "orders:write") ? <ButtonLink href="/app/orders/new">New ready-made order</ButtonLink> : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or customer" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={ORDER_STATUSES.map((s) => ({ value: s, label: orderStatusLabel(s, "ready_made") }))} />

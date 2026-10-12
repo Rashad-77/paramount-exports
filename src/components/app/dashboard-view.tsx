@@ -1,5 +1,4 @@
-import type { Actor } from "@/lib/auth/permissions";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import type { ReactNode } from "react";
@@ -23,14 +22,12 @@ const KIND_LABEL: Record<string, string> = { showroom: "Showroom", workshop: "Wo
  * then setup and locations. It shows only facts that exist; nothing is a placeholder number.
  */
 export function DashboardView({
-  actor,
   setup,
   locations,
   kpis,
   insights,
   actions,
 }: {
-  actor: Actor;
   setup: SetupCheck[];
   locations: LocationRow[];
   kpis?: ReactNode;
@@ -38,11 +35,10 @@ export function DashboardView({
   actions?: ReactNode;
 }) {
   const remaining = setup.filter((s) => !s.done).length;
-  const firstName = actor.fullName.split(" ")[0];
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Overview" description={`Welcome, ${firstName}. What is coming in, what is on the bench and what needs attention.`} actions={actions} />
+      <ModuleHeader href="/app" actions={actions} />
 
       {kpis ? <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{kpis}</div> : null}
 

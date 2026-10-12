@@ -170,7 +170,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   return (
     <DashboardView
-      actor={actor}
       setup={setup}
       locations={rows.map((r) => ({ id: r.id, name: r.name, kind: r.kind, isActive: r.isActive }))}
       kpis={kpis.length > 0 ? kpis.slice(0, kpis.length >= 8 ? 8 : kpis.length >= 4 ? 4 : kpis.length) : undefined}

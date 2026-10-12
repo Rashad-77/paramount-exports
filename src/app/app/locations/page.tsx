@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ActionForm, FCheckbox, FField, FSelect, SubmitButton } from "@/components/forms/action-form";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
@@ -10,7 +10,7 @@ import { LOCATION_KINDS } from "@/lib/schemas/inventory";
 import { listLocations } from "@/server/inventory";
 import { saveLocationAction } from "../stock/actions";
 
-export const metadata = { title: "Locations" };
+export const metadata = { title: "Inventory" };
 const KIND: Record<string, string> = { showroom: "Showroom", workshop: "Workshop", warehouse: "Warehouse" };
 
 export default async function LocationsPage({ searchParams }: { searchParams: Promise<SP> }) {
@@ -21,7 +21,7 @@ export default async function LocationsPage({ searchParams }: { searchParams: Pr
   const editing = editId ? rows.find((r) => r.id === editId) : undefined;
   return (
     <>
-      <PageHeader title="Locations" description="Places stock is kept. Each has its own stock, so the showroom and workshop can differ." />
+      <ModuleHeader href="/app/locations" />
       <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
         <TableWrap label="Locations">
           <Table>

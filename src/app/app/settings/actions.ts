@@ -11,6 +11,7 @@ import { z } from "zod";
 const refresh = () => {
   revalidatePath("/", "layout");
   revalidatePath("/app/settings");
+  revalidatePath("/app/website");
 };
 
 export async function updateBusinessAction(_p: ActionState, fd: FormData): Promise<ActionState> {

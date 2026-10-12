@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -10,7 +10,7 @@ import { requireActor } from "@/lib/auth/session";
 import { one, type SP } from "@/lib/list-params";
 import { listSuppliers } from "@/server/purchasing";
 
-export const metadata = { title: "Suppliers" };
+export const metadata = { title: "Procurement" };
 
 export default async function SuppliersPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -20,7 +20,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
   const rows = await listSuppliers(actor, { q, includeArchived: archived });
   return (
     <>
-      <PageHeader title="Suppliers" description="Who you buy materials from." actions={can(actor, "suppliers:write") ? <ButtonLink href="/app/suppliers/new">New supplier</ButtonLink> : undefined} />
+      <ModuleHeader href="/app/suppliers" actions={can(actor, "suppliers:write") ? <ButtonLink href="/app/suppliers/new">New supplier</ButtonLink> : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Name or materials supplied" />
         <label className="flex min-h-10 items-center gap-2 text-sm"><input type="checkbox" name="archived" value="1" defaultChecked={archived} className="size-5 accent-[var(--color-walnut)]" /> Include archived</label>

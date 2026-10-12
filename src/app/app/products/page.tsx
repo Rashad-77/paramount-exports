@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -26,18 +26,14 @@ export default async function ProductsAdminPage({ searchParams }: { searchParams
 
   return (
     <>
-      <PageHeader
-        title="Products"
-        description="The catalogue shown on the website. Stock levels arrive with the inventory module."
-        actions={
+      <ModuleHeader href="/app/products" actions={
           <>
             <ButtonLink href="/app/categories" variant="secondary">
               Categories
             </ButtonLink>
             {can(actor, "products:write") ? <ButtonLink href="/app/products/new">Add product</ButtonLink> : null}
           </>
-        }
-      />
+        } />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
         <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Name or SKU" />
         <SelectField showOptional={false} label="Category" name="category" defaultValue={categoryId ?? ""} placeholder="All" options={cats.filter((c) => !c.archivedAt).map((c) => ({ value: c.id, label: c.name }))} />

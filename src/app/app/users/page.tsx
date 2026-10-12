@@ -1,13 +1,13 @@
 import { ActionForm, SubmitButton } from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert, StatusBadge } from "@/components/ui/status";
 import { ROLES, requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { listUsers } from "@/server/users";
 import { setActiveAction, setRolesAction } from "./actions";
 
-export const metadata = { title: "Users" };
+export const metadata = { title: "Employees" };
 
 const ROLE_HELP: Record<string, string> = {
   owner: "Everything, including users and settings.",
@@ -23,7 +23,7 @@ export default async function UsersPage() {
   const users = await listUsers(actor);
   return (
     <>
-      <PageHeader title="Users" description="Who can sign in, and what each person may do. A person can hold more than one role; they get everything any of their roles allows." />
+      <ModuleHeader href="/app/users" />
       <Alert tone="info" title="Adding a new person" className="mb-6">
         New accounts are created by the owner from a trusted computer with <code>pnpm create-user</code> (see docs/OPERATIONS.md). Once the account exists, set its roles here.
       </Alert>

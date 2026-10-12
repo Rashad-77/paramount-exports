@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge, type Tone } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -28,7 +28,7 @@ export default async function QuotationsPage({ searchParams }: { searchParams: P
   const filtered = Boolean(status || q);
   return (
     <>
-      <PageHeader title="Quotations" description="Drafts, quotations awaiting a reply, and decided ones." actions={can(actor, "quotations:write") ? <ButtonLink href="/app/quotations/new">New quotation</ButtonLink> : undefined} />
+      <ModuleHeader href="/app/quotations" actions={can(actor, "quotations:write") ? <ButtonLink href="/app/quotations/new">New quotation</ButtonLink> : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or customer" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={QUOTATION_STATUSES.map((s) => ({ value: s, label: QUOTATION_STATUS_LABEL[s] }))} />

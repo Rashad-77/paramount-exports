@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
@@ -20,7 +20,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const result = await listCustomers(actor, { q, archived, page, pageSize: 25 });
   return (
     <>
-      <PageHeader title="Customers" description="People and companies you have dealt with or quoted." actions={can(actor, "customers:write") ? <ButtonLink href="/app/customers/new">Add customer</ButtonLink> : undefined} />
+      <ModuleHeader href="/app/customers" actions={can(actor, "customers:write") ? <ButtonLink href="/app/customers/new">Add customer</ButtonLink> : undefined} />
       <form method="get" className="mb-6 flex flex-col gap-3 border border-border bg-surface p-4 sm:flex-row sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Name, company, phone or email" className="flex-1" />
         <label className="flex min-h-10 items-center gap-2 text-sm">

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -32,7 +32,7 @@ export default async function DeliveriesPage({ searchParams }: { searchParams: P
   const filtered = Boolean(status || from || to || q || mine);
   return (
     <>
-      <PageHeader title={own ? "My deliveries" : "Deliveries"} description={own ? "Deliveries assigned to you." : "Schedule deliveries from an order's page. Marking one delivered also marks its order delivered."} />
+      <ModuleHeader href="/app/deliveries" title={own ? "My Deliveries" : undefined} description={own ? "Deliveries assigned to you." : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference, order, contact, address" className="lg:col-span-2" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={DELIVERY_STATUSES.map((s) => ({ value: s, label: DELIVERY_STATUS_LABEL[s] }))} />

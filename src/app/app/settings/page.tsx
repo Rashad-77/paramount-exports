@@ -1,26 +1,24 @@
 import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
-import { DEFAULT_ABOUT, DEFAULT_PRIVACY, DEFAULT_TERMS } from "@/lib/default-pages";
 import { getSettingsForAdmin } from "@/server/settings";
 import { listAssignableStaff } from "@/server/leads";
-import { updateBusinessAction, updateCrmAction, updatePagesAction, updateProductionAction, updateSalesAction } from "./actions";
+import { updateBusinessAction, updateCrmAction, updateProductionAction, updateSalesAction } from "./actions";
 
-export const metadata = { title: "Business & pages" };
+export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business, pages, crm, sales, production } = await getSettingsForAdmin(actor);
+  const { business, crm, sales, production } = await getSettingsForAdmin(actor);
   const canManage = can(actor, "settings:manage");
-  const canPages = can(actor, "website:manage");
   const staff = canManage ? await listAssignableStaff(actor) : [];
   const timezones = Intl.supportedValuesOf("timeZone");
 
   return (
     <>
-      <PageHeader title="Business & pages" description="Details shown on the website and on documents, and the wording of the About, Privacy and Terms pages." />
+      <ModuleHeader href="/app/settings" />
       <div className="min-w-0 space-y-6">
         <Panel title="Business details" description="Until a real business name is saved, the website shows placeholder content and asks search engines not to index it.">
           {canManage ? (
@@ -54,17 +52,6 @@ export default async function SettingsPage() {
             </>
           )}
         </Panel>
-
-        {canPages ? (
-          <Panel title="Page content" description="Plain text. Separate paragraphs with a blank line; start a line with ## for a heading and with - for a bullet. Leave blank to show the draft text.">
-            <ActionForm action={updatePagesAction}>
-              <FTextArea name="about" label="About & craftsmanship" rows={8} defaultValue={pages.about ?? ""} placeholder={DEFAULT_ABOUT} />
-              <FTextArea name="privacy" label="Privacy notice" rows={12} defaultValue={pages.privacy ?? ""} placeholder={DEFAULT_PRIVACY.slice(0, 200) + "…"} hint="The draft text describes what this website really collects. Have your final notice reviewed before launch." />
-              <FTextArea name="terms" label="Terms" rows={8} defaultValue={pages.terms ?? ""} placeholder={DEFAULT_TERMS.slice(0, 200) + "…"} />
-              <SubmitButton>Save page content</SubmitButton>
-            </ActionForm>
-          </Panel>
-        ) : null}
 
         {canManage ? (
           <Panel title="Discount limit for Sales staff" description="Sales staff can discount a quotation line up to this percentage of its value. Anything higher needs a Manager or the Owner. Starts at 0 until you set it.">

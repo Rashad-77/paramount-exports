@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { NavGroup } from "@/lib/nav";
+import type { VisibleGroup } from "@/lib/nav";
 
 /** Sidebar navigation. A client component only so it can highlight the current page from the URL. */
-export function AppNav({ groups, previewPath }: { groups: NavGroup[]; previewPath?: string }) {
+export function AppNav({ groups, previewPath }: { groups: VisibleGroup[]; previewPath?: string }) {
   const livePath = usePathname();
   const pathname = previewPath ?? livePath;
   return (
@@ -14,19 +14,19 @@ export function AppNav({ groups, previewPath }: { groups: NavGroup[]; previewPat
         <div key={g.label}>
           <p className="px-3 text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-text-muted">{g.label}</p>
           <ul className="mt-1 space-y-px">
-            {g.items.map((i) => {
-              const current = i.href === "/app" ? pathname === "/app" : pathname === i.href || pathname.startsWith(`${i.href}/`);
+            {g.modules.map((m) => {
+              const current = m.pages.some((p) => (p.href === "/app" ? pathname === "/app" : pathname === p.href || pathname.startsWith(`${p.href}/`)));
               return (
-                <li key={i.href}>
+                <li key={m.label}>
                   <Link
-                    href={i.href}
+                    href={m.href}
                     aria-current={current ? "page" : undefined}
                     className={
                       "flex min-h-9 items-center border-l-2 px-3 text-[0.8125rem] transition-colors duration-[var(--duration-fast)] " +
                       (current ? "border-walnut bg-walnut font-medium text-ivory" : "border-transparent text-text hover:bg-linen")
                     }
                   >
-                    {i.label}
+                    {m.label}
                   </Link>
                 </li>
               );

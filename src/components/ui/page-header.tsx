@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import { ModuleTabs } from "@/components/app/module-tabs";
+import { getActor } from "@/lib/auth/session";
+import { moduleInfo, visibleModuleFor } from "@/lib/nav";
 
 /** Standard internal page title block: one h1, optional description, actions aligned right on wide screens. */
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
@@ -10,6 +13,19 @@ export function PageHeader({ title, description, actions }: { title: string; des
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </header>
+  );
+}
+
+/** Page title for a navigation screen: the module's name and description, so the header and the sidebar always agree. */
+export async function ModuleHeader({ href, title, description, actions }: { href: string; title?: string; description?: string; actions?: ReactNode }) {
+  const m = moduleInfo(href);
+  const actor = await getActor().catch(() => null);
+  const tabs = actor ? visibleModuleFor(actor, href) : null;
+  return (
+    <>
+      <PageHeader title={title ?? m.title} description={description ?? m.description} actions={actions} />
+      {tabs ? <ModuleTabs label={tabs.label} pages={tabs.pages} current={href} /> : null}
+    </>
   );
 }
 

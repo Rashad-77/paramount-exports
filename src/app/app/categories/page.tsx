@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
@@ -10,7 +10,7 @@ import { one, type SP } from "@/lib/list-params";
 import { listCategories } from "@/server/catalogue";
 import { archiveCategoryAction, createCategoryAction, updateCategoryAction } from "./actions";
 
-export const metadata = { title: "Categories" };
+export const metadata = { title: "Products" };
 
 export default async function CategoriesPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -21,7 +21,7 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
 
   return (
     <>
-      <PageHeader title="Categories" description="Group products for the website. A category with no published products is hidden from the public site." />
+      <ModuleHeader href="/app/categories" />
       <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
         {rows.length === 0 ? (
           <Panel>

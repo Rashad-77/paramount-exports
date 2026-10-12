@@ -1,5 +1,5 @@
 import { TransferForm } from "@/components/app/transfer-form";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
@@ -9,7 +9,7 @@ import { formatDateTime } from "@/lib/time";
 import { listLocations, listStock, listTransfers } from "@/server/inventory";
 import { transferAction } from "../stock/actions";
 
-export const metadata = { title: "Stock transfers" };
+export const metadata = { title: "Inventory" };
 
 export default async function TransfersPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -17,7 +17,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
   const [business, locs, history, stock] = await Promise.all([getBusinessSettings(), listLocations(actor), listTransfers(actor, page), listStock(actor, { page: 1, pageSize: 500 })]);
   return (
     <>
-      <PageHeader title="Stock transfers" description="Move stock between the showroom and the workshop. Both sides are recorded together, or not at all." />
+      <ModuleHeader href="/app/transfers" />
       <div className="grid items-start gap-6 xl:grid-cols-[2fr_1fr]">
         <div className="min-w-0 order-2 xl:order-1">
           {history.rows.length === 0 ? (

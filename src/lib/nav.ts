@@ -1,91 +1,158 @@
 import { can, type Actor, type Permission } from "@/lib/auth/permissions";
 
 /**
- * Internal navigation, grouped per the brief: Overview, CRM, Sales, Inventory, Workshop, Purchasing,
- * Deliveries, Finance/Reports, Settings.
+ * Internal navigation: seven groups, one entry per module.
  *
- * - `permission` hides destinations a role may not use (the server still enforces access on every route).
- * - `available` is false for modules that are planned but not built yet. Unbuilt destinations are never
- *   rendered, so there are no links that lead nowhere. Flip to true in the same commit that adds the route.
+ * - A module with several screens lists them as `pages`; the first page the person may open is where the entry links,
+ *   and the module's other screens appear as tabs above the page.
+ * - `permission` hides screens a role may not use (the server still enforces access on every route).
+ * - `available` is false for screens that are planned but not built. Unbuilt screens are never rendered, so no link
+ *   leads nowhere. Flip to true in the same commit that adds the route.
  */
-export interface NavItem {
+export interface NavPage {
   label: string;
   href: string;
   permission: Permission | null; // null = any active staff member
   available: boolean;
 }
+export interface NavModule {
+  label: string;
+  /** What the module covers. Shown under the title of its main screen. */
+  description: string;
+  pages: NavPage[];
+}
 export interface NavGroup {
   label: string;
-  items: NavItem[];
+  modules: NavModule[];
 }
 
+const page = (label: string, href: string, permission: Permission | null): NavPage => ({ label, href, permission, available: true });
+
 export const NAV: NavGroup[] = [
-  { label: "Overview", items: [{ label: "Dashboard", href: "/app", permission: null, available: true }] },
   {
-    label: "CRM",
-    items: [
-      { label: "Enquiries & leads", href: "/app/leads", permission: "leads:view", available: true },
-      { label: "Customers", href: "/app/customers", permission: "customers:view", available: true },
-      { label: "Follow-ups", href: "/app/follow-ups", permission: "followups:manage", available: true },
-      { label: "Quotations", href: "/app/quotations", permission: "quotations:view", available: true },
-    ],
+    label: "General",
+    modules: [{ label: "Dashboard", description: "Business overview, pending tasks, sales summary and alerts.", pages: [page("Dashboard", "/app", null)] }],
   },
   {
     label: "Sales",
-    items: [
-      { label: "Orders", href: "/app/orders", permission: "orders:view", available: true },
-      { label: "Outstanding balances", href: "/app/payments", permission: "payments:view", available: true },
-      { label: "After-sales", href: "/app/after-sales", permission: "aftersales:view", available: true },
+    modules: [
+      { label: "Customers", description: "Customer profiles, contact details, purchase history and communication records.", pages: [page("Customers", "/app/customers", "customers:view")] },
+      {
+        label: "Enquiries",
+        description: "New enquiries, follow-ups, custom requests and lead conversion.",
+        pages: [page("Enquiries", "/app/leads", "leads:view"), page("Follow-ups", "/app/follow-ups", "followups:manage")],
+      },
+      { label: "Quotations", description: "Price estimates, custom specifications, revisions and customer approvals.", pages: [page("Quotations", "/app/quotations", "quotations:view")] },
+      { label: "Sales Orders", description: "Confirmed purchases, order status, payment terms and completion dates.", pages: [page("Sales Orders", "/app/orders", "orders:view")] },
     ],
   },
   {
-    label: "Inventory",
-    items: [
-      { label: "Products", href: "/app/products", permission: "products:view", available: true },
-      { label: "Categories", href: "/app/categories", permission: "products:view", available: true },
-      { label: "Stock", href: "/app/stock", permission: "inventory:view", available: true },
-      { label: "Transfers", href: "/app/transfers", permission: "inventory:transfer", available: true },
-      { label: "Locations", href: "/app/locations", permission: "inventory:view", available: true },
+    label: "Manufacturing",
+    modules: [
+      {
+        label: "Production",
+        description: "Workshop job cards, work stages, staff assignments, deadlines and quality inspections.",
+        pages: [page("Production", "/app/production", "production:view")],
+      },
+      {
+        label: "Inventory",
+        description: "Raw materials, hardware, finished goods, stock movements and reorder alerts.",
+        pages: [
+          page("Stock", "/app/stock", "inventory:view"),
+          page("Materials", "/app/materials", "inventory:view_materials"),
+          page("Transfers", "/app/transfers", "inventory:transfer"),
+          page("Locations", "/app/locations", "inventory:view"),
+        ],
+      },
+      {
+        label: "Procurement",
+        description: "Suppliers, purchase orders, incoming materials and supplier invoices.",
+        pages: [page("Suppliers", "/app/suppliers", "suppliers:view"), page("Purchase Orders", "/app/purchase-orders", "purchasing:view")],
+      },
     ],
   },
   {
-    label: "Workshop",
-    items: [
-      { label: "Production jobs", href: "/app/production", permission: "production:view", available: true },
-      { label: "Materials", href: "/app/materials", permission: "inventory:view_materials", available: true },
+    label: "Fulfilment",
+    modules: [
+      { label: "Deliveries", description: "Delivery schedules, vehicle assignments, installation and proof of delivery.", pages: [page("Deliveries", "/app/deliveries", "deliveries:view")] },
+      { label: "After-Sales Service", description: "Warranty claims, repairs, defects and customer complaints.", pages: [page("After-Sales Service", "/app/after-sales", "aftersales:view")] },
     ],
   },
   {
-    label: "Purchasing",
-    items: [
-      { label: "Suppliers", href: "/app/suppliers", permission: "suppliers:view", available: true },
-      { label: "Purchase orders", href: "/app/purchase-orders", permission: "purchasing:view", available: true },
-    ],
-  },
-  { label: "Deliveries", items: [{ label: "Deliveries", href: "/app/deliveries", permission: "deliveries:view", available: true }] },
-  {
-    label: "Finance & reports",
-    items: [
-      { label: "Expenses", href: "/app/expenses", permission: "expenses:view", available: true },
-      { label: "Reports", href: "/app/reports", permission: null, available: true },
+    label: "Finance",
+    modules: [
+      { label: "Invoicing", description: "Customer invoices, receipts, advance payments and outstanding balances.", pages: [page("Invoicing", "/app/payments", "payments:view")] },
+      {
+        label: "Expenses",
+        description: "Operating costs, wages, utilities, transport and other business expenditure.",
+        pages: [page("Expenses", "/app/expenses", "expenses:view"), page("Categories", "/app/expenses/categories", "expenses:manage_categories")],
+      },
     ],
   },
   {
-    label: "Settings",
-    items: [
-      { label: "Business & pages", href: "/app/settings", permission: "settings:view", available: true },
-      { label: "Website gallery", href: "/app/gallery", permission: "website:manage", available: true },
-      { label: "Users", href: "/app/users", permission: "users:manage", available: true },
+    label: "Business management",
+    modules: [
+      {
+        label: "Products",
+        description: "Furniture catalogue, product variants, dimensions, finishes, pricing and images.",
+        pages: [page("Products", "/app/products", "products:view"), page("Categories", "/app/categories", "products:view")],
+      },
+      { label: "Employees", description: "Staff profiles, roles, attendance and assigned responsibilities.", pages: [page("Employees", "/app/users", "users:manage")] },
+      { label: "Reports", description: "Sales performance, production efficiency, stock valuation and profitability.", pages: [page("Reports", "/app/reports", null)] },
+    ],
+  },
+  {
+    label: "System",
+    modules: [
+      {
+        label: "Website",
+        description: "Homepage content, gallery, showroom details and published product listings.",
+        pages: [page("Pages", "/app/website", "website:manage"), page("Gallery", "/app/gallery", "website:manage")],
+      },
+      {
+        label: "Settings",
+        description: "Business details, user permissions, tax rules, numbering and system configuration.",
+        pages: [page("Settings", "/app/settings", "settings:view")],
+      },
     ],
   },
 ];
 
-/** Navigation filtered to what this actor may see and what is actually built. Empty groups are dropped. */
-export function visibleNav(actor: Actor, groups: NavGroup[] = NAV): NavGroup[] {
+export interface VisibleModule {
+  label: string;
+  description: string;
+  /** Where the sidebar entry links: the first screen this person may open. */
+  href: string;
+  pages: { label: string; href: string }[];
+}
+export interface VisibleGroup {
+  label: string;
+  modules: VisibleModule[];
+}
+
+const allowed = (actor: Actor, p: NavPage) => p.available && (p.permission === null ? actor.isActive : can(actor, p.permission));
+
+/** Navigation filtered to what this actor may see and what is actually built. Empty modules and groups are dropped. */
+export function visibleNav(actor: Actor, groups: NavGroup[] = NAV): VisibleGroup[] {
   return groups
     .map((g) => ({
-      ...g,
-      items: g.items.filter((i) => i.available && (i.permission === null ? actor.isActive : can(actor, i.permission))),
+      label: g.label,
+      modules: g.modules
+        .map((m) => ({ ...m, pages: m.pages.filter((p) => allowed(actor, p)) }))
+        .filter((m) => m.pages.length > 0)
+        .map((m) => ({ label: m.label, description: m.description, href: m.pages[0]!.href, pages: m.pages.map((p) => ({ label: p.label, href: p.href })) })),
     }))
-    .filter((g) => g.items.length > 0);
+    .filter((g) => g.modules.length > 0);
+}
+
+/** The module this screen belongs to, with only the screens this person may open. Null when it is not a navigation screen. */
+export function visibleModuleFor(actor: Actor, href: string): VisibleModule | null {
+  return visibleNav(actor).flatMap((g) => g.modules).find((m) => m.pages.some((p) => p.href === href)) ?? null;
+}
+
+/** The module a screen belongs to: its name and description. */
+export function moduleInfo(href: string): { title: string; description: string } {
+  for (const g of NAV)
+    for (const m of g.modules) if (m.pages.some((x) => x.href === href)) return { title: m.label, description: m.description };
+  throw new Error(`No navigation entry for ${href}`);
 }

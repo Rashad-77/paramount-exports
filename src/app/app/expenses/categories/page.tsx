@@ -1,11 +1,11 @@
 import { ActionForm, FCheckbox, FField, SubmitButton } from "@/components/forms/action-form";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { listExpenseCategories } from "@/server/expenses";
 import { saveCategoryAction } from "../actions";
 
-export const metadata = { title: "Expense categories" };
+export const metadata = { title: "Expenses" };
 
 export default async function CategoriesPage() {
   const actor = await requireActor();
@@ -13,7 +13,7 @@ export default async function CategoriesPage() {
   const cats = await listExpenseCategories(actor, true);
   return (
     <>
-      <PageHeader title="Expense categories" description="Categories group expenses in reports. Turning one off hides it from new expenses; old entries keep it." />
+      <ModuleHeader href="/app/expenses/categories" />
       <div className="max-w-2xl min-w-0 space-y-6">
         <Panel title="Add a category">
           <ActionForm action={saveCategoryAction}>

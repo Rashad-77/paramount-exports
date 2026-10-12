@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -13,7 +13,7 @@ import { getBusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/time";
 import { listBoard, listJobs } from "@/server/production";
 
-export const metadata = { title: "Production jobs" };
+export const metadata = { title: "Production" };
 
 type JobRow = Awaited<ReturnType<typeof listBoard>>["rows"][number];
 
@@ -45,9 +45,10 @@ export default async function ProductionPage({ searchParams }: { searchParams: P
   const business = await getBusinessSettings();
 
   const header = (
-    <PageHeader
-      title={own ? "My jobs" : "Production jobs"}
-      description={own ? "Jobs assigned to you. Open a job to update its stage, record materials used or report a problem." : "Custom orders in the workshop. A job is created automatically when a custom order is confirmed."}
+    <ModuleHeader
+      href="/app/production"
+      title={own ? "My Jobs" : undefined}
+      description={own ? "Jobs assigned to you. Open a job to update its stage, record materials used or report a problem." : undefined}
       actions={
         <>
           <ButtonLink href={buildHref("/app/production", {})} variant={view === "board" ? "primary" : "secondary"} aria-current={view === "board" ? "page" : undefined}>Board</ButtonLink>

@@ -26,7 +26,6 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
       </Alert>
       <div className="h-6" />
       <DashboardView
-        actor={actor}
         setup={[
           { label: "Business name", done: false, hint: "Shown in the website header, quotations and documents." },
           { label: "Showroom address and opening hours", done: false, hint: "Shown on the website. The map link appears only once an address exists." },

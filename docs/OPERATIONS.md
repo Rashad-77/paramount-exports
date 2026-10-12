@@ -18,16 +18,16 @@ and keep this list beside you.
    OWNER_PASSWORD='a long passphrase' pnpm create-owner --email you@example.com --name "Your Name"
    ```
 4. Deploy. Check `/api/health` shows `{"status":"ok","database":"up"}`; sign in at `/login`.
-5. In the app: **Business & pages** (business name, phone, address, hours — until the real name is saved the public site stays
+5. In the app: **Settings** (business name, phone, address, hours — until the real name is saved the public site stays
    "noindex" with placeholder text), confirm **currency and time zone**, set the **discount limit** for sales staff, then add
-   products, photos and opening stock.
+   products, photos and opening stock. Page wording (About, Privacy, Terms) is under **Website**.
 
 ## 2. People
 
 - The Owner adds people from a trusted computer: `OWNER_PASSWORD='one-off password' pnpm create-user --email sam@example.com --name "Sam" --role sales,finance`
   (comma-separated roles; a person gets everything any of their roles allows). Hand over the one-off password privately and ask them to change it.
   *There is no self-service sign-up and no invite email in this version.*
-- **Users** (Owner only) changes roles and deactivates/reactivates people. A deactivated person is locked out on their next request.
+- **Employees** (Owner only) changes roles and deactivates/reactivates people. A deactivated person is locked out on their next request.
   The system refuses to leave the business without an active owner.
 - Roles and exactly what each can do: `docs/ROLE_PERMISSIONS.md` (generated from the code and checked by a test).
 
@@ -73,7 +73,7 @@ others still run and the failure is logged in the Vercel function logs.
 
 | Symptom | Check |
 |---|---|
-| Nobody can sign in | Supabase status; `NEXT_PUBLIC_SUPABASE_*` variables; the person's profile is *active* and has a role (Users page). Repeated wrong passwords lock a login for ~10 minutes ("Too many sign-in attempts") |
+| Nobody can sign in | Supabase status; `NEXT_PUBLIC_SUPABASE_*` variables; the person's profile is *active* and has a role (Employees page). Repeated wrong passwords lock a login for ~10 minutes ("Too many sign-in attempts") |
 | "Sign-in is temporarily unavailable" | The database is unreachable (the login limiter fails closed). Check `/api/health` |
 | Enquiries stopped arriving | `/api/health`; Vercel logs for the enquiry action; the spam limits (per IP and per phone, see `src/server/enquiries.ts`); Turnstile keys if enabled |
 | Uploads fail | Storage buckets exist (`pnpm storage:setup`); `SUPABASE_SERVICE_ROLE_KEY` set on the server; file is JPEG/PNG/WebP (PDF where documents are allowed) and within the size limit |
@@ -86,6 +86,6 @@ Errors shown to users carry a short reference; the same reference is in the Verc
 ## 7. Security housekeeping
 
 - Rotate `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET` and `IP_HASH_SALT` if they may have leaked (changing the salt only resets rate-limit counters).
-- Review **Users** whenever someone leaves.
+- Review **Employees** whenever someone leaves.
 - The audit log (`audit_logs`) records sensitive changes and who made them; it cannot be edited or deleted, even by the application.
 - See `docs/SECURITY_REVIEW.md` for what was checked and what remains.

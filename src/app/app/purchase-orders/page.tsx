@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SelectField, TextField } from "@/components/ui/field";
-import { PageHeader } from "@/components/ui/page-header";
+import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -14,7 +14,7 @@ import { getBusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/time";
 import { listPurchaseOrders } from "@/server/purchasing";
 
-export const metadata = { title: "Purchase orders" };
+export const metadata = { title: "Procurement" };
 
 export default async function PurchaseOrdersPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
@@ -27,7 +27,7 @@ export default async function PurchaseOrdersPage({ searchParams }: { searchParam
   const filtered = Boolean(status || q);
   return (
     <>
-      <PageHeader title="Purchase orders" description="Materials ordered from suppliers. Stock increases only when goods are received." actions={can(actor, "purchasing:write") ? <ButtonLink href="/app/purchase-orders/new">New purchase order</ButtonLink> : undefined} />
+      <ModuleHeader href="/app/purchase-orders" actions={can(actor, "purchasing:write") ? <ButtonLink href="/app/purchase-orders/new">New purchase order</ButtonLink> : undefined} />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
         <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or supplier" />
         <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={PO_STATUSES.map((s) => ({ value: s, label: PO_STATUS_LABEL[s] }))} />
