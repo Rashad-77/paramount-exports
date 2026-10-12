@@ -19,88 +19,75 @@ export interface LocationRow {
 const KIND_LABEL: Record<string, string> = { showroom: "Showroom", workshop: "Workshop", warehouse: "Warehouse" };
 
 /**
- * Overview screen. It shows only facts that exist today (setup progress, locations, the user's access).
- * Metrics such as leads, stock and sales are added with their modules — no placeholder numbers.
+ * Overview screen, in three bands: headline figures, then grouped cards (pipeline, workshop, attention, money, stock),
+ * then setup and locations. It shows only facts that exist; nothing is a placeholder number.
  */
-export function DashboardView({ actor, setup, locations, metrics }: { actor: Actor; setup: SetupCheck[]; locations: LocationRow[]; metrics?: ReactNode }) {
+export function DashboardView({
+  actor,
+  setup,
+  locations,
+  kpis,
+  insights,
+  actions,
+}: {
+  actor: Actor;
+  setup: SetupCheck[];
+  locations: LocationRow[];
+  kpis?: ReactNode;
+  insights?: ReactNode;
+  actions?: ReactNode;
+}) {
   const remaining = setup.filter((s) => !s.done).length;
   const firstName = actor.fullName.split(" ")[0];
 
   return (
-    <>
-      <PageHeader
-        title={`Welcome, ${firstName}`}
-        description="Overview of the system. Operational dashboards appear here as each module is switched on."
-      />
+    <div className="space-y-4">
+      <PageHeader title="Overview" description={`Welcome, ${firstName}. What is coming in, what is on the bench and what needs attention.`} actions={actions} />
 
-      {metrics ? <div className="mb-6 grid items-start gap-6 lg:grid-cols-2">{metrics}</div> : null}
+      {kpis ? <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{kpis}</div> : null}
 
-      <div className="grid items-start gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <Panel
-            title="Setup checklist"
-            description={remaining === 0 ? "Everything needed to launch the public site is in place." : `${remaining} of ${setup.length} items still to do.`}
-          >
-            <ul className="divide-y divide-border">
-              {setup.map((s) => (
-                <li key={s.label} className="flex flex-col items-start gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                  <div>
-                    <p className="text-sm font-medium">{s.label}</p>
-                    <p className="text-sm text-text-muted">{s.hint}</p>
-                  </div>
-                  <StatusBadge tone={s.done ? "success" : "warning"}>{s.done ? "Done" : "To do"}</StatusBadge>
-                </li>
-              ))}
-            </ul>
-          </Panel>
-        </div>
+      {insights ? <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{insights}</div> : null}
 
-        <Panel title="Your access">
-          <dl className="space-y-3 text-sm">
-            <div>
-              <dt className="text-text-muted">Name</dt>
-              <dd className="font-medium">{actor.fullName}</dd>
-            </div>
-            <div>
-              <dt className="text-text-muted">Roles</dt>
-              <dd className="mt-1 flex flex-wrap gap-1.5">
-                {actor.roles.map((r) => (
-                  <StatusBadge key={r} tone="neutral" className="capitalize">
-                    {r}
-                  </StatusBadge>
-                ))}
-              </dd>
-            </div>
-          </dl>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <Panel title="Setup checklist" description={remaining === 0 ? "Everything needed to launch the public site is in place." : `${remaining} of ${setup.length} items still to do.`}>
+          <ul className="divide-y divide-border">
+            {setup.map((s) => (
+              <li key={s.label} className="flex flex-col items-start gap-1.5 py-2.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div>
+                  <p className="text-sm font-medium">{s.label}</p>
+                  <p className="text-xs text-text-muted">{s.hint}</p>
+                </div>
+                <StatusBadge tone={s.done ? "success" : "warning"}>{s.done ? "Done" : "To do"}</StatusBadge>
+              </li>
+            ))}
+          </ul>
         </Panel>
 
-        <div className="xl:col-span-3">
-          <Panel title="Locations" description="Stock is tracked separately for each location.">
-            <TableWrap label="Locations">
-              <Table>
-                <THead>
-                  <tr>
-                    <TH>Name</TH>
-                    <TH>Type</TH>
-                    <TH>Status</TH>
-                  </tr>
-                </THead>
-                <tbody>
-                  {locations.map((l) => (
-                    <TR key={l.id}>
-                      <TD className="font-medium">{l.name}</TD>
-                      <TD>{KIND_LABEL[l.kind] ?? l.kind}</TD>
-                      <TD>
-                        <StatusBadge tone={l.isActive ? "success" : "neutral"}>{l.isActive ? "Active" : "Inactive"}</StatusBadge>
-                      </TD>
-                    </TR>
-                  ))}
-                </tbody>
-              </Table>
-            </TableWrap>
-          </Panel>
-        </div>
+        <Panel title="Locations" description="Stock is tracked separately for each location.">
+          <TableWrap label="Locations">
+            <Table>
+              <THead>
+                <tr>
+                  <TH>Name</TH>
+                  <TH>Type</TH>
+                  <TH>Status</TH>
+                </tr>
+              </THead>
+              <tbody>
+                {locations.map((l) => (
+                  <TR key={l.id}>
+                    <TD className="font-medium">{l.name}</TD>
+                    <TD>{KIND_LABEL[l.kind] ?? l.kind}</TD>
+                    <TD>
+                      <StatusBadge tone={l.isActive ? "success" : "neutral"}>{l.isActive ? "Active" : "Inactive"}</StatusBadge>
+                    </TD>
+                  </TR>
+                ))}
+              </tbody>
+            </Table>
+          </TableWrap>
+        </Panel>
       </div>
-    </>
+    </div>
   );
 }

@@ -85,20 +85,48 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Staff area: working screens, not a showroom. Plain sans type, flat surfaces, no ornament or entrance motion. */
+  .app-ui .font-display {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size-adjust: none;
+  }
+  .app-ui .glass {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  /* Denser form controls on desktop; phones keep the full 44px touch target. */
+  @media (min-width: 48rem) {
+    /* !important: these must beat the component utilities, which sit in a later cascade layer */
+    .app-ui :is(input, select, textarea) {
+      font-size: 0.875rem !important;
+    }
+    .app-ui .min-h-11 {
+      min-height: 2.25rem !important;
+    }
+  }
+  .app-ui .card-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
   /* Small tracked label above a heading, with a short brass rule */
   .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.875rem;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 500;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
   .eyebrow::before {
     content: "";
-    width: 2.25rem;
+    width: 1.5rem;
     height: 1px;
     background: var(--color-brass);
   }

@@ -10,7 +10,7 @@ export function TableWrap({ label, children, className }: { label: string; child
       role="region"
       aria-label={label}
       tabIndex={0}
-      className={cn("relative overflow-x-auto border border-white/70 bg-surface/90 shadow-[var(--shadow-sm)] backdrop-blur-md", className)}
+      className={cn("relative overflow-x-auto border border-border bg-surface", className)}
     >
       {children}
     </div>
@@ -31,12 +31,12 @@ export function TR({ className, ...props }: HTMLAttributes<HTMLTableRowElement>)
 
 export function TH({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <th scope="col" className={cn("px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted whitespace-nowrap", className)} {...props} />
+    <th scope="col" className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap", className)} {...props} />
   );
 }
 
 export function TD({ className, numeric, ...props }: TdHTMLAttributes<HTMLTableCellElement> & { numeric?: boolean }) {
-  return <td className={cn("px-4 py-3 align-middle", numeric && "tabular text-right", className)} {...props} />;
+  return <td className={cn("px-3 py-2 align-middle", numeric && "tabular text-right", className)} {...props} />;
 }
 
 /** Sortable column header: a real link so sorting works without JavaScript and is shareable. */
@@ -56,7 +56,7 @@ export function SortHeader({
     <th
       scope="col"
       aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
-      className={cn("px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted whitespace-nowrap", className)}
+      className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap", className)}
     >
       <Link href={href} className="inline-flex items-center gap-1 hover:text-text">
         {label}

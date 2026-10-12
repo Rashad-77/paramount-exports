@@ -70,7 +70,7 @@ export function QuotationEditor({
 
   return (
     <fieldset className="space-y-4">
-      <legend className="font-display text-xl text-walnut">Items</legend>
+      <legend className="text-base font-semibold text-walnut">Items</legend>
       <input type="hidden" name="itemsJson" value={JSON.stringify(items)} />
       {itemErrors.length > 0 ? (
         <Alert tone="danger" title="Please fix the items">

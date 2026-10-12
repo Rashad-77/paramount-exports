@@ -3,10 +3,10 @@ import type { ReactNode } from "react";
 /** Standard internal page title block: one h1, optional description, actions aligned right on wide screens. */
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
-    <header className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="font-display text-[2rem] leading-tight text-walnut md:text-[2.5rem]">{title}</h1>
-        {description ? <p className="mt-2 max-w-prose text-sm text-text-muted">{description}</p> : null}
+        <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">{title}</h1>
+        {description ? <p className="mt-0.5 max-w-prose text-[0.8125rem] text-text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </header>
@@ -16,17 +16,17 @@ export function PageHeader({ title, description, actions }: { title: string; des
 /** Content block with a thin border. Prefer this to ad-hoc bordered divs. */
 export function Panel({ title, description, children, actions }: { title?: string; description?: string; children: ReactNode; actions?: ReactNode }) {
   return (
-    <section className="min-w-0 glass border-t-2 border-t-walnut">
+    <section className="flex h-full min-w-0 flex-col border border-border bg-surface shadow-[var(--shadow-sm)]">
       {title ? (
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
           <div className="min-w-0">
-            <h2 className="text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-walnut">{title}</h2>
-            {description ? <p className="mt-0.5 text-sm text-text-muted">{description}</p> : null}
+            <h2 className="text-sm font-semibold text-walnut">{title}</h2>
+            {description ? <p className="mt-0.5 text-xs text-text-muted">{description}</p> : null}
           </div>
-          {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
+          {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
         </div>
       ) : null}
-      <div className="p-5">{children}</div>
+      <div className="flex-1 p-4">{children}</div>
     </section>
   );
 }

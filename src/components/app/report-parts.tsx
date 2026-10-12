@@ -4,9 +4,9 @@ import { Panel } from "@/components/ui/page-header";
 /** One figure with its label. Always inside a <dl> via <Metrics>. */
 export function Metric({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
-    <div className="min-w-0 p-2">
-      <dt className="text-sm text-text-muted">{label}</dt>
-      <dd className="font-display lining-nums tabular-nums mt-1 break-words text-[1.75rem] leading-tight">
+    <div className="min-w-0 border border-border bg-paper-deep/40 px-3 py-2.5">
+      <dt className="text-[0.8125rem] text-text-muted">{label}</dt>
+      <dd className="font-semibold tabular-nums mt-0.5 break-words text-xl leading-tight">
         {value}
         {hint ? <span className="mt-0.5 block text-xs font-normal text-text-muted">{hint}</span> : null}
       </dd>
