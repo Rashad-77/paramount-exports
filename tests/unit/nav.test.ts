@@ -21,14 +21,14 @@ describe("navigation visibility", () => {
     const l = labels(actor(["workshop"]));
     expect(l).toContain("Production jobs");
     expect(l).not.toContain("Enquiries & leads");
-    for (const hidden of ["Customers", "Payments", "Expenses", "Reports", "Quotations", "Orders", "Users"]) {
+    for (const hidden of ["Customers", "Outstanding balances", "Expenses", "Reports", "Quotations", "Orders", "Users"]) {
       expect(l, hidden).not.toContain(hidden);
     }
   });
 
   it("hides workshop customer files and CRM from finance but shows payments and expenses", () => {
     const l = labels(actor(["finance"]));
-    expect(l).toEqual(expect.arrayContaining(["Payments", "Expenses", "Reports"]));
+    expect(l).toEqual(expect.arrayContaining(["Outstanding balances", "Expenses", "Reports"]));
     expect(l).not.toContain("Enquiries & leads");
     expect(l).not.toContain("Users");
   });

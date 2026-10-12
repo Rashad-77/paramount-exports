@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
 import { profiles, uploadedFiles } from "./foundation";
+import { inventoryItems } from "./inventory";
 
 export const productKind = pgEnum("product_kind", ["stocked", "made_to_order"]);
 export const availabilityStatus = pgEnum("availability_status", ["in_stock", "made_to_order", "on_request", "sold"]);
@@ -71,6 +72,10 @@ export const productVariants = pgTable(
     sku: text("sku").notNull().unique(),
     label: text("label").notNull().default("Standard"),
     listPrice: numeric("list_price", { precision: 14, scale: 2 }),
+    /** Set when stock is tracked for this option (ready-made orders require it). One option ↔ one inventory item. */
+    inventoryItemId: uuid("inventory_item_id")
+      .references(() => inventoryItems.id, { onDelete: "restrict" })
+      .unique(),
     isActive: boolean("is_active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,

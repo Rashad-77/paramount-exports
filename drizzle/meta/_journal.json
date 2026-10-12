@@ -64,6 +64,20 @@
       "when": 1791812458099,
       "tag": "0008_step3_triggers_security",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791813436859,
+      "tag": "0009_inventory_and_sales",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791813437931,
+      "tag": "0010_step4_ledger_triggers_security",
+      "breakpoints": true
     }
   ]
 }

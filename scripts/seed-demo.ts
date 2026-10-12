@@ -47,6 +47,9 @@ async function main() {
   const { createFollowUp, addActivity } = await import("../src/server/crm");
   const { createQuotation, sendQuotation, decideQuotation } = await import("../src/server/quotations");
   const { addDaysLocal } = await import("../src/lib/time");
+  const { enableStockTracking, recordManualMovement, setLowStockThreshold, transferStock, createInventoryItem } = await import("../src/server/inventory");
+  const { createReadyMadeOrder, confirmOrder, recordPayment, advanceOrder } = await import("../src/server/orders");
+  const { getDb: db2 } = await import("../src/lib/db/client");
 
   const upload = async (purpose: "catalogue" | "gallery", actor: Actor, top: [number, number, number], bottom: [number, number, number], w = 640, h = 800) => {
     const bytes = samplePng(w, h, top, bottom);
@@ -117,6 +120,32 @@ async function main() {
   const won = await q(undefined, c1, "[Sample] Console table", "98000.00");
   await sendQuotation(sales, won);
   await decideQuotation(sales, won, "accepted");
+
+  // Stock, orders and payments (sample)
+  const showroom = ((await db2().execute(sql`SELECT id FROM locations WHERE kind = 'showroom' LIMIT 1`)) as unknown as Array<{ id: string }>)[0]!.id;
+  const workshopLoc = ((await db2().execute(sql`SELECT id FROM locations WHERE kind = 'workshop' LIMIT 1`)) as unknown as Array<{ id: string }>)[0]!.id;
+  const variants = (await db2().execute(sql`SELECT v.id, v.sku FROM product_variants v ORDER BY v.sku`)) as unknown as Array<{ id: string; sku: string }>;
+  const items: Record<string, string> = {};
+  for (const v of variants) items[v.sku] = await enableStockTracking(manager, v.id);
+  const opening: Record<string, string> = { "SMP-DT-180": "3", "SMP-DT-220": "1", "SMP-CH-01": "12", "SMP-ST-01": "6", "SMP-SB-01": "2", "SMP-DT-180-DK": "2" };
+  for (const [sku, qty] of Object.entries(opening)) if (items[sku]) await recordManualMovement(manager, { itemId: items[sku]!, locationId: showroom, kind: "opening", quantity: qty, reason: "Sample opening balance" });
+  await setLowStockThreshold(manager, { itemId: items["SMP-DT-220"]!, locationId: showroom, threshold: "2" });
+  await setLowStockThreshold(manager, { itemId: items["SMP-SB-01"]!, locationId: showroom, threshold: "2" });
+  const timber = await createInventoryItem(manager, { kind: "raw_material", sku: "SMP-TIM-01", name: "[Sample] Timber plank 50×150", unit: "m", costPrice: "1800.00" });
+  await recordManualMovement(manager, { itemId: timber, locationId: workshopLoc, kind: "opening", quantity: "24", reason: "Sample opening balance" });
+  await setLowStockThreshold(manager, { itemId: timber, locationId: workshopLoc, threshold: "30" });
+  await transferStock(sales, { fromLocationId: showroom, toLocationId: workshopLoc, items: [{ itemId: items["SMP-ST-01"]!, quantity: "1" }], note: "Sample: sent to the workshop for refinishing" });
+  const variantId = (sku: string) => variants.find((v) => v.sku === sku)!.id;
+  const order = await createReadyMadeOrder(sales, {
+    customerId: c1, locationId: showroom, deliveryCharge: "2500.00", depositTerms: "Sample: half now, half on delivery",
+    items: [{ kind: "ready_made", variantId: variantId("SMP-CH-01"), description: "[Sample] Spindle Chair", quantity: "4", unitPrice: "32000.00", discountAmount: "6400.00" }] as never,
+  });
+  await confirmOrder(sales, order);
+  await recordPayment(sales, { orderId: order, amount: "62050.00", method: "bank_transfer", reference: "SAMPLE-TRX-1" });
+  const delivered = await createReadyMadeOrder(sales, { customerId: c3, locationId: showroom, deliveryCharge: "0.00", items: [{ kind: "ready_made", variantId: variantId("SMP-ST-01"), description: "[Sample] Low Stool", quantity: "2", unitPrice: "14500.00", discountAmount: "0.00" }] as never });
+  await confirmOrder(sales, delivered);
+  await recordPayment(sales, { orderId: delivered, amount: "29000.00", method: "cash" });
+  await advanceOrder(sales, delivered, "delivered");
   console.log("Sample data created: categories, products, a gallery project, enquiries, customers, follow-ups and quotations. All labelled [Sample].");
   process.exit(0);
 }

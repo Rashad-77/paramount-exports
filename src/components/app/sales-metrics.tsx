@@ -32,21 +32,21 @@ export function SalesMetrics({ d, currency, timezone, preview = false }: { d: Sa
   return (
     <>
       <Panel title="Enquiries">
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Stat label="New" value={d.leads.new} href={link("/app/leads?status=new")} />
           <Stat label="Open, unassigned" value={d.leads.unassignedOpen} href={link("/app/leads?assignedTo=unassigned&status=open")} tone="warning" />
           <Stat label="Open in total" value={d.leads.open} href={link("/app/leads?status=open")} />
         </dl>
       </Panel>
       <Panel title="Follow-ups">
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Stat label="Overdue (mine)" value={d.followUps.overdueMine} href={link("/app/follow-ups?status=overdue")} tone="danger" />
           <Stat label="Due today (mine)" value={d.followUps.dueTodayMine} href={link("/app/follow-ups")} />
           <Stat label="Overdue (everyone)" value={d.followUps.overdueAll} href={link("/app/follow-ups?who=all&status=overdue")} />
         </dl>
       </Panel>
       <Panel title="Quotations awaiting a reply" description="Value shown is what is outstanding, not revenue. Only accepted and delivered work counts as sales.">
-        <dl className="grid grid-cols-3 gap-2">
+        <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Stat label="Sent, awaiting reply" value={d.quotations.awaitingCount} href={link("/app/quotations?status=sent")} />
           <Stat label="Outstanding value" value={formatMoney(d.quotations.awaitingValue, currency)} />
           <Stat label="Past valid-until date" value={d.quotations.pastValidityCount} tone="warning" />

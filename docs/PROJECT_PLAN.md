@@ -1,6 +1,6 @@
 # Project Plan — Furniture Website + CRM + ERP-lite
 
-Status: **Steps 0–3 complete (see README for known limitations); Step 4 (sales + inventory) is next.**
+Status: **Steps 0–4 complete (see README for known limitations); Step 5 (workshop + purchasing) is next.**
 Deployment target (confirmed by the client): **Vercel**.
 
 ## 1. What exists today
@@ -51,7 +51,7 @@ customer tracking portal, advanced production scheduling, native apps.
 |---|----------|--------------------|
 | Q1 | Real business name, logo, brand guidelines, photography? | Placeholder name/logo; palette from spec §15 |
 | Q2 | Currency and timezone? | LKR, Asia/Colombo — **unconfirmed** |
-| Q3 | Stock reservation policy for ready-made orders | Reserve on **Confirmed**; convert to a sale deduction on **Delivered**; release on **Cancelled** |
+| Q3 | Stock reservation policy for ready-made orders | Reserve on **Confirmed**; convert to a sale deduction on **Delivered**; release on **Cancelled** (implemented, tested) |
 | Q4 | Who may record payments? | Sales, Finance, Manager, Owner can record; only Finance/Manager/Owner can void (void = reversing record, never delete) |
 | Q5 | Discount authority | Sales may discount up to a configurable % (default 0 until set); beyond that Manager/Owner |
 | Q6 | Deposit policy for custom orders | Free-form per order (amount/percentage set by staff); no default percentage |

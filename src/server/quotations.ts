@@ -1,70 +1,17 @@
 import "server-only";
-import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { can, requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
-import { customers, leadActivities, leads, productVariants, products, quotationItems, quotationRevisions, quotations, uploadedFiles } from "@/lib/db/schema";
+import { customers, leadActivities, leads, quotationItems, quotationRevisions, quotations, uploadedFiles } from "@/lib/db/schema";
 import { invalidState, notFound, validation } from "@/lib/errors";
-import { dec, documentTotals, lineTotal, moneyString, qtyString } from "@/lib/money";
-import type { QuotationDraftInput, QuotationItemInput, QuotationStatus } from "@/lib/schemas/quotation";
+import { moneyString, qtyString } from "@/lib/money";
+import type { QuotationDraftInput, QuotationStatus } from "@/lib/schemas/quotation";
 import { getBusinessSettings } from "@/lib/settings";
 import { todayLocal } from "@/lib/time";
 import { recordAudit } from "./audit";
 import { linkUploads, verifyUploads } from "./files";
 import { escapeLike } from "./leads";
-import { getSalesSettings } from "./settings";
-
-type Computed = {
-  lines: Array<{ item: QuotationItemInput; lineTotal: string }>;
-  totals: { subtotal: string; discountTotal: string; deliveryCharge: string; total: string };
-};
-
-/**
- * All money maths happens here, in decimals, from the submitted quantities and prices. Totals sent by a client are
- * never read. Sales staff are held to the configured discount limit; Managers/Owners can override it.
- */
-async function computeAndCheck(db: DbOrTx, actor: Actor, input: QuotationDraftInput): Promise<Computed> {
-  if (input.items.length === 0) throw validation("Add at least one item.", { itemsJson: ["Add at least one item."] });
-  const maxPct = dec((await getSalesSettings(db)).maxDiscountPercent);
-  const canOverride = can(actor, "quotations:discount_override");
-
-  const variantIds = [...new Set(input.items.map((i) => i.variantId).filter((v): v is string => Boolean(v)))];
-  if (variantIds.length) {
-    const found = await db
-      .select({ id: productVariants.id })
-      .from(productVariants)
-      .innerJoin(products, eq(products.id, productVariants.productId))
-      .where(and(inArray(productVariants.id, variantIds), eq(productVariants.isActive, true), sql`${products.archivedAt} IS NULL`));
-    if (found.length !== variantIds.length) throw validation("One of the products is no longer available. Choose another or enter it as a custom item.", { itemsJson: ["A product on this quotation is no longer available."] });
-  }
-
-  const lines: Computed["lines"] = [];
-  const errors: string[] = [];
-  input.items.forEach((item, i) => {
-    const gross = dec(item.quantity).times(dec(item.unitPrice));
-    const disc = dec(item.discountAmount);
-    if (disc.gt(gross)) {
-      errors.push(`Item ${i + 1}: the discount is larger than the item's value.`);
-      return;
-    }
-    if (disc.gt(0) && !canOverride) {
-      const pct = gross.isZero() ? dec(100) : disc.div(gross).times(100);
-      if (pct.gt(maxPct)) errors.push(`Item ${i + 1}: a discount of ${pct.toDecimalPlaces(1).toString()}% is above your limit of ${maxPct.toString()}%. A manager can approve larger discounts.`);
-    }
-    lines.push({ item, lineTotal: moneyString(lineTotal({ quantity: item.quantity, unitPrice: item.unitPrice, discountAmount: item.discountAmount })) });
-  });
-  if (errors.length) throw validation(errors[0]!, { itemsJson: errors });
-
-  const t = documentTotals(
-    input.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice, discountAmount: i.discountAmount })),
-    input.deliveryCharge,
-  );
-  return { lines, totals: { subtotal: t.subtotal.toFixed(2), discountTotal: t.discountTotal.toFixed(2), deliveryCharge: t.deliveryCharge.toFixed(2), total: t.total.toFixed(2) } };
-}
-
-const spec = (i: QuotationItemInput) => {
-  const s = Object.fromEntries(Object.entries({ dimensions: i.dimensions, material: i.material, finish: i.finish, notes: i.notes }).filter(([, v]) => v));
-  return Object.keys(s).length ? s : null;
-};
+import { computeAndCheck, specification, type Computed } from "./pricing";
 
 async function writeItems(tx: DbOrTx, revisionId: string, c: Computed) {
   if (c.lines.length === 0) return;
@@ -73,9 +20,9 @@ async function writeItems(tx: DbOrTx, revisionId: string, c: Computed) {
       revisionId,
       position: idx + 1,
       kind: l.item.kind,
-      variantId: l.item.kind === "ready_made" ? (l.item.variantId ?? null) : (l.item.variantId ?? null),
+      variantId: l.item.variantId ?? null,
       description: l.item.description,
-      specification: spec(l.item),
+      specification: specification(l.item),
       quantity: qtyString(l.item.quantity),
       unitPrice: moneyString(l.item.unitPrice),
       discountAmount: moneyString(l.item.discountAmount),

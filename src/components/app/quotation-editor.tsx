@@ -39,14 +39,17 @@ export function QuotationEditor({
   variants,
   currency,
   deliveryCharge,
+  allowCustom = true,
 }: {
   initial: EditorItem[];
   variants: VariantChoice[];
   currency: string;
   deliveryCharge: string;
+  /** Orders for stocked goods only accept ready-made products; quotations also take custom pieces. */
+  allowCustom?: boolean;
 }) {
   const { state } = useFormState();
-  const [items, setItems] = useState<EditorItem[]>(initial.length ? initial : [blankItem("custom")]);
+  const [items, setItems] = useState<EditorItem[]>(initial.length ? initial : [blankItem(allowCustom ? "custom" : "ready_made")]);
   const [delivery, setDelivery] = useState(deliveryCharge);
   const patch = (i: number, p: Partial<EditorItem>) => setItems((cur) => cur.map((it, n) => (n === i ? { ...it, ...p } : it)));
 
@@ -128,9 +131,11 @@ export function QuotationEditor({
         <Button variant="secondary" onClick={() => setItems((c) => [...c, blankItem("ready_made")])}>
           <Plus aria-hidden="true" className="size-4" /> Add ready-made item
         </Button>
-        <Button variant="secondary" onClick={() => setItems((c) => [...c, blankItem("custom")])}>
-          <Plus aria-hidden="true" className="size-4" /> Add custom item
-        </Button>
+        {allowCustom ? (
+          <Button variant="secondary" onClick={() => setItems((c) => [...c, blankItem("custom")])}>
+            <Plus aria-hidden="true" className="size-4" /> Add custom item
+          </Button>
+        ) : null}
       </div>
 
       <TextField
@@ -148,7 +153,7 @@ export function QuotationEditor({
         <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="tabular">{preview ? formatMoney(preview.subtotal, currency) : "—"}</dd></div>
         <div className="flex justify-between"><dt className="text-text-muted">Discounts</dt><dd className="tabular">{preview ? `− ${formatMoney(preview.discount, currency)}` : "—"}</dd></div>
         <div className="flex justify-between border-t border-border pt-1 font-semibold"><dt>Total (incl. delivery)</dt><dd className="tabular">{preview ? formatMoney(preview.total, currency) : "—"}</dd></div>
-        <p className="pt-1 text-xs text-text-muted">Preview only; the saved quotation is calculated by the server.</p>
+        <p className="pt-1 text-xs text-text-muted">Preview only; the saved total is calculated by the server.</p>
       </dl>
     </fieldset>
   );

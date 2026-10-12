@@ -5,6 +5,8 @@ import { can } from "@/lib/auth/permissions";
 import { addDaysLocal, todayLocal } from "@/lib/time";
 import { one, type SP } from "@/lib/list-params";
 import { getSalesDashboard } from "@/server/crm-dashboard";
+import { LowStockPanel } from "@/components/app/low-stock-panel";
+import { lowStockAlerts } from "@/server/inventory";
 import { getDb } from "@/lib/db/client";
 import { locations } from "@/lib/db/schema";
 import { requireActor } from "@/lib/auth/session";
@@ -34,6 +36,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     const from = isDate(one(sp.from)) ?? addDaysLocal(-29, business.timezone);
     const d = await getSalesDashboard(actor, from <= to ? { from, to } : { from: to, to: from });
     metrics = <SalesMetrics d={d} currency={business.currency} timezone={business.timezone} />;
+  }
+
+  if (can(actor, "inventory:view") || can(actor, "inventory:view_materials")) {
+    const alerts = await lowStockAlerts(actor);
+    metrics = (
+      <>
+        {metrics}
+        <LowStockPanel rows={alerts.map((a) => ({ id: a.id, name: a.name, location: a.location, available: a.available, threshold: a.threshold, unit: a.unit }))} />
+      </>
+    );
   }
 
   return <DashboardView actor={actor} setup={setup} locations={rows.map((r) => ({ id: r.id, name: r.name, kind: r.kind, isActive: r.isActive }))} metrics={metrics} />;

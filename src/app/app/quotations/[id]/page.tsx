@@ -18,6 +18,9 @@ import { QUOTATION_STATUS_LABEL } from "@/lib/schemas/quotation";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { getQuotation } from "@/server/quotations";
+import { listLocations } from "@/server/inventory";
+import { ActionForm as AF, FField as FF, FSelect as FS, FTextArea as FT, SubmitButton as SB } from "@/components/forms/action-form";
+import { convertQuotationAction } from "../../orders/actions";
 import { QUOTATION_TONE } from "../page";
 import { attachQuotationFilesAction, decideQuotationAction, reviseQuotationAction, sendQuotationAction } from "../actions";
 
@@ -36,6 +39,9 @@ export default async function QuotationPage({ params, searchParams }: { params: 
   }
   const business = await getBusinessSettings();
   const { quotation: q, revision, items, customer } = d;
+  const canConvert = d.isCurrent && q.status === "accepted" && can(actor, "quotations:convert") && can(actor, "orders:write");
+  const allReady = items.length > 0 && items.every((i) => i.kind === "ready_made");
+  const locs = canConvert && allReady ? await listLocations(actor) : [];
   const canWrite = can(actor, "quotations:write");
   const canSend = can(actor, "quotations:send");
   const cur = q.currency;
@@ -83,7 +89,24 @@ export default async function QuotationPage({ params, searchParams }: { params: 
         {d.leadReference ? <span className="text-sm text-text-muted">Enquiry {d.leadReference}</span> : null}
       </div>
       {!d.isCurrent ? <Alert tone="info" title={`Viewing revision ${revision.revisionNo} (superseded)`} className="mb-6">This is an earlier version, kept for the record. <Link className="underline" href={`/app/quotations/${q.id}`}>Go to the current revision</Link>.</Alert> : null}
-      {q.status === "accepted" ? <Alert tone="success" title="Accepted" className="mb-6">This quotation is final and cannot be changed.</Alert> : null}
+      {q.status === "accepted" ? <Alert tone="success" title="Accepted" className="mb-6">This quotation is final and cannot be changed. Create the order below.</Alert> : null}
+      {q.status === "converted" ? <Alert tone="success" title="Converted to an order" className="mb-6">The accepted lines and prices were copied to the order, which now carries them.</Alert> : null}
+      {canConvert ? (
+        <div className="mb-6">
+          <Panel title="Create the order" description={allReady ? "Ready-made items: choose where the stock comes from. Stock is reserved when you confirm the order." : "Custom items become a custom order. Production is set up when the order is confirmed."}>
+            <AF action={convertQuotationAction}>
+              <input type="hidden" name="quotationId" value={q.id} />
+              <div className="grid gap-4 md:grid-cols-2">
+                {allReady ? <FS name="locationId" label="Stock comes from" required placeholder="Choose a location" options={locs.filter((l) => l.isActive).map((l) => ({ value: l.id, label: l.name }))} /> : null}
+                {!allReady ? <FF name="requestedCompletionDate" label="Wanted by" type="date" /> : null}
+              </div>
+              <FT name="depositTerms" label="Deposit and payment terms" rows={2} hint="Free text, e.g. “30% now, balance on delivery”. No percentage is assumed." />
+              <FT name="notes" label="Notes" rows={2} />
+              <SB>Create order from this quotation</SB>
+            </AF>
+          </Panel>
+        </div>
+      ) : null}
 
       {d.isCurrent ? (
         <div className="mb-6 flex flex-wrap items-center gap-3">

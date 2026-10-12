@@ -92,3 +92,11 @@ Each migration that adds tables or functions ends with `SELECT enforce_rls();` (
 ## Quotation immutability
 
 `quotation_revisions.frozen_at` is set when a quotation is sent. Database triggers (`forbid_frozen_revision_change`, `forbid_frozen_item_change`) then refuse any UPDATE/DELETE of that revision and any INSERT/UPDATE/DELETE of its items — so a sent version can only be superseded by a new revision, whatever code (or manual SQL) tries. Tests assert this with raw SQL.
+
+## Stock ledger design (Step 4)
+
+- `inventory_movements` is append-only (trigger). Each row has `on_hand_delta` and `reserved_delta`; a CHECK ties the allowed shape to the movement type (e.g. `receipt` must add on-hand and not touch reserved; `sale` must reduce on-hand and either equal reserved or leave it).
+- `inventory_balances` is updated **only** by a trigger on movement insert. CHECKs forbid `on_hand < 0`, `reserved < 0` and `reserved > on_hand`, so negative stock or over-reservation is impossible even if application code is bypassed.
+- The trigger creates the balance row at zero first and then UPDATEs: a single `INSERT … ON CONFLICT DO UPDATE` would have the proposed (negative) insert row rejected by the CHECK before the conflict is resolved (found by the test suite).
+- Services lock all touched balance rows in a fixed (item, location) order before replaying movements, which makes concurrent multi-line orders deadlock-free and lets errors report exact available/needed quantities.
+- Orders: lines and money are frozen once an order leaves `draft` (trigger); `delivered` and `cancelled` are final (trigger). Payments are append-only; a void is a negative row linked by `voids_payment_id` (unique, so a payment can be voided once).

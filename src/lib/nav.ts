@@ -33,8 +33,8 @@ export const NAV: NavGroup[] = [
   {
     label: "Sales",
     items: [
-      { label: "Orders", href: "/app/orders", permission: "orders:view", available: false },
-      { label: "Payments", href: "/app/payments", permission: "payments:view", available: false },
+      { label: "Orders", href: "/app/orders", permission: "orders:view", available: true },
+      { label: "Outstanding balances", href: "/app/payments", permission: "payments:view", available: true },
     ],
   },
   {
@@ -42,15 +42,16 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Products", href: "/app/products", permission: "products:view", available: true },
       { label: "Categories", href: "/app/categories", permission: "products:view", available: true },
-      { label: "Stock", href: "/app/stock", permission: "inventory:view", available: false },
-      { label: "Transfers", href: "/app/transfers", permission: "inventory:transfer", available: false },
+      { label: "Stock", href: "/app/stock", permission: "inventory:view", available: true },
+      { label: "Transfers", href: "/app/transfers", permission: "inventory:transfer", available: true },
+      { label: "Locations", href: "/app/locations", permission: "inventory:view", available: true },
     ],
   },
   {
     label: "Workshop",
     items: [
       { label: "Production jobs", href: "/app/jobs", permission: "production:view", available: false },
-      { label: "Materials", href: "/app/materials", permission: "inventory:view_materials", available: false },
+      { label: "Materials", href: "/app/materials", permission: "inventory:view_materials", available: true },
     ],
   },
   {

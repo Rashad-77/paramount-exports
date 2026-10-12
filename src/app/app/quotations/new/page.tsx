@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { QuotationForm } from "@/components/app/quotation-form";
+import { CustomerPicker } from "@/components/app/customer-picker";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
@@ -23,11 +23,9 @@ export default async function NewQuotationPage({ searchParams }: { searchParams:
   if (!customerId) {
     return (
       <>
-        <PageHeader title="New quotation" />
+        <PageHeader title="New quotation" description="Choose the customer first." />
         <Panel>
-          <p className="text-sm">
-            A quotation is for a customer. Open the customer (or create one from an enquiry) and choose “New quotation”. <Link className="underline" href="/app/customers">Go to customers</Link>.
-          </p>
+          <CustomerPicker actor={actor} basePath="/app/quotations/new" q={one(sp.q)?.slice(0, 80)} />
         </Panel>
       </>
     );

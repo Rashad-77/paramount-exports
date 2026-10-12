@@ -6,7 +6,7 @@ Status key: ☐ not started · ◐ partial · ☑ passing (automated). Updated a
 |---|------|-----------|------|--------|
 | 1 | Visitor submits custom enquiry with valid details + image → appears in CRM, assignee can view | integration + e2e | 2 | ☑ `enquiries.db.test.ts` (service → leads list/detail as the assigned user, file linked privately) and Playwright `public-site.spec.ts` (real browser upload + DB check). Staff *screen* viewing is covered by the service test; it needs Supabase sign-in to e2e |
 | 2 | Staff create customer, lead, follow-up task and quotation | integration | 3 | ☑ `crm.db.test.ts` (ACCEPTANCE #2): exact decimal totals, specs, follow-up, link to enquiry. Also covered: discount limit, revisions, immutability (incl. raw-SQL attempts), concurrent send, expiry |
-| 3 | Accepted quotation → order, preserving customer and line items (no duplication) | integration | 3/4 | ◐ quotation side done (accept is final, cannot be edited/revised); the conversion itself is Step 4 |
+| 3 | Accepted quotation → order, preserving customer and line items (no duplication) | integration | 3/4 | ☑ `inventory-orders.db.test.ts`: lines, prices, totals, customer and revision link preserved; one order per quotation even under a race; mixed ready-made/custom is refused with a clear message |
 | 4 | Ready-made order reserves/deducts stock once; concurrent orders can't oversell | integration (real Postgres, parallel tx) | 4 | ☐ |
 | 5 | Custom order creates production job with specs + reference images | integration | 5 | ☐ |
 | 6 | Workshop updates assigned job stage; unauthorized roles blocked from finance data | integration + authz matrix | 1 (matrix), 5 | ◐ permission-matrix unit tests pass; job-stage flow is Step 5 |
@@ -14,7 +14,7 @@ Status key: ☐ not started · ◐ partial · ☑ passing (automated). Updated a
 | 8 | Material consumption decreases stock once, linked to correct job | integration | 5 | ☐ |
 | 9 | Job completion records status; optional finished-goods movement without duplicates | integration | 5 | ☐ |
 | 10 | Payments update outstanding balance with decimal arithmetic | unit + integration | 4 | ☐ |
-| 11 | Showroom ↔ workshop transfer records both sides atomically | integration | 4 | ☐ |
+| 11 | Showroom ↔ workshop transfer records both sides atomically | integration | 4 | ☑ paired movements share the transfer id; a transfer short on any line leaves no trace at all |
 | 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ◐ DB-role table + function denial, `/app` redirect, private-file download 404, staff upload purposes closed to anonymous: all tested. Orders/suppliers/customers routes arrive with their modules |
 | 13 | Key forms show understandable validation/error messages | e2e + unit (schemas) | 2–6 | ◐ enquiry, login, catalogue, settings, customer (duplicate warning), quotation (per-line messages) covered; sales/workshop forms follow |
 | 14 | App builds; migrations apply to clean DB; tests pass | CI | every step | ◐ verified locally at end of Step 1 (build, migrations on a clean DB, 56 unit/integration + 16 e2e); GitHub CI not yet run |
