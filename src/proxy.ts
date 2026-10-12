@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { DEMO_ROLE_COOKIE_NAME, demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
 
 /**
  * Next.js 16 "proxy" (formerly middleware). It does two things only:
@@ -18,6 +19,14 @@ export async function proxy(request: NextRequest) {
   const demo =
     process.env.NODE_ENV === "development" && process.env.DEMO_MODE === "true" && !process.env.VERCEL && /^(postgres(ql)?:\/\/[^@]*@)?(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(process.env.DATABASE_URL ?? "");
   if (demo) return NextResponse.next();
+
+  // Public demo deployment (no Supabase; see lib/auth/demo-deployment.ts). The real check is repeated in getActor().
+  if (demoDeploymentEnabled()) {
+    if (isInternal && !request.cookies.get(DEMO_ROLE_COOKIE_NAME)) return NextResponse.redirect(new URL("/login", request.url));
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "private, no-store");
+    return res;
+  }
 
   if (!url || !key) {
     // Auth is not configured: the internal app cannot be used, the public site still works.

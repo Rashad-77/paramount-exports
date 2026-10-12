@@ -1,11 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
+import { DEMO_ROLE_COOKIE } from "@/lib/auth/demo";
+import { demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
 
@@ -79,6 +81,7 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
 }
 
 export async function signOut(): Promise<void> {
+  if (demoDeploymentEnabled()) (await cookies()).delete(DEMO_ROLE_COOKIE);
   if (hasSupabaseAuth()) {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.signOut();

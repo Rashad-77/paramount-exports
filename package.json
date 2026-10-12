@@ -20,6 +20,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "create-owner": "tsx scripts/create-owner.ts",
     "create-user": "tsx scripts/create-owner.ts",
+    "vercel-build": "tsx scripts/prepare-demo-db.ts && pnpm build",
     "docs:permissions": "tsx scripts/gen-permissions-doc.ts",
     "storage:setup": "tsx scripts/setup-storage.ts",
     "db:seed": "tsx --conditions=react-server scripts/seed-demo.ts"

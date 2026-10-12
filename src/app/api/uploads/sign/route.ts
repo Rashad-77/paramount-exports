@@ -18,6 +18,10 @@ const body = z.object({
 export async function POST(req: Request) {
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid upload request." }, { status: 400 });
+  // No storage configured (e.g. the public demo): say so plainly instead of failing obscurely.
+  if (process.env.STORAGE_DRIVER !== "local" && !(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    return NextResponse.json({ error: "Photo uploads are switched off in this demo." }, { status: 503 });
+  }
   try {
     const actor = await getActor();
     const r = await requestUpload(parsed.data, { actor, ip: clientIp(req.headers) });

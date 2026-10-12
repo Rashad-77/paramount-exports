@@ -1,12 +1,15 @@
 /* eslint-disable no-console */
 /**
  * SAMPLE data for development and demos. Everything is labelled "[Sample]" and none of it is real business data.
- * Refuses to run unless: NODE_ENV is not production, DEMO_MODE=true, and DATABASE_URL is a localhost database.
+ * Refuses to run unless EITHER: NODE_ENV is not production, DEMO_MODE=true and DATABASE_URL is a localhost database;
+ * OR this is a public demo deployment (DEMO_DEPLOYMENT=true, no Supabase configured — see docs/DEMO_DEPLOYMENT.md), where it
+ * runs from the Vercel build and skips the sample photos (there is no file storage).
  *   DEMO_MODE=true pnpm db:seed
  * Re-running is safe: it skips if sample data already exists.
  */
 import { config } from "dotenv";
 import { isLocalDatabaseUrl, DEMO_STAFF, DEMO_STAFF_NAMES, ensureDemoStaff } from "../src/lib/auth/demo";
+import { demoDeploymentEnabled } from "../src/lib/auth/demo-deployment";
 import type { Actor } from "../src/lib/auth/permissions";
 import { samplePng } from "./lib/sample-images";
 
@@ -14,10 +17,13 @@ config({ path: ".env.local" });
 config();
 
 async function main() {
-  if (process.env.NODE_ENV === "production" || process.env.DEMO_MODE !== "true" || !isLocalDatabaseUrl(process.env.DATABASE_URL)) {
-    console.error("Refusing to seed: needs DEMO_MODE=true, NODE_ENV!=production and a localhost DATABASE_URL.");
+  const deployment = demoDeploymentEnabled();
+  const local = process.env.NODE_ENV !== "production" && process.env.DEMO_MODE === "true" && isLocalDatabaseUrl(process.env.DATABASE_URL);
+  if (!deployment && !local) {
+    console.error("Refusing to seed: needs DEMO_MODE=true, NODE_ENV!=production and a localhost DATABASE_URL (or a demo deployment).");
     process.exit(1);
   }
+  const withImages = !deployment;
   process.env.STORAGE_DRIVER ??= "local";
   process.env.IP_HASH_SALT ??= "seed-salt-seed-salt-seed-salt-1234";
 
@@ -75,14 +81,18 @@ async function main() {
       material: p.material, finish: "Sample finish", dimensions: p.dims, sku: p.sku, listPrice: p.price,
       isPublished: true, isFeatured: p.featured, showAvailability: false, availability: undefined, showPrice: false, seoTitle: undefined, seoDescription: undefined,
     });
-    const f = await upload("catalogue", manager, [...p.tones[0]] as [number, number, number], [...p.tones[1]] as [number, number, number]);
-    await attachProductImages(manager, id, [f], `${p.name} (sample image)`);
+    if (withImages) {
+      const f = await upload("catalogue", manager, [...p.tones[0]] as [number, number, number], [...p.tones[1]] as [number, number, number]);
+      await attachProductImages(manager, id, [f], `${p.name} (sample image)`);
+    }
     if (p.sku === "SMP-DT-180") await addVariant(manager, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });
   }
 
   const g = await createGalleryProject(manager, { title: "[Sample] Completed project", description: "Sample project for development and demos only.", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
-  const gi = [await upload("gallery", manager, [170, 140, 110], [120, 92, 68], 800, 600), await upload("gallery", manager, [150, 120, 92], [104, 80, 60], 800, 600)];
-  await attachGalleryImages(manager, g, gi, "Sample project photograph");
+  if (withImages) {
+    const gi = [await upload("gallery", manager, [170, 140, 110], [120, 92, 68], 800, 600), await upload("gallery", manager, [150, 120, 92], [104, 80, 60], 800, 600)];
+    await attachGalleryImages(manager, g, gi, "Sample project photograph");
+  }
 
   await updateCrmSettings(owner, { defaultAssigneeId: sales.id });
   const enquiries = [

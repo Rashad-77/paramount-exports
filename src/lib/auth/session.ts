@@ -7,6 +7,7 @@ import { profiles, userRoles } from "@/lib/db/schema";
 import { hasDatabase } from "@/lib/env";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
 import { getDemoActor, demoActorEnabled } from "./demo";
+import { demoDeploymentEnabled } from "./demo-deployment";
 import { isRole, type Actor } from "./permissions";
 
 /**
@@ -16,7 +17,7 @@ import { isRole, type Actor } from "./permissions";
  * - A user with a valid session but no active profile/roles gets an actor with no permissions.
  */
 export const getActor = cache(async (): Promise<Actor | null> => {
-  if (demoActorEnabled()) return getDemoActor(); // development-only; see lib/auth/demo.ts for the safeguards
+  if (demoActorEnabled() || demoDeploymentEnabled()) return getDemoActor(); // dev-only identity / public demo; see lib/auth/demo.ts for the safeguards
   if (!hasSupabaseAuth() || !hasDatabase()) return null;
 
   const supabase = await createSupabaseServerClient();

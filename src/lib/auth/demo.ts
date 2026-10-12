@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { getDb } from "@/lib/db/client";
 import { isRole, type Actor, type Role } from "./permissions";
 import { sql } from "drizzle-orm";
+import { isPlaceholderBusiness, getBusinessSettings } from "@/lib/settings";
+import { demoDeploymentEnabled } from "./demo-deployment";
 
 /**
  * DEVELOPMENT-ONLY demo identity, so the staff screens can be reviewed in a browser without a Supabase project.
@@ -47,6 +49,15 @@ const DEMO_NAMES: Record<Role, string> = {
 
 export const DEMO_ROLE_COOKIE = "demo_role";
 
+/**
+ * Public demo deployment (see demo-deployment.ts): enabled by configuration AND only while the business is still the placeholder.
+ * Saving a real business name switches the demo sign-in off, so a demo cannot quietly become a live system with no password.
+ */
+export async function demoSignInAllowed(): Promise<boolean> {
+  if (!demoDeploymentEnabled()) return false;
+  return isPlaceholderBusiness(await getBusinessSettings());
+}
+
 export const DEMO_STAFF = DEMO_IDS;
 export const DEMO_STAFF_NAMES = DEMO_NAMES;
 
@@ -62,12 +73,16 @@ export async function ensureDemoStaff(db: Pick<ReturnType<typeof getDb>, "execut
 
 let ensured = false;
 export async function getDemoActor(): Promise<Actor | null> {
-  if (!demoActorEnabled()) return null;
+  const deployment = !demoActorEnabled() && demoDeploymentEnabled();
+  if (!demoActorEnabled() && !deployment) return null;
+  if (deployment && !(await demoSignInAllowed())) return null;
   if (!ensured) {
     await ensureDemoStaff(getDb());
     ensured = true;
   }
   const raw = (await cookies()).get(DEMO_ROLE_COOKIE)?.value;
+  // Local development defaults to the owner; a public demo requires an explicit choice on the sign-in page.
+  if (deployment && !(raw && isRole(raw))) return null;
   const role: Role = raw && isRole(raw) ? raw : "owner";
   return { id: DEMO_IDS[role], fullName: DEMO_NAMES[role], roles: [role], isActive: true };
 }

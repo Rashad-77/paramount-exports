@@ -21,6 +21,7 @@ delivery and operational finance. See `docs/` for the plan, architecture, data m
 | `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` | how it is built and what is stored |
 | `docs/ROLE_PERMISSIONS.md` | who can do what (generated from code) |
 | `docs/ACCEPTANCE_TESTS.md` | the acceptance flows and the automated test behind each |
+| `docs/DEMO_DEPLOYMENT.md` | running a password-less sample-data demo on Vercel alone (no Supabase) |
 | `docs/OPERATIONS.md` | setup, releasing, backup and restore, troubleshooting |
 | `docs/SECURITY_REVIEW.md` | what was checked, what was not |
 | `docs/KNOWN_LIMITATIONS.md` | unverified areas, assumptions to confirm, out of scope, next phases |
