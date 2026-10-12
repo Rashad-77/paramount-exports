@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import "@fontsource-variable/instrument-sans";
-@import "@fontsource-variable/cormorant-garamond";
+@import "@fontsource-variable/manrope";
 @import "../styles/tokens.css";
 @import "../styles/wood.css";
 
@@ -43,7 +42,7 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-brass) 35%, white);
+    background: color-mix(in srgb, var(--color-green) 28%, white);
     color: var(--color-charcoal);
   }
 
@@ -72,13 +71,11 @@
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
-  /* Editorial serif. Cormorant has a small x-height, so it is optically scaled up to sit properly beside the sans. */
+  /* Headings: the same family as the text, heavier and tighter. */
   .font-display {
     font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: -0.012em;
-    font-size-adjust: 0.46;
-    /* Cormorant defaults to old-style figures, which look wrong in prices and measurements. */
+    font-weight: 700;
+    letter-spacing: -0.025em;
     font-variant-numeric: lining-nums;
   }
   .tabular {
@@ -87,10 +84,8 @@
 
   /* Staff area: working screens, not a showroom. Plain sans type, flat surfaces, no ornament or entrance motion. */
   .app-ui .font-display {
-    font-family: var(--font-sans);
     font-weight: 600;
-    letter-spacing: 0;
-    font-size-adjust: none;
+    letter-spacing: -0.01em;
   }
   .app-ui .glass {
     background: var(--color-surface);
@@ -113,7 +108,7 @@
     box-shadow: none;
   }
 
-  /* Small tracked label above a heading, with a short brass rule */
+  /* Small tracked label above a heading, with a short green rule */
   .eyebrow {
     display: inline-flex;
     align-items: center;
@@ -128,7 +123,7 @@
     content: "";
     width: 1.5rem;
     height: 1px;
-    background: var(--color-brass);
+    background: var(--color-green);
   }
 
   /* Vertical rhythm for public sections */
@@ -249,7 +244,7 @@
   }
   /* "rule": a hairline that draws from left to right via its background (the box keeps its size) */
   .rule-line {
-    background: linear-gradient(rgb(154 116 64 / 0.7), rgb(154 116 64 / 0.7)) no-repeat 0 0 / 100% 100%;
+    background: linear-gradient(rgb(31 138 91 / 0.55), rgb(31 138 91 / 0.55)) no-repeat 0 0 / 100% 100%;
   }
   .js .rule-line[data-reveal] {
     opacity: 1;
@@ -303,13 +298,13 @@
     }
   }
 
-  /* Hero atmosphere: a slow brass glow drifting behind the headline, and a gently floating framed panel */
+  /* Hero atmosphere: a slow green glow drifting behind the headline, and a gently floating framed panel */
   .hero-glow {
     position: absolute;
     inset: -20%;
     z-index: 0;
     pointer-events: none;
-    background: radial-gradient(40% 40% at 70% 30%, rgb(154 116 64 / 0.32), transparent 70%), radial-gradient(35% 35% at 20% 80%, rgb(154 116 64 / 0.16), transparent 70%);
+    background: radial-gradient(40% 40% at 72% 28%, rgb(31 138 91 / 0.16), transparent 70%), radial-gradient(35% 35% at 18% 82%, rgb(154 116 64 / 0.1), transparent 70%);
     animation: glow-drift 22s ease-in-out infinite alternate;
   }
   @keyframes glow-drift {
@@ -348,7 +343,7 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    border: 1px solid var(--color-brass);
+    border: 1px solid var(--color-green);
     transform: translate3d(16px, 16px, 0);
     transition: transform var(--duration-slow) var(--ease-out);
   }
@@ -378,7 +373,7 @@
     .card-lift:hover {
       transform: translate3d(0, -6px, 0);
       box-shadow: var(--shadow-lg);
-      border-color: var(--color-brass);
+      border-color: var(--color-green);
     }
   }
 
@@ -407,7 +402,7 @@
     right: 0;
     bottom: 0;
     height: 2px;
-    background: var(--color-brass);
+    background: var(--color-green);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--duration-slow) var(--ease-out);
@@ -576,7 +571,88 @@
     }
   }
 
-  /* Ambient light behind the whole page: soft brass, olive and linen blooms that drift slowly, so glass has something to frost */
+  /* Chart motion: lines draw in, bars and rings grow, areas fade up. All of it is off under reduced motion. */
+  .chart-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: chart-draw 1100ms var(--ease-out) 100ms forwards;
+  }
+  @keyframes chart-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .chart-fade {
+    animation: chart-fade 700ms var(--ease-out) 150ms both;
+  }
+  @keyframes chart-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .chart-grow {
+    animation: chart-grow 900ms var(--ease-out) both;
+  }
+  @keyframes chart-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .chart-sweep {
+    animation: chart-sweep 1000ms var(--ease-out) both;
+  }
+  @keyframes chart-sweep {
+    from {
+      stroke-dasharray: 0 1000;
+    }
+  }
+  /* Staff cards rise in one after another */
+  .dash-in > * {
+    animation: dash-in 600ms var(--ease-out) both;
+  }
+  .dash-in > *:nth-child(2) { animation-delay: 60ms; }
+  .dash-in > *:nth-child(3) { animation-delay: 120ms; }
+  .dash-in > *:nth-child(4) { animation-delay: 180ms; }
+  .dash-in > *:nth-child(n + 5) { animation-delay: 240ms; }
+  @keyframes dash-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-draw {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+    .chart-fade,
+    .chart-grow,
+    .chart-sweep,
+    .dash-in > * {
+      animation: none;
+    }
+  }
+
+  /* Neutral image frame: no texture, just a pale ground with a faint diagonal hatch. */
+  .image-placeholder {
+    background-color: var(--color-paper-deep);
+    background-image: repeating-linear-gradient(135deg, rgb(31 138 91 / 0.06) 0 1px, transparent 1px 14px);
+    border: 1px solid var(--color-border);
+  }
+
+  /* The wood grain lives on the page body only: a faint fixed texture under everything. */
+  .ambient-page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--grain-fine);
+    background-size: 420px 520px;
+    opacity: 0.07;
+  }
+
+  /* Ambient light behind the whole page: soft green and brass blooms that drift slowly, so glass has something to frost */
   .ambient-page::before {
     content: "";
     position: fixed;
@@ -584,9 +660,9 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(38vmax 38vmax at 12% 8%, rgb(154 116 64 / 0.2), transparent 70%),
-      radial-gradient(34vmax 34vmax at 92% 30%, rgb(83 99 77 / 0.16), transparent 70%),
-      radial-gradient(42vmax 42vmax at 30% 95%, rgb(214 203 185 / 0.55), transparent 70%);
+      radial-gradient(38vmax 38vmax at 12% 8%, rgb(31 138 91 / 0.1), transparent 70%),
+      radial-gradient(34vmax 34vmax at 92% 30%, rgb(154 116 64 / 0.08), transparent 70%),
+      radial-gradient(42vmax 42vmax at 30% 95%, rgb(31 138 91 / 0.07), transparent 70%);
     animation: ambient-drift 32s ease-in-out infinite alternate;
   }
   @keyframes ambient-drift {
@@ -624,14 +700,14 @@
     aspect-ratio: 1;
     top: 12%;
     right: -6%;
-    background: radial-gradient(circle at 35% 35%, rgb(154 116 64 / 0.55), rgb(154 116 64 / 0.1) 70%);
+    background: radial-gradient(circle at 35% 35%, rgb(31 138 91 / 0.28), rgb(31 138 91 / 0.04) 70%);
   }
   .orbs::after {
     width: clamp(14rem, 28vw, 26rem);
     aspect-ratio: 1;
     bottom: 14%;
     left: -5%;
-    background: radial-gradient(circle at 60% 40%, rgb(83 99 77 / 0.42), rgb(83 99 77 / 0.08) 70%);
+    background: radial-gradient(circle at 60% 40%, rgb(154 116 64 / 0.2), rgb(154 116 64 / 0.03) 70%);
     animation-delay: -9s;
     animation-direction: alternate-reverse;
   }
@@ -685,7 +761,7 @@
     font-weight: 500;
     font-variant-numeric: lining-nums;
     line-height: 0.85;
-    color: var(--color-brass-text);
+    color: var(--color-green-text);
   }
 }
 

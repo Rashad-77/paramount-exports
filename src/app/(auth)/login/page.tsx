@@ -24,12 +24,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 function AuthFrame({ name, heading, sub, children }: { name: string; heading: string; sub: string; children: React.ReactNode }) {
   return (
     <main id="main" className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
-      <div className="wood-dark-bg relative isolate hidden overflow-hidden p-14 text-ivory lg:flex lg:flex-col lg:justify-between">
+      <div className="relative isolate hidden bg-walnut-dark overflow-hidden p-14 text-ivory lg:flex lg:flex-col lg:justify-between">
         <div aria-hidden="true" className="hero-glow" />
         <p className="eyebrow rise-in relative !text-linen-dark">Staff area</p>
         <div className="relative">
           <p className="font-display rise-in rise-in-2 text-[clamp(3rem,5vw,5.5rem)] leading-[1.02] tracking-[-0.02em]">{name}</p>
-          <div className="rise-in rise-in-3 mt-8 h-px w-24 bg-brass" />
+          <div className="rise-in rise-in-3 mt-8 h-px w-24 bg-green" />
         </div>
         <p className="rise-in rise-in-3 relative max-w-xs text-sm leading-relaxed text-ivory/70">Enquiries, orders, workshop, stock and deliveries in one place.</p>
       </div>

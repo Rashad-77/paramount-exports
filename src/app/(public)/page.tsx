@@ -58,22 +58,22 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section aria-labelledby="hero-title" className="wood-dark-bg relative isolate overflow-hidden text-ivory">
+      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden border-b border-border bg-white">
         <div aria-hidden="true" className="hero-glow" />
         <div className="container-page relative grid items-center gap-9 py-[clamp(2.5rem,1.5rem+4vw,4.75rem)] md:grid-cols-12">
           <div className="md:col-span-7">
-            <p className="eyebrow rise-in !text-linen-dark">Furniture · Showroom · Workshop</p>
-            <h1 id="hero-title" aria-label="Wood furniture for the way you live." className="font-display mt-5 text-display text-ivory">
+            <p className="eyebrow rise-in">Furniture · Showroom · Workshop</p>
+            <h1 id="hero-title" aria-label="Wood furniture for the way you live." className="font-display mt-5 text-display text-walnut">
               <Words text="Wood furniture for the way you live." />
             </h1>
-            <p className="rise-in rise-in-3 mt-5 max-w-md text-base leading-relaxed text-ivory/80">
+            <p className="rise-in rise-in-3 mt-5 max-w-md text-base leading-relaxed text-text-muted">
               Choose from ready-made pieces in our showroom, or have something built to your measurements in our workshop.
             </p>
             <div className="rise-in rise-in-3 mt-7 flex flex-wrap gap-4">
-              <ButtonLink href="/custom" size="cta" variant="light">
+              <ButtonLink href="/custom" size="cta">
                 Start a custom enquiry
               </ButtonLink>
-              <ButtonLink href="/products" size="cta" className="!border-ivory/40 !bg-ivory/10 !text-ivory backdrop-blur-md hover:!bg-ivory hover:!text-walnut">
+              <ButtonLink href="/products" size="cta" variant="secondary">
                 Browse the collection
               </ButtonLink>
             </div>
@@ -82,9 +82,9 @@ export default async function HomePage() {
             <div className="float-slow">
               <div className="frame-offset">
                 <div className="relative">
-                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" tone="wood-a" className="aspect-[5/4] w-full" />
-                  <div className="glass-dark absolute inset-x-5 top-5 z-10 !bg-walnut-dark/55 px-5 py-4 text-ivory sm:-left-8 sm:right-auto sm:top-8 sm:w-[14rem]">
-                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-linen">Made to measure</p>
+                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" className="aspect-[5/4] w-full" />
+                  <div className="glass absolute inset-x-5 top-5 z-10 px-5 py-4 text-walnut sm:-left-8 sm:right-auto sm:top-8 sm:w-[14rem]">
+                    <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-green-text">Made to measure</p>
                     <p className="font-display mt-2 text-lg leading-snug">Quoted before we start.</p>
                   </div>
                 </div>
@@ -92,7 +92,7 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-        <div className="relative border-t border-ivory/15 py-3 text-ivory/80">
+        <div className="relative border-t border-border py-3 text-text-muted">
           <Marquee items={marqueeItems} />
         </div>
       </section>
@@ -200,21 +200,21 @@ export default async function HomePage() {
       ) : null}
 
       {/* Process: four steps joined by a line that draws itself */}
-      <section id="custom" aria-labelledby="custom-title" className="wood-dark-bg relative isolate scroll-mt-4 overflow-hidden text-ivory">
+      <section id="custom" aria-labelledby="custom-title" className="relative isolate scroll-mt-4 overflow-hidden border-y border-border bg-green-soft/60">
         <div aria-hidden="true" className="hero-glow" />
         <div className="container-page relative section-y">
           <div className="grid gap-8 md:grid-cols-12 md:items-end">
             <Reveal className="md:col-span-8">
-              <p className="eyebrow !text-linen-dark">Made to order</p>
-              <h2 id="custom-title" className="font-display mt-5 text-headline">
+              <p className="eyebrow">Made to order</p>
+              <h2 id="custom-title" className="font-display mt-5 text-headline text-walnut">
                 Made to your measurements.
               </h2>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-ivory/80">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-text-muted">
                 Have something specific in mind? Tell us the piece, the dimensions and the wood you prefer, and we will respond with a quotation.
               </p>
             </Reveal>
             <Reveal variant="fade" className="md:col-span-4 md:text-right">
-              <ButtonLink href="/custom" size="cta" variant="light">
+              <ButtonLink href="/custom" size="cta">
                 Request a quotation
                 <ArrowRight aria-hidden="true" className="size-4" />
               </ButtonLink>
@@ -224,12 +224,12 @@ export default async function HomePage() {
           <Reveal variant="fade" delay={200} className="rule-line absolute inset-x-0 top-[1.1rem] hidden h-px md:block" />
           <ol className="relative grid gap-10 md:grid-cols-4 md:gap-8">
             {CUSTOM_STEPS.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={250 + i * 160} className="glass-dark relative p-6">
-                <span aria-hidden="true" className="relative z-10 mb-8 grid size-9 place-items-center border border-brass bg-walnut-dark text-sm font-semibold text-linen-dark">
+              <Reveal as="li" key={s.title} delay={250 + i * 160} className="glass relative p-6">
+                <span aria-hidden="true" className="relative z-10 mb-8 grid size-9 place-items-center border border-green bg-white text-sm font-semibold text-green-text">
                   {i + 1}
                 </span>
-                <h3 className="font-display text-[1.25rem] leading-tight">{s.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ivory/75">{s.body}</p>
+                <h3 className="font-display text-[1.25rem] leading-tight text-walnut">{s.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-text-muted">{s.body}</p>
               </Reveal>
             ))}
           </ol>
@@ -257,7 +257,7 @@ export default async function HomePage() {
           </Reveal>
           <Reveal variant="left" className="md:order-1 md:col-span-6">
             <div className="frame-offset frame-offset-left">
-              <ImagePlaceholder label="Workshop — joinery or finishing detail" tone="wood-b" className="aspect-[4/3] w-full" />
+              <ImagePlaceholder label="Workshop — joinery or finishing detail" className="aspect-[4/3] w-full" />
             </div>
           </Reveal>
         </div>
@@ -293,7 +293,7 @@ export default async function HomePage() {
             </dl>
           </Reveal>
           <Reveal variant="zoom" delay={100} className="md:col-span-7">
-            <ImagePlaceholder label="Showroom interior" tone="wood-c" className="aspect-[16/11] w-full" />
+            <ImagePlaceholder label="Showroom interior" className="aspect-[16/11] w-full" />
           </Reveal>
         </div>
       </section>

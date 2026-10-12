@@ -40,9 +40,9 @@ export function DashboardView({
     <div className="space-y-4">
       <ModuleHeader href="/app" actions={actions} />
 
-      {kpis ? <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{kpis}</div> : null}
+      {kpis ? <div className="dash-in grid grid-cols-2 gap-3 lg:grid-cols-4">{kpis}</div> : null}
 
-      {insights ? <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{insights}</div> : null}
+      {insights}
 
       <div className="grid gap-3 lg:grid-cols-2">
         <Panel title="Setup checklist" description={remaining === 0 ? "Everything needed to launch the public site is in place." : `${remaining} of ${setup.length} items still to do.`}>

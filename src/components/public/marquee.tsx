@@ -8,7 +8,7 @@ export function Marquee({ items, className }: { items: string[]; className?: str
       {items.map((t, i) => (
         <li key={`${t}-${i}`} className="flex shrink-0 items-center gap-6 whitespace-nowrap">
           <span className="font-display text-[1.125rem] md:text-[1.25rem]">{t}</span>
-          <span aria-hidden="true" className="inline-block size-1.5 rotate-45 bg-brass" />
+          <span aria-hidden="true" className="inline-block size-1.5 rotate-45 bg-green" />
         </li>
       ))}
     </ul>

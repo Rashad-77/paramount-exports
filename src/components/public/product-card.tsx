@@ -33,7 +33,7 @@ export function ProductCard({ product, currency, priority = false }: { product: 
             </h3>
             {meta ? <p className="mt-1 text-[0.8125rem] text-text-muted">{meta}</p> : null}
           </div>
-          <ArrowUpRight aria-hidden="true" className="mt-1 size-5 shrink-0 text-brass-text transition-transform duration-[var(--duration-base)] ease-[var(--ease-out)] group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
+          <ArrowUpRight aria-hidden="true" className="mt-1 size-5 shrink-0 text-green-text transition-transform duration-[var(--duration-base)] ease-[var(--ease-out)] group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
         </div>
       </Link>
     </article>

@@ -25,7 +25,7 @@ export default function CustomPage() {
           <Reveal
             as="section"
             aria-labelledby="process-title"
-            className="wood-dark-bg relative isolate p-8 text-ivory md:p-12 lg:-mr-px"
+            className="relative isolate bg-walnut p-8 text-ivory md:p-12 lg:-mr-px"
           >
             <h2
               id="process-title"

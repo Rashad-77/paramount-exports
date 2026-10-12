@@ -35,12 +35,12 @@ export function Prose({ text }: { text: string }) {
 
 export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string }) {
   return (
-    <header className="wood-dark-bg relative isolate overflow-hidden text-ivory">
+    <header className="relative isolate overflow-hidden border-b border-border bg-white">
       <div aria-hidden="true" className="hero-glow" />
       <div className="container-page relative py-[clamp(1.75rem,1.25rem+2.5vw,3.25rem)]">
-        <p className="eyebrow rise-in !text-linen-dark">{eyebrow ?? "Furniture · Showroom · Workshop"}</p>
-        <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-ivory">{title}</h1>
-        {lead ? <p className="rise-in rise-in-3 mt-4 max-w-xl text-base leading-relaxed text-ivory/80">{lead}</p> : null}
+        <p className="eyebrow rise-in">{eyebrow ?? "Furniture · Showroom · Workshop"}</p>
+        <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-walnut">{title}</h1>
+        {lead ? <p className="rise-in rise-in-3 mt-4 max-w-xl text-base leading-relaxed text-text-muted">{lead}</p> : null}
       </div>
     </header>
   );

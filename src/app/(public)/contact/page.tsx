@@ -28,7 +28,7 @@ export default async function ContactPage() {
           <Reveal
             as="section"
             aria-labelledby="visit-title"
-            className="wood-dark-bg relative isolate p-8 text-ivory md:p-12"
+            className="relative isolate bg-walnut p-8 text-ivory md:p-12"
           >
             <h2
               id="visit-title"
