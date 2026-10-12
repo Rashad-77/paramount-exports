@@ -7,6 +7,8 @@ import { one, type SP } from "@/lib/list-params";
 import { getSalesDashboard } from "@/server/crm-dashboard";
 import { LowStockPanel } from "@/components/app/low-stock-panel";
 import { lowStockAlerts } from "@/server/inventory";
+import { FinancePanel, OwnerPanel } from "@/components/app/owner-panels";
+import { getFinancialReport, getOwnerDashboard } from "@/server/reports";
 import { WorkshopPanel } from "@/components/app/workshop-panel";
 import { getWorkshopSummary } from "@/server/production";
 import { getDb } from "@/lib/db/client";
@@ -32,12 +34,30 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   ];
 
   let metrics: React.ReactNode = null;
+  const isDate = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);
+  const to = isDate(one(sp.to)) ?? todayLocal(business.timezone);
+  const from = isDate(one(sp.from)) ?? addDaysLocal(-29, business.timezone);
+  const range = from <= to ? { from, to } : { from: to, to: from };
   if (can(actor, "dashboard:sales")) {
-    const isDate = (v?: string) => (v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined);
-    const to = isDate(one(sp.to)) ?? todayLocal(business.timezone);
-    const from = isDate(one(sp.from)) ?? addDaysLocal(-29, business.timezone);
-    const d = await getSalesDashboard(actor, from <= to ? { from, to } : { from: to, to: from });
+    const d = await getSalesDashboard(actor, range);
     metrics = <SalesMetrics d={d} currency={business.currency} timezone={business.timezone} />;
+  }
+  if (can(actor, "dashboard:owner")) {
+    const o = await getOwnerDashboard(actor, range);
+    metrics = (
+      <>
+        {metrics}
+        <OwnerPanel d={o} currency={business.currency} />
+      </>
+    );
+  } else if (can(actor, "dashboard:finance")) {
+    const fin = await getFinancialReport(actor, range);
+    metrics = (
+      <>
+        {metrics}
+        <FinancePanel fin={fin} currency={business.currency} from={range.from} to={range.to} />
+      </>
+    );
   }
 
   if (can(actor, "inventory:view") || can(actor, "inventory:view_materials")) {

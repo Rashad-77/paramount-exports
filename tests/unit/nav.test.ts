@@ -20,8 +20,10 @@ describe("navigation visibility", () => {
   it("hides finance and customer areas from the workshop", () => {
     const l = labels(actor(["workshop"]));
     expect(l).toContain("Production jobs");
+    // Workshop staff get their own deliveries and the operations report (their jobs only); never sales or financial figures.
+    expect(l).toEqual(expect.arrayContaining(["Deliveries", "Reports"]));
     expect(l).not.toContain("Enquiries & leads");
-    for (const hidden of ["Customers", "Outstanding balances", "Expenses", "Reports", "Quotations", "Orders", "Users"]) {
+    for (const hidden of ["Customers", "Outstanding balances", "Expenses", "Quotations", "Orders", "Users"]) {
       expect(l, hidden).not.toContain(hidden);
     }
   });

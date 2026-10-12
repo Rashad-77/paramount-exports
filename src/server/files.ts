@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, inArray, lt } from "drizzle-orm";
 import { requirePermission, can, scopeOf, type Actor, type Permission } from "@/lib/auth/permissions";
 import { getDb, type DbOrTx } from "@/lib/db/client";
-import { productionJobAssignees, productionJobFiles, uploadedFiles } from "@/lib/db/schema";
+import { deliveries, productionJobAssignees, productionJobFiles, uploadedFiles } from "@/lib/db/schema";
 import { conflict, forbidden, notFound, rateLimited, validation } from "@/lib/errors";
 import { hitRateLimit } from "@/lib/rate-limit";
 import {
@@ -182,9 +182,18 @@ export async function canViewFile(actor: Actor, file: { id: string; entityType: 
       return can(actor, "production:view") && (await onAssignedJob(db, actor, file.id));
     case "expense":
       return can(actor, "files:view_finance");
+    case "delivery":
+      // Proof of delivery: everyone who may see deliveries, but delivery staff (scope "own") only their own.
+      if (!can(actor, "deliveries:view")) return false;
+      return scopeOf(actor, "deliveries:view") === "all" || (await onAssignedDelivery(db, actor, file.id));
     default:
       return false;
   }
+}
+
+async function onAssignedDelivery(db: DbOrTx, actor: Actor, fileId: string): Promise<boolean> {
+  const [r] = await db.select({ id: deliveries.id }).from(deliveries).where(and(eq(deliveries.proofFileId, fileId), eq(deliveries.assigneeId, actor.id))).limit(1);
+  return Boolean(r);
 }
 
 /** Scope "all" sees every job's files; scope "own" only those on jobs the person is assigned to. */

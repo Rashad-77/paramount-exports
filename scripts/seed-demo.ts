@@ -164,6 +164,18 @@ async function main() {
   await changeStage(workshopStaff, jobId, "cutting_preparation");
   await recordConsumption(workshopStaff, { jobId, itemId: timber, locationId: workshopLoc, quantity: "8", wasteQuantity: "1", note: "Sample usage", requestKey: crypto.randomUUID() });
   await addIssue(workshopStaff, jobId, "delay", "Sample: waiting for the varnish delivery.");
+
+  // Deliveries, expenses and an after-sales case (sample)
+  const finance: Actor = { id: DEMO_STAFF.finance, fullName: DEMO_STAFF_NAMES.finance, roles: ["finance"], isActive: true };
+  const { createDelivery } = await import("../src/server/deliveries");
+  const { createExpense, listExpenseCategories } = await import("../src/server/expenses");
+  const { createCase } = await import("../src/server/aftersales");
+  await createDelivery(sales, { orderId: order, scheduledOn: addDaysLocal(1, "Asia/Colombo"), windowStart: "10:00", windowEnd: "13:00", addressLine: "Sample address, 12 Example Road", contactName: "[Sample] Nimal Perera", contactPhone: "0771110001", fee: "2500.00", assigneeId: workshopStaff.id, notes: "Sample: call on arrival" });
+  const cats = await listExpenseCategories(finance);
+  const cat = (n: string) => cats.find((c) => c.name === n)!.id;
+  await createExpense(finance, { spentOn: addDaysLocal(-3, "Asia/Colombo"), categoryId: cat("Transport and fuel"), amount: "6400.00", description: "Sample: van fuel", method: "cash" });
+  await createExpense(finance, { spentOn: addDaysLocal(-1, "Asia/Colombo"), categoryId: cat("Utilities"), amount: "18250.00", description: "Sample: workshop electricity", payee: "Sample utility", method: "bank_transfer", reference: "SAMPLE-UTIL-1" });
+  await createCase(sales, { customerId: c3, orderId: delivered, type: "warranty", subject: "[Sample] Wobbling stool", description: "Sample warranty case for demos.", assigneeId: workshopStaff.id, dueOn: addDaysLocal(7, "Asia/Colombo") });
   console.log("Sample data created: categories, products, a gallery project, enquiries, customers, follow-ups and quotations. All labelled [Sample].");
   process.exit(0);
 }

@@ -58,6 +58,8 @@ A unit test fails if this table and the code disagree, so review changes to the 
 | `aftersales:manage` | ✓ | ✓ | ✓ | — | — |
 | `expenses:view` | ✓ | ✓ | — | — | ✓ |
 | `expenses:write` | ✓ | ✓ | — | — | ✓ |
+| `expenses:void` | ✓ | ✓ | — | — | ✓ |
+| `expenses:manage_categories` | ✓ | ✓ | — | — | — |
 | `reports:sales` | ✓ | ✓ | own | — | ✓ |
 | `reports:financial` | ✓ | ✓ | — | — | ✓ |
 | `reports:operations` | ✓ | ✓ | — | own | — |

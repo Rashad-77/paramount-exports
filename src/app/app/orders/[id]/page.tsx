@@ -16,6 +16,10 @@ import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { getOrder } from "@/server/orders";
 import { getJobStatusForOrder } from "@/server/production";
+import { listDeliveriesForOrder } from "@/server/deliveries";
+import { listCasesForOrder } from "@/server/aftersales";
+import { CASE_TONE, DELIVERY_TONE } from "@/lib/ops-ui";
+import { CASE_STATUS_LABEL, CASE_TYPE_LABEL, DELIVERY_STATUS_LABEL } from "@/lib/schemas/operations";
 import { STAGE_LABEL, STAGE_TONE, type JobStage } from "@/lib/production";
 import { advanceOrderAction, cancelOrderAction, confirmOrderAction, recordPaymentAction, updateTermsAction, voidPaymentAction } from "../actions";
 
@@ -32,7 +36,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     throw e;
   }
   const business = await getBusinessSettings();
-  const job = d.order.type === "custom" ? await getJobStatusForOrder(actor, d.order.id) : null;
+  const [job, orderDeliveries, orderCases] = await Promise.all([d.order.type === "custom" ? getJobStatusForOrder(actor, d.order.id) : Promise.resolve(null), listDeliveriesForOrder(actor, d.order.id), listCasesForOrder(actor, d.order.id)]);
   const { order: o, items, money } = d;
   const cur = o.currency;
   const canWrite = can(actor, "orders:write");
@@ -222,6 +226,36 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div className="min-w-0 space-y-6">
+          {orderDeliveries.length > 0 || (can(actor, "deliveries:write") && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready")) ? (
+            <Panel title="Delivery">
+              {orderDeliveries.length === 0 ? <p className="mb-3 text-sm text-text-muted">Not scheduled yet.</p> : (
+                <ul className="mb-3 divide-y divide-border text-sm">
+                  {orderDeliveries.map((x) => (
+                    <li key={x.id} className="flex items-center justify-between gap-3 py-2">
+                      <div><Link className="font-medium text-walnut underline" href={`/app/deliveries/${x.id}`}>{x.reference}</Link><span className="block text-xs text-text-muted">{formatDate(x.scheduledOn, business.timezone)}{x.assigneeName ? ` · ${x.assigneeName}` : ""}</span></div>
+                      <StatusBadge tone={DELIVERY_TONE[x.status]}>{DELIVERY_STATUS_LABEL[x.status]}</StatusBadge>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {can(actor, "deliveries:write") && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready") && !orderDeliveries.some((x) => x.status === "planned" || x.status === "out_for_delivery") ? <ButtonLink href={`/app/deliveries/new?orderId=${o.id}`} variant="secondary">Schedule delivery</ButtonLink> : null}
+            </Panel>
+          ) : null}
+          {orderCases.length > 0 || (can(actor, "aftersales:manage") && o.status !== "draft" && o.status !== "cancelled") ? (
+            <Panel title="After-sales">
+              {orderCases.length === 0 ? <p className="mb-3 text-sm text-text-muted">No cases for this order.</p> : (
+                <ul className="mb-3 divide-y divide-border text-sm">
+                  {orderCases.map((c) => (
+                    <li key={c.id} className="flex items-center justify-between gap-3 py-2">
+                      <div><Link className="font-medium text-walnut underline" href={`/app/after-sales/${c.id}`}>{c.reference}</Link><span className="block text-xs text-text-muted">{CASE_TYPE_LABEL[c.type]} · {c.subject}</span></div>
+                      <StatusBadge tone={CASE_TONE[c.status]}>{CASE_STATUS_LABEL[c.status]}</StatusBadge>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {can(actor, "aftersales:manage") && o.status !== "draft" && o.status !== "cancelled" ? <ButtonLink href={`/app/after-sales/new?customerId=${o.customerId}&orderId=${o.id}`} variant="secondary">Open a case</ButtonLink> : null}
+            </Panel>
+          ) : null}
           {live && canWrite ? (
             <Panel title="Terms and notes">
               <ActionForm action={updateTermsAction}>

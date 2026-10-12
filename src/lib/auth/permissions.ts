@@ -89,6 +89,8 @@ export const PERMISSIONS = {
   // Finance & reports
   "expenses:view": OMF,
   "expenses:write": OMF,
+  "expenses:void": OMF,
+  "expenses:manage_categories": OM,
   "reports:sales": { ...OM, sales: "own", finance: "all" },
   "reports:financial": OMF,
   "reports:operations": { ...OM, workshop: "own" },

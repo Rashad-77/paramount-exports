@@ -271,14 +271,20 @@ const FORWARD: Record<string, OrderStatus[]> = {
 /** Move a confirmed order forward. Delivery is the moment reserved stock actually leaves. Production NEVER does this for you. */
 export async function advanceOrder(actor: Actor, id: string, to: "preparing" | "ready" | "delivered", now: Date = new Date()): Promise<void> {
   requirePermission(actor, "orders:write");
-  await withTx(async (tx) => {
-    const o = await lockOrder(tx, id);
-    if (!(FORWARD[o.status] ?? []).includes(to)) throw invalidState(`An order that is ${o.status} cannot move to ${to}.`);
-    if (to === "delivered" && o.type === "ready_made") await fulfilReservations(tx, actor.id, id);
-    if (to === "delivered" && o.type === "custom") await releaseJobOutputOnDelivery(tx, actor, id);
-    await tx.update(salesOrders).set({ status: to, deliveredAt: to === "delivered" ? now : null }).where(eq(salesOrders.id, id));
-    await recordAudit(tx, actor, { action: `order.${to}`, entityType: "sales_order", entityId: id, before: { status: o.status }, after: { status: to } });
-  });
+  await withTx((tx) => advanceOrderInTx(tx, actor, id, to, now));
+}
+
+/**
+ * The transition itself, for callers that already hold the right permission (the delivery module marks an order
+ * delivered when its delivery is). Locks the order, so a double submit moves it once and the second attempt is refused.
+ */
+export async function advanceOrderInTx(tx: DbOrTx, actor: Actor, id: string, to: "preparing" | "ready" | "delivered", now: Date = new Date()): Promise<void> {
+  const o = await lockOrder(tx, id);
+  if (!(FORWARD[o.status] ?? []).includes(to)) throw invalidState(`An order that is ${o.status} cannot move to ${to}.`);
+  if (to === "delivered" && o.type === "ready_made") await fulfilReservations(tx, actor.id, id);
+  if (to === "delivered" && o.type === "custom") await releaseJobOutputOnDelivery(tx, actor, id);
+  await tx.update(salesOrders).set({ status: to, deliveredAt: to === "delivered" ? now : null }).where(eq(salesOrders.id, id));
+  await recordAudit(tx, actor, { action: `order.${to}`, entityType: "sales_order", entityId: id, before: { status: o.status }, after: { status: to } });
 }
 
 /** Cancel with a reason. Reserved stock is released exactly once. Once money has been taken, a Manager/Owner must do it. */

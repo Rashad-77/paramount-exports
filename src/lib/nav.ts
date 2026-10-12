@@ -35,6 +35,7 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Orders", href: "/app/orders", permission: "orders:view", available: true },
       { label: "Outstanding balances", href: "/app/payments", permission: "payments:view", available: true },
+      { label: "After-sales", href: "/app/after-sales", permission: "aftersales:view", available: true },
     ],
   },
   {
@@ -61,12 +62,12 @@ export const NAV: NavGroup[] = [
       { label: "Purchase orders", href: "/app/purchase-orders", permission: "purchasing:view", available: true },
     ],
   },
-  { label: "Deliveries", items: [{ label: "Deliveries", href: "/app/deliveries", permission: "deliveries:view", available: false }] },
+  { label: "Deliveries", items: [{ label: "Deliveries", href: "/app/deliveries", permission: "deliveries:view", available: true }] },
   {
     label: "Finance & reports",
     items: [
-      { label: "Expenses", href: "/app/expenses", permission: "expenses:view", available: false },
-      { label: "Reports", href: "/app/reports", permission: "reports:sales", available: false },
+      { label: "Expenses", href: "/app/expenses", permission: "expenses:view", available: true },
+      { label: "Reports", href: "/app/reports", permission: null, available: true },
     ],
   },
   {

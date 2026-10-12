@@ -15,9 +15,19 @@ Status key: ☐ not started · ◐ partial · ☑ passing (automated). Updated a
 | 9 | Job completion records status; optional finished-goods movement without duplicates | integration | 5 | ☑ default: status only, delivery moves no stock; with the setting on: output added once even after rework, removed once on delivery; cancelling the order cancels the job |
 | 10 | Payments update outstanding balance with decimal arithmetic | unit + integration | 4 | ☑ `money.test.ts` + `inventory-orders.db.test.ts`: exact decimals, overpayment refused, voids as linked negative rows, concurrent payments serialised |
 | 11 | Showroom ↔ workshop transfer records both sides atomically | integration | 4 | ☑ paired movements share the transfer id; a transfer short on any line leaves no trace at all |
-| 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ◐ DB-role table + function denial, `/app` redirect, private-file download 404, staff upload purposes closed to anonymous: all tested. Orders/suppliers/customers routes arrive with their modules |
+| 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ☑ DB-role table + function denial; `/app/*` (including production, suppliers, purchase orders, deliveries, expenses, after-sales, reports) redirects signed-out visitors; private-file download 404; staff upload purposes closed to anonymous; file access is scope-aware (workshop only reaches files of assigned jobs/deliveries) |
 | 13 | Key forms show understandable validation/error messages | e2e + unit (schemas) | 2–6 | ◐ enquiry, login, catalogue, settings, customer (duplicate warning), quotation (per-line messages) covered; sales/workshop forms follow |
 | 14 | App builds; migrations apply to clean DB; tests pass | CI | every step | ◐ verified locally at end of Step 1 (build, migrations on a clean DB, 56 unit/integration + 16 e2e); GitHub CI not yet run |
+
+## Step 6 flows (beyond the numbered list)
+
+| Flow | Status |
+|------|--------|
+| Delivery: schedule only confirmed orders, one open delivery per order, window validated; assigned staff update status, others refused; "delivered" needs proof and delivers the order (stock out) exactly once even under double submit; failed needs a reason and is rescheduled as a new delivery | ☑ `operations.db.test.ts` |
+| Expenses: finance/owner/manager only; never edited or deleted (also blocked in SQL); void needs a reason and drops out of totals | ☑ `operations.db.test.ts` |
+| After-sales: state flow, resolution required to resolve/close, closed is final, workshop view-only | ☑ `operations.db.test.ts` |
+| Reports: sales/financial/operations figures match their stated definitions (reversals netted, unaccepted quotations never counted, void expenses excluded, operational net cash is labelled "not profit"); sales staff see only their own; owner dashboard owner/manager only | ☑ `operations.db.test.ts` |
+| CSV exports: permission per export, no cost column for the workshop, spreadsheet-formula neutralised | ☑ `operations.db.test.ts` |
 
 ## Cross-cutting automated checks
 

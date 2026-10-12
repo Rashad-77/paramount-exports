@@ -6,3 +6,4 @@ export * from "./quotations";
 export * from "./sales";
 export * from "./production";
 export * from "./purchasing";
+export * from "./operations";

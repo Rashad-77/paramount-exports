@@ -1,6 +1,6 @@
 # Project Plan — Furniture Website + CRM + ERP-lite
 
-Status: **Steps 0–5 complete (see README for known limitations); Step 6 (deliveries, expenses, reports, after-sales) is next.**
+Status: **Steps 0–6 complete (see README for known limitations); Step 7 (hardening and handover) is next.**
 Deployment target (confirmed by the client): **Vercel**.
 
 ## 1. What exists today

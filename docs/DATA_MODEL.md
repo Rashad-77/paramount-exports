@@ -66,8 +66,14 @@ Tables are introduced by milestone — only those needed by a step are migrated 
 
 ## Step 6 — Delivery, expenses, after-sales
 
-`deliveries` (order, address, contact, window, fee, assignee, status, proof note/file) · `expenses` (date, category, amount, note, file) ·
-`expense_categories` · `after_sales_cases` (customer, order, type warranty/repair/complaint, status, dates, notes).
+| Table | Notes |
+|---|---|
+| `deliveries` | `reference` (DEL-…), `order_id`, `status` (planned → out_for_delivery → delivered / failed), `scheduled_on`, `window_start/end`, address, contact, `fee` (informational), `assignee_id`, `proof_note`, `proof_file_id`, `delivered_at`, `failed_reason`, `rescheduled_from_id`. At most one open delivery per order (partial unique index); delivered/failed are final (trigger) — a failed attempt is rescheduled as a NEW row |
+| `delivery_events` | append-only status history |
+| `expense_categories` | starter list seeded by the migration (configuration, editable by Owner/Manager) |
+| `expenses` | `spent_on`, `category_id`, `amount`, `description`, `payee`, `method`, `reference`, `voided_at/by/reason`. Never edited or deleted — a trigger allows only a one-time void with a reason. Receipts are `uploaded_files` linked to the expense |
+| `after_sales_cases` | `reference` (CASE-…), `customer_id`, `order_id?`, `type` (warranty/repair/complaint), `status` (open → in_progress → resolved → closed), `subject`, `resolution` (required to resolve/close), `assignee_id`, `due_on` |
+| `after_sales_notes` | append-only notes and status changes |
 
 ## Key relationships
 

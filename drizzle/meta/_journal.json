@@ -92,6 +92,20 @@
       "when": 1791814579555,
       "tag": "0012_step5_triggers_security",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791816106403,
+      "tag": "0013_step6_operations",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791816118096,
+      "tag": "0014_step6_triggers_security",
+      "breakpoints": true
     }
   ]
 }
