@@ -103,6 +103,12 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <Link href="/terms" className="link-draw">
             Terms
           </Link>
+          <span className="mx-3" aria-hidden="true">
+            ·
+          </span>
+          <Link href="/login" className="link-draw">
+            Staff sign in
+          </Link>
         </p>
       </div>
     </footer>
