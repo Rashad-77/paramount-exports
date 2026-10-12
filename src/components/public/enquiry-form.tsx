@@ -77,7 +77,7 @@ export function EnquiryForm({
 
       {kind === "custom" ? (
         <fieldset className="space-y-5">
-          <legend className="font-display text-xl text-walnut">About the piece</legend>
+          <legend className="font-display text-lg text-walnut">About the piece</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             <FField name="furnitureType" label="What would you like made?" placeholder="e.g. dining table, wardrobe" required />
             <FField name="dimensions" label="Dimensions" placeholder="e.g. 180 × 90 × 75 cm" />

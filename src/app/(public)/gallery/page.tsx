@@ -22,7 +22,7 @@ export default async function GalleryPage() {
           <div className="space-y-16">
             {projects.map((p) => (
               <section key={p.id} aria-labelledby={`p-${p.id}`}>
-                <h2 id={`p-${p.id}`} className="font-display text-3xl text-walnut">
+                <h2 id={`p-${p.id}`} className="font-display text-2xl text-walnut">
                   {p.title}
                 </h2>
                 {p.completedOn ? <p className="mt-1 text-sm text-text-muted">Completed {formatDate(p.completedOn, business.timezone)}</p> : null}

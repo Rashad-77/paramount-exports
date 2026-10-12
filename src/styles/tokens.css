@@ -57,10 +57,10 @@
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
   /* Fluid display sizes for the public site (use with font-display) */
-  --text-headline: clamp(2.125rem, 1.35rem + 2.6vw, 3.5rem);
+  --text-headline: clamp(1.625rem, 1.2rem + 1.4vw, 2.25rem);
   --text-headline--line-height: 1.12;
   --text-headline--letter-spacing: -0.015em;
-  --text-display: clamp(2.75rem, 1.4rem + 4.8vw, 5.25rem);
+  --text-display: clamp(2rem, 1.25rem + 2.6vw, 3.25rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.022em;
 
@@ -87,10 +87,10 @@
   --content-width: 80rem; /* public site max width */
   --reading-width: 40rem;
   --gutter: 1.25rem;
-  --header-height: 4.5rem;
+  --header-height: 3.75rem;
   --touch-target: 2.75rem; /* 44px minimum for workshop/phone use */
   /* Vertical rhythm for public sections */
-  --section-space: clamp(4.5rem, 3rem + 6vw, 9rem);
+  --section-space: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
 }
 
 @media (min-width: 48rem) {

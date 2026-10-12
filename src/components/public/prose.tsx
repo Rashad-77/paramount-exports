@@ -10,7 +10,7 @@ export function Prose({ text }: { text: string }) {
   blocks.forEach((block, i) => {
     if (block.startsWith("## ")) {
       out.push(
-        <h2 key={i} className="font-display mt-12 text-[1.875rem] leading-tight text-walnut first:mt-0">
+        <h2 key={i} className="font-display mt-8 text-[1.5rem] leading-tight text-walnut first:mt-0">
           {block.slice(3)}
         </h2>,
       );
@@ -37,10 +37,10 @@ export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: stri
   return (
     <header className="wood-dark-bg relative isolate overflow-hidden text-ivory">
       <div aria-hidden="true" className="hero-glow" />
-      <div className="container-page relative py-[clamp(3.5rem,2rem+6vw,7rem)]">
+      <div className="container-page relative py-[clamp(1.75rem,1.25rem+2.5vw,3.25rem)]">
         <p className="eyebrow rise-in !text-linen-dark">{eyebrow ?? "Furniture · Showroom · Workshop"}</p>
-        <h1 className="font-display rise-in rise-in-2 mt-6 max-w-4xl text-display text-ivory">{title}</h1>
-        {lead ? <p className="rise-in rise-in-3 mt-7 max-w-xl text-lg leading-relaxed text-ivory/80">{lead}</p> : null}
+        <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-ivory">{title}</h1>
+        {lead ? <p className="rise-in rise-in-3 mt-4 max-w-xl text-base leading-relaxed text-ivory/80">{lead}</p> : null}
       </div>
     </header>
   );

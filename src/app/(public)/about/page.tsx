@@ -12,7 +12,7 @@ export default async function AboutPage() {
   return (
     <>
       <PageIntro title="About & craftsmanship" />
-      <div className="container-page grid gap-10 py-[var(--section-space)] md:grid-cols-2 md:gap-16">
+      <div className="container-page grid gap-10 py-[var(--section-space)] md:grid-cols-2 md:gap-10">
         <Prose text={pages.about ?? DEFAULT_ABOUT} />
         <ImagePlaceholder label="Workshop or craftsperson at work" className="aspect-[4/5] w-full" />
       </div>

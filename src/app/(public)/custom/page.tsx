@@ -29,21 +29,21 @@ export default function CustomPage() {
           >
             <h2
               id="process-title"
-              className="font-display text-[2.25rem] leading-tight"
+              className="font-display text-[1.625rem] leading-tight"
             >
               How it works
             </h2>
-            <ol className="mt-10 space-y-9">
+            <ol className="mt-7 space-y-9">
               {CUSTOM_STEPS.map((s, i) => (
                 <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-4">
                   <span
                     aria-hidden="true"
-                    className="numeral text-[2.75rem] !text-linen-dark"
+                    className="numeral text-[2rem] !text-linen-dark"
                   >
                     {i + 1}
                   </span>
                   <div className="border-t border-ivory/20 pt-4">
-                    <h3 className="font-display text-[1.5rem] leading-tight">
+                    <h3 className="font-display text-[1.25rem] leading-tight">
                       {s.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-ivory/75">
@@ -53,7 +53,7 @@ export default function CustomPage() {
                 </li>
               ))}
             </ol>
-            <p className="mt-10 text-sm text-ivory/70">
+            <p className="mt-7 text-sm text-ivory/70">
               Timescales and prices depend on the piece and are confirmed in
               your quotation.
             </p>
@@ -67,7 +67,7 @@ export default function CustomPage() {
           >
             <h2
               id="request-title"
-              className="font-display text-[2.25rem] leading-tight text-walnut"
+              className="font-display text-[1.625rem] leading-tight text-walnut"
             >
               Request a quotation
             </h2>

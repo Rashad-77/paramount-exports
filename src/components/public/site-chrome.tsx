@@ -32,11 +32,11 @@ export function SiteHeader({ business }: { business: BusinessSettings }) {
   return (
     <header className="glass-header border-b border-border">
       <div className="container-page flex h-[var(--header-height)] items-center justify-between gap-8">
-        <Link href="/" className="font-display text-[1.625rem] leading-none tracking-[0.01em] text-walnut md:text-[1.875rem]" aria-label={`${business.name} — home`}>
+        <Link href="/" className="font-display text-[1.25rem] leading-none tracking-[0.01em] text-walnut md:text-[1.375rem]" aria-label={`${business.name} — home`}>
           {business.name}
         </Link>
         <nav aria-label="Primary" className="hidden md:block">
-          <ul className="flex items-center gap-10 text-[0.8125rem] font-medium uppercase tracking-[0.14em]">
+          <ul className="flex items-center gap-7 text-[0.75rem] font-medium uppercase tracking-[0.12em]">
             {PUBLIC_LINKS.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="link-draw-hover py-2 text-text hover:text-walnut">
@@ -55,9 +55,9 @@ export function SiteHeader({ business }: { business: BusinessSettings }) {
 export function SiteFooter({ business }: { business: BusinessSettings }) {
   return (
     <footer className="wood-dark-bg mt-[var(--section-space)] text-ivory">
-      <div className="container-page grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr] md:py-20">
+      <div className="container-page grid gap-8 py-9 md:grid-cols-[2fr_1fr_1fr] md:py-11">
         <div>
-          <p className="font-display text-[2rem] leading-none">{business.name}</p>
+          <p className="font-display text-[1.5rem] leading-none">{business.name}</p>
           <p className="mt-4 max-w-sm text-sm text-ivory/75">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
         </div>
         <div className="text-sm">
@@ -86,7 +86,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
         </div>
       </div>
       <div aria-hidden="true" className="container-page overflow-hidden pb-2 select-none">
-        <p className="font-display whitespace-nowrap text-[clamp(3.5rem,13vw,11rem)] leading-[0.9] tracking-[-0.03em] text-ivory/[0.07]">{business.name}</p>
+        <p className="font-display whitespace-nowrap text-[clamp(2.5rem,9vw,6.5rem)] leading-[0.9] tracking-[-0.03em] text-ivory/[0.07]">{business.name}</p>
       </div>
       <div className="border-t border-ivory/15">
         <p className="container-page py-5 text-xs text-ivory/70">

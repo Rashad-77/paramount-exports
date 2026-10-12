@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/money";
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
   const meta = [product.material, product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : null, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group card-lift glass h-full p-3 md:p-4">
+    <article className="group card-lift glass h-full p-2.5">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
@@ -25,13 +25,13 @@ export function ProductCard({ product, currency, priority = false }: { product: 
             <ImagePlaceholder label={product.name} className="absolute inset-0" />
           )}
         </div>
-        <div className="flex items-start justify-between gap-4 px-1 pt-5 pb-2">
+        <div className="flex items-start justify-between gap-4 px-1 pt-3.5 pb-1.5">
           <div className="min-w-0">
             <p className="text-[0.6875rem] font-medium uppercase tracking-[0.18em] text-text-muted">{product.categoryName}</p>
-            <h3 className="font-display mt-1.5 text-[1.625rem] leading-tight text-walnut">
+            <h3 className="font-display mt-1.5 text-[1.125rem] leading-snug text-walnut">
               <span className="link-draw-hover">{product.name}</span>
             </h3>
-            {meta ? <p className="mt-2 text-sm text-text-muted">{meta}</p> : null}
+            {meta ? <p className="mt-1 text-[0.8125rem] text-text-muted">{meta}</p> : null}
           </div>
           <ArrowUpRight aria-hidden="true" className="mt-1 size-5 shrink-0 text-brass-text transition-transform duration-[var(--duration-base)] ease-[var(--ease-out)] group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={1.5} />
         </div>

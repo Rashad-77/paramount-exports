@@ -32,11 +32,11 @@ export default async function ContactPage() {
           >
             <h2
               id="visit-title"
-              className="font-display text-[2.25rem] leading-tight"
+              className="font-display text-[1.625rem] leading-tight"
             >
               Visit or call
             </h2>
-            <dl className="mt-10 space-y-8 border-t border-ivory/20 pt-8 text-sm">
+            <dl className="mt-7 space-y-8 border-t border-ivory/20 pt-8 text-sm">
               <div>
                 <dt className="flex items-center gap-2 font-medium">
                   <MapPin
@@ -118,7 +118,7 @@ export default async function ContactPage() {
           >
             <h2
               id="send-title"
-              className="font-display text-[2.25rem] leading-tight text-walnut"
+              className="font-display text-[1.625rem] leading-tight text-walnut"
             >
               Send an enquiry
             </h2>

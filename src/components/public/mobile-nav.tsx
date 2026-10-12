@@ -42,7 +42,7 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         <ul className="divide-y divide-border">
           {links.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-14 items-center font-display text-2xl text-walnut">
+              <Link href={l.href} onClick={() => setOpen(false)} className="flex min-h-14 items-center font-display text-xl text-walnut">
                 {l.label}
               </Link>
             </li>

@@ -60,16 +60,16 @@ export default async function HomePage() {
       {/* Hero */}
       <section aria-labelledby="hero-title" className="wood-dark-bg relative isolate overflow-hidden text-ivory">
         <div aria-hidden="true" className="hero-glow" />
-        <div className="container-page relative grid items-center gap-14 py-[clamp(4.5rem,2rem+8vw,9rem)] md:grid-cols-12">
+        <div className="container-page relative grid items-center gap-9 py-[clamp(2.5rem,1.5rem+4vw,4.75rem)] md:grid-cols-12">
           <div className="md:col-span-7">
             <p className="eyebrow rise-in !text-linen-dark">Furniture · Showroom · Workshop</p>
-            <h1 id="hero-title" aria-label="Wood furniture for the way you live." className="font-display mt-8 text-display text-ivory">
+            <h1 id="hero-title" aria-label="Wood furniture for the way you live." className="font-display mt-5 text-display text-ivory">
               <Words text="Wood furniture for the way you live." />
             </h1>
-            <p className="rise-in rise-in-3 mt-9 max-w-md text-lg leading-relaxed text-ivory/80">
+            <p className="rise-in rise-in-3 mt-5 max-w-md text-base leading-relaxed text-ivory/80">
               Choose from ready-made pieces in our showroom, or have something built to your measurements in our workshop.
             </p>
-            <div className="rise-in rise-in-3 mt-11 flex flex-wrap gap-4">
+            <div className="rise-in rise-in-3 mt-7 flex flex-wrap gap-4">
               <ButtonLink href="/custom" size="cta" variant="light">
                 Start a custom enquiry
               </ButtonLink>
@@ -82,17 +82,17 @@ export default async function HomePage() {
             <div className="float-slow">
               <div className="frame-offset">
                 <div className="relative">
-                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" tone="wood-a" className="aspect-[4/5] w-full" />
-                  <div className="glass-dark absolute inset-x-5 top-5 z-10 !bg-walnut-dark/55 px-5 py-4 text-ivory sm:-left-10 sm:right-auto sm:top-10 sm:w-[17rem]">
+                  <ImagePlaceholder label="Hero — a finished piece in a lived-in room" tone="wood-a" className="aspect-[5/4] w-full" />
+                  <div className="glass-dark absolute inset-x-5 top-5 z-10 !bg-walnut-dark/55 px-5 py-4 text-ivory sm:-left-8 sm:right-auto sm:top-8 sm:w-[14rem]">
                     <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-linen">Made to measure</p>
-                    <p className="font-display mt-2 text-xl leading-snug">Quoted before we start.</p>
+                    <p className="font-display mt-2 text-lg leading-snug">Quoted before we start.</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="relative border-t border-ivory/15 py-6 text-ivory/80">
+        <div className="relative border-t border-ivory/15 py-3 text-ivory/80">
           <Marquee items={marqueeItems} />
         </div>
       </section>
@@ -106,12 +106,12 @@ export default async function HomePage() {
               Three ways to find the right piece.
             </h2>
           </Reveal>
-          <div className="bento mt-14 md:grid-cols-3">
+          <div className="bento mt-9 md:grid-cols-3">
             {WAYS.map((w, i) => (
               <Reveal key={w.n} delay={i * 120}>
-                <Link href={w.href} className="bento-cell group h-full min-h-[22rem]">
-                  <span className="bento-num numeral text-[4.5rem] md:text-[5.5rem]">{w.n}</span>
-                  <h3 className="font-display mt-auto pt-16 text-[2rem] leading-tight">{w.title}</h3>
+                <Link href={w.href} className="bento-cell group h-full min-h-[14rem]">
+                  <span className="bento-num numeral text-[2.5rem] md:text-[3rem]">{w.n}</span>
+                  <h3 className="font-display mt-auto pt-16 text-[1.5rem] leading-tight">{w.title}</h3>
                   <p className="bento-muted mt-3 max-w-xs text-sm leading-relaxed text-text-muted">{w.body}</p>
                   <span className="mt-8 inline-flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.14em]">
                     {w.cta}
@@ -144,7 +144,7 @@ export default async function HomePage() {
               <p className="max-w-sm text-sm text-text-muted">Placeholder categories, replaced automatically once products are published.</p>
             )}
           </div>
-          <ul className="mt-14 grid gap-6 sm:grid-cols-3 md:gap-8">
+          <ul className="mt-9 grid gap-6 sm:grid-cols-3 md:gap-5">
             {(shown.length > 0 ? shown.map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, sub: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` })) : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "" }))).map((c, i) => {
               const inner = (
                 <>
@@ -157,19 +157,19 @@ export default async function HomePage() {
                     </span>
                   ) : null}
                   <span className="tile-body">
-                    <span className="font-display block text-[2rem] leading-tight">{c.name}</span>
+                    <span className="font-display block text-[1.5rem] leading-tight">{c.name}</span>
                     {c.sub ? <span className="mt-1 block text-sm text-ivory/80">{c.sub}</span> : null}
                   </span>
                 </>
               );
               return (
-                <Reveal as="li" key={c.key} delay={i * 130} className={i === 1 ? "sm:mt-14" : i === 2 ? "sm:mt-28" : undefined}>
+                <Reveal as="li" key={c.key} delay={i * 130}>
                   {c.href ? (
-                    <Link href={c.href} className="tile group aspect-[3/4]">
+                    <Link href={c.href} className="tile group aspect-[4/3]">
                       {inner}
                     </Link>
                   ) : (
-                    <div className="tile aspect-[3/4]">{inner}</div>
+                    <div className="tile aspect-[4/3]">{inner}</div>
                   )}
                 </Reveal>
               );
@@ -188,7 +188,7 @@ export default async function HomePage() {
                 Featured pieces
               </h2>
             </Reveal>
-            <ul className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map((p, i) => (
                 <Reveal as="li" key={p.id} delay={i * 120}>
                   <ProductCard product={p} currency={business.currency} />
@@ -209,7 +209,7 @@ export default async function HomePage() {
               <h2 id="custom-title" className="font-display mt-5 text-headline">
                 Made to your measurements.
               </h2>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ivory/80">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-ivory/80">
                 Have something specific in mind? Tell us the piece, the dimensions and the wood you prefer, and we will respond with a quotation.
               </p>
             </Reveal>
@@ -220,7 +220,7 @@ export default async function HomePage() {
               </ButtonLink>
             </Reveal>
           </div>
-          <div className="relative mt-20">
+          <div className="relative mt-12">
           <Reveal variant="fade" delay={200} className="rule-line absolute inset-x-0 top-[1.1rem] hidden h-px md:block" />
           <ol className="relative grid gap-10 md:grid-cols-4 md:gap-8">
             {CUSTOM_STEPS.map((s, i) => (
@@ -228,7 +228,7 @@ export default async function HomePage() {
                 <span aria-hidden="true" className="relative z-10 mb-8 grid size-9 place-items-center border border-brass bg-walnut-dark text-sm font-semibold text-linen-dark">
                   {i + 1}
                 </span>
-                <h3 className="font-display text-[1.625rem] leading-tight">{s.title}</h3>
+                <h3 className="font-display text-[1.25rem] leading-tight">{s.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-ivory/75">{s.body}</p>
               </Reveal>
             ))}
@@ -240,7 +240,7 @@ export default async function HomePage() {
       {/* Workshop */}
       {/* overflow-x-clip: the slide-in reveals start 40px off to the side and must not widen the page */}
       <section id="workshop" aria-labelledby="workshop-title" className="section-y scroll-mt-4 overflow-x-clip">
-        <div className="container-page grid items-center gap-16 md:grid-cols-12 md:gap-20">
+        <div className="container-page grid items-center gap-10 md:grid-cols-12 md:gap-12">
           <Reveal variant="right" className="md:order-2 md:col-span-6">
             <p className="eyebrow">The workshop</p>
             <h2 id="workshop-title" className="font-display mt-5 text-headline text-walnut">
@@ -265,13 +265,13 @@ export default async function HomePage() {
 
       {/* Showroom */}
       <section id="showroom" aria-labelledby="showroom-title" className="bg-paper-deep/55 section-y scroll-mt-4">
-        <div className="container-page grid gap-14 md:grid-cols-12 md:gap-16">
+        <div className="container-page grid gap-9 md:grid-cols-12 md:gap-10">
           <Reveal className="md:col-span-5">
             <p className="eyebrow">The showroom</p>
             <h2 id="showroom-title" className="font-display mt-5 text-headline text-walnut">
               Visit the showroom.
             </h2>
-            <dl className="mt-10 space-y-8 border-t border-border pt-8 text-sm">
+            <dl className="mt-7 space-y-8 border-t border-border pt-8 text-sm">
               <div>
                 <dt className="flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.16em]">
                   <MapPin aria-hidden="true" className="size-4 text-walnut" strokeWidth={1.5} />
@@ -306,7 +306,7 @@ export default async function HomePage() {
             Let&rsquo;s talk about your piece.
           </h2>
           <p className="mx-auto mt-6 max-w-lg text-text-muted">Ask about a piece, request a quotation, or arrange a visit.</p>
-          <div className="mt-11 flex flex-wrap justify-center gap-4">
+          <div className="mt-7 flex flex-wrap justify-center gap-4">
             <ButtonLink href="/contact" size="cta">
               Send an enquiry
             </ButtonLink>
