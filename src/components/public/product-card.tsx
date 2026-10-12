@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/money";
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
   const meta = [product.material, product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : null, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group card-lift glass glass-sheen h-full p-3 md:p-4">
+    <article className="group card-lift glass h-full p-3 md:p-4">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
