@@ -1,6 +1,6 @@
 # Project Plan — Furniture Website + CRM + ERP-lite
 
-Status: **Step 0 (planning) complete; Step 1 (foundation) in progress.**
+Status: **Steps 0 and 1 complete (see README for known limitations); Step 2 (public website) is next.**
 Deployment target (confirmed by the client): **Vercel**.
 
 ## 1. What exists today
@@ -42,6 +42,8 @@ customer tracking portal, advanced production scheduling, native apps.
 | D12 | Vercel Cron for housekeeping (expire quotations, purge rate-limit rows) | Native to Vercel |
 | D13 | Tests: Vitest (unit + DB integration against real Postgres), Playwright (smoke/e2e) | Concurrency tests need real Postgres |
 | D14 | Package manager: **pnpm**, lockfile committed | Installed, fast, Vercel supports it |
+| D15 | **TypeScript 5.9** (not 7.x) and **ESLint 10**; self-hosted fonts via `@fontsource` (Newsreader serif + Inter sans) | TS 7 is not yet supported by the lint plugins; fonts need no build-time network and no third-party requests |
+| D16 | Brief's `stone` (#77776C) is 4.1:1 on ivory (fails AA for text): kept for borders/icons only; secondary text uses `#5E5E54` (5.9:1) | Accessibility; see `src/styles/tokens.css` |
 
 ## 4. Open business questions (assumptions marked)
 

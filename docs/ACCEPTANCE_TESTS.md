@@ -9,15 +9,15 @@ Status key: ☐ not started · ◐ partial · ☑ passing (automated). Updated a
 | 3 | Accepted quotation → order, preserving customer and line items (no duplication) | integration | 3/4 | ☐ |
 | 4 | Ready-made order reserves/deducts stock once; concurrent orders can't oversell | integration (real Postgres, parallel tx) | 4 | ☐ |
 | 5 | Custom order creates production job with specs + reference images | integration | 5 | ☐ |
-| 6 | Workshop updates assigned job stage; unauthorized roles blocked from finance data | integration + authz matrix | 1 (matrix), 5 | ◐ matrix tests in Step 1 |
+| 6 | Workshop updates assigned job stage; unauthorized roles blocked from finance data | integration + authz matrix | 1 (matrix), 5 | ◐ permission-matrix unit tests pass; job-stage flow is Step 5 |
 | 7 | Timber receipt increases stock only by quantity actually received (partial receipts) | integration | 5 | ☐ |
 | 8 | Material consumption decreases stock once, linked to correct job | integration | 5 | ☐ |
 | 9 | Job completion records status; optional finished-goods movement without duplicates | integration | 5 | ☐ |
 | 10 | Payments update outstanding balance with decimal arithmetic | unit + integration | 4 | ☐ |
 | 11 | Showroom ↔ workshop transfer records both sides atomically | integration | 4 | ☐ |
-| 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ◐ |
+| 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ◐ DB-role denial + `/app` redirect tested; data/file routes arrive with their modules |
 | 13 | Key forms show understandable validation/error messages | e2e + unit (schemas) | 2–6 | ☐ |
-| 14 | App builds; migrations apply to clean DB; tests pass | CI | every step | ☐ |
+| 14 | App builds; migrations apply to clean DB; tests pass | CI | every step | ◐ verified locally at end of Step 1 (build, migrations on a clean DB, 56 unit/integration + 16 e2e); GitHub CI not yet run |
 
 ## Cross-cutting automated checks
 
