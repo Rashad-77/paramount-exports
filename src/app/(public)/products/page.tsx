@@ -47,7 +47,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <PageIntro title="Collection" lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements." />
-      <div className="container-page pb-8">
+      <div className="container-page pt-14 pb-8">
         {categories.length > 0 ? (
           <nav aria-label="Categories" className="mb-6 flex flex-wrap gap-2">
             <Link href={params({ category: undefined, page: undefined })} aria-current={!category ? "page" : undefined} className={chip(!category)}>

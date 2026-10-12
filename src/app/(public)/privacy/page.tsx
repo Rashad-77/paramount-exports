@@ -11,7 +11,7 @@ export default async function Page() {
   return (
     <>
       <PageIntro title="Privacy notice" />
-      <div className="container-page pb-20">
+      <div className="container-page py-[var(--section-space)]">
         <Prose text={pages.privacy ?? DEFAULT_PRIVACY} />
       </div>
     </>

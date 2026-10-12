@@ -6,7 +6,7 @@ export function Metric({ label, value, hint }: { label: string; value: ReactNode
   return (
     <div className="min-w-0 p-2">
       <dt className="text-sm text-text-muted">{label}</dt>
-      <dd className="tabular mt-0.5 break-words text-xl font-semibold">
+      <dd className="font-display lining-nums tabular-nums mt-1 break-words text-[1.75rem] leading-tight">
         {value}
         {hint ? <span className="mt-0.5 block text-xs font-normal text-text-muted">{hint}</span> : null}
       </dd>

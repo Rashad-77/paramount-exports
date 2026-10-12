@@ -15,12 +15,32 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const [{ next, error }, business, demo] = await Promise.all([searchParams, getBusinessSettings(), demoSignInAllowed()]);
   if (demo) return <DemoSignIn name={business.name} />;
   return (
-    <main id="main" className="flex min-h-dvh items-center justify-center px-[var(--gutter)] py-12">
-      <div className="w-full max-w-sm">
-        <p className="font-display text-2xl text-walnut">{business.name}</p>
-        <h1 className="mt-6 text-xl font-semibold">Staff sign in</h1>
-        <p className="mt-1 mb-6 text-sm text-text-muted">For employees only. Accounts are created by the business owner.</p>
-        <LoginForm next={next} notice={error ? NOTICES[error] : undefined} />
+    <AuthFrame name={business.name} heading="Staff sign in" sub="For employees only. Accounts are created by the business owner.">
+      <LoginForm next={next} notice={error ? NOTICES[error] : undefined} />
+    </AuthFrame>
+  );
+}
+
+/** Split screen: a dark textured brand panel beside the form. */
+function AuthFrame({ name, heading, sub, children }: { name: string; heading: string; sub: string; children: React.ReactNode }) {
+  return (
+    <main id="main" className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
+      <div className="wood-dark-bg relative isolate hidden overflow-hidden p-14 text-ivory lg:flex lg:flex-col lg:justify-between">
+        <div aria-hidden="true" className="hero-glow" />
+        <p className="eyebrow rise-in relative !text-linen-dark">Staff area</p>
+        <div className="relative">
+          <p className="font-display rise-in rise-in-2 text-[clamp(3rem,5vw,5.5rem)] leading-[1.02] tracking-[-0.02em]">{name}</p>
+          <div className="rise-in rise-in-3 mt-8 h-px w-24 bg-brass" />
+        </div>
+        <p className="rise-in rise-in-3 relative max-w-xs text-sm leading-relaxed text-ivory/70">Enquiries, orders, workshop, stock and deliveries in one place.</p>
+      </div>
+      <div className="flex items-center justify-center px-[var(--gutter)] py-14">
+        <div className="rise-in w-full max-w-sm">
+          <p className="font-display text-2xl text-walnut lg:hidden">{name}</p>
+          <h1 className="font-display mt-6 text-[2.25rem] leading-tight text-walnut lg:mt-0">{heading}</h1>
+          <p className="mt-2 mb-8 text-sm text-text-muted">{sub}</p>
+          {children}
+        </div>
       </div>
     </main>
   );
@@ -37,22 +57,17 @@ const ROLE_BLURB: Record<string, string> = {
 /** Public demo only (see lib/auth/demo-deployment.ts): pick a sample role, no password. */
 function DemoSignIn({ name }: { name: string }) {
   return (
-    <main id="main" className="flex min-h-dvh items-center justify-center px-[var(--gutter)] py-12">
-      <div className="w-full max-w-md">
-        <p className="font-display text-2xl text-walnut">{name}</p>
-        <h1 className="mt-6 text-xl font-semibold">Demo: choose a role to look around</h1>
-        <p className="mt-1 mb-6 text-sm text-text-muted">This is a demonstration with <strong>sample data only</strong>. There is no password: anyone with this link can open it. Do not enter real customer or business information.</p>
-        <ul className="space-y-3">
-          {ROLES.map((r) => (
-            <li key={r}>
-              <a href={`/demo/start?role=${r}`} className="flex min-h-14 flex-col justify-center border border-border-strong bg-surface px-4 py-2 hover:bg-linen">
-                <span className="font-medium capitalize">Continue as {r}</span>
-                <span className="text-sm text-text-muted">{ROLE_BLURB[r]}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </main>
+    <AuthFrame name={name} heading="Demo: choose a role" sub="A demonstration with sample data only. There is no password: anyone with this link can open it. Do not enter real customer or business information.">
+      <ul className="space-y-3">
+        {ROLES.map((r) => (
+          <li key={r}>
+            <a href={`/demo/start?role=${r}`} className="card-lift flex min-h-14 flex-col justify-center border border-border-strong bg-surface px-4 py-2.5">
+              <span className="font-medium capitalize">Continue as {r}</span>
+              <span className="text-sm text-text-muted">{ROLE_BLURB[r]}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </AuthFrame>
   );
 }

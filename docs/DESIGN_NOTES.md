@@ -27,6 +27,22 @@ Sources consulted (search results): [why some websites feel expensive](https://w
 | Links | `link-draw` (always underlined, thickens on hover) for inline links; `link-draw-hover` (line appears on hover/focus) for card titles and navigation |
 | Staff area | Same tokens, denser: serif page titles, tracked uppercase panel and column headings, hairline panels, brass edge marks the current page |
 
+## Second pass: bolder (after review feedback: "boring, stale, stock")
+
+The first pass was correct but too quiet, and flat beige boxes where photographs will go made it look like a template. Changes:
+
+| Area | What |
+|---|---|
+| Texture | `src/styles/wood.css`: generative timber (stretched SVG noise, four variants) in place of empty photo boxes, pure CSS, no image files. Captioned "Photograph to be supplied" so it never poses as a real photo. Dark sections use a grain + brass-glow background |
+| Hero | Full dark hero: headline rises **word by word** out of a mask, slow drifting brass glow, floating framed panel with an offset brass outline, marquee of real category names |
+| Scroll motion | `Reveal` (IntersectionObserver, no library): fade-up, slide-in, zoom-settle; hairline that draws itself between process steps. Elements only start hidden when scripting is available (`<html class="js">`); verified visible with scripting off and with reduced motion |
+| Containers | Hairline "bento" grid of three ways in (cells light up dark on hover), full-bleed category tiles (staggered, slow zoom, arrow box slides in), product cards as raised mounted prints that lift on hover, offset frames behind images, raised form card beside a dark process panel |
+| Header / footer | Frosted sticky header; dark textured footer with a large watermark wordmark |
+| Inner pages | Dark textured page headers with the same entrance animation |
+| Staff area | Dark textured sidebar with a brass current-page mark; panels get a walnut top rule and a soft shadow; dashboard figures in the serif at large size; content eases in block by block; split-screen sign-in |
+
+Performance notes: animations use only `transform` and `opacity` (plus background-size on one hairline); no animation library; wood is CSS-generated and cached by the browser.
+
 ## Not done
 
 Real photography and the final brand typeface/colours are still placeholders: when the owner supplies a logo, palette or font, change the tokens and nothing else. No dark mode.

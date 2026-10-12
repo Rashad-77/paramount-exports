@@ -21,7 +21,7 @@ function Stat({ label, value, href, tone }: { label: string; value: string | num
           label
         )}
       </dt>
-      <dd className={"tabular mt-0.5 flex flex-wrap items-center gap-x-2 font-semibold break-words " + (long ? "text-lg" : "text-2xl")}>
+      <dd className={"mt-1 flex flex-wrap items-center gap-x-2 break-words font-display lining-nums tabular-nums " + (long ? "text-[1.25rem] leading-tight" : "text-[2.5rem] leading-none")}>
         {value}
         {tone && Number(value) > 0 ? <StatusBadge tone={tone}>{tone === "danger" ? "Needs attention" : "Check"}</StatusBadge> : null}
       </dd>

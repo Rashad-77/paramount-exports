@@ -2,6 +2,7 @@
 @import "@fontsource-variable/instrument-sans";
 @import "@fontsource-variable/cormorant-garamond";
 @import "../styles/tokens.css";
+@import "../styles/wood.css";
 
 @layer base {
   html {
@@ -189,6 +190,351 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+
+/* ───────────────────────── Motion, containers and texture ───────────────────────── */
+@layer components {
+  /* Scroll reveal. Elements are only hidden once JS has marked <html class="js">, and the Reveal component shows them again,
+     so nothing is ever stuck invisible without scripting. All variants collapse to "visible" under reduced motion. */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0);
+    transition: opacity 1000ms var(--ease-out) var(--d, 0ms), transform 1100ms var(--ease-out) var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  .js [data-reveal="fade"] {
+    transform: none;
+  }
+  .js [data-reveal="left"] {
+    transform: translate3d(-40px, 0, 0);
+  }
+  .js [data-reveal="right"] {
+    transform: translate3d(40px, 0, 0);
+  }
+  /* "zoom": fades in while settling from slightly enlarged (keeps its layout box, so scroll detection stays reliable) */
+  .js [data-reveal="zoom"] {
+    transform: scale(1.06);
+    transition: opacity 1200ms var(--ease-out) var(--d, 0ms), transform 1600ms var(--ease-out) var(--d, 0ms);
+  }
+  /* "rule": a hairline that draws from left to right via its background (the box keeps its size) */
+  .rule-line {
+    background: linear-gradient(rgb(154 116 64 / 0.7), rgb(154 116 64 / 0.7)) no-repeat 0 0 / 100% 100%;
+  }
+  .js .rule-line[data-reveal] {
+    opacity: 1;
+    transform: none;
+    background-size: 0 100%;
+    transition: background-size 1600ms var(--ease-out) var(--d, 0ms);
+  }
+  .js .rule-line[data-reveal].in {
+    background-size: 100% 100%;
+  }
+  .js [data-reveal].in {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Headline that rises word by word out of a mask. Pure CSS (runs on load, no JS needed). */
+  .words {
+    display: block;
+  }
+  .words .w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+    margin-right: 0.24em;
+  }
+  .words .w > span {
+    display: inline-block;
+    transform: translate3d(0, 112%, 0);
+    animation: word-up 1200ms var(--ease-out) forwards;
+    animation-delay: calc(260ms + var(--i, 0) * 85ms);
+  }
+  @keyframes word-up {
+    to {
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .words .w > span {
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* Hero atmosphere: a slow brass glow drifting behind the headline, and a gently floating framed panel */
+  .hero-glow {
+    position: absolute;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(40% 40% at 70% 30%, rgb(154 116 64 / 0.32), transparent 70%), radial-gradient(35% 35% at 20% 80%, rgb(154 116 64 / 0.16), transparent 70%);
+    animation: glow-drift 22s ease-in-out infinite alternate;
+  }
+  @keyframes glow-drift {
+    from {
+      transform: translate3d(-3%, 2%, 0) scale(1);
+    }
+    to {
+      transform: translate3d(4%, -3%, 0) scale(1.12);
+    }
+  }
+  .float-slow {
+    animation: float-slow 11s ease-in-out infinite alternate;
+  }
+  @keyframes float-slow {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(0, -14px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-glow,
+    .float-slow {
+      animation: none;
+    }
+  }
+
+  /* A thin brass outline offset behind an image: the frame "shifts" on hover */
+  .frame-offset {
+    position: relative;
+    isolation: isolate;
+  }
+  .frame-offset::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 1px solid var(--color-brass);
+    transform: translate3d(16px, 16px, 0);
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  .frame-offset:hover::before {
+    transform: translate3d(8px, 8px, 0);
+  }
+  .frame-offset-left::before {
+    transform: translate3d(-16px, 16px, 0);
+  }
+  .frame-offset-left:hover::before {
+    transform: translate3d(-8px, 8px, 0);
+  }
+
+  /* Raised container: lifts on hover with a layered shadow */
+  .card-lift {
+    transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .card-lift:hover {
+      transform: translate3d(0, -6px, 0);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-brass);
+    }
+  }
+
+  /* Hairline grid: cells separated by 1px rules, each lighting up on hover */
+  .bento {
+    display: grid;
+    gap: 1px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+  }
+  .bento-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    padding: clamp(1.75rem, 1rem + 2.5vw, 3rem);
+    transition: background-color var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out);
+  }
+  .bento-cell::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-brass);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .bento-cell:hover {
+      background: var(--color-walnut-dark);
+      color: var(--color-ivory);
+    }
+    .bento-cell:hover::after {
+      transform: scaleX(1);
+    }
+    .bento-cell:hover .bento-muted {
+      color: rgb(248 245 239 / 0.75);
+    }
+    .bento-cell:hover .bento-num {
+      color: var(--color-linen-dark);
+    }
+  }
+
+  /* Category tile: image fills the container, title sits on a gradient, an arrow box slides in */
+  .tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    isolation: isolate;
+    color: var(--color-ivory);
+  }
+  .tile > .tile-media {
+    position: absolute;
+    inset: 0;
+    transition: transform 1200ms var(--ease-out);
+  }
+  .tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(to top, rgb(26 17 11 / 0.82) 0%, rgb(26 17 11 / 0.25) 45%, transparent 70%);
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  .tile-body {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 2;
+    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+  }
+  .tile-arrow {
+    position: absolute;
+    top: clamp(1rem, 0.8rem + 1vw, 1.75rem);
+    right: clamp(1rem, 0.8rem + 1vw, 1.75rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid rgb(248 245 239 / 0.6);
+    opacity: 0;
+    transform: translate3d(-10px, 10px, 0);
+    transition: opacity var(--duration-base) var(--ease-out), transform var(--duration-slow) var(--ease-out), background-color var(--duration-base);
+  }
+  @media (hover: hover) {
+    .tile:hover > .tile-media {
+      transform: scale(1.07);
+    }
+    .tile:hover .tile-arrow,
+    .tile:focus-visible .tile-arrow {
+      opacity: 1;
+      transform: none;
+      background: var(--color-ivory);
+      color: var(--color-walnut);
+    }
+  }
+  @media (hover: none) {
+    .tile-arrow {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Infinite marquee of words. Paused on hover; a static wrapped list under reduced motion. */
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 3rem;
+    padding-right: 3rem;
+    animation: marquee 48s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  @keyframes marquee {
+    to {
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee {
+      flex-wrap: wrap;
+      mask-image: none;
+    }
+    .marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+    }
+    .marquee-track[aria-hidden="true"] {
+      display: none;
+    }
+  }
+
+  /* Staff area: content eases in, one block after another */
+  .page-in > * {
+    animation: page-in 700ms var(--ease-out) both;
+  }
+  .page-in > *:nth-child(2) {
+    animation-delay: 70ms;
+  }
+  .page-in > *:nth-child(3) {
+    animation-delay: 140ms;
+  }
+  .page-in > *:nth-child(4) {
+    animation-delay: 210ms;
+  }
+  .page-in > *:nth-child(n + 5) {
+    animation-delay: 280ms;
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-in > * {
+      animation: none;
+    }
+  }
+
+  /* Sticky site header that frosts the page beneath it */
+  .glass-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgb(248 245 239 / 0.82);
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass-header {
+      background: var(--color-ivory);
+    }
+  }
+
+  /* Big outlined numeral */
+  .numeral {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-variant-numeric: lining-nums;
+    line-height: 0.85;
+    color: var(--color-brass-text);
   }
 }
 

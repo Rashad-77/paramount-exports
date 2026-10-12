@@ -33,11 +33,15 @@ export function Prose({ text }: { text: string }) {
   return <div className="max-w-[var(--reading-width)] space-y-4 text-text">{out}</div>;
 }
 
-export function PageIntro({ title, lead }: { title: string; lead?: string }) {
+export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string }) {
   return (
-    <header className="container-page pt-12 pb-8 md:pt-20 md:pb-12">
-      <h1 className="font-display text-headline text-walnut">{title}</h1>
-      {lead ? <p className="mt-4 max-w-xl text-lg text-text-muted">{lead}</p> : null}
+    <header className="wood-dark-bg relative isolate overflow-hidden text-ivory">
+      <div aria-hidden="true" className="hero-glow" />
+      <div className="container-page relative py-[clamp(3.5rem,2rem+6vw,7rem)]">
+        <p className="eyebrow rise-in !text-linen-dark">{eyebrow ?? "Furniture · Showroom · Workshop"}</p>
+        <h1 className="font-display rise-in rise-in-2 mt-6 max-w-4xl text-display text-ivory">{title}</h1>
+        {lead ? <p className="rise-in rise-in-3 mt-7 max-w-xl text-lg leading-relaxed text-ivory/80">{lead}</p> : null}
+      </div>
     </header>
   );
 }

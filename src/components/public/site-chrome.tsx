@@ -30,7 +30,7 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
 
 export function SiteHeader({ business }: { business: BusinessSettings }) {
   return (
-    <header className="relative border-b border-border bg-ivory">
+    <header className="glass-header border-b border-border">
       <div className="container-page flex h-[var(--header-height)] items-center justify-between gap-8">
         <Link href="/" className="font-display text-[1.625rem] leading-none tracking-[0.01em] text-walnut md:text-[1.875rem]" aria-label={`${business.name} — home`}>
           {business.name}
@@ -54,7 +54,7 @@ export function SiteHeader({ business }: { business: BusinessSettings }) {
 
 export function SiteFooter({ business }: { business: BusinessSettings }) {
   return (
-    <footer className="mt-[var(--section-space)] bg-walnut-dark text-ivory">
+    <footer className="wood-dark-bg mt-[var(--section-space)] text-ivory">
       <div className="container-page grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr] md:py-20">
         <div>
           <p className="font-display text-[2rem] leading-none">{business.name}</p>
@@ -84,6 +84,9 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
             {!business.phone && !business.email ? <li>Contact details to be added.</li> : null}
           </ul>
         </div>
+      </div>
+      <div aria-hidden="true" className="container-page overflow-hidden pb-2 select-none">
+        <p className="font-display whitespace-nowrap text-[clamp(3.5rem,13vw,11rem)] leading-[0.9] tracking-[-0.03em] text-ivory/[0.07]">{business.name}</p>
       </div>
       <div className="border-t border-ivory/15">
         <p className="container-page py-5 text-xs text-ivory/70">

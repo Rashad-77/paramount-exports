@@ -23,7 +23,7 @@ export function AppNavMobile({ children }: { children: ReactNode }) {
         aria-controls={id}
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex size-11 items-center justify-center hover:bg-linen"
+        className="inline-flex size-11 items-center justify-center text-ivory hover:bg-ivory/10"
       >
         {open ? <X aria-hidden="true" className="size-6" strokeWidth={1.5} /> : <Menu aria-hidden="true" className="size-6" strokeWidth={1.5} />}
       </button>
@@ -31,7 +31,7 @@ export function AppNavMobile({ children }: { children: ReactNode }) {
         id={id}
         hidden={!open}
         onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-var(--header-height))] overflow-y-auto border-b border-border bg-surface p-4 shadow-[var(--shadow-md)]"
+        className="wood-dark-bg absolute inset-x-0 top-full max-h-[calc(100dvh-var(--header-height))] overflow-y-auto border-t border-ivory/15 p-4 text-ivory shadow-[var(--shadow-lg)]"
       >
         {children}
       </div>

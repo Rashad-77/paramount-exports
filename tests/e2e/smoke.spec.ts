@@ -127,6 +127,8 @@ test.describe("access control", () => {
 });
 
 test.describe("accessibility (axe, WCAG 2.1 A/AA)", () => {
+  // Measure the settled page, not a frame mid-way through an entrance animation.
+  test.use({ reducedMotion: "reduce" });
   for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/privacy", "/terms"]) {
     test(`no serious or critical violations on ${path}`, async ({ page }) => {
       await page.goto(path);

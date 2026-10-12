@@ -16,7 +16,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 /** Content block with a thin border. Prefer this to ad-hoc bordered divs. */
 export function Panel({ title, description, children, actions }: { title?: string; description?: string; children: ReactNode; actions?: ReactNode }) {
   return (
-    <section className="min-w-0 border border-border bg-surface">
+    <section className="min-w-0 border border-border border-t-2 border-t-walnut bg-surface shadow-[var(--shadow-sm)]">
       {title ? (
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="min-w-0">

@@ -15,7 +15,7 @@ export default async function GalleryPage() {
   return (
     <>
       <PageIntro title="Gallery" lead="A selection of completed pieces and projects." />
-      <div className="container-page pb-20">
+      <div className="container-page py-[var(--section-space)]">
         {projects.length === 0 ? (
           <EmptyState title="Completed projects will appear here" description="Photographs of finished work are being prepared." action={<ButtonLink href="/custom">Ask about custom furniture</ButtonLink>} />
         ) : (

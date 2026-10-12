@@ -1,0 +1,41 @@
+/*
+ * Generative wood. Pure CSS + inline SVG noise, no image files: stretched fractal noise reads as timber grain.
+ * Four variants (different grain seeds and tones) so neighbouring panels never look identical.
+ * These stand in for photography until real photos are supplied, and are always captioned as placeholders.
+ */
+:root {
+  /* Long straight fibres (very low horizontal frequency) with broad tonal bands, soft highlights and fine pores */
+  --grain-a: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0008%200.038%27%20numOctaves%3D%275%27%20seed%3D%273%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.16%200%200%200%200%200.08%200%200%200%200%200.035%200%200%200%202.1%20-0.72%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+  --grain-b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0007%200.03%27%20numOctaves%3D%275%27%20seed%3D%2711%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.13%200%200%200%200%200.065%200%200%200%200%200.03%200%200%200%202.0%20-0.7%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+  --grain-c: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.001%200.05%27%20numOctaves%3D%275%27%20seed%3D%2727%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.2%200%200%200%200%200.11%200%200%200%200%200.055%200%200%200%202.1%20-0.76%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+  --grain-light: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0009%200.07%27%20numOctaves%3D%274%27%20seed%3D%278%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.98%200%200%200%200%200.9%200%200%200%200%200.76%200%200%200%201.15%20-0.5%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+  --grain-fine: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.003%200.45%27%20numOctaves%3D%273%27%20seed%3D%275%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.14%200%200%200%200%200.08%200%200%200%200%200.045%200%200%200%200.9%20-0.3%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+}
+.wood {
+  position: relative;
+  isolation: isolate;
+  background-color: #8a6445;
+  background-image: var(--grain-light), var(--grain-a), var(--grain-fine), linear-gradient(160deg, #b08560 0%, #8a6445 48%, #5e4129 100%);
+  background-size: cover, cover, 340px 340px, cover;
+}
+.wood-a, .wood-b, .wood-c, .wood-d { background-size: cover, cover, 340px 340px, cover; }
+.wood-a { background-image: var(--grain-light), var(--grain-a), var(--grain-fine), linear-gradient(160deg, #b48a62 0%, #8d6746 50%, #5f432a 100%); }
+.wood-b { background-image: var(--grain-light), var(--grain-b), var(--grain-fine), linear-gradient(200deg, #9b7550 0%, #74512f 55%, #46301d 100%); }
+.wood-c { background-image: var(--grain-light), var(--grain-c), var(--grain-fine), linear-gradient(150deg, #c39c72 0%, #a07a55 52%, #6c4c31 100%); }
+.wood-d { background-image: var(--grain-light), var(--grain-b), var(--grain-fine), linear-gradient(170deg, #6d4d34 0%, #4a3322 55%, #2f2016 100%); }
+/* Soft light falling across the panel, like a lit showroom wall */
+.wood::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 20% 0%, rgb(255 244 225 / 0.28), transparent 55%), linear-gradient(to top, rgb(20 12 6 / 0.42), transparent 45%);
+}
+.wood-dark-bg {
+  background-color: #281e17;
+  background-image: var(--grain-b), radial-gradient(90% 70% at 85% 10%, rgb(154 116 64 / 0.22), transparent 60%);
+  background-size: 100% 100%, cover;
+  background-repeat: no-repeat;
+  background-blend-mode: soft-light, normal;
+}
