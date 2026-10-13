@@ -13,12 +13,43 @@ export interface GlassOption {
  * jumps to the next option that starts with it. The picked option and the one under the pointer or cursor are bold. The box is as
  * wide as the longest option and the list opens flush against it, so the two read as one piece of glass.
  */
-export function GlassSelect({ label, value, options, onChange, className }: { label: string; value: string; options: GlassOption[]; onChange: (value: string) => void; className?: string }) {
-  const id = useId();
+export interface GlassSelectProps {
+  label: string;
+  options: GlassOption[];
+  /** Controlled value; leave out to let the drop-down keep its own (then use `defaultValue`). */
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  /** With a name, the chosen value is posted with the surrounding form, like a native select. */
+  name?: string;
+  id?: string;
+  disabled?: boolean;
+  /** "bar" is the catalogue filter box; "field" matches the text boxes in forms. */
+  variant?: "bar" | "field";
+  invalid?: boolean;
+  describedBy?: string;
+  className?: string;
+}
+
+export function GlassSelect({ label, value, defaultValue, options, onChange, name, id: idProp, disabled, variant = "bar", invalid, describedBy, className }: GlassSelectProps) {
+  const autoId = useId();
+  const id = idProp ?? autoId;
   const root = useRef<HTMLDivElement>(null);
+  const hidden = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  const selected = Math.max(0, options.findIndex((o) => o.value === value));
+  const [inner, setInner] = useState(defaultValue ?? "");
+  const current = value ?? inner;
+  const selected = Math.max(0, options.findIndex((o) => o.value === current));
   const [active, setActive] = useState(selected);
+
+  // A form reset puts the box back to the value it started with, as a native select does.
+  useEffect(() => {
+    const form = hidden.current?.form;
+    if (!form) return;
+    const reset = () => setInner(defaultValue ?? "");
+    form.addEventListener("reset", reset);
+    return () => form.removeEventListener("reset", reset);
+  }, [defaultValue]);
 
   useEffect(() => {
     if (!open) return;
@@ -35,7 +66,10 @@ export function GlassSelect({ label, value, options, onChange, className }: { la
   };
   const pick = (i: number) => {
     const o = options[i];
-    if (o) onChange(o.value);
+    if (o) {
+      setInner(o.value);
+      onChange?.(o.value);
+    }
     setOpen(false);
   };
 
@@ -65,16 +99,21 @@ export function GlassSelect({ label, value, options, onChange, className }: { la
   };
 
   return (
-    <div ref={root} className="gs" data-open={open || undefined}>
+    <div ref={root} className={"gs" + (variant === "field" ? " gs-field" : "")} data-open={open || undefined}>
+      {name ? <input ref={hidden} type="hidden" name={name} value={options[selected]?.value ?? ""} disabled={disabled} /> : null}
       <button
+        id={id}
         type="button"
         role="combobox"
-        aria-label={`${label}, ${options[selected]?.label ?? ""}`}
+        disabled={disabled}
+        aria-invalid={invalid ? true : undefined}
+        aria-describedby={describedBy}
+        aria-label={variant === "bar" ? `${label}, ${options[selected]?.label ?? ""}` : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-list`}
         aria-activedescendant={open ? `${id}-${active}` : undefined}
-        className={"cat-control gs-button " + (className ?? "")}
+        className={(variant === "bar" ? "cat-control gs-button " : "gs-button ") + (className ?? "")}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKeyDown}
       >

@@ -1372,6 +1372,64 @@ html:has(.page-body) {
     color: var(--color-text);
     cursor: pointer;
   }
+  /* The same glass list inside forms: the closed box matches the text boxes around it, the open list is the header's glass */
+  .gs-field {
+    --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    width: 100%;
+  }
+  .gs-field .gs-button {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    background-color: var(--color-surface);
+    background-image: var(--chev);
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--color-text);
+    outline: none;
+  }
+  @media (min-width: 48rem) {
+    .gs-field .gs-button {
+      min-height: 2.5rem;
+      font-size: 0.875rem;
+    }
+  }
+  .gs-field .gs-button:focus-visible,
+  .gs-field[data-open] .gs-button {
+    border-color: var(--color-walnut);
+  }
+  .gs-field .gs-button[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    border-width: 2px;
+  }
+  .gs-field .gs-button:disabled {
+    background-color: var(--color-linen);
+    cursor: not-allowed;
+  }
+  .gs-field[data-open] .gs-button {
+    border-radius: 0;
+    background-color: transparent;
+  }
+  .gs-field .gs-panel {
+    border-radius: 0;
+  }
+  .gs-field .gs-opt {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    letter-spacing: normal;
+    text-transform: none;
+  }
   /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
      text, so the strokes are thickened instead: same size, same width, nothing shifts. */
   .gs-opt[aria-selected="true"],
