@@ -67,7 +67,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { curr
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <h2 className="font-display text-[1.75rem] leading-tight text-brand">Your order is empty</h2>
+        <h2 className="font-display text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
         <p className="mt-2 text-text-muted">Add a piece to your order first.</p>
         <ButtonLink href="/products" size="cta" className="mt-6">
           Browse the collection

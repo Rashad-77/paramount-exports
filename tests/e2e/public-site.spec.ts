@@ -212,8 +212,8 @@ test.describe("ordering (no online payment)", () => {
     const p = phone();
     await page.goto("/products/sample-priced-stool");
     await page.getByRole("button", { name: /add to order/i }).click();
-    await expect(page.getByRole("link", { name: /^your order, 1 item/i })).toBeVisible();
-    await page.getByRole("link", { name: /view your order/i }).click();
+    await expect(page.getByRole("link", { name: /^your cart, 1 item/i })).toBeVisible();
+    await page.getByRole("link", { name: /view your cart/i }).click();
     await expect(page).toHaveURL(/\/cart$/);
     await expect(page.getByText("Sample Priced Stool").first()).toBeVisible();
     await page.getByRole("link", { name: /continue to checkout/i }).click();
@@ -283,7 +283,7 @@ test.describe("ordering (no online payment)", () => {
 
   test("an empty basket explains itself, and checkout refuses an incomplete form", async ({ page }) => {
     await page.goto("/cart");
-    await expect(page.getByText(/your order is empty/i).first()).toBeVisible();
+    await expect(page.getByText(/your cart is empty/i).first()).toBeVisible();
     await page.goto("/products/sample-priced-stool");
     await page.getByRole("button", { name: /add to order/i }).click();
     await page.goto("/checkout");

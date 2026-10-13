@@ -96,7 +96,7 @@ export function AddToCart({ productName, productSlug, image, options, currency }
         {added ? (
           <>
             <Link href="/cart" className="font-semibold text-brand underline">
-              View your order
+              View your cart
             </Link>{" "}
             or keep browsing.
           </>

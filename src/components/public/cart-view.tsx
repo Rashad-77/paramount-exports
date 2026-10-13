@@ -17,7 +17,7 @@ export function CartView({ currency }: { currency: string }) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
         <ShoppingBag aria-hidden="true" className="mx-auto size-10 text-brand" strokeWidth={1.25} />
-        <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your order is empty</h2>
+        <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
         <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like. You pay nothing online.</p>
         <ButtonLink href="/products" size="cta" className="mt-6">
           Browse the collection

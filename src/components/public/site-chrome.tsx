@@ -14,6 +14,7 @@ export const PUBLIC_LINKS: NavLink[] = [
   { label: "Gallery", href: "/gallery" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
+  { label: "Support", href: "/help" },
   { label: "Track order", href: "/track" },
 ];
 
@@ -61,9 +62,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                 {rest ? <i>{rest}</i> : null}
               </span>
             </Link>
-            <p className="foot-tag">
-              {business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture."} Visit our showroom, or order online and pay when it arrives.
-            </p>
+            <p className="foot-tag">Expertise in woodworking</p>
           </div>
           <nav aria-label="Information">
             <p className="foot-head">Information</p>

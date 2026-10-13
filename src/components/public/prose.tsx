@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ButtonLink } from "@/components/ui/button";
 
 /**
  * Renders plain text safely (no HTML is ever interpreted): blank-line separated paragraphs,
@@ -33,7 +34,7 @@ export function Prose({ text }: { text: string }) {
   return <div className="max-w-[var(--reading-width)] space-y-4 text-text">{out}</div>;
 }
 
-export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string; plain?: boolean }) {
+export function PageIntro({ title, lead, eyebrow, action }: { title: string; lead?: string; eyebrow?: string; plain?: boolean; action?: { href: string; label: string } }) {
   return (
     // A dark band that runs up behind the floating header.
     <header className="plain-band on-wood">
@@ -41,6 +42,13 @@ export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: stri
         <p className="eyebrow rise-in">{eyebrow ?? "Showroom and workshop"}</p>
         <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-white">{title}</h1>
         {lead ? <p className="rise-in rise-in-3 mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
+        {action ? (
+          <div className="rise-in rise-in-3 mt-8">
+            <ButtonLink href={action.href} size="cta" variant="light">
+              {action.label}
+            </ButtonLink>
+          </div>
+        ) : null}
       </div>
     </header>
   );

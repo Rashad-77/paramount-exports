@@ -222,7 +222,7 @@ html:has(.page-body) {
     background: transparent;
     color: #1c1916;
   }
-  @media (max-width: 66rem) {
+  @media (max-width: 72rem) {
     .phead .toggle {
       display: inline-flex;
       order: 3;
