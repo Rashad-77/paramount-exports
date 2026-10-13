@@ -104,9 +104,20 @@ html:has(.page-body) {
   .foot .brand {
     display: flex;
     align-items: center;
+    gap: 0.8rem;
     line-height: 1;
     white-space: nowrap;
     color: #1c1916;
+  }
+  .phead .logo .mark {
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .foot .brand .mark {
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .phead .logo .name,
   .foot .brand .name {
@@ -130,6 +141,10 @@ html:has(.page-body) {
     color: #3a332d;
   }
   @media (max-width: 30rem) {
+    .phead .logo .mark {
+      width: 2.25rem;
+      height: 2.25rem;
+    }
     .phead .logo b,
     .foot .brand b {
       font-size: 0.9rem;

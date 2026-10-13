@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
@@ -50,6 +51,7 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
     <header className={"phead" + (scrolled ? " scrolled" : "") + (open ? " open" : "")}>
       <div className="in">
         <Link href="/" className="logo" aria-label={`${name} — home`} onClick={() => setOpen(false)}>
+          <Image src="/logo-mark.png" alt="" width={44} height={44} priority className="mark" />
           <span className="name">
             <b>{first}</b>
             {rest ? <i>{rest}</i> : null}

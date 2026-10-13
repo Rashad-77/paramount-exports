@@ -1,4 +1,5 @@
 import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { whatsappLink } from "@/lib/contact";
 import type { BusinessSettings } from "@/lib/settings";
@@ -54,6 +55,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
         <div className="foot-grid">
           <div className="foot-about">
             <Link href="/" className="brand" aria-label={`${business.name} — home`}>
+              <Image src="/logo-mark.png" alt="" width={40} height={40} className="mark" />
               <span className="name">
                 <b>{first}</b>
                 {rest ? <i>{rest}</i> : null}
