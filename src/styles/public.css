@@ -1309,6 +1309,10 @@ html:has(.page-body) {
     margin-left: auto;
   }
   /* Frosted-glass boxes like the header: no border, slim, small capitals. The focused one gets a firmer glass instead of an outline. */
+  .cat-control,
+  .gs-panel {
+    --glass: linear-gradient(180deg, rgb(255 255 255 / 0.62) 0%, rgb(255 255 255 / 0.5) 100%);
+  }
   .cat-control {
     appearance: none;
     -webkit-appearance: none;
@@ -1317,13 +1321,13 @@ html:has(.page-body) {
     border: 0;
     border-radius: 3px;
     outline: none;
-    background-color: rgb(255 255 255 / 0.6);
-    box-shadow: 0 1px 4px rgb(60 40 20 / 0.08);
-    -webkit-backdrop-filter: saturate(1.5) blur(14px);
-    backdrop-filter: saturate(1.5) blur(14px);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    background-color: transparent;
+    box-shadow: 0 1px 0 rgb(28 25 22 / 0.1);
+    -webkit-backdrop-filter: saturate(1.5) blur(18px);
+    backdrop-filter: saturate(1.5) blur(18px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"), var(--glass);
     background-repeat: no-repeat;
-    background-position: right 0.8rem center;
+    background-position: right 0.9rem center, 0 0;
     font-family: inherit;
     font-size: 0.6875rem;
     font-weight: 500;
@@ -1337,12 +1341,12 @@ html:has(.page-body) {
   .cat-control:focus-visible {
     border: 0;
     outline: none;
-    background-color: rgb(255 255 255 / 0.92);
+    background-color: rgb(255 255 255 / 0.35);
   }
   .cat-search {
-    width: 15rem;
+    width: 17rem;
     padding-right: 0.9rem;
-    background-image: none;
+    background-image: var(--glass);
   }
   .cat-search::placeholder {
     color: var(--color-text-muted);
@@ -1354,11 +1358,13 @@ html:has(.page-body) {
   }
   /* The frosted-glass drop-down: a box and a list of exactly the same width, joined with no gap, clear glass with a blur */
   .gs {
-    --gs-glass: rgb(255 255 255 / 0.5);
     position: relative;
   }
   .gs-button {
     display: grid;
+    min-width: 12.5rem;
+    padding-left: 1.1rem;
+    padding-right: 2.75rem;
     align-items: center;
     text-align: left;
     cursor: pointer;
@@ -1376,7 +1382,7 @@ html:has(.page-body) {
     font-weight: 700;
   }
   .gs[data-open] .gs-button {
-    background-color: var(--gs-glass);
+    background-color: rgb(255 255 255 / 0.2);
     border-radius: 3px 3px 0 0;
     box-shadow: none;
   }
@@ -1388,14 +1394,15 @@ html:has(.page-body) {
     width: 100%;
     padding: 0.25rem 0 0.4rem;
     border-radius: 0 0 3px 3px;
-    background: var(--gs-glass);
-    -webkit-backdrop-filter: saturate(1.6) blur(20px);
-    backdrop-filter: saturate(1.6) blur(20px);
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(1.5) blur(18px);
+    backdrop-filter: saturate(1.5) blur(18px);
+    border-bottom: 1px solid rgb(28 25 22 / 0.1);
     box-shadow: 0 16px 30px -14px rgb(60 40 20 / 0.4);
     list-style: none;
   }
   .gs-opt {
-    padding: 0.6rem 2rem 0.6rem 0.9rem;
+    padding: 0.65rem 2.75rem 0.65rem 1.1rem;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.12em;
