@@ -57,9 +57,9 @@ export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
         </div>
       </div>
 
-      <ul className="gal-grid mt-10 columns-1 gap-3 sm:columns-2 lg:columns-3">
+      <ul className="gal-grid mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((item, i) => (
-          <li key={item.id} className="mb-3 break-inside-avoid">
+          <li key={item.id}>
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>
               {item.src ? <SiteImage src={item.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" /> : null}
               <span className="gal-cap">
