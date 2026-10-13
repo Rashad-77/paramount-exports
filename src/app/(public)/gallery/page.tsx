@@ -23,11 +23,6 @@ export default async function GalleryPage() {
               Gallery
             </h1>
             <p className="rise-in rise-in-3 mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">A selection of completed pieces and projects.</p>
-            <div className="rise-in rise-in-3 mt-7">
-              <ButtonLink href="#gallery" size="cta" variant="light">
-                Explore the gallery
-              </ButtonLink>
-            </div>
           </div>
         </div>
       </section>

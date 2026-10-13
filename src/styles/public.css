@@ -26,33 +26,6 @@ html:has(.page-body) {
     }
   }
 
-  /* ── One hover for every text link and menu item: a block of tone fills up from the base ── */
-  .fill-hover {
-    position: relative;
-    isolation: isolate;
-  }
-  .fill-hover::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--fill, var(--color-mint));
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 280ms var(--ease-out);
-  }
-  @media (hover: hover) {
-    .fill-hover:hover::before {
-      transform: scaleY(1);
-    }
-  }
-  .on-wood .fill-hover {
-    --fill: rgb(255 255 255 / 0.12);
-  }
-  .fill-hover[aria-current="page"]::before {
-    transform: scaleY(1);
-  }
-
   /* ── Header: a full-width bar fixed to the top of every page, clear frosted glass with black type ──────── */
   :root {
     --head-h: 4.5rem;
@@ -1021,7 +994,6 @@ html:has(.page-body) {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fill-hover::before,
     .phead nav a::before,
     .step::before {
       transition: none;

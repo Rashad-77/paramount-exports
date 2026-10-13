@@ -127,7 +127,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               ) : null}
               {!business.phone && !business.email ? (
                 <li>
-                  <Link href="/contact">Send us an enquiry</Link>
+                  <Link href="/contact#enquiry">Send us an enquiry</Link>
                 </li>
               ) : null}
             </ul>

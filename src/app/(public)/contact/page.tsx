@@ -110,11 +110,11 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section aria-labelledby="send-title" style={{ background: "linear-gradient(180deg,#f2ede4,#e8e3dc)", paddingBlock: "clamp(3rem,7vw,5.5rem)" }}>
+      <section id="enquiry" aria-labelledby="send-title" className="scroll-mt-20" style={{ background: "linear-gradient(180deg,#f2ede4,#e8e3dc)", paddingBlock: "clamp(3rem,7vw,5.5rem)" }}>
         <div className="container-page">
           <Reveal className="mx-auto max-w-2xl">
             <h2 id="send-title" className="font-display text-center text-headline text-brand">
-              Or send an enquiry
+              Send an enquiry
             </h2>
             <p className="mx-auto mt-2 max-w-md text-center text-base text-text-muted">We reply within one working day.</p>
             <div className="ct-form mt-8 border border-white bg-white/80 p-6 md:p-10">
@@ -132,7 +132,7 @@ export default async function ContactPage() {
               Come and see it.
             </h2>
           </Reveal>
-          <Link href="/gallery#gallery" className="fill-hover -mx-1 inline-flex items-center gap-2 px-1 text-sm font-semibold text-brand">
+          <Link href="/gallery#gallery" className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
             See the gallery <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </div>

@@ -104,7 +104,7 @@ export default async function HomePage() {
               <ButtonLink href="/products" size="cta" variant="light">
                 Browse collection
               </ButtonLink>
-              <ButtonLink href="/contact" size="cta" variant="onDark">
+              <ButtonLink href="/contact#enquiry" size="cta" variant="onDark">
                 Make enquiry
               </ButtonLink>
             </div>
@@ -383,7 +383,7 @@ export default async function HomePage() {
                       <span className="sr-only"> (opens in a new tab)</span>
                     </ButtonLink>
                   ) : (
-                    <ButtonLink href="/contact" size="cta">
+                    <ButtonLink href="/contact#enquiry" size="cta">
                       Send an enquiry
                     </ButtonLink>
                   )}

@@ -7,7 +7,7 @@ import { Reveal } from "@/components/public/reveal";
 import { WorkshopSection } from "@/components/public/photo-sections";
 import { DEFAULT_ABOUT } from "@/lib/default-pages";
 import { PROCESS } from "@/lib/process";
-import { getPageContent } from "@/lib/settings";
+import { getBusinessSettings, getPageContent } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "About and craftsmanship", description: "The people, workshop and craft behind our furniture.", alternates: { canonical: "/about" } };
 export const revalidate = 300;
@@ -15,16 +15,16 @@ export const revalidate = 300;
 const STEP = 80;
 
 const WHAT_WE_DO = [
-  { title: "Ready-made furniture", body: "Finished pieces on the showroom floor that you can see, sit at and take home.", href: "/products", cta: "Browse the collection", label: "Ready-made pieces in the showroom" },
-  { title: "Made to measure", body: "Pieces built in our workshop to your dimensions, in the wood and finish you choose, quoted before we start.", href: "/custom", cta: "Start a custom enquiry", label: "A made-to-measure piece in the workshop" },
-  { title: "The showroom", body: "A place to see the timber, the finishes and the joinery in person, and to talk your piece through with us.", href: "/contact", cta: "Plan a visit", label: "The showroom floor" },
+  { title: "Ready-made furniture", body: "Finished pieces on the showroom floor that you can see, sit at and take home.", href: "/products", label: "Ready-made pieces in the showroom" },
+  { title: "Made to measure", body: "Pieces built in our workshop to your dimensions, in the wood and finish you choose, quoted before we start.", href: "/custom", label: "A made-to-measure piece in the workshop" },
+  { title: "The showroom", body: "A place to see the timber, the finishes and the joinery in person, and to talk your piece through with us.", href: "/contact", label: "The showroom floor" },
 ];
 
 export default async function AboutPage() {
-  const pages = await getPageContent();
+  const [pages, business] = await Promise.all([getPageContent(), getBusinessSettings()]);
   return (
     <>
-      <PageIntro eyebrow="About us" title="About and craftsmanship" lead="Who we are, what we make, and how a piece comes together in our workshop." />
+      <PageIntro eyebrow="About us" title="About and craftsmanship" lead="Who we are, what we make, and how a piece comes together in our workshop." brand={business.name} />
 
       {/* Our story: editable text beside a portrait photograph */}
       <section aria-labelledby="story-title" className="section-y">
@@ -64,9 +64,6 @@ export default async function AboutPage() {
                   </div>
                   <h3 className="mt-4 text-lg font-semibold text-text">{w.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{w.body}</p>
-                  <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand">
-                    {w.cta} <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
                 </Link>
               </Reveal>
             ))}

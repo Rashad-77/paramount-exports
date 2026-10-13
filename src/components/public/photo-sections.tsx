@@ -32,7 +32,7 @@ function MosaicSection({ id, anchor, eyebrow, title, tiles, flip = false, link }
             </h2>
           </div>
           {link ? (
-            <Link href={link.href} className="fill-hover -mx-1 inline-flex items-center gap-2 px-1 text-sm font-semibold text-brand">
+            <Link href={link.href} className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
               {link.label} <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           ) : null}

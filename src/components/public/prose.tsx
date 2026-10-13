@@ -34,11 +34,13 @@ export function Prose({ text }: { text: string }) {
   return <div className="max-w-[var(--reading-width)] space-y-4 text-text">{out}</div>;
 }
 
-export function PageIntro({ title, lead, eyebrow, action }: { title: string; lead?: string; eyebrow?: string; plain?: boolean; action?: { href: string; label: string } }) {
+export function PageIntro({ title, lead, eyebrow, action, brand }: { title: string; lead?: string; eyebrow?: string; plain?: boolean; action?: { href: string; label: string }; brand?: string }) {
+  const [brandFirst = "", ...brandRest] = (brand ?? "").trim().split(/\s+/);
   return (
     // A dark band that runs up behind the floating header.
     <header className="plain-band on-wood">
-      <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
+      <div className="container-page flex items-end justify-between gap-10 pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
+        <div className="min-w-0">
         <p className="eyebrow rise-in">{eyebrow ?? "Showroom and workshop"}</p>
         <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-white">{title}</h1>
         {lead ? <p className="rise-in rise-in-3 mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
@@ -48,6 +50,14 @@ export function PageIntro({ title, lead, eyebrow, action }: { title: string; lea
               {action.label}
             </ButtonLink>
           </div>
+        ) : null}
+        </div>
+        {brand ? (
+          // The brand name, large, at the right of the band. On narrow screens the header already shows it.
+          <p aria-hidden="true" className="rise-in rise-in-3 hidden shrink-0 text-right lg:block">
+            <span className="font-display block text-[clamp(2.5rem,1rem+4.2vw,4.75rem)] font-light uppercase leading-none tracking-[0.2em] text-white/90">{brandFirst}</span>
+            {brandRest.length ? <span className="mt-3 block text-[clamp(0.75rem,0.4rem+0.7vw,1.1rem)] font-light uppercase tracking-[0.42em] text-[var(--leaf)]">{brandRest.join(" ")}</span> : null}
+          </p>
         ) : null}
       </div>
     </header>
