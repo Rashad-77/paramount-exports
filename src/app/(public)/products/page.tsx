@@ -38,14 +38,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements."
         action={{ href: "/custom", label: "Request custom furniture" }}
       />
-      <div className="container-page py-10 pb-16">
-        <CatalogueBrowser
-          categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
-          materials={materials}
-          initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}
-          initialResult={result}
-          currency={business.currency}
-        />
+      <div className="bg-white">
+        <div className="container-page py-10 pb-16">
+          <CatalogueBrowser
+            categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
+            materials={materials}
+            initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}
+            initialResult={result}
+            currency={business.currency}
+          />
+        </div>
       </div>
     </>
   );

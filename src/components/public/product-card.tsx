@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ImagePlaceholder } from "./image-placeholder";
 import { SiteImage } from "./site-image";
@@ -9,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
   const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group h-full">
+    <article className="group h-full bg-[var(--color-cream)] p-3">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
@@ -25,15 +24,12 @@ export function ProductCard({ product, currency, priority = false }: { product: 
             <ImagePlaceholder label={product.name} className="absolute inset-0" />
           )}
         </div>
-        <div className="pt-5">
+        <div className="px-1 pb-2 pt-4">
           <h3 className="font-display text-[1.2rem] leading-snug text-text">
             <span>{product.name}</span>
           </h3>
           <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{meta}</p>
           <p className="mt-4 text-sm font-medium text-text">{product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : "Price on request"}</p>
-          <span className="mt-4 inline-flex items-center gap-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text">
-            View product <ArrowRight aria-hidden="true" className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
         </div>
       </Link>
     </article>
