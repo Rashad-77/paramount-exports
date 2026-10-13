@@ -36,7 +36,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         plain
         title="Collection"
         lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements."
-        action={{ href: "/custom", label: "Request custom furniture" }}
+        action={{ href: "/custom", label: "Request quotation" }}
       />
       <div className="bg-white pt-10 pb-16">
         <CatalogueBrowser
