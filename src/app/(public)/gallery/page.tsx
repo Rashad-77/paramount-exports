@@ -33,7 +33,7 @@ export default async function GalleryPage() {
             <p className="max-w-md text-base leading-relaxed text-text-muted">Want something like this made for you? Tell us the piece you have in mind.</p>
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/custom#quotation" size="cta">
-                Start a custom enquiry
+                Request quotation
               </ButtonLink>
               <ButtonLink href="/contact" size="cta" variant="secondary">
                 Plan a visit

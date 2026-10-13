@@ -105,7 +105,7 @@ export default async function HelpPage() {
               </p>
               <p className="mt-4">
                 <Link href="/custom#quotation" className="link-arrow text-text">
-                  Start a custom enquiry <ArrowRight aria-hidden="true" className="size-3.5" />
+                  Request quotation <ArrowRight aria-hidden="true" className="size-3.5" />
                 </Link>
               </p>
             </section>
