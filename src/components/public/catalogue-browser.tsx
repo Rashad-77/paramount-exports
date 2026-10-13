@@ -165,7 +165,7 @@ export function CatalogueBrowser({
           <p role="status" aria-live="polite" className="text-sm text-text-muted">
             {failed ? "The list could not be refreshed. Please try again." : result.total === 0 ? "No pieces to show" : `${result.total} ${result.total === 1 ? "piece" : "pieces"}`}
           </p>
-          <button type="button" className="cat-clear" onClick={clear} style={{ visibility: filtered ? "visible" : "hidden" }} tabIndex={filtered ? 0 : -1}>
+          <button type="button" className="cat-clear" onClick={clear}>
             Clear filters
           </button>
         </div>

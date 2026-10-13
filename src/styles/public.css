@@ -1460,8 +1460,7 @@ html:has(.page-body) {
     padding: 0.25rem 0;
     font-size: 0.8125rem;
     color: var(--color-text-muted);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    text-decoration: none;
     cursor: pointer;
     transition: color 200ms;
   }
