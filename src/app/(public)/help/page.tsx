@@ -7,7 +7,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { getBusinessSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
-  title: "How ordering works",
+  title: "We are here to help you",
   description: "How to order, how delivery and payment work, and what to do if you need to change something.",
   alternates: { canonical: "/help" },
 };
@@ -24,7 +24,7 @@ export default async function HelpPage() {
   const business = await getBusinessSettings();
   return (
     <>
-      <PageIntro plain eyebrow="Customer support" title="How ordering works" lead="What happens from choosing a piece to having it in your room, in plain words." />
+      <PageIntro plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
 
       <div className="container-page py-[var(--section-space)]">
         <nav aria-label="On this page" className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-6">
