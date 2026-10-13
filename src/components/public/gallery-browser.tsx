@@ -62,10 +62,6 @@ export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
           <li key={item.id}>
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>
               {item.src ? <SiteImage src={item.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" /> : null}
-              <span className="gal-cap">
-                <span className="gal-cat">{CATEGORY_LABEL[item.category]}</span>
-                <span className="gal-title">{item.caption}</span>
-              </span>
             </button>
           </li>
         ))}
