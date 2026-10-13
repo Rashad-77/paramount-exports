@@ -54,8 +54,18 @@ given `owner` or `staff` again afterwards. The Drizzle snapshot files were not r
 ## 5. Out of scope, not added
 
 Online checkout and card payments, a payment gateway, accounting, stock management, quotations and invoices, purchasing and suppliers,
-workshop scheduling, deliveries and driver tracking, after-sales cases, expense tracking, a customer portal, multi-currency, multi-branch.
+workshop scheduling, deliveries and driver tracking, after-sales cases, expense tracking, multi-currency, multi-branch.
 All of these existed in the previous CRM/ERP build and were removed on purpose.
+
+## 5b. Customer accounts: what is and is not done
+
+- Built and tested with a stand-in sign-in; **the Supabase path is untested against a real project** (sign-up, emailed confirmation, reset link, deleting the
+  sign-in identity). The same project must also be working for staff sign-in, which has not been verified either.
+- Email sign-in only. No phone or social sign-in, no two-factor for customers.
+- A deleted account removes the account data and unlinks its orders and requests (kept for the business records). The Supabase sign-in identity is only
+  removed when `SUPABASE_SERVICE_ROLE_KEY` is set.
+- Orders placed as a guest are never attached to an account automatically; the customer adds them with the order number and phone number.
+- The saved basket is last-write-wins between devices, and shows prices as they were when the item was added (orders are always priced from the database).
 
 ## 6. Suggested next phases
 

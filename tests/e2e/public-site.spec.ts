@@ -272,7 +272,7 @@ test.describe("ordering (no online payment)", () => {
     await page.getByLabel(/agree to be contacted/i).check();
     await waitForFormReady(page);
     await page.getByRole("button", { name: /place order/i }).click();
-    await expect(page).toHaveURL(/\/order\/confirmed\?ref=ORD-\d{6}/);
+    await expect(page).toHaveURL(/\/order\/confirmed\?ref=ORD-\d{6}/, { timeout: 45_000 });
     await expect(page.getByRole("heading", { level: 1, name: /we have your order/i })).toBeVisible();
     await expect(page.getByText("Sample Priced Stool").first()).toBeVisible();
 

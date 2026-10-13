@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { loadSavedCartAction, saveCartAction } from "@/app/(public)/account/actions";
 import { useCart } from "@/lib/cart";
 
@@ -11,10 +12,13 @@ import { useCart } from "@/lib/cart";
  */
 export function AccountSync() {
   const { items, merge } = useCart();
-  const ready = useRef(false);
+  const [ready, setReady] = useState(false);
+  // Signing in moves the visitor to another page without reloading, so the question "who is signed in?" is asked again on each page until it is answered.
+  const path = usePathname();
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
+    if (ready) return;
     let alive = true;
     (async () => {
       try {
@@ -23,7 +27,7 @@ export function AccountSync() {
         const saved = await loadSavedCartAction();
         if (!alive) return;
         merge(saved);
-        ready.current = true;
+        setReady(true);
       } catch {
         /* offline or signed out: the basket simply stays in this browser */
       }
@@ -31,16 +35,16 @@ export function AccountSync() {
     return () => {
       alive = false;
     };
-  }, [merge]);
+  }, [merge, path, ready]);
 
   useEffect(() => {
-    if (!ready.current) return;
+    if (!ready) return;
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       saveCartAction(items).catch(() => undefined);
     }, 1500);
     return () => clearTimeout(timer.current);
-  }, [items]);
+  }, [items, ready]);
 
   return null;
 }

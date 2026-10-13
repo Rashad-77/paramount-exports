@@ -14,6 +14,9 @@ for handling those orders.
 - Browse the collection, product pages with photographs, options and prices.
 - **Add pieces to an order, check out, and get an order number.** There is **no online payment**: the customer chooses delivery
   or showroom collection, and how they plan to pay (on delivery, bank transfer, or at the showroom). Staff confirm the order.
+- **Optional customer accounts** (off until the owner turns them on in Settings): order history, quotation requests, saved details and
+  address, a basket that follows them between devices, password change and account deletion. Guests can always order and track an order
+  with its number and phone number. See "Customer accounts" below.
 - Contact page (contacts, address, map, enquiry form), custom-furniture request form, gallery (video hero, filters, viewer), About, legal pages.
 
 **For staff (`/app`, two roles: Owner and Staff)**
@@ -103,6 +106,22 @@ This identity exists **only** under `next dev`, never on Vercel or in a producti
 
 > **Project in OneDrive?** OneDrive rewrites files in `.next`, which can make `pnpm dev` recompile in a loop and the pages flicker.
 > Keep the project outside OneDrive (for example `C:\dev\paramount`).
+
+### Customer accounts
+
+Customers are **not staff**: an account never grants access to `/app` (that needs a staff profile and a role).
+
+- **Off by default.** Settings, "Customer accounts", has: turn accounts on, allow new sign-ups, require an account to order, keep the basket on the
+  account. It **cannot be switched on** until a sign-in service is connected, so the site never offers a sign-in that cannot work.
+- **Sign-in service:** the same Supabase project as staff sign-in (email and password). In that project: allow email sign-up, set up the
+  confirmation and password-reset emails, and add `<site address>/account/confirm` to the allowed redirect URLs. To also delete the
+  sign-in identity when a customer deletes their account, set `SUPABASE_SERVICE_ROLE_KEY` (otherwise only the account data is removed).
+- **Not yet verified against a real Supabase project.** The real path is written but could only be tested here with a built-in stand-in
+  (the browser tests set `ALLOW_LOCAL_CUSTOMER_AUTH=e2e-only`; `pnpm dev` with `DEMO_MODE=true` uses it too). Neither exists on Vercel.
+  Test sign-up, confirmation, sign-in and reset once against the real project before switching accounts on.
+- **Privacy:** a customer sees only orders linked to their account (filtered in the database query by the verified session). Orders are linked only
+  when placed while signed in, or when the customer adds one with its number and the phone number it was placed with (same proof and rate limits
+  as the public tracking page). Orders are never linked automatically by phone number.
 
 ## Deploying to Vercel
 
