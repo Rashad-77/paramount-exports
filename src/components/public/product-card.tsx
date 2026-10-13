@@ -27,9 +27,9 @@ export function ProductCard({ product, currency, priority = false }: { product: 
         <div className="pt-3.5">
           <p className="text-[0.75rem] text-text-muted">{product.categoryName}</p>
           <h3 className="mt-0.5 text-base font-semibold leading-snug text-text">
-            <span className="link-draw-hover">{product.name}</span>
+            <span>{product.name}</span>
           </h3>
-          {product.fromPrice ? <p className="mt-1 text-sm font-semibold text-brand">From {formatMoney(product.fromPrice, currency)}</p> : null}
+          <p className="mt-1 text-sm font-semibold text-brand">{product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : "Price on request"}</p>
           {meta ? <p className="mt-0.5 text-[0.8125rem] text-text-muted">{meta}</p> : null}
         </div>
       </Link>

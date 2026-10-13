@@ -45,7 +45,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <ul className="mt-4 space-y-2 on-wood-muted">
             {PUBLIC_LINKS.map((l) => (
               <li key={l.href}>
-                <Link className="link-draw" href={l.href}>
+                <Link className="fill-hover -mx-1 px-1" href={l.href}>
                   {l.label}
                 </Link>
               </li>
@@ -61,14 +61,14 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <ul className="mt-4 space-y-2 on-wood-muted">
             {business.phone ? (
               <li>
-                <a className="link-draw" href={`tel:${business.phone.replace(/\s+/g, "")}`}>
+                <a className="fill-hover -mx-1 px-1" href={`tel:${business.phone.replace(/\s+/g, "")}`}>
                   {business.phone}
                 </a>
               </li>
             ) : null}
             {business.email ? (
               <li>
-                <a className="link-draw" href={`mailto:${business.email}`}>
+                <a className="fill-hover -mx-1 px-1" href={`mailto:${business.email}`}>
                   {business.email}
                 </a>
               </li>
@@ -86,19 +86,19 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <span className="mx-3" aria-hidden="true">
             ·
           </span>
-          <Link href="/privacy" className="link-draw">
+          <Link href="/privacy" className="fill-hover -mx-1 px-1">
             Privacy notice
           </Link>
           <span className="mx-3" aria-hidden="true">
             ·
           </span>
-          <Link href="/terms" className="link-draw">
+          <Link href="/terms" className="fill-hover -mx-1 px-1">
             Terms
           </Link>
           <span className="mx-3" aria-hidden="true">
             ·
           </span>
-          <Link href="/login" className="link-draw">
+          <Link href="/login" className="fill-hover -mx-1 px-1">
             Staff sign in
           </Link>
         </p>

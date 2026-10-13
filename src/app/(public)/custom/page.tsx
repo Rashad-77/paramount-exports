@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { PageIntro } from "@/components/public/prose";
+import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { publicEnv } from "@/lib/env";
 import { CUSTOM_STEPS } from "@/lib/custom-steps";
@@ -81,6 +82,37 @@ export default function CustomPage() {
           </Reveal>
         </div>
       </div>
+
+      <section aria-labelledby="examples-title" className="border-t border-border bg-white section-y">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow">Made to order</p>
+            <h2 id="examples-title" className="font-display mt-3 text-headline text-brand">
+              Examples of made-to-order work
+            </h2>
+            <p className="mt-3 max-w-xl text-base leading-relaxed text-text-muted">Photographs of finished custom pieces will appear here.</p>
+          </Reveal>
+          <ul className="mt-8 grid auto-rows-[12rem] grid-cols-2 gap-3 md:auto-rows-[15rem] md:grid-cols-3">
+            {EXAMPLES.map((e, i) => (
+              <Reveal as="li" key={e} delay={(i % 3) * 80} className={i === 0 ? "row-span-2" : i === 4 ? "md:col-span-2" : ""}>
+                <div className="zoom-frame size-full">
+                  <ImagePlaceholder label={e} className="size-full" />
+                </div>
+              </Reveal>
+            ))}
+          </ul>
+        </div>
+      </section>
     </>
   );
 }
+
+const EXAMPLES = [
+  "Custom example — a dining table built to size",
+  "Custom example — fitted storage",
+  "Custom example — joinery detail",
+  "Custom example — a finish sample",
+  "Custom example — a piece in its room",
+  "Custom example — workshop progress",
+  "Custom example — delivered piece",
+];

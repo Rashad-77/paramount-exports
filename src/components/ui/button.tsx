@@ -13,12 +13,12 @@ const base =
   "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "btn-gloss text-ivory border-walnut-dark",
+  primary: "btn-solid text-ivory border-walnut-dark",
   secondary: "bg-transparent text-walnut border-walnut hover:bg-walnut hover:text-ivory",
   ghost: "bg-transparent text-text border-transparent hover:bg-linen",
   danger: "bg-danger text-ivory border-danger hover:bg-transparent hover:text-danger",
   // For use on dark (walnut) bands
-  light: "gloss bg-ivory text-walnut border-ivory hover:bg-ivory/90",
+  light: "bg-ivory text-walnut border-ivory hover:bg-ivory/90",
   // Outline for use on dark (wood) bands
   onDark: "bg-transparent text-ivory border-ivory/50 hover:bg-ivory/10 hover:border-ivory",
 };
@@ -27,7 +27,7 @@ const sizes: Record<Size, string> = {
   md: "min-h-10 px-4 text-sm tracking-[0.01em]",
   lg: "min-h-[var(--touch-target)] px-6 text-base tracking-[0.01em]",
   // Public calls to action: small caps-style label, generous padding.
-  cta: "min-h-11 px-6 text-[0.75rem] font-semibold uppercase tracking-[0.12em]",
+  cta: "min-h-11 px-5 text-[0.8125rem] font-semibold tracking-[0.01em]",
 };
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {

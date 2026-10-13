@@ -19,7 +19,7 @@ export const revalidate = 300;
 /** One stagger step for every list on the page, so everything arrives with the same rhythm. */
 const STEP = 80;
 
-const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three", "Category four"];
+const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three", "Category four", "Category five", "Category six"];
 const PLACEHOLDER_PIECES = ["Featured piece one", "Featured piece two", "Featured piece three", "Featured piece four"];
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -43,7 +43,7 @@ function SectionHead({ id, eyebrow, title, link, onWood = false }: { id: string;
       </Reveal>
       {link ? (
         <Reveal>
-          <Link href={link.href} className={"link-draw inline-flex items-center gap-2 text-sm font-semibold " + (onWood ? "text-[var(--leaf)]" : "text-brand")}>
+          <Link href={link.href} className={"fill-hover -mx-1 inline-flex items-center gap-2 px-1 text-sm font-semibold " + (onWood ? "text-[var(--leaf)]" : "text-brand")}>
             {link.label} <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </Reveal>
@@ -59,7 +59,7 @@ export default async function HomePage() {
     safe<PublicCard[]>(() => listFeaturedProducts(8), []),
     safe(() => listGalleryProjects(), []),
   ]);
-  const shown = categories.filter((c) => c.count > 0).slice(0, 4);
+  const shown = categories.filter((c) => c.count > 0).slice(0, 6);
   const projectImages: { id: string; url: string; alt: string; project: string }[] = projects.flatMap((p) => p.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt, project: p.title }))).slice(0, 5);
   const mosaic = projectImages.length > 0 ? projectImages : Array.from({ length: 5 }, (_, i) => ({ id: `ph-${i}`, url: "", alt: "", project: `Project ${i + 1}` }));
 
@@ -116,30 +116,37 @@ export default async function HomePage() {
       <section aria-labelledby="categories-title" className="section-y">
         <div className="container-page">
           <SectionHead id="categories-title" eyebrow="The collection" title="Shop by category" link={shown.length > 0 ? { href: "/products", label: "View everything" } : undefined} />
-          <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {(shown.length > 0
               ? shown.map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, sub: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }))
-              : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "" }))
+              : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "Photographs to be supplied" }))
             ).map((c, i) => {
               const inner = (
                 <>
-                  <div className="zoom-frame relative aspect-[4/5]">
-                    <ImagePlaceholder label={`${c.name} — category photograph`} className="absolute inset-0" />
+                  <div className="thumb zoom-frame">
+                    <ImagePlaceholder label={`${c.name} — category photograph`} className="size-full" compact />
                   </div>
-                  <p className="mt-3 text-base font-semibold text-text">
-                    <span className="link-draw-hover">{c.name}</span>
-                  </p>
-                  {c.sub ? <p className="text-[0.8125rem] text-text-muted">{c.sub}</p> : null}
+                  <div className="body">
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-semibold text-text">{c.name}</p>
+                      <p className="text-[0.8125rem] text-text-muted">{c.sub}</p>
+                    </div>
+                    {c.href ? (
+                      <span aria-hidden="true" className="go">
+                        <ArrowRight className="size-4" strokeWidth={1.75} />
+                      </span>
+                    ) : null}
+                  </div>
                 </>
               );
               return (
-                <Reveal as="li" key={c.key} delay={i * STEP}>
+                <Reveal as="li" key={c.key} delay={(i % 3) * STEP}>
                   {c.href ? (
-                    <Link href={c.href} className="group block">
+                    <Link href={c.href} className="catrow group">
                       {inner}
                     </Link>
                   ) : (
-                    <div className="group">{inner}</div>
+                    <div className="catrow">{inner}</div>
                   )}
                 </Reveal>
               );
@@ -220,10 +227,10 @@ export default async function HomePage() {
             {CUSTOM_STEPS.map((s, i) => (
               <Reveal as="li" key={s.title} delay={i * STEP} className="step">
                 <span aria-hidden="true" className="num">
-                  {i + 1}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="text-lg font-bold text-text">{s.title}</h3>
-                <p className="mt-1.5 max-w-[30ch] text-sm leading-relaxed text-text-muted">{s.body}</p>
+                <h3 className="mt-5 text-base font-semibold text-text">{s.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{s.body}</p>
               </Reveal>
             ))}
           </ol>
@@ -246,7 +253,7 @@ export default async function HomePage() {
             <p className="mt-4 max-w-md text-base leading-relaxed text-text-muted">
               Ready-made and made-to-order pieces are built in our workshop. Read about the people, the timber and the methods behind them.
             </p>
-            <Link href="/about" className="link-draw mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
+            <Link href="/about" className="fill-hover -mx-1 px-1 mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
               About the workshop <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </Reveal>
@@ -290,7 +297,7 @@ export default async function HomePage() {
                 </p>
                 <p className="mt-1.5 whitespace-pre-line text-base text-white">{business.address ?? "Showroom address to be added."}</p>
                 {business.address && business.mapUrl ? (
-                  <a href={business.mapUrl} className="link-draw mt-2 inline-block text-sm text-[var(--leaf)]" target="_blank" rel="noopener noreferrer">
+                  <a href={business.mapUrl} className="fill-hover -mx-1 px-1 mt-2 inline-block text-sm text-[var(--leaf)]" target="_blank" rel="noopener noreferrer">
                     View on map<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : null}
@@ -332,7 +339,7 @@ export default async function HomePage() {
       {/* 9. Closing enquiry band */}
       <section aria-labelledby="cta-title" className="section-y">
         <div className="container-page">
-          <Reveal className="ctaband gloss gloss-loop">
+          <Reveal className="ctaband">
             <h2 id="cta-title" className="font-display max-w-[18ch] text-headline text-white">
               Let&rsquo;s talk about your piece.
             </h2>

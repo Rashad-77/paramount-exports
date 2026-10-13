@@ -1,8 +1,12 @@
 /*
- * Public site: a polished, woody showroom. Square edges, deep polished-wood bands, a light-green accent, gloss sweeps on
- * hover and on the big dark surfaces, and staggered scroll reveals. Everything that moves is switched off
+ * Public site: a polished, woody showroom. Square edges, deep polished-wood bands, a light-green accent, and staggered scroll reveals. Everything that moves is switched off
  * under prefers-reduced-motion. None of this applies inside the staff area (.app-ui).
  */
+/* The public site reads at 15px; the staff area keeps the browser default. */
+html:has(.page-body) {
+  font-size: 93.75%;
+}
+
 :root {
   --wood-0: #1b0e05;
   --wood-1: #2d1608;
@@ -12,73 +16,41 @@
 }
 
 @layer components {
-  /* ── Gloss: a diagonal highlight that glides across a polished surface ───────────── */
-  .gloss {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .gloss::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: linear-gradient(115deg, transparent 36%, rgb(255 255 255 / 0.26) 50%, transparent 64%);
-    transform: translate3d(-130%, 0, 0);
-    transition: transform 900ms var(--ease-out);
+  /* Buttons: flat polished brown, a touch darker on hover */
+  .btn-solid {
+    background-color: var(--color-walnut);
   }
   @media (hover: hover) {
-    .gloss:hover::after {
-      transform: translate3d(130%, 0, 0);
-    }
-  }
-  .gloss-loop::after {
-    animation: gloss-loop 9s ease-in-out infinite;
-  }
-  @keyframes gloss-loop {
-    0%,
-    55% {
-      transform: translate3d(-130%, 0, 0);
-    }
-    100% {
-      transform: translate3d(130%, 0, 0);
+    .btn-solid:hover {
+      background-color: var(--color-walnut-dark);
     }
   }
 
-  /* Buttons: polished brown with a top highlight (and the gloss glide on hover) */
-  .btn-gloss {
+  /* ── One hover for every text link and menu item: a block of tone fills up from the base ── */
+  .fill-hover {
     position: relative;
-    overflow: hidden;
     isolation: isolate;
-    background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-walnut) 84%, white), var(--color-walnut) 55%, var(--color-walnut-dark));
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 8px 18px -10px color-mix(in srgb, var(--color-walnut) 80%, black);
   }
-  .btn-gloss::after {
+  .fill-hover::before {
     content: "";
     position: absolute;
     inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: linear-gradient(115deg, transparent 36%, rgb(255 255 255 / 0.3) 50%, transparent 64%);
-    transform: translate3d(-130%, 0, 0);
-    transition: transform 800ms var(--ease-out);
+    z-index: -1;
+    background: var(--fill, var(--color-mint));
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 280ms var(--ease-out);
   }
   @media (hover: hover) {
-    .btn-gloss:hover {
-      filter: brightness(1.08);
-    }
-    .btn-gloss:hover::after {
-      transform: translate3d(130%, 0, 0);
+    .fill-hover:hover::before {
+      transform: scaleY(1);
     }
   }
-  .app-ui .btn-gloss {
-    background-image: none;
-    background-color: var(--color-walnut);
-    box-shadow: none;
+  .on-wood .fill-hover {
+    --fill: rgb(255 255 255 / 0.12);
   }
-  .app-ui .btn-gloss::after {
-    display: none;
+  .fill-hover[aria-current="page"]::before {
+    transform: scaleY(1);
   }
 
   /* ── Header ─────────────────────────────────────────────────────────────────────── */
@@ -107,8 +79,8 @@
     padding-block: 0.7rem;
   }
   .phead .logo {
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.15rem;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: #fff;
     line-height: 1;
@@ -120,32 +92,32 @@
     gap: 0.25rem;
   }
   .phead nav a {
+    --fill: rgb(255 255 255 / 0.1);
     position: relative;
-    padding: 0.6rem 0.9rem;
-    font-size: 0.9rem;
-    font-weight: 600;
+    isolation: isolate;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: rgb(255 255 255 / 0.86);
     transition: color 200ms;
   }
-  .phead nav a::after {
+  .phead nav a::before {
     content: "";
     position: absolute;
-    left: 0.9rem;
-    right: 0.9rem;
-    bottom: 0.3rem;
-    height: 2px;
-    background: var(--leaf);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 350ms var(--ease-out);
+    inset: 0;
+    z-index: -1;
+    background: var(--fill);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 280ms var(--ease-out);
   }
   .phead nav a:hover,
   .phead nav a[aria-current="page"] {
     color: #fff;
   }
-  .phead nav a:hover::after,
-  .phead nav a[aria-current="page"]::after {
-    transform: scaleX(1);
+  .phead nav a:hover::before,
+  .phead nav a[aria-current="page"]::before {
+    transform: scaleY(1);
   }
   .phead nav a.cta {
     margin-left: 0.5rem;
@@ -154,7 +126,7 @@
     color: var(--color-brand);
     font-weight: 700;
   }
-  .phead nav a.cta::after {
+  .phead nav a.cta::before {
     display: none;
   }
   .phead nav a.cta:hover {
@@ -202,9 +174,6 @@
       font-size: 1rem;
       border-bottom: 1px solid rgb(255 255 255 / 0.08);
     }
-    .phead nav a::after {
-      display: none;
-    }
     .phead nav a.cta {
       margin: 0.75rem 0 0;
       text-align: center;
@@ -233,16 +202,6 @@
     mix-blend-mode: soft-light;
     opacity: 0.85;
     pointer-events: none;
-  }
-  .wood-band::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: linear-gradient(115deg, transparent 32%, rgb(255 255 255 / 0.07) 46%, transparent 60%);
-    transform: translate3d(-130%, 0, 0);
-    animation: gloss-loop 12s ease-in-out infinite;
   }
   .wood-band > * {
     position: relative;
@@ -287,10 +246,10 @@
       linear-gradient(180deg, rgb(27 14 5 / 0.2) 0%, rgb(27 14 5 / 0.15) 45%, rgb(27 14 5 / 0.9) 100%);
   }
   .vhero h1 {
-    font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
     font-weight: 800;
     line-height: 1;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.03em;
     color: #fff;
   }
   .vhero h1 em {
@@ -351,56 +310,103 @@
     }
   }
 
-  /* Steps: numbered squares joined by a dashed line */
+  /* Steps: four cards; a brand bar draws across the top of each as it arrives, one after another */
   .steps {
-    position: relative;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
   }
-  .steps::before {
+  .step {
+    position: relative;
+    padding: 1.5rem 1.4rem 1.6rem;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    transition: border-color 300ms;
+  }
+  .step::before {
     content: "";
     position: absolute;
-    left: 6%;
-    right: 6%;
-    top: 1.9rem;
-    height: 2px;
-    background: repeating-linear-gradient(90deg, rgb(110 53 17 / 0.45) 0 8px, transparent 8px 16px);
+    left: -1px;
+    right: -1px;
+    top: -1px;
+    height: 3px;
+    background: var(--color-brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 900ms var(--ease-out) calc(var(--d, 0ms) + 250ms);
+  }
+  .step.in::before {
+    transform: scaleX(1);
   }
   .step .num {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 3.8rem;
-    height: 3.8rem;
-    margin-bottom: 1.2rem;
-    border: 2px solid var(--color-brand);
-    background: #fff;
-    color: var(--color-brand);
-    font-size: 1.4rem;
-    font-weight: 800;
-    box-shadow: 0 0 0 8px var(--color-mint);
-    transition: background-color 300ms, color 300ms, transform 400ms var(--ease-out);
+    display: block;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--color-brand) 62%, white);
+    transition: color 300ms;
   }
   @media (hover: hover) {
+    .step:hover {
+      border-color: var(--color-brand);
+    }
     .step:hover .num {
-      background: var(--color-brand);
-      color: #fff;
-      transform: translate3d(0, -4px, 0);
+      color: var(--color-brand);
     }
   }
   @media (max-width: 56.25rem) {
     .steps {
       grid-template-columns: 1fr 1fr;
-      gap: 2.2rem 1.5rem;
-    }
-    .steps::before {
-      display: none;
     }
   }
   @media (max-width: 35rem) {
     .steps {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Category rows: a square photo beside the name, the whole row responding on hover */
+  .catrow {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    transition: border-color 300ms, background-color 300ms;
+  }
+  .catrow .thumb {
+    flex: 0 0 auto;
+    width: clamp(5.5rem, 22%, 8rem);
+    aspect-ratio: 1;
+  }
+  .catrow .body {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+  .catrow .go {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    border: 1px solid var(--color-border);
+    color: var(--color-brand);
+    transition: background-color 300ms, color 300ms, border-color 300ms, transform 400ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    a.catrow:hover {
+      border-color: var(--color-brand);
+      background: color-mix(in srgb, var(--color-mint) 45%, white);
+    }
+    a.catrow:hover .go {
+      background: var(--color-brand);
+      border-color: var(--color-brand);
+      color: #fff;
+      transform: translate3d(3px, 0, 0);
     }
   }
 
@@ -459,13 +465,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .gloss-loop::after,
-    .wood-band::after {
-      animation: none;
-    }
-    .gloss::after,
-    .btn-gloss::after {
+    .fill-hover::before,
+    .phead nav a::before,
+    .step::before {
       transition: none;
+    }
+    .step::before {
+      transform: none;
     }
   }
 }

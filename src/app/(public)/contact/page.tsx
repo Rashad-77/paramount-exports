@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MapPin, MessageCircle, Phone } from "lucide-react";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { PageIntro } from "@/components/public/prose";
+import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
 import { publicEnv } from "@/lib/env";
@@ -52,7 +53,7 @@ export default async function ContactPage() {
                 {b.address && b.mapUrl ? (
                   <dd className="mt-2 pl-7">
                     <a
-                      className="link-draw"
+                      className="fill-hover -mx-1 px-1"
                       href={b.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -94,7 +95,7 @@ export default async function ContactPage() {
                   ) : null}
                   {b.email ? (
                     <a
-                      className="link-draw inline-flex min-h-10 items-center"
+                      className="fill-hover -mx-1 px-1 inline-flex min-h-10 items-center"
                       href={`mailto:${b.email}`}
                     >
                       {b.email}
@@ -131,6 +132,31 @@ export default async function ContactPage() {
           </Reveal>
         </div>
       </div>
+
+      <section aria-labelledby="inside-title" className="border-t border-border bg-white section-y">
+        <div className="container-page">
+          <Reveal>
+            <p className="eyebrow">The showroom</p>
+            <h2 id="inside-title" className="font-display mt-3 text-headline text-brand">
+              Inside the showroom
+            </h2>
+          </Reveal>
+          <div className="mt-8 grid auto-rows-[12rem] grid-cols-2 gap-3 md:auto-rows-[16rem] md:grid-cols-4">
+            <Reveal className="col-span-2 row-span-2">
+              <div className="zoom-frame size-full">
+                <ImagePlaceholder label="Showroom — the main floor" className="size-full" />
+              </div>
+            </Reveal>
+            {["Showroom — dining pieces", "Showroom — seating", "Showroom — timber and finish samples", "Showroom — entrance"].map((l, i) => (
+              <Reveal key={l} delay={(i + 1) * 80}>
+                <div className="zoom-frame size-full">
+                  <ImagePlaceholder label={l} className="size-full" />
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   );
 }

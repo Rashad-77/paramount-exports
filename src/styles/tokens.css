@@ -49,7 +49,7 @@
   --color-focus: #3a2c23;
 
   /* Type: an editorial serif for display, a precise grotesque for everything else */
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: var(--font-sans);
 
   --text-xs: 0.75rem;
@@ -62,10 +62,10 @@
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
   /* Fluid display sizes for the public site (use with font-display) */
-  --text-headline: clamp(1.625rem, 1.2rem + 1.4vw, 2.25rem);
+  --text-headline: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
   --text-headline--line-height: 1.12;
   --text-headline--letter-spacing: -0.015em;
-  --text-display: clamp(2rem, 1.25rem + 2.6vw, 3.25rem);
+  --text-display: clamp(1.875rem, 1.3rem + 2vw, 2.875rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.022em;
 

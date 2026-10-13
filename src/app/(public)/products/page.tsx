@@ -47,25 +47,25 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <PageIntro title="Collection" lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements." />
-      <div className="container-page pt-14 pb-8">
+      <div className="container-page pt-10 pb-6">
         {categories.length > 0 ? (
-          <nav aria-label="Categories" className="mb-6 flex flex-wrap gap-2">
-            <Link href={params({ category: undefined, page: undefined })} aria-current={!category ? "page" : undefined} className={chip(!category)}>
+          <nav aria-label="Categories" className="flex gap-1 overflow-x-auto border-b border-border">
+            <Link href={params({ category: undefined, page: undefined })} aria-current={!category ? "page" : undefined} className={tab(!category)}>
               All
             </Link>
             {categories.map((c) => (
-              <Link key={c.id} href={params({ category: c.slug, page: undefined })} aria-current={category === c.slug ? "page" : undefined} className={chip(category === c.slug)}>
+              <Link key={c.id} href={params({ category: c.slug, page: undefined })} aria-current={category === c.slug ? "page" : undefined} className={tab(category === c.slug)}>
                 {c.name}
               </Link>
             ))}
           </nav>
         ) : null}
 
-        <form method="get" action="/products" className="grid gap-4 border-y border-border py-5 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto] lg:items-end">
+        <form method="get" action="/products" className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto] lg:items-end">
           <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Name, wood or code" />
           <SelectField
             showOptional={false}
-            label="Wood / material"
+            label="Wood or material"
             name="material"
             defaultValue={material ?? ""}
             options={materials.map((m) => ({ value: m, label: m }))}
@@ -83,7 +83,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           />
           {category ? <input type="hidden" name="category" value={category} /> : null}
           <div className="flex gap-2">
-            <Button type="submit">Apply</Button>
+            <Button type="submit" variant="secondary">
+              Apply
+            </Button>
             {filtered ? (
               <ButtonLink href="/products" variant="ghost">
                 Clear
@@ -118,9 +120,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   );
 }
 
-function chip(active: boolean) {
+/** Category tabs: the active one sits on a light tint with a brand base line; the rest fill up on hover like every link. */
+function tab(active: boolean) {
   return (
-    "inline-flex min-h-10 items-center border px-4 text-sm " +
-    (active ? "border-walnut bg-walnut text-ivory" : "border-border-strong hover:bg-linen")
+    "fill-hover -mb-px inline-flex min-h-10 shrink-0 items-center whitespace-nowrap border-b-2 px-3.5 text-sm " +
+    (active ? "border-brand font-semibold text-brand" : "border-transparent text-text-muted hover:text-text")
   );
 }
