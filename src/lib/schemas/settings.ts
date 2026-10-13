@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optText, reqText } from "@/lib/validation";
+import { checkbox, optText, reqText } from "@/lib/validation";
 
 const blankToNull = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? null : v), schema.nullable());
 
@@ -24,5 +24,12 @@ export const pagesFormSchema = z.object({
   terms: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
   testimonials: blankToNull(z.string().max(6000, "Keep this under 6,000 characters.")),
 });
+
+export const accountsFormSchema = z
+  .object({ enabled: checkbox, allowSignUp: checkbox, requiredForCheckout: checkbox, saveCart: checkbox })
+  .superRefine((v, ctx) => {
+    if (v.requiredForCheckout && !v.enabled) ctx.addIssue({ code: "custom", path: ["requiredForCheckout"], message: "Turn customer accounts on first, or leave this off." });
+    if (v.requiredForCheckout && !v.allowSignUp) ctx.addIssue({ code: "custom", path: ["requiredForCheckout"], message: "New customers could not order if they cannot create an account. Allow sign-up, or leave this off." });
+  });
 
 export { optText };

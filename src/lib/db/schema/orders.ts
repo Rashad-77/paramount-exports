@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { productVariants, products } from "./catalogue";
+import { customerAccounts } from "./accounts";
 import { profiles } from "./foundation";
 
 /** Online orders: placed on the public website, paid for offline (on delivery, by bank transfer, or at the showroom). No online payments. */
@@ -44,6 +45,8 @@ export const orders = pgTable(
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     handledBy: uuid("handled_by").references(() => profiles.id, { onDelete: "set null" }),
+    /** The signed-in customer who placed it, when there was one. Guests leave this empty. */
+    accountId: uuid("account_id").references(() => customerAccounts.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -51,6 +54,7 @@ export const orders = pgTable(
     index("online_orders_status_idx").on(t.status),
     index("online_orders_created_idx").on(t.createdAt),
     index("online_orders_phone_key_idx").on(t.phoneKey),
+    index("online_orders_account_idx").on(t.accountId, t.createdAt),
     check("online_orders_amounts_nonneg", sql`${t.subtotal} >= 0 AND ${t.deliveryCharge} >= 0 AND ${t.total} >= 0`),
     check("online_orders_cancel_has_reason", sql`${t.status} <> 'cancelled' OR ${t.cancelReason} IS NOT NULL`),
     check("online_orders_delivery_has_address", sql`${t.fulfilment} <> 'delivery' OR ${t.address} IS NOT NULL`),
@@ -101,10 +105,13 @@ export const messages = pgTable(
     variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
     /** Custom-furniture details exactly as submitted (type, dimensions, material, finish, budget, target date). */
     payload: jsonb("payload"),
+    /** The signed-in customer who sent it, when there was one. */
+    accountId: uuid("account_id").references(() => customerAccounts.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("messages_handled_idx").on(t.isHandled, t.createdAt),
+    index("messages_account_idx").on(t.accountId, t.createdAt),
     check("messages_kind_known", sql`${t.kind} IN ('general', 'product_enquiry', 'custom')`),
   ],
 );

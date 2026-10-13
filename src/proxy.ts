@@ -62,5 +62,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Only run where a session matters; skips static assets and the public marketing pages entirely.
-  matcher: ["/app/:path*", "/print/:path*", "/login", "/api/uploads/:path*", "/api/files/:path*"],
+  matcher: ["/app/:path*", "/print/:path*", "/account/:path*", "/login", "/api/uploads/:path*", "/api/files/:path*"],
 };

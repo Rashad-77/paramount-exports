@@ -3,6 +3,8 @@
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { validation } from "@/lib/errors";
+import { activeCustomer } from "@/lib/auth/customer";
+import { getAccountSettings } from "@/lib/settings";
 import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guard";
 import { clientIp } from "@/lib/rate-limit";
 import { checkoutSchema } from "@/lib/schemas/orders";
@@ -26,7 +28,11 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
         throw validation("We could not confirm you are a person. Please try again.");
       }
 
-      const { reference } = await placeOrder(input, { ip });
+      // When the owner requires accounts, a guest cannot order (the checkout page already says so; this keeps it true if the form is posted directly).
+      const customer = await activeCustomer();
+      if (!customer && (await getAccountSettings()).requiredForCheckout) throw validation("Please sign in or create an account to place your order.");
+
+      const { reference } = await placeOrder(input, { ip, accountId: customer?.id ?? null });
       return { redirectTo: `/order/confirmed?ref=${encodeURIComponent(reference)}&pay=${input.paymentMethod}&how=${input.fulfilment}` };
     },
     { public: true },

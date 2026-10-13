@@ -5,6 +5,7 @@ import { runAction } from "@/lib/actions";
 import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guard";
 import { validation } from "@/lib/errors";
 import { clientIp } from "@/lib/rate-limit";
+import { activeCustomer } from "@/lib/auth/customer";
 import { enquirySchema } from "@/lib/schemas/enquiry";
 import { submitEnquiry } from "@/server/messages";
 
@@ -28,7 +29,7 @@ export async function submitEnquiryAction(_prev: ActionState, formData: FormData
         throw validation("We could not confirm you are a person. Please try again.");
       }
 
-      const { reference } = await submitEnquiry(input, { ip });
+      const { reference } = await submitEnquiry(input, { ip, accountId: (await activeCustomer())?.id ?? null });
       return { message: THANKS(reference) };
     },
     { public: true },

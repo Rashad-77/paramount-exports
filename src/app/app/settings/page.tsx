@@ -1,16 +1,18 @@
-import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
+import { customerAuthMode } from "@/lib/auth/customer";
 import { requireActor } from "@/lib/auth/session";
 import { getSettingsForAdmin } from "@/server/settings";
-import { updateBusinessAction } from "./actions";
+import { updateAccountsAction, updateBusinessAction } from "./actions";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business } = await getSettingsForAdmin(actor);
+  const { business, accounts } = await getSettingsForAdmin(actor);
+  const authMode = customerAuthMode();
   const canManage = can(actor, "settings:manage");
   const timezones = Intl.supportedValuesOf("timeZone");
 
@@ -49,6 +51,35 @@ export default async function SettingsPage() {
                 ))}
               </dl>
             </>
+          )}
+        </Panel>
+        <Panel
+          title="Customer accounts"
+          description="Let customers create an account to see their orders and quotation requests, save their details and keep their basket between devices. Guests can always track an order with its number and phone number."
+        >
+          {authMode === "off" ? (
+            <Alert tone="warning" title="Sign-in service not connected">
+              Accounts cannot be turned on until Supabase sign-in is connected to this website (the same service staff sign in with). Until then the website shows no sign-in for customers.
+            </Alert>
+          ) : authMode === "local" ? (
+            <Alert tone="info" title="Development sign-in">
+              This copy of the site uses a built-in test sign-in. The live website uses Supabase.
+            </Alert>
+          ) : (
+            <Alert tone="success" title="Sign-in service connected">
+              In your Supabase project, check that email sign-up is allowed and that the confirmation and password-reset emails are set up, and add this website&apos;s address to the allowed redirect URLs.
+            </Alert>
+          )}
+          {canManage ? (
+            <ActionForm action={updateAccountsAction} className="mt-5">
+              <FCheckbox name="enabled" label="Turn on customer accounts" hint="Shows Sign in in the website header and the account pages." defaultChecked={accounts.enabled} />
+              <FCheckbox name="allowSignUp" label="Let new customers create an account" hint="Turn off to let only existing accounts sign in." defaultChecked={accounts.allowSignUp} />
+              <FCheckbox name="requiredForCheckout" label="Require an account to place an order" hint="Guests are sent to sign in or create an account at checkout. Leave off to keep guest checkout." defaultChecked={accounts.requiredForCheckout} />
+              <FCheckbox name="saveCart" label="Keep a signed-in customer's basket on their account" hint="So it is still there on another phone or computer." defaultChecked={accounts.saveCart} />
+              <SubmitButton>Save account options</SubmitButton>
+            </ActionForm>
+          ) : (
+            <p className="mt-4 text-sm text-text-muted">Only the owner can change these options. Accounts are currently {accounts.enabled ? "on" : "off"}.</p>
           )}
         </Panel>
       </div>

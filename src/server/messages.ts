@@ -21,7 +21,7 @@ export const ENQUIRY_LIMITS = {
  * Public contact form, product enquiry or custom-furniture request, stored as a message for staff to answer.
  * Callers must have passed the form guard (honeypot / token / Turnstile) already.
  */
-export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | null }): Promise<{ id: string; reference: string }> {
+export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | null; accountId?: string | null }): Promise<{ id: string; reference: string }> {
   const db = getDb();
   const key = phoneKey(input.phone);
 
@@ -80,6 +80,7 @@ export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | nul
         productId,
         variantId,
         payload,
+        accountId: ctx.accountId ?? null,
       })
       .returning({ id: messages.id, reference: messages.reference });
     await linkUploads(tx, verified, { type: "message", id: row!.id });

@@ -25,7 +25,7 @@ export const ORDER_LIMITS = {
  * showroom) and staff confirm the order. Prices, names and availability always come from the database, never from the browser.
  * Callers must have passed the form guard (honeypot / token / Turnstile) already.
  */
-export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null }): Promise<{ id: string; reference: string }> {
+export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null; accountId?: string | null }): Promise<{ id: string; reference: string }> {
   const db = getDb();
   const key = phoneKey(input.phone);
 
@@ -87,6 +87,7 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null 
         deliveryCharge: "0.00",
         total: moneyString(subtotal),
         customerNote: input.note ?? null,
+        accountId: ctx.accountId ?? null,
       })
       .returning({ id: orders.id, reference: orders.reference });
     await tx.insert(orderItems).values(

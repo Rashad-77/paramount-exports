@@ -101,3 +101,32 @@ export const getPageContent = cache(async (): Promise<PageContent> => {
     return DEFAULT_PAGES;
   }
 });
+
+/**
+ * Customer accounts. Everything is off until the owner turns it on in Settings, and it cannot be turned on until a sign-in service
+ * is connected (see lib/auth/customer.ts), so a half-configured site never shows a sign-in that cannot work.
+ */
+export const accountsSchema = z.object({
+  enabled: z.boolean(),
+  /** Let new visitors create an account. When off, only existing accounts can sign in. */
+  allowSignUp: z.boolean(),
+  /** Orders can only be placed by signed-in customers. Guests are sent to sign in. */
+  requiredForCheckout: z.boolean(),
+  /** Keep a signed-in customer's basket on their account so it follows them between devices. */
+  saveCart: z.boolean(),
+});
+export type AccountSettings = z.infer<typeof accountsSchema>;
+export const DEFAULT_ACCOUNTS: AccountSettings = { enabled: false, allowSignUp: true, requiredForCheckout: false, saveCart: true };
+
+/** Never throws: anything unreadable means "accounts are off", the safe state. */
+export const getAccountSettings = cache(async (): Promise<AccountSettings> => {
+  if (!hasDatabase()) return DEFAULT_ACCOUNTS;
+  try {
+    const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, "accounts")).limit(1);
+    const parsed = accountsSchema.safeParse({ ...DEFAULT_ACCOUNTS, ...((row?.value as object | undefined) ?? {}) });
+    return parsed.success ? parsed.data : DEFAULT_ACCOUNTS;
+  } catch (error) {
+    console.error("Failed to load account settings; accounts stay off.", error instanceof Error ? error.message : "unknown");
+    return DEFAULT_ACCOUNTS;
+  }
+});

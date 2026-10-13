@@ -40,6 +40,11 @@ function Result({ timezone, phone }: { timezone: string; phone: string | null })
     );
   }
 
+  return <OrderView o={o} timezone={timezone} phone={phone} />;
+}
+
+/** One order as its own customer sees it. Used by the number-and-phone lookup and by the signed-in account pages. */
+export function OrderView({ o, timezone, phone }: { o: TrackedOrder; timezone: string; phone: string | null }) {
   const when = (iso: string | null) => (iso ? formatDateTime(iso, timezone) : null);
   const steps = stepsFor(o);
   const at = o.status === "cancelled" ? -1 : ORDER.indexOf(o.status);

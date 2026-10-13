@@ -31,7 +31,12 @@ export async function trackOrder(input: TrackInput, ctx: { ip: string | null }):
   const [order] = await db.select().from(orders).where(eq(orders.reference, input.reference)).limit(1);
   if (!order || order.phoneKey !== phoneKey(input.phone)) throw notFound(NOT_FOUND);
 
-  const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id)).orderBy(asc(orderItems.position));
+  return toTrackedOrder(order);
+}
+
+/** The small view of an order that its own customer may see. Shared by the number-and-phone lookup and the signed-in account pages. */
+export async function toTrackedOrder(order: typeof orders.$inferSelect): Promise<TrackedOrder> {
+  const items = await getDb().select().from(orderItems).where(eq(orderItems.orderId, order.id)).orderBy(asc(orderItems.position));
   return {
     reference: order.reference,
     status: order.status,

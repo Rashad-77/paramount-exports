@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { businessFormSchema, pagesFormSchema } from "@/lib/schemas/settings";
-import { updateBusiness, updatePages } from "@/server/settings";
+import { accountsFormSchema, businessFormSchema, pagesFormSchema } from "@/lib/schemas/settings";
+import { updateAccounts, updateBusiness, updatePages } from "@/server/settings";
 
 const refresh = () => {
   revalidatePath("/", "layout");
@@ -25,5 +25,13 @@ export async function updatePagesAction(_p: ActionState, fd: FormData): Promise<
     await updatePages(actor!, input);
     refresh();
     return { message: "Page content saved." };
+  });
+}
+
+export async function updateAccountsAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(fd, accountsFormSchema, async (input, { actor }) => {
+    await updateAccounts(actor!, input);
+    revalidatePath("/", "layout");
+    return { message: "Customer account options saved." };
   });
 }
