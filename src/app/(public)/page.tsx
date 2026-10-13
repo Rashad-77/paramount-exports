@@ -225,7 +225,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <Reveal variant="fade" className="mt-8">
-              <ButtonLink href="/custom" size="cta">
+              <ButtonLink href="/custom#quotation" size="cta">
                 Plan a custom piece
               </ButtonLink>
             </Reveal>
@@ -326,7 +326,7 @@ export default async function HomePage() {
               <ButtonLink href="/contact" size="cta" variant="light">
                 Contact us
               </ButtonLink>
-              <ButtonLink href="/custom" size="cta" variant="onDark">
+              <ButtonLink href="/custom#quotation" size="cta" variant="onDark">
                 Request a quotation
               </ButtonLink>
             </div>

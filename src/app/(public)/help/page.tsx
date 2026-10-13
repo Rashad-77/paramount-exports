@@ -104,7 +104,7 @@ export default async function HelpPage() {
                 If you need a different size, wood or finish, or something that is not in the collection, tell us what you have in mind on the custom enquiry page. We reply with a quotation, and no work starts until you agree it.
               </p>
               <p className="mt-4">
-                <Link href="/custom" className="link-arrow text-text">
+                <Link href="/custom#quotation" className="link-arrow text-text">
                   Start a custom enquiry <ArrowRight aria-hidden="true" className="size-3.5" />
                 </Link>
               </p>

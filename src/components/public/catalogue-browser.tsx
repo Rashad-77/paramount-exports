@@ -182,7 +182,7 @@ export function CatalogueBrowser({
                   Clear filters
                 </button>
               ) : (
-                <Link href="/custom" className="link-arrow mt-5 text-text">
+                <Link href="/custom#quotation" className="link-arrow mt-5 text-text">
                   Ask about custom furniture
                 </Link>
               )}

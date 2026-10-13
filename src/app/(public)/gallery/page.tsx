@@ -32,7 +32,7 @@ export default async function GalleryPage() {
           <div className="mt-16 flex flex-col items-start gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-md text-base leading-relaxed text-text-muted">Want something like this made for you? Tell us the piece you have in mind.</p>
             <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/custom" size="cta">
+              <ButtonLink href="/custom#quotation" size="cta">
                 Start a custom enquiry
               </ButtonLink>
               <ButtonLink href="/contact" size="cta" variant="secondary">

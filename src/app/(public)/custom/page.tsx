@@ -23,7 +23,7 @@ export default function CustomPage() {
         action={{ href: "#examples", label: "See examples" }}
       />
       <div>
-        <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
+        <div id="quotation" className="container-page scroll-mt-20 grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
           <Reveal
             as="section"
             aria-labelledby="process-title"
