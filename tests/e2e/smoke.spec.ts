@@ -6,7 +6,7 @@ test.describe("public site", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText(/placeholders until the real content is supplied/i)).toBeVisible();
-    await expect(page).toHaveTitle(/paramount exports sri lanka/i);
+    await expect(page).toHaveTitle(/paramount export industries/i);
   });
 
   test("every primary navigation link leads to a real page with a heading", async ({ page, request }) => {

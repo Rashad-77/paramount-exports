@@ -35,7 +35,7 @@ export type BusinessSettings = z.infer<typeof businessSchema> & {
 
 /** The name shown until the owner saves business details. An older placeholder name saved in Settings is treated the same way. */
 export const PLACEHOLDER_NAME = "[Business Name]";
-export const DEFAULT_BUSINESS_NAME = "Paramount Exports Sri Lanka";
+export const DEFAULT_BUSINESS_NAME = "Paramount Export Industries";
 
 export const DEFAULT_BUSINESS: BusinessSettings = {
   name: DEFAULT_BUSINESS_NAME,

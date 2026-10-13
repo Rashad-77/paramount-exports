@@ -1,4 +1,4 @@
-# Paramount Exports Sri Lanka: website and online orders
+# Paramount Export Industries: website and online orders
 
 One Next.js application (deployed on **Vercel**) and one PostgreSQL database (**Supabase**) for a wood-furniture business:
 a public website where customers browse, **order online without paying online**, or send an enquiry, and a small staff area
