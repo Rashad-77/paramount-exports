@@ -11,7 +11,7 @@ export function ProductCard({ product, currency, priority = false }: { product: 
   return (
     <article className="group h-full">
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="zoom-frame round-xl relative aspect-[4/5]">
+        <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
             <SiteImage
               src={product.imageUrl}

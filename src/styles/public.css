@@ -1352,6 +1352,70 @@ html:has(.page-body) {
     -webkit-appearance: none;
     appearance: none;
   }
+  /* The frosted-glass drop-down: a button that looks like the other boxes, and a list that floats under it */
+  .gs {
+    position: relative;
+  }
+  .gs-button {
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .gs-button[aria-expanded="true"] {
+    background-color: rgb(255 255 255 / 0.92);
+  }
+  .gs-panel {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 0.35rem);
+    z-index: 40;
+    min-width: 100%;
+    width: max-content;
+    max-width: min(90vw, 24rem);
+    padding: 0.35rem 0;
+    border-radius: 3px;
+    background: rgb(255 255 255 / 0.74);
+    -webkit-backdrop-filter: saturate(1.5) blur(18px);
+    backdrop-filter: saturate(1.5) blur(18px);
+    box-shadow: 0 14px 34px -14px rgb(60 40 20 / 0.45), 0 1px 4px rgb(60 40 20 / 0.1);
+    list-style: none;
+  }
+  .gs-opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+  /* Hover or keyboard position: bold only, no colour. The hidden bold copy keeps the width from shifting. */
+  .gs-opt span {
+    display: inline-grid;
+  }
+  .gs-opt span::after {
+    content: attr(data-text);
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+  .gs-opt[data-active] {
+    font-weight: 700;
+  }
+  @media (max-width: 47.99rem) {
+    .gs,
+    .gs-button {
+      width: 100%;
+    }
+    .gs-panel {
+      width: 100%;
+    }
+  }
   .cat-meta {
     display: flex;
     align-items: center;

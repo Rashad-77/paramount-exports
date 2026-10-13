@@ -76,11 +76,16 @@ test.describe("catalogue", () => {
 
     // a dropdown applies as soon as it is changed
     await page.getByRole("button", { name: /clear filters/i }).first().click();
-    const category = page.getByLabel("Category");
-    const options = await category.locator("option").count();
-    expect(options).toBeGreaterThan(1);
-    await category.selectOption({ index: 1 });
+    await page.getByRole("combobox", { name: /^category/i }).click();
+    const options = page.getByRole("option");
+    expect(await options.count()).toBeGreaterThan(1);
+    await options.nth(1).click();
     await expect(page).toHaveURL(/category=/);
+    // the keyboard works too: open the sort list, move down, pick with Enter
+    await page.getByRole("combobox", { name: /^sort by/i }).press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/sort=name/);
 
     // the page was never reloaded
     expect(await page.evaluate(() => (window as unknown as { __same?: boolean }).__same)).toBe(true);

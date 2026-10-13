@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { GlassSelect } from "@/components/public/glass-select";
 import { ProductCard } from "@/components/public/product-card";
 import type { PublicCard } from "@/server/catalogue-public";
 
@@ -99,27 +100,23 @@ export function CatalogueBrowser({
   return (
     <>
       <form method="get" action="/products" className="cat-bar" onSubmit={(e) => e.preventDefault()} role="search" aria-label="Filter the collection">
-        <select name="category" aria-label="Category" className="cat-control" value={f.category} onChange={(e) => set({ category: e.target.value })}>
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <GlassSelect
+          label="Category"
+          value={f.category}
+          onChange={(category) => set({ category })}
+          options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]}
+        />
         <div className="cat-right">
-          <select name="material" aria-label="Wood or material" className="cat-control" value={f.material} onChange={(e) => set({ material: e.target.value })}>
-            <option value="">All materials</option>
-            {materials.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-          <select name="sort" aria-label="Sort by" className="cat-control" value={f.sort} onChange={(e) => set({ sort: e.target.value === "name" ? "name" : "newest" })}>
-            <option value="newest">Sort by: Newest</option>
-            <option value="name">Sort by: Name (A–Z)</option>
-          </select>
+          <GlassSelect label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
+          <GlassSelect
+            label="Sort by"
+            value={f.sort}
+            onChange={(sort) => set({ sort: sort === "name" ? "name" : "newest" })}
+            options={[
+              { value: "newest", label: "Sort by: Newest" },
+              { value: "name", label: "Sort by: Name (A–Z)" },
+            ]}
+          />
           <input
             name="q"
             type="search"
@@ -133,6 +130,22 @@ export function CatalogueBrowser({
           />
         </div>
         <noscript>
+          <select name="category" aria-label="Category" defaultValue={f.category}>
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <select name="material" aria-label="Wood or material" defaultValue={f.material}>
+            <option value="">All materials</option>
+            {materials.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
           <button type="submit" className="cat-clear">
             Show results
           </button>
