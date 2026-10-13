@@ -92,9 +92,9 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { curr
         <fieldset className="space-y-5">
           <legend className="font-display text-[1.5rem] leading-tight text-brand">Your details</legend>
           <div className="grid gap-5 sm:grid-cols-2">
-            <FField name="name" label="Your name" autoComplete="name" required />
-            <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" required hint="We call or message you on this number to confirm." />
-            <FField name="email" label="Email" type="email" autoComplete="email" className="sm:col-span-2" />
+            <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
+            <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="We call or message you on this number to confirm." />
+            <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} className="sm:col-span-2" />
           </div>
         </fieldset>
 
@@ -111,7 +111,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { curr
               help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our showroom. No delivery charge."}
             />
           ))}
-          {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} required autoComplete="street-address" /> : null}
+          {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
         </fieldset>
 
         <fieldset className="space-y-3">
@@ -135,7 +135,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { curr
           ) : null}
         </fieldset>
 
-        <FTextArea name="note" label="Anything we should know?" rows={3} hint="For example the best time to call, or access to your building." />
+        <FTextArea name="note" label="Anything we should know?" rows={3} maxLength={1000} hint="For example the best time to call, or access to your building." />
         {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
         <FCheckbox name="consent" label="I agree to be contacted about this order." hint="We use your details only for this order. See the Privacy notice." />
         <SubmitButton size="cta" pendingLabel="Placing your order…">

@@ -147,8 +147,8 @@ export function TrackOrder({ initialReference, timezone, phone }: { initialRefer
       </div>
       <div className="soft-card space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
-          <FField name="reference" label="Order number" placeholder="ORD-000123" defaultValue={initialReference} autoComplete="off" required hint="It is on your confirmation page." />
-          <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" required hint="The number you gave when you ordered." />
+          <FField name="reference" label="Order number" placeholder="ORD-000123" defaultValue={initialReference} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} required hint="It is on your confirmation page." />
+          <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="The number you gave when you ordered." />
         </div>
         <SubmitButton size="cta" pendingLabel="Looking…">
           Track order

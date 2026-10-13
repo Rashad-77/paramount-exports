@@ -63,9 +63,9 @@ export function EnquiryForm({
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <FField name="name" label="Your name" autoComplete="name" required />
-        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" required />
-        <FField name="email" label="Email" type="email" autoComplete="email" />
+        <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
+        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required />
+        <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} />
         <FSelect name="preferredContact" label="Best way to reach you" options={CONTACT_OPTIONS} placeholder="No preference" />
       </div>
 
@@ -79,12 +79,12 @@ export function EnquiryForm({
         <fieldset className="space-y-5">
           <legend className="font-display text-lg text-walnut">About the piece</legend>
           <div className="grid gap-5 sm:grid-cols-2">
-            <FField name="furnitureType" label="What would you like made?" placeholder="e.g. dining table, wardrobe" required />
-            <FField name="dimensions" label="Dimensions" placeholder="e.g. 180 × 90 × 75 cm" />
-            <FField name="material" label="Wood or material" placeholder="If you have a preference" />
-            <FField name="finish" label="Finish" placeholder="e.g. natural oil, dark stain" />
-            <FField name="budgetRange" label="Budget range" />
-            <FField name="targetDate" label="Date you would like it by" type="date" />
+            <FField name="furnitureType" label="What would you like made?" placeholder="e.g. dining table, wardrobe" maxLength={120} required />
+            <FField name="dimensions" label="Dimensions" placeholder="e.g. 180 × 90 × 75 cm" maxLength={200} />
+            <FField name="material" label="Wood or material" placeholder="If you have a preference" maxLength={120} />
+            <FField name="finish" label="Finish" placeholder="e.g. natural oil, dark stain" maxLength={120} />
+            <FField name="budgetRange" label="Budget range" maxLength={80} />
+            <FField name="targetDate" label="Date you would like it by" type="date" min={new Date().toISOString().slice(0, 10)} />
           </div>
           <FileUploader purpose="enquiry" label="Reference photos or sketches" hint="JPEG, PNG or WebP, up to 8 MB each, up to 5 files." maxFiles={5} />
         </fieldset>
@@ -95,6 +95,7 @@ export function EnquiryForm({
         label={kind === "custom" ? "Anything else we should know?" : "Your message"}
         required={kind === "general"}
         rows={kind === "custom" ? 4 : 5}
+        maxLength={2000}
       />
 
       {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
