@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const placeholder = isPlaceholderBusiness(business);
   return {
     metadataBase: new URL(publicEnv().NEXT_PUBLIC_SITE_URL),
-    title: { default: placeholder ? "Wood furniture — showroom & made-to-order" : business.name, template: `%s · ${business.name}` },
+    title: { default: business.name, template: `%s · ${business.name}` },
     description:
       business.tagline ?? "Ready-made and made-to-order wood furniture from our workshop, with a showroom you can visit.",
     // A site still showing placeholder details must not be indexed.
