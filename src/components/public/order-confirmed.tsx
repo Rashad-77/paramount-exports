@@ -84,7 +84,12 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
       ) : null}
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <ButtonLink href="/products" size="cta">
+        {reference ? (
+          <ButtonLink href={`/track?ref=${encodeURIComponent(reference)}`} size="cta">
+            Track this order
+          </ButtonLink>
+        ) : null}
+        <ButtonLink href="/products" size="cta" variant="secondary">
           Keep browsing
         </ButtonLink>
         {phone ? (
@@ -97,7 +102,8 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
           </ButtonLink>
         )}
       </div>
-      <p className="mt-6 text-sm text-text-muted">
+      {reference ? <p className="mt-6 text-sm text-text-muted">You can check on it at any time: use your order number and the phone number you gave us.</p> : null}
+      <p className="mt-3 text-sm text-text-muted">
         Changed your mind or need to correct something? <Link href="/contact" className="underline">Contact us</Link> and quote your order number.
       </p>
     </div>

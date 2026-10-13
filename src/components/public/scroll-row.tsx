@@ -1,19 +1,25 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * An endless row of cards: the cards are laid out three times and, whenever the row drifts out of the middle copy, it is moved
- * back by exactly one copy's width (invisibly, because the copies are identical), so it never reaches an end. Previous / next
- * buttons are always visible, black, and centred on the photographs; each press moves about one card. The row also scrolls by
- * touch, trackpad and keyboard. The two extra copies are hidden from assistive technology and cannot be tabbed to.
+ * back by exactly one copy's width (invisibly, because the copies are identical), so it never reaches an end. The row runs edge to
+ * edge under the heading (`header`). Black previous / next arrowheads are always visible, centred on the cards; each press moves
+ * about one card. The row also scrolls by touch, trackpad and keyboard. The two extra copies are hidden from assistive
+ * technology and cannot be tabbed to.
  *
- * `photoRatio` is the photograph's height ÷ width and `cardWidth` the card's CSS width, used to centre the buttons on the photos.
+ * With `autoplayMs` it also moves on by itself every so often. It stops while the pointer or keyboard focus is on it, while it is
+ * off screen or the tab is hidden, and for visitors who prefer reduced motion.
  */
-export function ScrollRow({ label, children, cardWidth, photoRatio }: { label: string; children: ReactNode; cardWidth: string; photoRatio: number }) {
+export function ScrollRow({ label, children, header, autoplayMs }: { label: string; children: ReactNode; header: ReactNode; autoplayMs?: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
+  const [reduced, setReduced] = useState(false);
+  const held = useRef(false);
+  const visible = useRef(false);
 
   /** Width of one copy of the cards, measured as the distance between the first card of copy 1 and of copy 2. */
   const setWidth = useCallback(() => {
@@ -57,42 +63,75 @@ export function ScrollRow({ label, children, cardWidth, photoRatio }: { label: s
   const go = (dir: 1 | -1) => {
     const el = ref.current;
     if (!el) return;
+    // Make sure there is room to move in either direction first (an invisible jump), then glide by one card.
+    normalize();
     const card = el.querySelector<HTMLElement>('[data-copy="0"] > :first-child');
-    const step = (card?.getBoundingClientRect().width ?? el.clientWidth * 0.8) + 16;
+    const step = (card?.getBoundingClientRect().width ?? el.clientWidth * 0.8) + 20;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     el.scrollBy({ left: dir * step, behavior: reduce ? "auto" : "smooth" });
-    // The scroll listener re-centres the row once it settles; this covers a scroll event that never fires.
-    window.setTimeout(normalize, reduce ? 50 : 700);
   };
 
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduced(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => (visible.current = Boolean(e?.isIntersecting)), { threshold: 0.3 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const auto = Boolean(autoplayMs) && !reduced;
+  useEffect(() => {
+    if (!auto) return;
+    const id = window.setInterval(() => {
+      if (!held.current && visible.current && !document.hidden) go(1);
+    }, autoplayMs);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, autoplayMs]);
+
   const btn =
-    "absolute z-10 grid size-14 -translate-y-1/2 place-items-center text-black transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
-  // Vertical centre of the photograph: half its height, from the top of the row.
-  const top = `calc(${cardWidth} * ${photoRatio / 2})`;
+    "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/85 text-black shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
 
   return (
-    <div className="relative">
+    <>
+      <div className="container-page">{header}</div>
       <div
-        ref={ref}
-        role="group"
-        aria-label={label}
-        tabIndex={0}
-        className="relative flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ paddingInline: "var(--gutter)", scrollPaddingInline: "var(--gutter)" }}
+        ref={box}
+        className="relative mt-10"
+        onPointerEnter={() => (held.current = true)}
+        onPointerLeave={() => (held.current = false)}
+        onFocus={() => (held.current = true)}
+        onBlur={() => (held.current = false)}
       >
-        {[0, 1, 2].map((copy) => (
-          // The two extra copies are only there to make the row endless.
-          <div key={copy} data-copy={copy} className="contents" aria-hidden={copy === 0 ? undefined : true} inert={copy === 0 ? undefined : true}>
-            {children}
-          </div>
-        ))}
+        <div
+          ref={ref}
+          role="group"
+          aria-label={label}
+          tabIndex={0}
+          className="relative flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {[0, 1, 2].map((copy) => (
+            // The two extra copies are only there to make the row endless.
+            <div key={copy} data-copy={copy} className="contents" aria-hidden={copy === 0 ? undefined : true} inert={copy === 0 ? undefined : true}>
+              {children}
+            </div>
+          ))}
+        </div>
+        <button type="button" className={btn + " left-2"} onClick={() => go(-1)} aria-label={`Previous: ${label}`}>
+          <ChevronLeft aria-hidden="true" className="size-7" strokeWidth={1.75} />
+        </button>
+        <button type="button" className={btn + " right-2"} onClick={() => go(1)} aria-label={`Next: ${label}`}>
+          <ChevronRight aria-hidden="true" className="size-7" strokeWidth={1.75} />
+        </button>
       </div>
-      <button type="button" className={btn + " left-1 sm:left-3"} style={{ top }} onClick={() => go(-1)} aria-label="Previous projects">
-        <ChevronLeft aria-hidden="true" className="size-12" strokeWidth={1.5} />
-      </button>
-      <button type="button" className={btn + " right-1 sm:right-3"} style={{ top }} onClick={() => go(1)} aria-label="Next projects">
-        <ChevronRight aria-hidden="true" className="size-12" strokeWidth={1.5} />
-      </button>
-    </div>
+    </>
   );
 }

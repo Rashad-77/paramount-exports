@@ -54,11 +54,11 @@ export default async function ContactPage() {
   ];
   return (
     <>
-      <header className="ct-hero">
-        <div className="container-page">
+      <header className="plain-band on-wood text-center">
+        <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
           <p className="eyebrow rise-in">Contact us</p>
-          <h1 className="font-display rise-in rise-in-2 mx-auto mt-3 max-w-[16ch] text-display text-brand">Let&rsquo;s talk about your piece.</h1>
-          <p className="rise-in rise-in-3 mx-auto mt-4 max-w-lg text-base leading-relaxed text-text-muted sm:text-lg">Call, message or visit. Or write to us below.</p>
+          <h1 className="font-display rise-in rise-in-2 mx-auto mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>
+          <p className="rise-in rise-in-3 mx-auto mt-5 max-w-lg text-base leading-relaxed on-wood-muted">Call, message or visit. Or write to us below.</p>
         </div>
       </header>
 
@@ -110,7 +110,7 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section aria-labelledby="send-title" style={{ background: "linear-gradient(180deg,#eef6f0,#e4f1e9)", paddingBlock: "clamp(3rem,7vw,5.5rem)" }}>
+      <section aria-labelledby="send-title" style={{ background: "linear-gradient(180deg,#f2ede4,#e8e3dc)", paddingBlock: "clamp(3rem,7vw,5.5rem)" }}>
         <div className="container-page">
           <Reveal className="mx-auto max-w-2xl">
             <h2 id="send-title" className="font-display text-center text-headline text-brand">

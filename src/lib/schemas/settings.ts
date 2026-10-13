@@ -22,6 +22,7 @@ export const pagesFormSchema = z.object({
   about: blankToNull(z.string().max(8000, "Keep this under 8,000 characters.")),
   privacy: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
   terms: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
+  testimonials: blankToNull(z.string().max(6000, "Keep this under 6,000 characters.")),
 });
 
 export { optText };

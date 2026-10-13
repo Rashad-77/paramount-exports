@@ -1,16 +1,17 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ImagePlaceholder } from "./image-placeholder";
 import { SiteImage } from "./site-image";
 import type { PublicCard } from "@/server/catalogue-public";
 import { formatMoney } from "@/lib/money";
 
-/** Photograph first, details underneath: the way a showroom label sits beside a piece. */
+/** Photograph first, then the name, a line of detail, the price and a link: the way a showroom label sits beside a piece. */
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
-  const meta = [product.material, product.availability].filter(Boolean).join(" · ");
+  const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
     <article className="group h-full">
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="zoom-frame relative aspect-[4/5]">
+        <div className="zoom-frame round-xl relative aspect-[4/5]">
           {product.imageUrl ? (
             <SiteImage
               src={product.imageUrl}
@@ -24,13 +25,15 @@ export function ProductCard({ product, currency, priority = false }: { product: 
             <ImagePlaceholder label={product.name} className="absolute inset-0" />
           )}
         </div>
-        <div className="pt-3.5">
-          <p className="text-[0.75rem] text-text-muted">{product.categoryName}</p>
-          <h3 className="mt-0.5 text-base font-semibold leading-snug text-text">
+        <div className="pt-5">
+          <h3 className="font-display text-[1.2rem] leading-snug text-text">
             <span>{product.name}</span>
           </h3>
-          <p className="mt-1 text-sm font-semibold text-brand">{product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : "Price on request"}</p>
-          {meta ? <p className="mt-0.5 text-[0.8125rem] text-text-muted">{meta}</p> : null}
+          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{meta}</p>
+          <p className="mt-4 text-sm font-medium text-text">{product.fromPrice ? `From ${formatMoney(product.fromPrice, currency)}` : "Price on request"}</p>
+          <span className="mt-4 inline-flex items-center gap-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text">
+            View product <ArrowRight aria-hidden="true" className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+          </span>
         </div>
       </Link>
     </article>

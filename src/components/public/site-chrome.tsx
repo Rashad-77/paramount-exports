@@ -1,16 +1,19 @@
+import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { whatsappLink } from "@/lib/contact";
 import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
 import { PublicHeader, type NavLink } from "./public-nav";
 
 /** Only destinations that exist. */
 export const PUBLIC_LINKS: NavLink[] = [
-  { label: "Collection", href: "/products" },
-  { label: "Custom furniture", href: "/custom" },
-  { label: "About", href: "/about" },
+  { label: "Home", href: "/" },
+  { label: "Products", href: "/products" },
+  { label: "Custom work", href: "/custom" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Contact us", href: "/contact" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+  { label: "Track order", href: "/track" },
 ];
 
 export function PlaceholderNotice({ business }: { business: BusinessSettings }) {
@@ -29,79 +32,112 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
 }
 
 export function SiteHeader({ business }: { business: BusinessSettings }) {
-  return <PublicHeader name={business.name} links={PUBLIC_LINKS} />;
+  // The name at the left already goes home, so the menu does not repeat it.
+  return <PublicHeader name={business.name} links={PUBLIC_LINKS.filter((l) => l.href !== "/")} />;
 }
 
+const INFORMATION = [
+  { label: "About us", href: "/about" },
+  { label: "Our process", href: "/about#process" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Made to measure", href: "/custom" },
+  { label: "Privacy notice", href: "/privacy" },
+  { label: "Terms and conditions", href: "/terms" },
+];
+
 export function SiteFooter({ business }: { business: BusinessSettings }) {
+  const [first = business.name, ...others] = business.name.trim().split(/\s+/);
+  const rest = others.join(" ");
   return (
-    <footer className="wood-band on-wood mt-0">
-      <div className="container-page grid gap-10 pt-14 pb-10 md:grid-cols-[2fr_1fr_1fr_1fr]">
-        <div>
-          <p className="text-[1.4rem] font-extrabold leading-none tracking-tight">{business.name}</p>
-          <p className="mt-4 max-w-xs text-sm on-wood-muted">{business.tagline ?? "Ready-made and made-to-order wood furniture."}</p>
-        </div>
-        <div className="text-sm">
-          <p className="eyebrow">Explore</p>
-          <ul className="mt-4 space-y-2 on-wood-muted">
-            {PUBLIC_LINKS.map((l) => (
-              <li key={l.href}>
-                <Link className="fill-hover -mx-1 px-1" href={l.href}>
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="text-sm">
-          <p className="eyebrow">Visit</p>
-          <p className="mt-4 whitespace-pre-line on-wood-muted">{business.address ?? "Showroom address to be added."}</p>
-        </div>
-        <div className="text-sm">
-          <p className="eyebrow">Contact</p>
-          <ul className="mt-4 space-y-2 on-wood-muted">
-            {business.phone ? (
+    <footer className="foot">
+      <div className="container-page">
+        <div className="foot-grid">
+          <div className="foot-about">
+            <Link href="/" className="brand" aria-label={`${business.name} — home`}>
+              <span className="name">
+                <b>{first}</b>
+                {rest ? <i>{rest}</i> : null}
+              </span>
+            </Link>
+            <p className="foot-tag">
+              {business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture."} Visit our showroom, or order online and pay when it arrives.
+            </p>
+          </div>
+          <nav aria-label="Information">
+            <p className="foot-head">Information</p>
+            <ul className="foot-list">
+              {INFORMATION.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href}>{l.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Customer support">
+            <p className="foot-head">Customer support</p>
+            <ul className="foot-list">
               <li>
-                <a className="fill-hover -mx-1 px-1" href={`tel:${business.phone.replace(/\s+/g, "")}`}>
-                  {business.phone}
-                </a>
+                <Link href="/track">Track your order</Link>
               </li>
-            ) : null}
-            {business.email ? (
               <li>
-                <a className="fill-hover -mx-1 px-1" href={`mailto:${business.email}`}>
-                  {business.email}
-                </a>
+                <Link href="/help">How ordering works</Link>
               </li>
-            ) : null}
-            {!business.phone && !business.email ? <li>Contact details to be added.</li> : null}
-          </ul>
+              <li>
+                <Link href="/help#payment">Delivery and payment</Link>
+              </li>
+              <li>
+                <Link href="/contact">Contact us</Link>
+              </li>
+              {business.whatsapp ? (
+                <li>
+                  <a href={whatsappLink(business.whatsapp, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
+                    WhatsApp us<span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </nav>
+          <div>
+            <p className="foot-head">Visit us</p>
+            <ul className="foot-list">
+              <li className="plain">
+                <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                {business.address ?? "Showroom address to be added."}
+              </li>
+              <li className="plain">
+                <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                {business.openingHours ?? "Opening hours to be added."}
+              </li>
+              {business.phone ? (
+                <li>
+                  <a href={`tel:${business.phone.replace(/\s+/g, "")}`}>
+                    <Phone aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                    {business.phone}
+                  </a>
+                </li>
+              ) : null}
+              {business.email ? (
+                <li>
+                  <a href={`mailto:${business.email}`}>
+                    <Mail aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                    {business.email}
+                  </a>
+                </li>
+              ) : null}
+              {!business.phone && !business.email ? (
+                <li>
+                  <Link href="/contact">Send us an enquiry</Link>
+                </li>
+              ) : null}
+            </ul>
+          </div>
         </div>
-      </div>
-      <div aria-hidden="true" className="container-page relative h-[clamp(2.6rem,8vw,7.5rem)] overflow-hidden">
-        <span className="bigword">{business.name}</span>
-      </div>
-      <div className="relative z-10 border-t border-ivory/15 bg-black/20">
-        <p className="container-page py-5 text-xs on-wood-muted">
-          © {new Date().getFullYear()} {business.name}
-          <span className="mx-3" aria-hidden="true">
-            ·
-          </span>
-          <Link href="/privacy" className="fill-hover -mx-1 px-1">
-            Privacy notice
-          </Link>
-          <span className="mx-3" aria-hidden="true">
-            ·
-          </span>
-          <Link href="/terms" className="fill-hover -mx-1 px-1">
-            Terms
-          </Link>
-          <span className="mx-3" aria-hidden="true">
-            ·
-          </span>
-          <Link href="/login" className="fill-hover -mx-1 px-1">
-            Staff sign in
-          </Link>
-        </p>
+        <div className="foot-bottom">
+          <p>
+            © {new Date().getFullYear()} {business.name}
+          </p>
+          <Link href="/login">Staff sign in</Link>
+        </div>
       </div>
     </footer>
   );

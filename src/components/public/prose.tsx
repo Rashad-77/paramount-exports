@@ -33,14 +33,14 @@ export function Prose({ text }: { text: string }) {
   return <div className="max-w-[var(--reading-width)] space-y-4 text-text">{out}</div>;
 }
 
-export function PageIntro({ title, lead, eyebrow, plain = false }: { title: string; lead?: string; eyebrow?: string; plain?: boolean }) {
+export function PageIntro({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string; plain?: boolean }) {
   return (
-    // `plain`: a flat neutral charcoal band instead of the wood-textured one.
-    <header className={plain ? "plain-band on-wood" : "wood-band on-wood"}>
-      <div className="container-page py-[clamp(2.5rem,6vw,4.75rem)]">
+    // A dark band that runs up behind the floating header.
+    <header className="plain-band on-wood">
+      <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
         <p className="eyebrow rise-in">{eyebrow ?? "Showroom and workshop"}</p>
-        <h1 className="font-display rise-in rise-in-2 mt-3 max-w-3xl text-display text-white">{title}</h1>
-        {lead ? <p className="rise-in rise-in-3 mt-4 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
+        <h1 className="font-display rise-in rise-in-2 mt-4 max-w-3xl text-display text-white">{title}</h1>
+        {lead ? <p className="rise-in rise-in-3 mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
       </div>
     </header>
   );

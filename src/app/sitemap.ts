@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 /** Public, indexable pages only. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = publicEnv().NEXT_PUBLIC_SITE_URL;
-  const pages = ["", "/products", "/custom", "/about", "/gallery", "/contact", "/privacy", "/terms"].map((p) => ({
+  const pages = ["", "/products", "/custom", "/about", "/gallery", "/contact", "/help", "/privacy", "/terms"].map((p) => ({
     url: `${base}${p}`,
     changeFrequency: "monthly" as const,
     priority: p === "" ? 1 : 0.6,

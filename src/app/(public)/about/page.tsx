@@ -6,6 +6,7 @@ import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
 import { WorkshopSection } from "@/components/public/photo-sections";
 import { DEFAULT_ABOUT } from "@/lib/default-pages";
+import { PROCESS } from "@/lib/process";
 import { getPageContent } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "About and craftsmanship", description: "The people, workshop and craft behind our furniture.", alternates: { canonical: "/about" } };
@@ -17,12 +18,6 @@ const WHAT_WE_DO = [
   { title: "Ready-made furniture", body: "Finished pieces on the showroom floor that you can see, sit at and take home.", href: "/products", cta: "Browse the collection", label: "Ready-made pieces in the showroom" },
   { title: "Made to measure", body: "Pieces built in our workshop to your dimensions, in the wood and finish you choose, quoted before we start.", href: "/custom", cta: "Start a custom enquiry", label: "A made-to-measure piece in the workshop" },
   { title: "The showroom", body: "A place to see the timber, the finishes and the joinery in person, and to talk your piece through with us.", href: "/contact", cta: "Plan a visit", label: "The showroom floor" },
-];
-
-const CRAFT = [
-  { title: "Timber", body: "Choosing the wood is part of every conversation: its colour, grain and how it suits the piece and the room.", label: "Timber stock in the workshop" },
-  { title: "Joinery", body: "Each piece is put together in our workshop, where you are welcome to ask how it is made.", label: "A joinery detail" },
-  { title: "Finishing", body: "The finish is chosen with you, and samples can be seen in the showroom before work begins.", label: "Finish samples" },
 ];
 
 export default async function AboutPage() {
@@ -79,36 +74,39 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* The craft */}
-      <section aria-labelledby="craft-title" className="section-y">
+      {/* The workshop, in pictures */}
+      <WorkshopSection id="pictures-title" link={{ href: "/gallery#gallery", label: "See more in the gallery" }} />
+
+      {/* The process in full: a picture and a proper explanation for every step (the homepage links here) */}
+      <section id="process" aria-labelledby="process-title" className="scroll-mt-24 border-t border-border bg-white section-y">
         <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">The craft</p>
-            <h2 id="craft-title" className="font-display mt-3 text-headline text-brand">
-              From timber to finished piece.
+          <Reveal variant="fade" className="max-w-2xl">
+            <p className="eyebrow">Our process</p>
+            <h2 id="process-title" className="font-display mt-4 text-headline text-text">
+              From timber to finished piece, step by step.
             </h2>
+            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">Every piece moves through the same sequence of hands and machines, from selecting the board to the final coat of finish. This is how it goes.</p>
           </Reveal>
-          <ol className="mt-8 grid gap-6 md:grid-cols-3">
-            {CRAFT.map((c, i) => (
-              <Reveal as="li" key={c.title} delay={i * STEP} className="step !p-0">
-                <div className="zoom-frame aspect-[3/2]">
-                  <ImagePlaceholder label={c.label} className="size-full" />
-                </div>
-                <div className="p-5">
-                  <span aria-hidden="true" className="num">
+          <ol className="mt-14 space-y-14 md:space-y-20">
+            {PROCESS.map((st, i) => (
+              <li key={st.title} className="grid items-center gap-6 md:grid-cols-2 md:gap-14">
+                <Reveal variant="wipe" className={i % 2 === 1 ? "md:order-2" : ""}>
+                  <div className="zoom-frame aspect-[4/3]">
+                    <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
+                  </div>
+                </Reveal>
+                <Reveal variant="fade" delay={STEP}>
+                  <span aria-hidden="true" className="font-display text-[2.25rem] leading-none text-timber">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-3 text-base font-semibold text-text">{c.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{c.body}</p>
-                </div>
-              </Reveal>
+                  <h3 className="font-display mt-4 text-[1.6rem] leading-tight text-text">{st.title}</h3>
+                  <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">{st.details}</p>
+                </Reveal>
+              </li>
             ))}
           </ol>
         </div>
       </section>
-
-      {/* The workshop, in pictures */}
-      <WorkshopSection id="pictures-title" link={{ href: "/gallery#gallery", label: "See more in the gallery" }} />
 
       {/* Closing: two frosted cards on a soft gradient, one for each way forward */}
       <section aria-labelledby="about-cta" className="glassband">

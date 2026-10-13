@@ -35,7 +35,7 @@ test.describe("public site", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();
     await expect(page.getByRole("button", { name: /close menu/i })).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /contact us/i })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /^contact$/i })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: /open menu/i })).toHaveAttribute("aria-expanded", "false");
   });
@@ -132,7 +132,7 @@ test.describe("access control", () => {
 test.describe("accessibility (axe, WCAG 2.1 A/AA)", () => {
   // Measure the settled page, not a frame mid-way through an entrance animation.
   test.use({ reducedMotion: "reduce" });
-  for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/cart", "/checkout", "/privacy", "/terms"]) {
+  for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/cart", "/checkout", "/track", "/help", "/privacy", "/terms"]) {
     test(`no serious or critical violations on ${path}`, async ({ page }) => {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

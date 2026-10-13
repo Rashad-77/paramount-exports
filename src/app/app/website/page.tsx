@@ -21,6 +21,14 @@ export default async function WebsitePage() {
           <FTextArea name="about" label="About and craftsmanship" rows={8} defaultValue={pages.about ?? ""} placeholder={DEFAULT_ABOUT} />
           <FTextArea name="privacy" label="Privacy notice" rows={12} defaultValue={pages.privacy ?? ""} placeholder={DEFAULT_PRIVACY.slice(0, 200) + "…"} hint="The draft text describes what this website really collects. Have your final notice reviewed before launch." />
           <FTextArea name="terms" label="Terms" rows={8} defaultValue={pages.terms ?? ""} placeholder={DEFAULT_TERMS.slice(0, 200) + "…"} />
+          <FTextArea
+            name="testimonials"
+            label="Customer reviews (homepage)"
+            rows={10}
+            defaultValue={pages.testimonials ?? ""}
+            placeholder={'"The table is exactly what we asked for."\n— Name, Town\n\n"Another review."\n— Name, Town'}
+            hint="Only add reviews that customers have really given you. One review per block, separated by a blank line; put the quote first and, on the last line, a dash then the name and town. Leave blank to show no reviews."
+          />
           <SubmitButton>Save page content</SubmitButton>
         </ActionForm>
       </Panel>

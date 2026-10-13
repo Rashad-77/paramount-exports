@@ -38,7 +38,7 @@ given `owner` or `staff` again afterwards. The Drizzle snapshot files were not r
 
 - **No online payment of any kind.** "Paid" is a flag staff set by hand; the website never reads or stores card or bank details.
 - **No notifications.** The customer is not emailed or texted, and staff are not alerted: they see new orders on the dashboard. Customers are told on the confirmation page that staff will call or message them.
-- **No order tracking page** for customers; to change or cancel an order they contact the business and quote the order number.
+- **Order tracking is read-only.** Customers look up an order on `/track` with its number and the phone number they gave (no account). They see the status, items, totals and payment state, never the address or notes. Changing or cancelling an order still means contacting the business and quoting the order number. Lookups are rate limited (15 per address per 10 minutes, 8 per order number per hour).
 - **No order editing** after it is placed (items, quantities). Staff cancel it and the customer orders again, or staff note changes in the staff note.
 - **No printable invoice or order slip** beyond the browser's Print on the order page.
 - **No stock counts**, so nothing stops two customers ordering the last piece. Staff catch this when they confirm.
@@ -62,6 +62,6 @@ All of these existed in the previous CRM/ERP build and were removed on purpose.
 1. Rehearsal deployment and the real-service checks in section 1; enable two-factor for the Owner.
 2. Owner review of every assumption in section 3, and of the wording of the checkout, confirmation and legal pages.
 3. Email or SMS to the customer (order received, confirmed, delivered) and an alert to staff for new orders.
-4. A customer-facing order-status page.
+4. Order-status updates by email or SMS (the tracking page exists; customers must visit it).
 5. Delivery zones with automatic charges, if the business has fixed prices.
 6. Optional stock counts, if overselling becomes a problem.

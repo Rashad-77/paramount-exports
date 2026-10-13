@@ -5,6 +5,8 @@ import { enquirySchema } from "@/lib/schemas/enquiry";
 import { checkoutSchema } from "@/lib/schemas/orders";
 import { addVariant, createCategory, createProduct, updateProduct } from "@/server/catalogue";
 import { getMessage, listMessages, setMessageHandled, submitEnquiry } from "@/server/messages";
+import { trackSchema } from "@/lib/schemas/tracking";
+import { trackOrder } from "@/server/tracking";
 import { countOrdersByStatus, getCustomer, getDashboard, getOrder, listCustomers, listOrders, placeOrder, setOrderPaid, setOrderStatus, updateOrderDetails } from "@/server/orders";
 import { hasTestDb } from "../helpers/db";
 import { makeActor, setupApp } from "../helpers/app";
@@ -226,6 +228,57 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     expect(d.daily).toHaveLength(30);
     expect(d.last30.orders).toBeGreaterThan(0);
     expect(d.recent.length).toBeLessThanOrEqual(6);
+  });
+  describe("order tracking", () => {
+    const track = (reference: string, phone: string, ip = "198.51.100.1") => {
+      const r = trackSchema.safeParse({ reference, phone });
+      if (!r.success) throw new Error(JSON.stringify(r.error.issues));
+      return trackOrder(r.data, { ip });
+    };
+
+    it("shows a customer their own order, and nothing private", async () => {
+      const { id, reference } = await place({ name: "Kamal Silva", phone: "0771119001", address: "99 Secret Lane, Kandy" }, [[stoolVariant, 2]]);
+      const seen = await track(reference.toLowerCase(), "+94 77 111 9001", "198.51.100.10");
+      expect(seen).toMatchObject({ reference, status: "new", firstName: "Kamal", fulfilment: "delivery", paymentMethod: "on_delivery", isPaid: false, subtotal: "30001.00", total: "30001.00" });
+      expect(seen.items).toEqual([{ name: "Stool", label: null, quantity: 2, lineTotal: "30001.00" }]);
+      // no address, phone, email or staff notes ever leave the server
+      const text = JSON.stringify(seen);
+      expect(text).not.toMatch(/Secret Lane|771119001|staffNote|customerNote|email/i);
+      expect(Object.keys(seen)).not.toContain("address");
+
+      await setOrderStatus(staff, id, "confirmed");
+      await updateOrderDetails(staff, id, { deliveryCharge: "1500", staffNote: "internal remark" });
+      await setOrderPaid(staff, id, true);
+      const later = await track(reference, "0771119001", "198.51.100.10");
+      expect(later).toMatchObject({ status: "confirmed", deliveryCharge: "1500.00", total: "31501.00", isPaid: true });
+      expect(later.confirmedAt).not.toBeNull();
+      expect(JSON.stringify(later)).not.toMatch(/internal remark/);
+    });
+
+    it("gives the same answer for a wrong phone number and an unknown order", async () => {
+      const { reference } = await place({ phone: "0771119002" }, [[stoolVariant, 1]]);
+      const wrongPhone = await track(reference, "0771119999", "198.51.100.20").catch((e) => e);
+      const unknown = await track("ORD-999999", "0771119002", "198.51.100.21").catch((e) => e);
+      expect(wrongPhone).toMatchObject({ code: "NOT_FOUND" });
+      expect(unknown).toMatchObject({ code: "NOT_FOUND" });
+      expect(wrongPhone.message).toBe(unknown.message);
+    });
+
+    it("understands the order number however it is typed", () => {
+      for (const v of ["ORD-000123", "ord-123", "ORD 123", "123", " 000123 "]) expect(trackSchema.parse({ reference: v, phone: "0771119003" }).reference).toBe("ORD-000123");
+      for (const v of ["", "abc", "ORD-1234567", "12-34"]) expect(trackSchema.safeParse({ reference: v, phone: "0771119003" }).success).toBe(false);
+    });
+
+    it("limits how often one order number can be guessed", async () => {
+      const { reference } = await place({ phone: "0771119004" }, [[stoolVariant, 1]]);
+      for (let i = 0; i < 8; i++) await track(reference, `07711190${50 + i}`, `198.51.100.${30 + i}`).catch(() => undefined);
+      await expect(track(reference, "0771119004", "198.51.100.99")).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    });
+
+    it("limits how many lookups one address can make", async () => {
+      for (let i = 0; i < 15; i++) await track("ORD-000001", "0771119005", "198.51.100.200").catch(() => undefined);
+      await expect(track("ORD-000001", "0771119005", "198.51.100.200")).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    });
   });
 });
 

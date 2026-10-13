@@ -12,7 +12,7 @@ export interface NavLink {
 }
 
 /**
- * The public header: dark polished wood, shrinking a little and gaining a shadow once the page has scrolled, with a drop-down
+ * The public header: a floating pill that firms up once the page has scrolled, with a drop-down
  * menu on narrow screens (closes on Escape, on a link tap and on route change).
  */
 export function PublicHeader({ name, links }: { name: string; links: NavLink[] }) {
@@ -20,6 +20,8 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
   const [scrolled, setScrolled] = useState(false);
   const path = usePathname();
   const id = useId();
+  const [first = name, ...others] = name.trim().split(/\s+/);
+  const rest = others.join(" ");
 
   useEffect(() => {
     let raf = 0;
@@ -43,10 +45,15 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
   }, [open]);
 
   return (
+    <>
+      <div className="head-back" aria-hidden="true" />
     <header className={"phead" + (scrolled ? " scrolled" : "") + (open ? " open" : "")}>
-      <div className="container-page in">
+      <div className="in">
         <Link href="/" className="logo" aria-label={`${name} — home`} onClick={() => setOpen(false)}>
-          {name}
+          <span className="name">
+            <b>{first}</b>
+            {rest ? <i>{rest}</i> : null}
+          </span>
         </Link>
         <button type="button" className="toggle" aria-expanded={open} aria-controls={id} aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
           {open ? <X aria-hidden="true" className="size-5" strokeWidth={1.75} /> : <Menu aria-hidden="true" className="size-5" strokeWidth={1.75} />}
@@ -57,12 +64,10 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
               {l.label}
             </Link>
           ))}
-          <Link href="/contact" className="cta">
-            Enquire
-          </Link>
         </nav>
         <CartLink onClick={() => setOpen(false)} />
       </div>
     </header>
+    </>
   );
 }

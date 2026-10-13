@@ -238,6 +238,20 @@ test.describe("ordering (no online payment)", () => {
     expect(items[0]).toMatchObject({ product_name: "Sample Priced Stool", quantity: 1, unit_price: "15000.50" });
     // the basket is empty again
     expect(await page.evaluate(() => localStorage.getItem("paramount-order-basket-v1"))).toBeNull();
+
+    // the customer can follow the order: the number alone is not enough, the phone number must match
+    await page.getByRole("link", { name: /track this order/i }).click();
+    await expect(page).toHaveURL(/\/track\?ref=ORD-\d{6}/);
+    await expect(page.getByLabel(/^Order number/)).toHaveValue(/^ORD-\d{6}$/);
+    await page.getByLabel(/^Phone number/).fill("0770000000");
+    await page.getByRole("button", { name: /track order/i }).click();
+    await expect(page.getByText(/could not find an order with that number and phone number/i)).toBeVisible();
+    await page.getByLabel(/^Phone number/).fill(p);
+    await page.getByRole("button", { name: /track order/i }).click();
+    await expect(page.getByRole("heading", { name: /hello order, here is your order/i })).toBeVisible();
+    await expect(page.getByText("Order received")).toBeVisible();
+    await expect(page.getByText("Sample Priced Stool")).toBeVisible();
+    await expect(page.getByText(/12 Example Road/)).toHaveCount(0);
   });
 
   test("a price tampered with in the browser is ignored: the order is priced from the database", async ({ page }) => {

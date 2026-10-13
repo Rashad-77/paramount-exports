@@ -4,15 +4,15 @@
  */
 /* The public site reads at 15px; the staff area keeps the browser default. */
 html:has(.page-body) {
-  font-size: 93.75%;
+  font-size: 100%;
 }
 
 :root {
   --wood-0: #1b0e05;
   --wood-1: #2d1608;
-  --wood-2: #4a2410;
-  --leaf: #c6ecd3;
-  --leaf-deep: #9fd6b3;
+  --wood-2: #200f07;
+  --leaf: #c5aa86;
+  --leaf-deep: #a98d68;
 }
 
 @layer components {
@@ -53,133 +53,138 @@ html:has(.page-body) {
     transform: scaleY(1);
   }
 
-  /* ── Header ─────────────────────────────────────────────────────────────────────── */
-  .phead {
-    position: sticky;
-    top: 0;
-    z-index: 60;
-    color: #fff;
-    background: linear-gradient(180deg, rgb(38 18 7 / 0.98), rgb(24 12 4 / 0.98));
-    backdrop-filter: saturate(1.4) blur(14px);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    /* hairline in the light-green accent along the bottom edge */
-    border-bottom: 1px solid rgb(198 236 211 / 0.28);
-    box-shadow: 0 1px 0 rgb(0 0 0 / 0.4);
-    transition: box-shadow var(--duration-base);
+  /* ── Header: a full-width bar fixed to the top of every page, clear frosted glass with black type ──────── */
+  :root {
+    --head-h: 4.5rem;
   }
-  .phead.scrolled {
-    box-shadow: 0 1px 0 rgb(0 0 0 / 0.4), 0 18px 34px -18px rgb(0 0 0 / 0.65);
+  .phead {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    color: #1c1916;
+    border-bottom: 1px solid rgb(28 25 22 / 0.1);
+  }
+  /* The glass */
+  .phead::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    -webkit-backdrop-filter: saturate(1.5) blur(18px);
+    backdrop-filter: saturate(1.5) blur(18px);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.62) 0%, rgb(255 255 255 / 0.5) 100%);
+  }
+  /* The white container: exactly the size of the bar, directly behind it at the top of the page. It is not part of the
+     header: it stays where it is and scrolls away with the page, while the header stays put. */
+  .head-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: calc(var(--head-h) + 1px);
+    background: #fff;
+    pointer-events: none;
   }
   .phead .in {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    gap: 2rem;
-    padding-block: 1.6rem;
-    transition: padding var(--duration-base);
+    gap: 1.5rem;
+    height: var(--head-h);
+    max-width: calc(var(--content-width) + 8rem);
+    margin-inline: auto;
+    padding: 0 var(--gutter);
   }
-  .phead.scrolled .in {
-    padding-block: 0.95rem;
-  }
-  .phead .logo {
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: #fff;
+  .phead .logo,
+  .foot .brand {
+    display: flex;
+    align-items: center;
     line-height: 1;
     white-space: nowrap;
+    color: #1c1916;
+  }
+  .phead .logo .name,
+  .foot .brand .name {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .phead .logo b,
+  .foot .brand b {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+  }
+  .phead .logo i,
+  .foot .brand i {
+    font-style: normal;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #3a332d;
+  }
+  @media (max-width: 30rem) {
+    .phead .logo b,
+    .foot .brand b {
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+    }
+    .phead .logo i,
+    .foot .brand i {
+      font-size: 0.56rem;
+      letter-spacing: 0.22em;
+    }
   }
   .phead nav {
     margin-left: auto;
+    margin-right: 0.75rem;
     display: flex;
     align-items: center;
-    gap: 2.1rem;
+    gap: 0.25rem;
   }
   .phead nav a {
-    position: relative;
-    padding: 0.5rem 0;
-    font-size: 0.72rem;
+    padding: 0.7rem 0.95rem;
+    border: 1px solid transparent;
+    font-size: 0.6875rem;
     font-weight: 500;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.72);
+    color: #1c1916;
     white-space: nowrap;
-    transition: color 250ms;
+    transition: color 250ms, border-color 250ms, background-color 250ms;
   }
-  @media (max-width: 75rem) and (min-width: 51.26rem) {
-    .phead .in {
-      gap: 1rem;
-    }
-    .phead .logo {
-      letter-spacing: 0.2em;
-      font-size: 0.9rem;
-    }
-    .phead nav {
-      gap: 1.1rem;
-    }
-    .phead nav a {
-      letter-spacing: 0.12em;
-      font-size: 0.66rem;
-    }
-    .phead nav a.cta {
-      padding: 0.7rem 1rem;
-    }
+  /* No box on hover or on the current page: the current page is simply bolder */
+  .phead nav a:hover {
+    color: #1c1916;
   }
-  /* a fine light-green line draws in from the left under the hovered / current link */
-  .phead nav a::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: var(--leaf);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 380ms var(--ease-out);
-  }
-  .phead nav a:hover,
   .phead nav a[aria-current="page"] {
-    color: #fff;
-  }
-  .phead nav a:hover::before,
-  .phead nav a[aria-current="page"]::before {
-    transform: scaleX(1);
-  }
-  .phead nav a.cta {
-    margin-left: 0.4rem;
-    padding: 0.8rem 1.6rem;
-    border: 1px solid rgb(198 236 211 / 0.7);
-    background: transparent;
-    color: var(--leaf);
-    font-weight: 600;
-    transition: background-color 300ms, color 300ms, border-color 300ms;
-  }
-  .phead nav a.cta::before {
-    display: none;
-  }
-  .phead nav a.cta:hover {
-    background: var(--leaf);
-    border-color: var(--leaf);
-    color: var(--wood-1);
+    color: #1c1916;
+    font-weight: 700;
   }
   .phead .cart {
     position: relative;
-    display: inline-grid;
-    place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    margin-left: 0.5rem;
-    color: #fff;
-    transition: color 250ms, transform 300ms var(--ease-out);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1c1916;
+    transition: color 250ms;
   }
   .phead .cart:hover {
-    color: var(--leaf);
+    color: #7a3d1c;
   }
   .phead .cart-count {
-    position: absolute;
-    top: 0.2rem;
-    right: 0.1rem;
     min-width: 1.15rem;
     height: 1.15rem;
     padding-inline: 0.25rem;
@@ -187,31 +192,28 @@ html:has(.page-body) {
     place-items: center;
     font-size: 0.65rem;
     font-weight: 700;
+    letter-spacing: 0;
     line-height: 1;
-    color: #141414;
-    background: var(--leaf);
+    color: #fff;
+    background: #1c1916;
   }
   .phead .toggle {
     display: none;
-    margin-left: auto;
     width: 2.75rem;
     height: 2.75rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgb(255 255 255 / 0.3);
+    border: 0;
     background: transparent;
-    color: #fff;
+    color: #1c1916;
   }
-  @media (max-width: 51.25rem) {
+  @media (max-width: 66rem) {
     .phead .toggle {
       display: inline-flex;
-      margin-left: 0.25rem;
+      order: 3;
     }
     .phead .cart {
       margin-left: auto;
-      order: 1;
-    }
-    .phead .toggle {
       order: 2;
     }
     .phead nav {
@@ -224,8 +226,8 @@ html:has(.page-body) {
       align-items: stretch;
       gap: 0;
       padding: 0.5rem var(--gutter) 1rem;
-      background: rgb(27 14 5 / 0.98);
-      border-top: 1px solid rgb(255 255 255 / 0.1);
+      background: rgb(255 255 255 / 0.98);
+      border-top: 1px solid rgb(28 25 22 / 0.1);
       opacity: 0;
       visibility: hidden;
       transform: translate3d(0, -8px, 0);
@@ -237,25 +239,15 @@ html:has(.page-body) {
       transform: none;
     }
     .phead nav a {
-      padding: 1rem 0.25rem;
-      font-size: 0.78rem;
-      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+      padding: 0.95rem 0.5rem;
+      font-size: 0.85rem;
+      border-width: 0 0 1px;
+      border-color: rgb(28 25 22 / 0.1);
     }
-    .phead nav a::before {
-      display: none;
-    }
-    .phead .in {
-      padding-block: 1rem;
-    }
-    .phead .logo {
-      letter-spacing: 0.24em;
-      font-size: 0.95rem;
-    }
-    .phead nav a.cta {
-      margin: 0.75rem 0 0;
-      text-align: center;
-      border-bottom: 0;
-    }
+  }
+  /* Room under the fixed header for pages that do not start with a dark band */
+  .page-body main > :first-child:not(.vhero, .wood-band, .plain-band) {
+    margin-top: 5.25rem;
   }
 
   /* ── Polished wood band (hero, page heads, visit section, footer) ───────────────── */
@@ -265,7 +257,7 @@ html:has(.page-body) {
     overflow: hidden;
     color: #fff;
     background:
-      radial-gradient(70% 60% at 88% 0%, rgb(198 236 211 / 0.16), transparent 70%),
+      radial-gradient(70% 60% at 88% 0%, rgb(197 170 134 / 0.16), transparent 70%),
       radial-gradient(60% 55% at 0% 100%, rgb(214 150 80 / 0.2), transparent 70%),
       linear-gradient(160deg, var(--wood-2) 0%, var(--wood-1) 48%, var(--wood-0) 100%);
   }
@@ -287,7 +279,9 @@ html:has(.page-body) {
   /* Plain page header: neutral charcoal, no wood colour or grain */
   .plain-band {
     color: #fff;
-    background: linear-gradient(160deg, #2b2b2b 0%, #1c1c1c 55%, #141414 100%);
+    background:
+      radial-gradient(60% 90% at 90% 0%, rgb(197 170 134 / 0.14), transparent 70%),
+      linear-gradient(160deg, #331c11 0%, #26140c 55%, #200f07 100%);
   }
   .on-wood-muted {
     color: rgb(255 255 255 / 0.84);
@@ -305,10 +299,11 @@ html:has(.page-body) {
     isolation: isolate;
     overflow: hidden;
     display: flex;
-    align-items: flex-end;
-    min-height: calc(100svh - 4.75rem);
+    align-items: center;
+    min-height: 100svh;
+    min-height: max(36rem, 100svh);
     color: #fff;
-    background: #141414;
+    background: #200f07;
   }
   /* Shorter variant for inner pages (Gallery): still a video hero, but the content starts higher up the page */
   .vhero.vhero-short {
@@ -328,19 +323,20 @@ html:has(.page-body) {
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(90deg, rgb(20 20 20 / 0.72) 0%, rgb(20 20 20 / 0.25) 60%, transparent 100%),
-      linear-gradient(180deg, rgb(20 20 20 / 0.2) 0%, rgb(20 20 20 / 0.15) 45%, rgb(20 20 20 / 0.9) 100%);
+      linear-gradient(90deg, rgb(32 15 7 / 0.72) 0%, rgb(32 15 7 / 0.25) 60%, transparent 100%),
+      linear-gradient(180deg, rgb(32 15 7 / 0.2) 0%, rgb(32 15 7 / 0.15) 45%, rgb(32 15 7 / 0.9) 100%);
   }
   .vhero h1 {
-    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
+    font-size: clamp(2.75rem, 1.2rem + 4.6vw, 4.75rem);
+    font-weight: 300;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     color: #fff;
   }
   .vhero h1 em {
     font-style: normal;
-    color: var(--leaf);
+    font-weight: 300;
+    color: #fff;
   }
   .vhero .pause {
     position: absolute;
@@ -506,7 +502,7 @@ html:has(.page-body) {
   @media (hover: hover) {
     .vcard:hover {
       background: rgb(255 255 255 / 0.1);
-      border-color: rgb(198 236 211 / 0.5);
+      border-color: rgb(197 170 134 / 0.5);
       transform: translate3d(0, -4px, 0);
     }
   }
@@ -519,8 +515,8 @@ html:has(.page-body) {
     padding: clamp(2.2rem, 6vw, 4.2rem);
     color: #fff;
     background:
-      radial-gradient(80% 120% at 100% 0%, rgb(198 236 211 / 0.2), transparent 65%),
-      linear-gradient(135deg, #7a3a13, var(--color-brand) 55%, var(--wood-2));
+      radial-gradient(80% 120% at 100% 0%, rgb(197 170 134 / 0.2), transparent 65%),
+      linear-gradient(135deg, #43251a, var(--color-brand) 55%, var(--wood-2));
   }
   .ctaband::before {
     content: "";
@@ -541,17 +537,17 @@ html:has(.page-body) {
     color: var(--color-brand);
     border-block: 1px solid var(--leaf);
     background:
-      radial-gradient(70% 120% at 100% 0%, var(--leaf) 0%, rgb(198 236 211 / 0) 65%),
-      linear-gradient(180deg, #ffffff 0%, #e8f4ec 100%);
+      radial-gradient(70% 120% at 100% 0%, var(--leaf) 0%, rgb(197 170 134 / 0) 65%),
+      linear-gradient(180deg, #ffffff 0%, #ece6dc 100%);
   }
   .ctasoft .go {
-    background: linear-gradient(135deg, #8a4518, var(--color-brand));
+    background: linear-gradient(135deg, #4a2a1a, var(--color-brand));
     border-color: var(--color-brand);
     color: #fff;
   }
   @media (hover: hover) {
     .ctasoft .go:hover {
-      background: linear-gradient(135deg, var(--color-brand), #4a2410);
+      background: linear-gradient(135deg, var(--color-brand), #200f07);
     }
   }
   .ctasoft .reach {
@@ -562,7 +558,7 @@ html:has(.page-body) {
     margin: 2rem auto 0;
     padding-top: 1.5rem;
     max-width: 38rem;
-    border-top: 1px solid rgb(198 236 211 / 0.9);
+    border-top: 1px solid rgb(197 170 134 / 0.9);
   }
   .ctasoft .reach a {
     display: inline-flex;
@@ -586,9 +582,9 @@ html:has(.page-body) {
     padding-block: clamp(2.5rem, 6vw, 4.5rem);
     border-block: 1px solid var(--leaf);
     background:
-      radial-gradient(50% 120% at 0% 0%, rgb(198 236 211 / 0.95) 0%, rgb(198 236 211 / 0) 70%),
-      radial-gradient(50% 120% at 100% 100%, rgb(217 180 138 / 0.7) 0%, rgb(217 180 138 / 0) 70%),
-      linear-gradient(135deg, #eef6f0, #f5ece2);
+      radial-gradient(50% 120% at 0% 0%, rgb(197 170 134 / 0.95) 0%, rgb(197 170 134 / 0) 70%),
+      radial-gradient(50% 120% at 100% 100%, rgb(219 207 185 / 0.7) 0%, rgb(219 207 185 / 0) 70%),
+      linear-gradient(135deg, #f2ede4, #f5ece2);
   }
   .glasscard {
     display: flex;
@@ -629,7 +625,7 @@ html:has(.page-body) {
     isolation: isolate;
     overflow: hidden;
     text-align: center;
-    background: linear-gradient(180deg, #ffffff, #eef6f0);
+    background: linear-gradient(180deg, #ffffff, #f2ede4);
     padding-block: clamp(3rem, 7vw, 5.5rem);
   }
   .ct-hero::before {
@@ -638,8 +634,8 @@ html:has(.page-body) {
     inset: -20%;
     z-index: -1;
     background:
-      radial-gradient(40% 50% at 80% 20%, rgb(198 236 211 / 0.9), transparent 70%),
-      radial-gradient(35% 45% at 15% 80%, rgb(217 180 138 / 0.45), transparent 70%);
+      radial-gradient(40% 50% at 80% 20%, rgb(197 170 134 / 0.9), transparent 70%),
+      radial-gradient(35% 45% at 15% 80%, rgb(219 207 185 / 0.45), transparent 70%);
     animation: ct-drift 18s ease-in-out infinite alternate;
     will-change: transform;
   }
@@ -667,7 +663,7 @@ html:has(.page-body) {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: #eef6f0;
+    background: #f2ede4;
     transform: scaleY(0);
     transform-origin: bottom;
     transition: transform 520ms var(--ease-out);
@@ -853,7 +849,7 @@ html:has(.page-body) {
     gap: 0.2rem;
     padding: 2.5rem 1.1rem 1rem;
     color: #fff;
-    background: linear-gradient(180deg, transparent, rgb(20 20 20 / 0.72));
+    background: linear-gradient(180deg, transparent, rgb(32 15 7 / 0.72));
     opacity: 0;
     transition: opacity 300ms var(--ease-out);
   }
@@ -1004,7 +1000,7 @@ html:has(.page-body) {
     letter-spacing: -0.04em;
     line-height: 1;
     color: transparent;
-    -webkit-text-stroke: 1.5px rgb(198 236 211 / 0.14);
+    -webkit-text-stroke: 1.5px rgb(197 170 134 / 0.14);
     pointer-events: none;
     user-select: none;
   }
@@ -1018,5 +1014,395 @@ html:has(.page-body) {
     .step::before {
       transform: none;
     }
+  }
+}
+
+/* ── Sections: warm white and off-white in rhythm, deep walnut bands, light display type, rounded photographs ───────── */
+@layer components {
+  .sec {
+    padding-block: var(--section-space);
+  }
+  .sec-white {
+    background: #fff;
+  }
+  .sec-cream {
+    background: var(--color-ivory);
+  }
+  .sec-bark {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background: #1b0f08;
+  }
+  /* The closing call to action: walnut with a faint diagonal grain */
+  .sec-cta {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background:
+      repeating-linear-gradient(115deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, #301c11 0%, #281610 100%);
+  }
+  .eyebrow {
+    color: #9a5330;
+  }
+  .eyebrow.eyebrow-light,
+  .on-wood .eyebrow {
+    color: var(--leaf);
+  }
+
+  /* A text link with an arrow that leans forward on hover */
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding-block: 0.4rem;
+  }
+  .link-arrow svg {
+    transition: transform 350ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .link-arrow:hover svg,
+    a:hover .link-arrow svg {
+      transform: translate3d(5px, 0, 0);
+    }
+  }
+
+  /* Why choose us: four columns divided by hairlines */
+  .why-cell {
+    padding: 0.5rem 2rem 1.5rem;
+  }
+  @media (min-width: 64rem) {
+    .why-cell + .why-cell {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+  @media (max-width: 63.99rem) {
+    .why-cell:nth-child(n + 3) {
+      border-top: 1px solid var(--color-border);
+      padding-top: 2rem;
+    }
+    .why-cell:nth-child(even) {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+  @media (max-width: 39.99rem) {
+    .why-cell {
+      padding-inline: 0;
+      border-left: 0 !important;
+    }
+    .why-cell + .why-cell {
+      border-top: 1px solid var(--color-border);
+      padding-top: 2rem;
+    }
+  }
+
+  /* Craft band */
+  .collage-tile {
+    overflow: hidden;
+    background: #e4e4e2;
+  }
+  .process-box {
+    border: 1px solid rgb(255 255 255 / 0.55);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .process-box ol {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 2rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 40rem) {
+    .process-box ol {
+      grid-template-columns: 1fr 1fr;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(3, auto);
+    }
+  }
+  .process-box li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.4);
+  }
+  .process-box li > span:first-child {
+    min-width: 1.25rem;
+    font-size: 0.625rem;
+    color: var(--leaf);
+  }
+
+  /* Made for your space: six services in two columns, each under a hairline */
+  .svc {
+    padding-block: 1.1rem 1.4rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* About: three facts divided by hairlines */
+  .fact {
+    padding: 0.25rem 1.25rem 0.5rem;
+  }
+  .fact + .fact {
+    border-left: 1px solid var(--color-border);
+  }
+  @media (max-width: 39.99rem) {
+    .fact {
+      padding-inline: 0;
+    }
+    .fact + .fact {
+      border-left: 0;
+      border-top: 1px solid var(--color-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+  }
+
+  /* Rounded cards on a light ground (the three ordering steps) and on dark (the two places to visit) */
+  .soft-card {
+    border: 1px solid var(--color-border);
+    border-radius: 1.5rem;
+    background: var(--color-ivory);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  /* A product type: a wide grey band about 4 cm tall (smaller on phones), stacked flush against the next */
+  .prow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 11.5rem;
+    border-bottom: 1px solid #fff;
+  }
+  @media (min-width: 40rem) {
+    .prow {
+      height: 13rem;
+    }
+  }
+  .prow .image-placeholder {
+    transition: background-color 300ms;
+  }
+  @media (hover: hover) {
+    .prow:hover .image-placeholder {
+      background-color: #d9d9d6;
+    }
+  }
+  /* Order tracking: a vertical line of steps, done in walnut, the current one ringed in copper */
+  .track-steps {
+    display: grid;
+    list-style: none;
+  }
+  .track-steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 1rem;
+    padding-bottom: 1.75rem;
+  }
+  .track-steps li:last-child {
+    padding-bottom: 0;
+  }
+  .track-steps li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(0.75rem - 1px);
+    top: 1.5rem;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+  }
+  .track-steps li[data-state="done"]:not(:last-child)::before {
+    background: #331c11;
+  }
+  .track-dot {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid #c9c2b8;
+    border-radius: 999px;
+    background: #fff;
+    color: #fff;
+  }
+  .track-steps li[data-state="done"] .track-dot,
+  .track-steps li[data-state="now"] .track-dot:has(svg) {
+    border-color: #331c11;
+    background: #331c11;
+  }
+  .track-steps li[data-state="now"] .track-dot {
+    border-color: #b06239;
+    box-shadow: 0 0 0 4px rgb(176 98 57 / 0.18);
+  }
+  .track-steps li[data-state="now"] .track-dot:has(svg) {
+    box-shadow: none;
+  }
+  .track-label {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: var(--color-text);
+  }
+  .track-steps li[data-state="next"] .track-label {
+    color: var(--color-text-muted);
+  }
+  .track-when {
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .track-note {
+    margin-top: 0.5rem;
+    max-width: 32rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+  .sec-cream .soft-card {
+    background: #fff;
+  }
+  .glass-dark {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    border: 1px solid rgb(255 255 255 / 0.5);
+    border-radius: 1.5rem;
+    background: rgb(255 255 255 / 0.08);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: #f1ece4;
+    color: #1c1916;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* ── The footer: white, compact, with the same name as the header and its own responsive layout ─────────── */
+  .foot {
+    background: #fff;
+    color: #1c1916;
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+  }
+  .foot .brand b {
+    font-size: 0.95rem;
+  }
+  .foot .brand i {
+    font-size: 0.6rem;
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem 1.5rem;
+    padding-block: 2.5rem 2rem;
+  }
+  .foot-about,
+  .foot-visit {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 48rem) {
+    .foot-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .foot-about {
+      grid-column: 1 / -1;
+    }
+    .foot-visit {
+      grid-column: auto;
+    }
+  }
+  @media (min-width: 64rem) {
+    .foot-grid {
+      grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+      gap: 2.5rem;
+      padding-block: 3rem 2.25rem;
+    }
+    .foot-about {
+      grid-column: auto;
+    }
+  }
+  .foot-tag {
+    max-width: 21rem;
+    margin-top: 1.1rem;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+  }
+  .foot-head {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #1c1916;
+  }
+  .foot-list {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.6rem;
+    line-height: 1.45;
+  }
+  .foot-list a {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: #1c1916;
+    transition: color 200ms;
+  }
+  .foot-list a:hover {
+    color: #9a5330;
+  }
+  .foot-list svg {
+    flex: none;
+    margin-top: 0.15rem;
+    color: var(--color-text-muted);
+  }
+  .foot-list .plain {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: var(--color-text-muted);
+    white-space: pre-line;
+  }
+  .foot-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-block: 1.1rem 1.4rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  @media (min-width: 40rem) {
+    .foot-bottom {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .foot-bottom nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+  }
+  .foot-bottom a {
+    transition: color 200ms;
+  }
+  .foot-bottom a:hover {
+    color: #1c1916;
   }
 }

@@ -1,39 +1,29 @@
-import { ArrowRight, Hammer, Mail, MapPin, MessageCircle, Phone, Ruler, Store } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, Hammer, Handshake, Mail, MapPin, MessageCircle, Phone, Quote, Ruler, TreeDeciduous } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
-import { ProductCard } from "@/components/public/product-card";
 import { Reveal } from "@/components/public/reveal";
 import { ScrollRow } from "@/components/public/scroll-row";
 import { SiteImage } from "@/components/public/site-image";
 import { ButtonLink } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/contact";
-import { CUSTOM_STEPS } from "@/lib/custom-steps";
 import { hasDatabase } from "@/lib/env";
 import { HERO_VIDEO } from "@/lib/home-media";
-import { getBusinessSettings } from "@/lib/settings";
-import { listFeaturedProducts, listGalleryProjects, listPublicCategories, type PublicCard } from "@/server/catalogue-public";
+import { PROCESS } from "@/lib/process";
+import { getBusinessSettings, getPageContent } from "@/lib/settings";
+import { parseTestimonials } from "@/lib/testimonials";
+import { listGalleryProjects, listPublicCategories } from "@/server/catalogue-public";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
 
 /** One stagger step for every list on the page, so everything arrives with the same rhythm. */
-const STEP = 80;
-/** Cards in the scrolling row under the featured project. */
-const PROJECT_CARDS = 6;
-
-interface ProjectCard {
-  id: string;
-  title: string;
-  summary: string | null;
-  year: string | null;
-  url: string;
-  alt: string;
-}
-
-const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three", "Category four", "Category five", "Category six"];
-/** The featured row always has at least this many cards; grey placeholders make up the difference. */
-const FEATURED_CARDS = 8;
+const STEP = 90;
+/** The product rows: always this many, with grey labelled placeholders making up the difference. */
+const PRODUCT_ROWS = 5;
+const PLACEHOLDER_ROWS = ["Chairs", "Tables", "Storage", "Beds", "Sofas"];
+const PROJECT_TILES = 12;
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -45,372 +35,352 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-function SectionHead({ id, eyebrow, title, link, onWood = false }: { id: string; eyebrow: string; title: string; link?: { href: string; label: string }; onWood?: boolean }) {
+/** Eyebrow, light display headline and optional intro: the head of every section. */
+function Head({ id, eyebrow, title, intro, dark = false, center = false }: { id: string; eyebrow: string; title: ReactNode; intro?: string; dark?: boolean; center?: boolean }) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <Reveal>
-        <p className="eyebrow">{eyebrow}</p>
-        <h2 id={id} className={"font-display mt-3 text-headline " + (onWood ? "text-white" : "text-brand")}>
-          {title}
-        </h2>
-      </Reveal>
-      {link ? (
-        <Reveal>
-          <Link href={link.href} className={"fill-hover -mx-1 inline-flex items-center gap-2 px-1 text-sm font-semibold " + (onWood ? "text-[var(--leaf)]" : "text-brand")}>
-            {link.label} <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-        </Reveal>
-      ) : null}
-    </div>
+    <Reveal variant="fade" className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+      <p className={"eyebrow " + (dark ? "eyebrow-light" : "")}>{eyebrow}</p>
+      <h2 id={id} className={"font-display mt-4 text-headline " + (dark ? "text-white" : "text-text")}>
+        {title}
+      </h2>
+      {intro ? <p className={"mt-4 max-w-xl text-[0.9375rem] leading-relaxed " + (dark ? "text-white/70" : "text-text-muted")}>{intro}</p> : null}
+    </Reveal>
   );
 }
 
+const WHY = [
+  { icon: TreeDeciduous, title: "Honest materials", body: "Solid timber chosen for the job, with the wood and the finish named on every piece." },
+  { icon: Ruler, title: "Made to measure", body: "Your dimensions, your wood and finish, agreed with you before we start." },
+  { icon: Hammer, title: "Built in our workshop", body: "Ready-made and custom pieces are made by the people whose showroom you can visit." },
+  { icon: Handshake, title: "Order your way", body: "Order online and pay on delivery, by bank transfer, or at the showroom." },
+];
+
+const SERVICES = [
+  { title: "Ready-made pieces", body: "See and sit at them on the showroom floor." },
+  { title: "Made to measure", body: "Built to your size, in your choice of wood." },
+  { title: "Wood and finish", body: "Choose the timber, the stain and the sheen." },
+  { title: "Delivery arranged", body: "We agree the charge and the day with you." },
+  { title: "Showroom visits", body: "Come and see the timber in person." },
+  { title: "Pay when it arrives", body: "Nothing is charged on this website." },
+];
+
+const CARD_W = "w-[78%] shrink-0 snap-start sm:w-[47%] lg:w-[31%]";
+
 export default async function HomePage() {
-  const [business, categories, featured, projects] = await Promise.all([
+  const [business, pages, categories, projects] = await Promise.all([
     getBusinessSettings(),
+    getPageContent(),
     safe(() => listPublicCategories(), []),
-    safe<PublicCard[]>(() => listFeaturedProducts(12), []),
     safe(() => listGalleryProjects(), []),
   ]);
-  const shown = categories.filter((c) => c.count > 0).slice(0, 6);
-  // Recent projects: one row of cards, newest first. Grey placeholders fill any gap.
-  const toCard = (p: (typeof projects)[number]): ProjectCard => ({
-    id: p.id,
-    title: p.title,
-    summary: p.description,
-    year: p.completedOn ? String(p.completedOn).slice(0, 4) : null,
-    url: p.images[0]?.url ?? "",
-    alt: p.images[0]?.alt ?? p.title,
-  });
-  const realProjects = projects.map(toCard);
-  const moreProjects: ProjectCard[] = [
-    ...realProjects.slice(0, PROJECT_CARDS),
-    ...Array.from({ length: Math.max(0, PROJECT_CARDS - realProjects.length) }, (_, i) => ({ id: `ph-${i}`, title: `Project ${realProjects.length + i + 1}`, summary: null, year: null, url: "", alt: "" })),
-  ];
+  const reviews = parseTestimonials(pages.testimonials);
+  const real = categories.filter((c) => c.count > 0).slice(0, PRODUCT_ROWS).map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, note: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }));
+  const rows = [
+    ...real,
+    ...PLACEHOLDER_ROWS.filter((n) => !real.some((r) => r.name.toLowerCase().includes(n.toLowerCase().slice(0, 4)))).map((n) => ({ key: `ph-${n}`, name: n, href: "/products", note: "Photograph to be supplied" })),
+  ].slice(0, PRODUCT_ROWS);
+  const projectTiles = [
+    ...projects.flatMap((p) => p.images.slice(0, 1).map((img) => ({ id: img.id, title: p.title, url: img.url, alt: img.alt || p.title }))),
+    ...Array.from({ length: PROJECT_TILES }, (_, i) => ({ id: `ph-${i}`, title: `Project ${i + 1}`, url: "", alt: "" })),
+  ].slice(0, PROJECT_TILES);
+  const reach = [
+    business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
+    business.email ? { icon: Mail, label: "Email", value: business.email, href: `mailto:${business.email}` } : null,
+    business.whatsapp ? { icon: MessageCircle, label: "WhatsApp", value: "WhatsApp", href: whatsappLink(business.whatsapp, business.phoneCountryCode) } : null,
+  ].filter((x): x is NonNullable<typeof x> => x !== null);
 
   return (
     <>
-      {/* 1. Hero: full-screen video */}
+      {/* 1. Hero */}
       <section aria-labelledby="hero-title" className="vhero on-wood">
         <HeroVideo desktop={HERO_VIDEO.desktop} mobile={HERO_VIDEO.mobile} poster={HERO_VIDEO.poster} />
-        <div className="container-page w-full pt-24 pb-[clamp(3rem,7vw,5.5rem)]">
-          <div className="max-w-2xl">
-            <p className="eyebrow rise-in">Showroom and workshop</p>
-            <h1 id="hero-title" className="rise-in rise-in-2 mt-4">
-              Wood furniture for the way <em>you live.</em>
+        <div className="container-page w-full pt-28 pb-16">
+          <div className="max-w-xl">
+            <h1 id="hero-title" className="font-display rise-in mt-4">
+              Furniture made with care, for the way you live.
             </h1>
-            <p className="rise-in rise-in-3 mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
-              Choose from ready-made pieces in our showroom, or have something built to your measurements in our workshop.
-            </p>
-            <div className="rise-in rise-in-3 mt-7 flex flex-wrap gap-3">
+            <p className="rise-in rise-in-2 mt-5 max-w-md text-[1.0625rem] leading-relaxed text-white/80">Visit our showroom or order online.</p>
+            <div className="rise-in rise-in-3 mt-8 flex flex-wrap gap-3">
               <ButtonLink href="/products" size="cta" variant="light">
-                Browse the collection
+                Browse collection
               </ButtonLink>
-              <ButtonLink href="/custom" size="cta" variant="onDark">
-                Start a custom enquiry
+              <ButtonLink href="/contact" size="cta" variant="onDark">
+                Make enquiry
               </ButtonLink>
-            </div>
-          </div>
-          <div className="proof rise-in rise-in-3">
-            <div>
-              <Store aria-hidden="true" className="size-6 text-[var(--leaf)]" strokeWidth={1.5} />
-              <span>
-                <b>Ready-made</b>
-                Pieces to see in the showroom
-              </span>
-            </div>
-            <div>
-              <Ruler aria-hidden="true" className="size-6 text-[var(--leaf)]" strokeWidth={1.5} />
-              <span>
-                <b>Made to measure</b>
-                Quoted before we start
-              </span>
-            </div>
-            <div>
-              <MapPin aria-hidden="true" className="size-6 text-[var(--leaf)]" strokeWidth={1.5} />
-              <span>
-                <b>Showroom visits</b>
-                See the timber in person
-              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Categories */}
-      <section aria-labelledby="categories-title" className="section-y">
+      {/* 2. Why choose us */}
+      <section aria-labelledby="why-title" className="sec sec-white">
         <div className="container-page">
-          <SectionHead id="categories-title" eyebrow="The collection" title="Shop by category" link={shown.length > 0 ? { href: "/products", label: "View everything" } : undefined} />
-          <ul className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {(shown.length > 0
-              ? shown.map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, sub: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }))
-              : PLACEHOLDER_CATEGORIES.map((n) => ({ key: n, name: n, href: "", sub: "Photographs to be supplied" }))
-            ).map((c, i) => {
-              const inner = (
-                <>
-                  <div className="thumb zoom-frame">
-                    <ImagePlaceholder label={`${c.name} — category photograph`} className="size-full" compact />
-                  </div>
-                  <div className="body">
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-semibold text-text">{c.name}</p>
-                      <p className="text-[0.8125rem] text-text-muted">{c.sub}</p>
-                    </div>
-                    {c.href ? (
-                      <span aria-hidden="true" className="go">
-                        <ArrowRight className="size-4" strokeWidth={1.75} />
-                      </span>
-                    ) : null}
-                  </div>
-                </>
-              );
-              return (
-                <Reveal as="li" key={c.key} delay={(i % 3) * STEP}>
-                  {c.href ? (
-                    <Link href={c.href} className="catrow group">
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div className="catrow">{inner}</div>
-                  )}
-                </Reveal>
-              );
-            })}
+          <Head id="why-title" eyebrow="Our approach" title={`Why Choose ${business.name}`} />
+          <ul className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4">
+            {WHY.map((w, i) => (
+              <Reveal as="li" key={w.title} variant="fade" delay={i * STEP} className="why-cell">
+                <w.icon aria-hidden="true" className="size-5 text-timber" strokeWidth={1.25} />
+                <h3 className="font-display mt-6 text-[1.05rem] leading-tight text-text">{w.title}</h3>
+                <p className="mt-3 text-[0.8125rem] leading-relaxed text-text-muted">{w.body}</p>
+              </Reveal>
+            ))}
           </ul>
         </div>
       </section>
 
-      {/* 3. Featured pieces */}
-      <section aria-labelledby="featured-title" className="border-y border-border bg-white section-y">
+      {/* 3. Our products: one wide grey band per type of furniture, stacked with no gaps */}
+      <section aria-labelledby="products-title" className="sec sec-cream">
         <div className="container-page">
-          <SectionHead id="featured-title" eyebrow="On the showroom floor" title="Featured pieces" link={featured.length > 0 ? { href: "/products", label: "See the full collection" } : undefined} />
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <Head id="products-title" eyebrow="What we make" title="Our Products" intro="Ready-made pieces from the showroom floor, made in wood. Choose a type to see every piece in it." />
+            <Reveal variant="fade" className="shrink-0 pb-1">
+              <Link href="/products" className="link-arrow text-text">
+                See the full collection <ArrowRight aria-hidden="true" className="size-3.5" />
+              </Link>
+            </Reveal>
+          </div>
         </div>
-        {/* One endless row, running edge to edge; grey placeholders fill it until enough products are featured */}
-        <div className="mt-8">
-          <ScrollRow label="Featured pieces" cardWidth="min(70vw, 17rem)" photoRatio={5 / 4}>
-            {featured.map((p) => (
-              <div key={p.id} className="w-[min(70vw,17rem)] shrink-0 snap-start">
-                <ProductCard product={p} currency={business.currency} />
-              </div>
-            ))}
-            {Array.from({ length: Math.max(0, FEATURED_CARDS - featured.length) }, (_, i) => (
-              <div key={`ph-${i}`} className="w-[min(70vw,17rem)] shrink-0 snap-start">
-                <div className="zoom-frame aspect-[4/5]">
-                  <ImagePlaceholder label={`Featured piece ${featured.length + i + 1}`} className="size-full" compact />
-                </div>
-                <p className="mt-3.5 text-base font-semibold text-text">Featured piece {featured.length + i + 1}</p>
-                <p className="text-[0.8125rem] text-text-muted">Details appear once products are published.</p>
-              </div>
-            ))}
-          </ScrollRow>
-        </div>
-      </section>
-
-      {/* 4. Two ways to buy */}
-      <section aria-labelledby="ways-title" className="section-y">
-        <div className="container-page">
-          <SectionHead id="ways-title" eyebrow="Two ways to buy" title="Take it home, or have it made." />
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {[
-              { title: "Ready-made", body: "Pieces you can see and sit at in the showroom, and take home without the wait.", href: "/products", cta: "Browse the collection", label: "Ready-made — a piece on the showroom floor" },
-              { title: "Made to measure", body: "Your dimensions, your choice of wood and finish. We quote before we start and build it in our workshop.", href: "/custom", cta: "Start a custom enquiry", label: "Made to measure — a piece being built" },
-            ].map((w, i) => (
-              <Reveal key={w.title} delay={i * STEP}>
-                <Link href={w.href} className="group block border border-border bg-white">
-                  <div className="zoom-frame aspect-[16/10]">
-                    <ImagePlaceholder label={w.label} className="size-full" />
-                  </div>
-                  <div className="p-6 md:p-8">
-                    <h3 className="text-2xl font-bold tracking-tight text-brand">{w.title}</h3>
-                    <p className="mt-2 max-w-md text-base leading-relaxed text-text-muted">{w.body}</p>
-                    <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">
-                      {w.cta} <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+        <div>
+          <ul className="mt-12">
+            {rows.map((r, i) => (
+              <Reveal as="li" key={r.key} variant="fade" delay={i * 60}>
+                <Link href={r.href} className="prow group">
+                  <ImagePlaceholder label={`${r.name} — photograph`} className="absolute inset-0" compact />
+                  <span className="container-page relative flex items-center justify-between gap-4">
+                    <span>
+                      <span className="font-display block text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">{r.name}</span>
+                      <span className="mt-1 block text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text/70">{r.note}</span>
                     </span>
-                  </div>
+                    <ArrowRight aria-hidden="true" className="size-5 shrink-0 text-text transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={1.5} />
+                  </span>
                 </Link>
               </Reveal>
             ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* 4. Craft: dark band with a collage and the process */}
+      <section aria-labelledby="craft-title" className="sec sec-bark">
+        <div className="container-page">
+          <Head
+            id="craft-title"
+            eyebrow="Our craftsmanship"
+            title={
+              <>
+                Made With Care.
+                <br />
+                Crafted From Wood.
+              </>
+            }
+            intro="Every piece moves through the same sequence of hands and machines, from selecting the board to the final coat of finish."
+            dark
+          />
+          <div className="mt-12">
+            <Reveal variant="fade">
+              <div className="process-box">
+                <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-white/60">Process</p>
+                <ol>
+                  {PROCESS.map((st, i) => (
+                    <li key={st.title}>
+                      <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="flex-1">
+                        <span className="block text-[0.9375rem] text-white">{st.title}</span>
+                        <span className="mt-1 block text-[0.8125rem] leading-relaxed text-white/65">{st.summary}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                <Link href="/about#process" className="link-arrow mt-6 self-start text-[var(--leaf)]">
+                  See the full process <ArrowRight aria-hidden="true" className="size-3.5" />
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* 5. How custom works */}
-      <section id="custom" aria-labelledby="custom-title" className="scroll-mt-24 border-y border-border bg-mint/70 section-y">
-        <div className="container-page">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <Reveal>
-              <p className="eyebrow">Made to order</p>
-              <h2 id="custom-title" className="font-display mt-3 text-headline text-brand">
-                How a custom piece is made.
+      {/* 5. Made for your space */}
+      <section aria-labelledby="space-title" className="sec sec-white">
+        <div className="container-page grid items-center gap-12 lg:grid-cols-[0.9fr_1fr] lg:gap-20">
+          <Reveal variant="wipe">
+            <div className="zoom-frame aspect-[4/5]">
+              <ImagePlaceholder label="A finished piece in place" className="size-full" compact />
+            </div>
+          </Reveal>
+          <div>
+            <Reveal variant="fade">
+              <p className="eyebrow">Custom woodwork</p>
+              <h2 id="space-title" className="font-display mt-4 text-headline text-text">
+                Made for Your Space
               </h2>
+              <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">Choose something from the showroom floor, or tell us the size of the room and we will build to fit.</p>
             </Reveal>
-            <Reveal>
+            <ul className="mt-10 grid gap-x-8 sm:grid-cols-2">
+              {SERVICES.map((s, i) => (
+                <Reveal as="li" key={s.title} variant="fade" delay={(i % 2) * 70} className="svc">
+                  <h3 className="font-display text-[0.95rem] text-text">{s.title}</h3>
+                  <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{s.body}</p>
+                </Reveal>
+              ))}
+            </ul>
+            <Reveal variant="fade" className="mt-8">
               <ButtonLink href="/custom" size="cta">
-                Request a quotation
+                Plan a custom piece
               </ButtonLink>
             </Reveal>
           </div>
-          <ol className="steps mt-10">
-            {CUSTOM_STEPS.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={i * STEP} className="step">
-                <span aria-hidden="true" className="num">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-5 text-base font-semibold text-text">{s.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">{s.body}</p>
+        </div>
+      </section>
+
+      {/* 6. Our projects */}
+      <section aria-labelledby="projects-title" className="sec sec-cream">
+        <div className="container-page">
+          <Head id="projects-title" eyebrow="Completed work" title="Our Projects" intro="A selection of finished pieces and the rooms they went into." />
+          <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {projectTiles.map((p, i) => (
+              <Reveal as="li" key={p.id} variant="fade" delay={(i % 4) * 70}>
+                <Link href="/gallery" className="group zoom-frame round-lg relative block aspect-[4/5]">
+                  {p.url ? <SiteImage src={p.url} alt={p.alt} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" /> : <ImagePlaceholder label={`${p.title} — photograph`} className="size-full" compact />}
+                  <span className="sr-only">{p.title}</span>
+                </Link>
               </Reveal>
             ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* 6. From the workshop */}
-      <section aria-labelledby="workshop-title" className="section-y">
-        <div className="container-page grid items-center gap-8 md:grid-cols-12 md:gap-12">
-          <Reveal className="md:col-span-7">
-            <div className="zoom-frame aspect-[4/3]">
-              <ImagePlaceholder label="Workshop — joinery or finishing detail" className="size-full" />
-            </div>
-          </Reveal>
-          <Reveal delay={STEP} className="md:col-span-5">
-            <p className="eyebrow">The workshop</p>
-            <h2 id="workshop-title" className="font-display mt-3 text-headline text-brand">
-              Made in our own workshop.
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-text-muted">
-              Ready-made and made-to-order pieces are built in our workshop. Read about the people, the timber and the methods behind them.
-            </p>
-            <Link href="/about" className="fill-hover -mx-1 px-1 mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
-              About the workshop <ArrowRight aria-hidden="true" className="size-4" />
+          </ul>
+          <div className="mt-10">
+            <Link href="/gallery" className="link-arrow text-text">
+              See the gallery <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* 7. Recent projects */}
-      <section aria-labelledby="projects-title" className="border-t border-border bg-white section-y">
+      {/* 7. About */}
+      <section aria-labelledby="about-title" className="sec sec-white border-t border-border">
         <div className="container-page">
-          <SectionHead id="projects-title" eyebrow="Gallery" title="Recent projects" link={{ href: "/gallery", label: "See the gallery" }} />
-        </div>
-        {/* Recent projects: one endless scrolling row of cards, running edge to edge */}
-        <div className="mt-12">
-        <ScrollRow label="Recent projects" cardWidth="min(70vw, 17rem)" photoRatio={5 / 4}>
-          {moreProjects.map((p) => (
-            <div key={p.id} className="w-[min(70vw,17rem)] shrink-0 snap-start">
-              <Link href="/gallery" className="group block">
-                <div className="zoom-frame relative aspect-[4/5] w-full">
-                  {p.url ? (
-                    <SiteImage src={p.url} alt={p.alt} fill sizes="17rem" className="object-cover" />
-                  ) : (
-                    <ImagePlaceholder label={`${p.title} — photograph`} className="size-full" compact />
-                  )}
-                </div>
-                <p className="mt-3 text-base font-semibold leading-snug text-text">{p.title}</p>
-                {p.year ? <p className="mt-0.5 text-[0.8125rem] text-text-muted">{p.year}</p> : null}
+          <div>
+            <Reveal variant="fade">
+              <p className="eyebrow">About us</p>
+              <h2 id="about-title" className="font-display mt-4 text-headline text-text">
+                About {business.name}
+              </h2>
+              <p className="mt-6 max-w-lg text-[0.9375rem] leading-relaxed text-text-muted">{business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}</p>
+              <p className="mt-4 max-w-lg text-[0.9375rem] leading-relaxed text-text-muted">Come to the showroom to see the timber and the joinery in person, or order from home and have it delivered. Whether the job is a single piece or a whole room, the aim is the same: sound material, careful work and a straightforward service.</p>
+              <Link href="/about" className="link-arrow mt-6 text-text">
+                Read our story <ArrowRight aria-hidden="true" className="size-3.5" />
               </Link>
-            </div>
+            </Reveal>
+            <dl className="mt-12 grid sm:grid-cols-3">
+              {[
+                ["Range", "Ready-made pieces on the showroom floor"],
+                ["Made to order", "Built to your size in our workshop"],
+                ["Supply", "Delivered to you, or collect it yourself"],
+              ].map(([k, v], i) => (
+                <Reveal key={k} variant="fade" delay={i * 80} className="fact">
+                  <dt className="eyebrow">{k}</dt>
+                  <dd className="mt-3 text-[0.8125rem] leading-relaxed text-text">{v}</dd>
+                </Reveal>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Customer reviews: only real ones, entered in Website content; grey placeholders until then */}
+      <section aria-labelledby="reviews-title" className="sec sec-cream border-t border-border">
+        <ScrollRow label="Customer reviews" autoplayMs={5000} header={<Head id="reviews-title" eyebrow="Feedback" title="What Our Customers Say" />}>
+          {/* A few reviews are repeated to fill the endless row; the repeats are hidden from screen readers */}
+          {Array.from({ length: Math.max(reviews.length, 6) }, (_, i) => (reviews.length > 0 ? reviews[i % reviews.length]! : null)).map((t, i) => (
+            <figure key={i} aria-hidden={reviews.length > 0 && i >= reviews.length ? true : undefined} className={CARD_W + " soft-card flex flex-col !px-14"}>
+              <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
+              {t ? (
+                <>
+                  <blockquote className="mt-5 flex-1 text-[0.9375rem] leading-relaxed text-text">{t.quote}</blockquote>
+                  {t.name ? (
+                    <figcaption className="mt-6 border-t border-border pt-4">
+                      <span className="block text-[0.875rem] font-medium text-text">{t.name}</span>
+                      {t.place ? <span className="mt-0.5 block text-[0.8125rem] text-text-muted">{t.place}</span> : null}
+                    </figcaption>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <p className="mt-5 flex-1 text-[0.9375rem] leading-relaxed text-text-muted">Customer review to be supplied.</p>
+                  <figcaption className="mt-6 border-t border-border pt-4 text-[0.8125rem] text-text-muted">Name and town</figcaption>
+                </>
+              )}
+            </figure>
           ))}
         </ScrollRow>
-        </div>
       </section>
 
-      {/* 8. Visit the showroom */}
-      <section id="showroom" aria-labelledby="showroom-title" className="wood-band on-wood scroll-mt-24 section-y">
-        <div className="container-page grid items-center gap-8 md:grid-cols-12 md:gap-12">
-          <Reveal className="md:col-span-5">
-            <p className="eyebrow">The showroom</p>
-            <h2 id="showroom-title" className="font-display mt-3 text-headline text-white">
-              Visit the showroom.
+      {/* 9. Contact: dark call to action */}
+      <section aria-labelledby="cta-title" className="sec sec-cta">
+        <div className="container-page">
+          <Reveal variant="fade" className="mx-auto max-w-2xl text-center">
+            <h2 id="cta-title" className="font-display text-headline text-white">
+              Let&rsquo;s Build Something Beautiful in Wood.
             </h2>
-            <div className="mt-6 grid gap-3">
-              <div className="vcard">
-                <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-[var(--leaf)]">
-                  <MapPin aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  Address
-                </p>
-                <p className="mt-1.5 whitespace-pre-line text-base text-white">{business.address ?? "Showroom address to be added."}</p>
-                {business.address && business.mapUrl ? (
-                  <a href={business.mapUrl} className="fill-hover -mx-1 px-1 mt-2 inline-block text-sm text-[var(--leaf)]" target="_blank" rel="noopener noreferrer">
-                    View on map<span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : null}
-              </div>
-              <div className="vcard">
-                <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-[var(--leaf)]">
-                  <Hammer aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  Opening hours
-                </p>
-                <p className="mt-1.5 whitespace-pre-line text-base text-white">{business.openingHours ?? "Opening hours to be added."}</p>
-              </div>
-            </div>
-            {business.phone || business.whatsapp ? (
-              <div className="mt-6 flex flex-wrap gap-3">
-                {business.phone ? (
-                  <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} variant="light" size="cta">
-                    <Phone aria-hidden="true" className="size-4" />
-                    {business.phone}
-                  </ButtonLink>
-                ) : null}
-                {business.whatsapp ? (
-                  <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="onDark" size="cta" target="_blank" rel="noopener noreferrer">
-                    <MessageCircle aria-hidden="true" className="size-4" />
-                    WhatsApp
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </ButtonLink>
-                ) : null}
-              </div>
-            ) : null}
-          </Reveal>
-          <Reveal delay={STEP} className="md:col-span-7">
-            <div className="zoom-frame aspect-[16/11] border border-white/20">
-              <ImagePlaceholder label="Showroom interior" className="size-full" />
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* 9. Closing enquiry band */}
-      <section aria-labelledby="cta-title" className="section-y">
-        <div>
-          <Reveal className="ctasoft">
-            <p className="eyebrow justify-center">Get in touch</p>
-            <h2 id="cta-title" className="font-display mx-auto mt-3 max-w-[18ch] text-headline text-brand">
-              Let&rsquo;s talk about your piece.
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-text-muted">Ask about a piece, request a quotation, or arrange a visit.</p>
-            <div className="mt-6 flex justify-center">
-              <ButtonLink href="/contact" size="cta" className="go">
-                Enquire
+            <p className="mx-auto mt-5 max-w-md text-[0.9375rem] leading-relaxed text-white/70">Ask about a piece, request a quotation, or arrange a visit to the showroom.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <ButtonLink href="/contact" size="cta" variant="light">
+                Contact us
+              </ButtonLink>
+              <ButtonLink href="/custom" size="cta" variant="onDark">
+                Request a quotation
               </ButtonLink>
             </div>
-            <div className="reach">
-              {business.phone ? (
-                <a href={`tel:${business.phone.replace(/\s+/g, "")}`}>
-                  <Phone aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  {business.phone}
-                </a>
-              ) : null}
-              {business.whatsapp ? (
-                <a href={whatsappLink(business.whatsapp, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  WhatsApp
-                  <span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              ) : null}
-              {business.email ? (
-                <a href={`mailto:${business.email}`}>
-                  <Mail aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  {business.email}
-                </a>
-              ) : null}
-              {!business.phone && !business.whatsapp && !business.email ? (
-                <Link href="/contact">
-                  <MapPin aria-hidden="true" className="size-4" strokeWidth={1.75} />
-                  Showroom address and contact details
-                </Link>
-              ) : null}
-            </div>
+            {reach.length > 0 ? (
+              <ul className="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[0.8125rem] text-white/85">
+                {reach.map((r) => (
+                  <li key={r.label}>
+                    <a href={r.href} className="inline-flex items-center gap-2.5 transition-colors hover:text-white" {...(r.label === "WhatsApp" ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                      <r.icon aria-hidden="true" className="size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
+                      {r.value}
+                      {r.label === "WhatsApp" ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </Reveal>
+
+          <div className="mx-auto mt-14 grid max-w-3xl gap-5 md:grid-cols-2">
+            <Reveal variant="fade" className="glass-dark">
+              <div className="relative h-44 overflow-hidden rounded-2xl bg-white/10">
+                {business.address && business.mapUrl ? (
+                  <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pill absolute left-3 top-3">
+                    Open in maps <ArrowUpRight aria-hidden="true" className="size-3.5" />
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <span className="pill absolute left-3 top-3">Map to be added</span>
+                )}
+              </div>
+              <div className="px-2 pb-2 pt-5">
+                <p className="eyebrow eyebrow-light">Showroom</p>
+                <h3 className="font-display mt-2 text-[1.15rem] text-white">{business.name} Showroom</h3>
+                <p className="mt-3 flex gap-2.5 whitespace-pre-line text-[0.8125rem] leading-relaxed text-white/80">
+                  <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
+                  {business.address ?? "Showroom address to be added."}
+                </p>
+              </div>
+            </Reveal>
+            <Reveal variant="fade" delay={90} className="glass-dark">
+              <div className="px-2 pb-2 pt-3">
+                <p className="eyebrow eyebrow-light">Opening hours</p>
+                <h3 className="font-display mt-2 text-[1.15rem] text-white">Come and see it</h3>
+                <p className="mt-3 flex gap-2.5 whitespace-pre-line text-[0.8125rem] leading-relaxed text-white/80">
+                  <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
+                  {business.openingHours ?? "Opening hours to be added."}
+                </p>
+                <p className="mt-5 text-[0.8125rem] leading-relaxed text-white/60">Orders placed online are confirmed by our team before anything is charged.</p>
+                <Link href="/contact" className="link-arrow mt-5 text-[var(--leaf)]">
+                  Contact page <ArrowRight aria-hidden="true" className="size-3.5" />
+                </Link>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
     </>

@@ -71,9 +71,11 @@ export const pagesSchema = z.object({
   about: z.string().max(8000).nullable(),
   privacy: z.string().max(12000).nullable(),
   terms: z.string().max(12000).nullable(),
+  /** Customer reviews for the homepage, as plain text; see parseTestimonials. */
+  testimonials: z.string().max(6000).nullable(),
 });
 export type PageContent = z.infer<typeof pagesSchema>;
-export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null };
+export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null, testimonials: null };
 
 export const getPageContent = cache(async (): Promise<PageContent> => {
   if (!hasDatabase()) return DEFAULT_PAGES;
