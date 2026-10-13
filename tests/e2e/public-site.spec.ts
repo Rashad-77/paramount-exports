@@ -55,6 +55,46 @@ test.describe("catalogue", () => {
     await expect(page.getByText(/no pieces match/i)).toBeVisible();
   });
 
+  test("typing or choosing a filter narrows the list in place: no Enter, no page reload", async ({ page }) => {
+    await page.goto("/products");
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => {
+      (window as unknown as { __same: boolean }).__same = true;
+    });
+    const search = page.getByLabel("Search products");
+    await search.pressSequentially("zzzz-no-such", { delay: 40 });
+    await expect(page.getByText(/no pieces match those filters/i)).toBeVisible();
+    await expect(page).toHaveURL(/q=zzzz-no-such/);
+
+    await page.getByRole("button", { name: /clear filters/i }).first().click();
+    await expect(page.getByRole("link", { name: /sample oak table/i })).toBeVisible();
+    await expect(search).toHaveValue("");
+
+    await search.fill("oak");
+    await expect(page).toHaveURL(/q=oak/);
+    await expect(page.getByRole("link", { name: /sample oak table/i })).toBeVisible();
+
+    // a dropdown applies as soon as it is changed
+    await page.getByRole("button", { name: /clear filters/i }).first().click();
+    const category = page.getByLabel("Category");
+    const options = await category.locator("option").count();
+    expect(options).toBeGreaterThan(1);
+    await category.selectOption({ index: 1 });
+    await expect(page).toHaveURL(/category=/);
+
+    // the page was never reloaded
+    expect(await page.evaluate(() => (window as unknown as { __same?: boolean }).__same)).toBe(true);
+  });
+
+  test("the collection endpoint only returns visible products and trims odd input", async ({ request }) => {
+    const res = await request.get("/api/catalogue?q=oak&page=-5&sort=nonsense");
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body.items.map((i: { name: string }) => i.name)).toContain("Sample Oak Table");
+    expect(JSON.stringify(body)).not.toMatch(/archived|isPublished|staff/i);
+    expect((await request.get(`/api/catalogue?q=${"x".repeat(5000)}`)).status()).toBe(200);
+  });
+
   test("unknown product and hidden content return 404", async ({ request }) => {
     expect((await request.get("/products/does-not-exist")).status()).toBe(404);
   });

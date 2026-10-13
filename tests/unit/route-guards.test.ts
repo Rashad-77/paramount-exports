@@ -36,7 +36,7 @@ describe("access-control structure", () => {
   });
 
   it("every API route either checks the actor/secret itself or is on the reviewed public list", () => {
-    const publicRoutes = new Set(["api/health/route.ts", "api/form-token/route.ts", "api/files/public/[...key]/route.ts", "api/uploads/sign/route.ts", "api/uploads/local/route.ts"]);
+    const publicRoutes = new Set(["api/health/route.ts", "api/form-token/route.ts", "api/catalogue/route.ts", "api/files/public/[...key]/route.ts", "api/uploads/sign/route.ts", "api/uploads/local/route.ts"]);
     for (const f of files(path.join(ROOT, "api")).filter((p) => p.endsWith("route.ts"))) {
       const key = path.relative(ROOT, f).split(path.sep).join("/");
       if (publicRoutes.has(key)) continue;
