@@ -30,6 +30,7 @@ export default defineConfig({
     // Deliberately no Supabase variables: sign-in must fail safe when auth is not configured.
     env: {
       NODE_ENV: "production",
+      ...(process.env.NEXT_DIST_DIR ? { NEXT_DIST_DIR: process.env.NEXT_DIST_DIR } : {}),
       ...(dbUrl
         ? { DATABASE_URL: dbUrl, STORAGE_DRIVER: "local", ALLOW_LOCAL_STORAGE: "e2e-only", LOCAL_STORAGE_DIR: ".e2e-storage", IP_HASH_SALT: "e2e-salt-e2e-salt-e2e-salt-12345", CRON_SECRET: "e2e-cron-secret-e2e-cron-secret" }
         : {}),

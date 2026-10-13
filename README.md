@@ -81,6 +81,8 @@ pnpm test
 pnpm build && pnpm test:e2e
 ```
 
+To build for the browser tests while `pnpm dev` is running, give the build its own folder: set `NEXT_DIST_DIR=.next-e2e` for both `pnpm build` and `pnpm test:e2e` (PowerShell: `$env:NEXT_DIST_DIR=".next-e2e"`). Without it, both use `.next`, which a running dev server holds open.
+
 `pnpm build` pre-renders some pages, so when you run the browser tests locally build with `DATABASE_URL` pointing at the
 throwaway `e2e_furniture` database (or with no `.env.local`), otherwise the built pages carry your development data.
 
