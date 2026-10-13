@@ -58,6 +58,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                       {c.name}
                     </Link>
                     <div className="text-text-muted">{c.phone}</div>
+                    {c.hasAccount ? <div className="text-xs font-medium text-text-muted">Has a website account</div> : null}
                   </TD>
                   <TD className="hidden md:table-cell">{c.email ?? "—"}</TD>
                   <TD numeric>{c.orders}</TD>

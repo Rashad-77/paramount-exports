@@ -42,6 +42,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ key: 
               </a>
             </p>
           ) : null}
+          {c.hasAccount ? <p className="mt-3 text-sm text-text-muted">Has a website account: some of these orders were placed while signed in.</p> : null}
           {c.addresses.length > 0 ? (
             <div className="mt-4 border-t border-border pt-4">
               <p className="text-sm text-text-muted">Delivery addresses used</p>

@@ -5,6 +5,8 @@ import Script from "next/script";
 import { useEffect, useState } from "react";
 import { placeOrderAction } from "@/app/(public)/order-actions";
 import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { PrefillFromAccount } from "@/components/public/prefill-from-account";
+import { useAccount } from "@/components/public/use-account";
 import { ButtonLink } from "@/components/ui/button";
 import { saveSnapshot, useCart } from "@/lib/cart";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
@@ -37,8 +39,9 @@ function Choice({ name, value, checked, onChange, title, help }: { name: string;
  * The checkout: who you are, how you want it (delivery or collection), and how you plan to pay. Nothing is charged here. The basket
  * travels as ids and quantities only; the server prices it. Anti-spam: honeypot, signed time-stamped token, optional Turnstile.
  */
-export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { currency: string; bankDetails: string | null; turnstileSiteKey?: string }) {
+export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireAccount = false }: { currency: string; bankDetails: string | null; turnstileSiteKey?: string; requireAccount?: boolean }) {
   const { items, subtotal } = useCart();
+  const me = useAccount(requireAccount);
   const [fulfilment, setFulfilment] = useState<Fulfilment>("delivery");
   const [payment, setPayment] = useState<PaymentMethod>("on_delivery");
   const [token, setToken] = useState("");
@@ -76,10 +79,25 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey }: { curr
     );
   }
 
+  // The owner asks for an account to order: guests are sent to sign in, then straight back here. (The server enforces this too.)
+  if (requireAccount && me !== undefined && me === null) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center">
+        <h2 className="font-display text-[1.75rem] leading-tight text-brand">Sign in to place your order</h2>
+        <p className="mt-2 text-text-muted">Orders are placed from an account, so we can show you where your order is. Your basket is kept.</p>
+        <ButtonLink href="/account/sign-in?next=/checkout" size="cta" className="mt-6">
+          Sign in or create an account
+        </ButtonLink>
+      </div>
+    );
+  }
+  if (requireAccount && me === undefined) return <p className="py-16 text-center text-text-muted">One moment…</p>;
+
   return (
     <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-start">
       <ActionForm action={placeOrderAction}>
         {turnstileSiteKey ? <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" /> : null}
+        <PrefillFromAccount />
         <input type="hidden" name="formToken" value={token} />
         <input type="hidden" name="cart" value={JSON.stringify(items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })))} />
         <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">

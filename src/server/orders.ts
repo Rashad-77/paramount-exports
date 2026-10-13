@@ -252,13 +252,14 @@ export async function listCustomers(actor: Actor, f: { q?: string; page: number;
            count(*)::int AS orders,
            coalesce(sum(total) FILTER (WHERE status <> 'cancelled'), 0)::text AS spent,
            max(currency) AS currency,
-           max(created_at) AS "lastOrderAt"
+           max(created_at) AS "lastOrderAt",
+           bool_or(account_id IS NOT NULL) AS "hasAccount"
       FROM online_orders
      GROUP BY phone_key
      ${having}
      ORDER BY max(created_at) DESC
      LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}
-  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; spent: string; currency: string; lastOrderAt: Date }[];
+  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; spent: string; currency: string; lastOrderAt: Date; hasAccount: boolean }[];
   const [{ n }] = (await db.execute(sql`SELECT count(*)::int AS n FROM (SELECT 1 FROM online_orders GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
   return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)) };
 }
@@ -275,6 +276,7 @@ export async function getCustomer(actor: Actor, key: string) {
     name: latest.customerName,
     phone: latest.phone,
     email: list.find((o) => o.email)?.email ?? null,
+    hasAccount: list.some((o) => o.accountId !== null),
     addresses: [...new Set(list.map((o) => o.address).filter((a): a is string => Boolean(a)))].slice(0, 3),
     currency: latest.currency,
     spent: moneyString(spent),

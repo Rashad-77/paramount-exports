@@ -33,9 +33,10 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
   );
 }
 
-export function SiteHeader({ business }: { business: BusinessSettings }) {
+export function SiteHeader({ business, accounts = false }: { business: BusinessSettings; accounts?: boolean }) {
   // The name at the left already goes home, so the menu does not repeat it.
-  return <PublicHeader name={business.name} links={PUBLIC_LINKS.filter((l) => l.href !== "/")} />;
+  const links = PUBLIC_LINKS.filter((l) => l.href !== "/");
+  return <PublicHeader name={business.name} links={accounts ? [...links, { label: "Account", href: "/account" }] : links} />;
 }
 
 const INFORMATION = [

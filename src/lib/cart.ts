@@ -98,10 +98,22 @@ export function useCart() {
   }, []);
   const remove = useCallback((variantId: string) => write(getSnapshot().filter((i) => i.variantId !== variantId)), []);
   const clear = useCallback(() => write(EMPTY), []);
+  /** Fold a basket saved on the customer's account into this one: the same option keeps the larger quantity. */
+  const merge = useCallback((saved: CartItem[]) => {
+    const current = getSnapshot();
+    const byId = new Map(current.map((i) => [i.variantId, i]));
+    for (const s of saved) {
+      const have = byId.get(s.variantId);
+      if (have) byId.set(s.variantId, { ...have, quantity: Math.max(have.quantity, s.quantity) });
+      else if (byId.size < MAX_LINES) byId.set(s.variantId, s);
+    }
+    const next = [...byId.values()];
+    if (next.length !== current.length || next.some((n, i) => n !== current[i])) write(next);
+  }, []);
 
   const count = useMemo(() => items.reduce((n, i) => n + i.quantity, 0), [items]);
   const subtotal = useMemo(() => moneyString(sum(items.map((i) => dec(i.price).times(i.quantity)))), [items]);
-  return { items, count, subtotal, add, setQuantity, remove, clear };
+  return { items, count, subtotal, add, setQuantity, remove, clear, merge };
 }
 
 /** What the confirmation page shows after the basket has been emptied. Kept for this browser tab only. */

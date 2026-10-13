@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
+import { PrefillFromAccount } from "@/components/public/prefill-from-account";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 
 export interface VariantOption {
@@ -50,6 +51,7 @@ export function EnquiryForm({
   return (
     <ActionForm action={submitEnquiryAction} hideOnSuccess successTitle="Thank you">
       {turnstileSiteKey ? <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" /> : null}
+      <PrefillFromAccount />
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="formToken" value={token} />
       {productId ? <input type="hidden" name="productId" value={productId} /> : null}
