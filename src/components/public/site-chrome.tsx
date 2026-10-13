@@ -23,8 +23,8 @@ export function PlaceholderNotice({ business }: { business: BusinessSettings }) 
       <p className="container-page flex items-start gap-2 py-2">
         <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-ivory/95" strokeWidth={1.75} />
         <span>
-          Preview build: the business name, photography, wording and contact details on this site are placeholders until the
-          real content is supplied.
+          Preview build: the photography, wording and contact details on this site are placeholders until the real content is
+          supplied.
         </span>
       </p>
     </div>

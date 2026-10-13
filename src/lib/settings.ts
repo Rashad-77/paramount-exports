@@ -28,12 +28,17 @@ export const businessSchema = z.object({
   /** Used only to build WhatsApp links from local numbers (leading 0). Assumption: tied to the LKR default. */
   phoneCountryCode: z.string().regex(/^\d{1,3}$/),
 });
-export type BusinessSettings = z.infer<typeof businessSchema>;
+export type BusinessSettings = z.infer<typeof businessSchema> & {
+  /** True while nothing has been saved under Settings: the name below is the built-in one and the site is still a preview. */
+  isDefault?: boolean;
+};
 
+/** The name shown until the owner saves business details. An older placeholder name saved in Settings is treated the same way. */
 export const PLACEHOLDER_NAME = "[Business Name]";
+export const DEFAULT_BUSINESS_NAME = "Paramount Exports Sri Lanka";
 
 export const DEFAULT_BUSINESS: BusinessSettings = {
-  name: PLACEHOLDER_NAME,
+  name: DEFAULT_BUSINESS_NAME,
   tagline: null,
   email: null,
   phone: null,
@@ -47,19 +52,27 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   phoneCountryCode: "94", // assumption — to be confirmed with the owner
 };
 
-export const isPlaceholderBusiness = (b: BusinessSettings) => b.name === PLACEHOLDER_NAME;
+/**
+ * A site whose business details have never been saved is still a preview: it is hidden from search engines, shows the preview
+ * notice, and (on a public demo deployment) allows the demo sign-in. Saving the details under Settings ends that.
+ * The business name is shown properly either way.
+ */
+export const isPlaceholderBusiness = (b: BusinessSettings) => b.isDefault === true || b.name === PLACEHOLDER_NAME;
+
+const UNSAVED: BusinessSettings = { ...DEFAULT_BUSINESS, isDefault: true };
 
 /** Never throws: the public site must keep rendering even if the database is unreachable. */
 export const getBusinessSettings = cache(async (): Promise<BusinessSettings> => {
-  if (!hasDatabase()) return DEFAULT_BUSINESS;
+  if (!hasDatabase()) return UNSAVED;
   try {
     const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, "business")).limit(1);
-    if (!row) return DEFAULT_BUSINESS;
+    if (!row) return UNSAVED;
     const parsed = businessSchema.safeParse({ ...DEFAULT_BUSINESS, ...(row.value as object) });
-    return parsed.success ? parsed.data : DEFAULT_BUSINESS;
+    if (!parsed.success) return UNSAVED;
+    return parsed.data.name === PLACEHOLDER_NAME ? { ...parsed.data, name: DEFAULT_BUSINESS_NAME, isDefault: true } : parsed.data;
   } catch (error) {
     console.error("Failed to load business settings; using defaults.", error instanceof Error ? error.message : "unknown");
-    return DEFAULT_BUSINESS;
+    return UNSAVED;
   }
 });
 
