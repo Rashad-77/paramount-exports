@@ -6,7 +6,7 @@ import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guar
 import { validation } from "@/lib/errors";
 import { clientIp } from "@/lib/rate-limit";
 import { enquirySchema } from "@/lib/schemas/enquiry";
-import { submitEnquiry } from "@/server/enquiries";
+import { submitEnquiry } from "@/server/messages";
 
 const THANKS = (ref: string) =>
   `We have received your enquiry (reference ${ref}). Someone from the team will contact you using the details you gave.`;
@@ -17,7 +17,7 @@ export async function submitEnquiryAction(_prev: ActionState, formData: FormData
     enquirySchema,
     async (input, ctx) => {
       // Bots tend to fill every field. Pretend it worked so they learn nothing, but store nothing.
-      if (input[HONEYPOT_FIELD]) return { message: THANKS("ENQ-000000") };
+      if (input[HONEYPOT_FIELD]) return { message: THANKS("MSG-000000") };
 
       const token = checkFormToken(input.formToken);
       if (token === "too-fast") throw validation("That was very quick. Please check your details and send the form again.");

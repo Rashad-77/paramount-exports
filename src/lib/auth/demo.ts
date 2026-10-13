@@ -34,17 +34,11 @@ export function demoActorEnabled(): boolean {
 
 const DEMO_IDS: Record<Role, string> = {
   owner: "00000000-0000-4000-8000-000000000001",
-  manager: "00000000-0000-4000-8000-000000000002",
-  sales: "00000000-0000-4000-8000-000000000003",
-  workshop: "00000000-0000-4000-8000-000000000004",
-  finance: "00000000-0000-4000-8000-000000000005",
+  staff: "00000000-0000-4000-8000-000000000002",
 };
 const DEMO_NAMES: Record<Role, string> = {
   owner: "Sample Owner",
-  manager: "Sample Manager",
-  sales: "Sample Sales",
-  workshop: "Sample Workshop",
-  finance: "Sample Finance",
+  staff: "Sample Staff",
 };
 
 export const DEMO_ROLE_COOKIE = "demo_role";

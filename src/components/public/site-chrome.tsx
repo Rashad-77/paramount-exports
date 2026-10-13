@@ -10,7 +10,7 @@ export const PUBLIC_LINKS: NavLink[] = [
   { label: "Custom furniture", href: "/custom" },
   { label: "About", href: "/about" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Showroom & contact", href: "/contact" },
+  { label: "Contact us", href: "/contact" },
 ];
 
 export function PlaceholderNotice({ business }: { business: BusinessSettings }) {

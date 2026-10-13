@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 const control =
   "block w-full min-h-11 border border-border-strong bg-surface px-3 py-2 text-base md:min-h-10 md:text-sm " +
   "text-text placeholder:text-text-muted/70 transition-[border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out)] " +
-  "focus:border-walnut focus:shadow-[inset_0_-2px_0_var(--color-brand)] " +
+  "focus:border-walnut focus:shadow-none focus-visible:outline-none " +
   "disabled:bg-linen disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:border-2";
 
 interface FieldShellProps {

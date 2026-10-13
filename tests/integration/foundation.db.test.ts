@@ -10,9 +10,20 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
     await t?.close();
   });
 
-  it("applies all migrations to a clean database and seeds one showroom and one workshop", async () => {
-    const rows = await t.sql`SELECT name, kind FROM locations ORDER BY name`;
-    expect(rows.map((r) => `${r.name}:${r.kind}`)).toEqual(["Showroom:showroom", "Workshop:workshop"]);
+  it("applies all migrations to a clean database, leaving the order tables and none of the retired CRM or ERP tables", async () => {
+    const names = (await t.sql`SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT LIKE '\_\_drizzle%'`).map((r) => r.tablename as string);
+    for (const kept of ["online_orders", "online_order_items", "messages", "products", "product_variants", "gallery_projects", "profiles", "user_roles", "audit_logs", "uploaded_files", "site_settings"]) {
+      expect(names, kept).toContain(kept);
+    }
+    for (const gone of ["leads", "customers", "quotations", "sales_orders", "payments", "inventory_items", "production_jobs", "suppliers", "purchase_orders", "deliveries", "expenses", "after_sales_cases", "locations"]) {
+      expect(names, gone).not.toContain(gone);
+    }
+  });
+
+  it("numbers orders and messages with readable references", async () => {
+    const [r] = await t.sql`SELECT next_reference('order') AS o, next_reference('message') AS m`;
+    expect(r).toMatchObject({ o: "ORD-000001", m: "MSG-000001" });
+    await expect(t.sql`SELECT next_reference('quotation')`).rejects.toThrow();
   });
 
   it("has row level security enabled on every public table", async () => {
@@ -74,9 +85,9 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
       }),
     );
     expect(new Set(refs).size).toBe(60);
-    for (const ref of refs) expect(ref).toMatch(/^SO-\d{6}$/);
-    const [q] = await t.sql`SELECT next_reference('quotation') AS ref`;
-    expect(q!.ref).toBe("QUO-000001");
+    for (const ref of refs) expect(ref).toMatch(/^ORD-\d{6}$/);
+    const [m] = await t.sql`SELECT next_reference('message') AS ref`;
+    expect(m!.ref).toMatch(/^MSG-\d{6}$/);
   });
 
   it("rejects unknown reference kinds instead of returning NULL", async () => {
@@ -96,10 +107,10 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
   });
 
   it("bumps updated_at on update", async () => {
-    const [before] = await t.sql`SELECT updated_at FROM locations WHERE kind = 'showroom'`;
+    const [u] = await t.sql`INSERT INTO auth.users (id, email) VALUES (gen_random_uuid(), 'tick@example.test') RETURNING id`;
+    const [before] = await t.sql`INSERT INTO profiles (id, full_name) VALUES (${u!.id}, 'Before') RETURNING updated_at`;
     await new Promise((r) => setTimeout(r, 20));
-    await t.sql`UPDATE locations SET name = 'Showroom' WHERE kind = 'showroom'`;
-    const [after] = await t.sql`SELECT updated_at FROM locations WHERE kind = 'showroom'`;
+    const [after] = await t.sql`UPDATE profiles SET full_name = 'After' WHERE id = ${u!.id} RETURNING updated_at`;
     expect(new Date(after!.updated_at).getTime()).toBeGreaterThan(new Date(before!.updated_at).getTime());
   });
 });

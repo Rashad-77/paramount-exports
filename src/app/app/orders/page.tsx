@@ -1,83 +1,122 @@
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { SelectField, TextField } from "@/components/ui/field";
+import { TextField } from "@/components/ui/field";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
-import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatMoney } from "@/lib/money";
-import { ORDER_TONE } from "@/lib/order-ui";
-import { ORDER_STATUSES, orderStatusLabel, orderTypeLabel } from "@/lib/schemas/orders";
-import { formatDate } from "@/lib/time";
+import { ORDER_STATUS_TONE } from "@/lib/order-ui";
+import { FULFILMENT_LABEL, ORDER_STATUSES, PAYMENT_LABEL, STATUS_LABEL } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
-import { listOrders } from "@/server/orders";
+import { formatDateTime } from "@/lib/time";
+import { countOrdersByStatus, listOrders } from "@/server/orders";
 
-export const metadata = { title: "Sales Orders" };
+export const metadata = { title: "Orders" };
+const PAGE_SIZE = 20;
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<SP> }) {
   const actor = await requireActor();
   const sp = await searchParams;
-  const status = oneOf(one(sp.status), ORDER_STATUSES);
-  const type = oneOf(one(sp.type), ["ready_made", "custom"] as const);
+  const status = oneOf(one(sp.status), [...ORDER_STATUSES, "open"] as const);
   const q = one(sp.q)?.slice(0, 80);
-  const owing = one(sp.owing) === "1";
   const page = pageOf(sp);
-  const [business, result] = await Promise.all([getBusinessSettings(), listOrders(actor, { status, type, q, withBalanceOnly: owing, page, pageSize: 25 })]);
-  const filtered = Boolean(status || type || q || owing);
+
+  const [business, counts, result] = await Promise.all([getBusinessSettings(), countOrdersByStatus(actor), listOrders(actor, { status, q, page, pageSize: PAGE_SIZE })]);
+  const href = (over: Record<string, string | undefined>) => buildHref("/app/orders", { status, q, ...over });
+  const open = counts.new + counts.confirmed + counts.in_progress;
+  const tabs: { key: string | undefined; label: string; n: number }[] = [
+    { key: undefined, label: "All", n: counts.all },
+    { key: "open", label: "Open", n: open },
+    ...ORDER_STATUSES.map((s) => ({ key: s as string, label: STATUS_LABEL[s], n: counts[s] })),
+  ];
+
   return (
     <>
-      <ModuleHeader href="/app/orders" actions={can(actor, "orders:write") ? <ButtonLink href="/app/orders/new">New ready-made order</ButtonLink> : undefined} />
-      <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
-        <TextField label="Search" name="q" type="search" showOptional={false} defaultValue={q} placeholder="Reference or customer" className="lg:col-span-2" />
-        <SelectField label="Status" name="status" showOptional={false} defaultValue={status ?? ""} placeholder="All" options={ORDER_STATUSES.map((s) => ({ value: s, label: orderStatusLabel(s, "ready_made") }))} />
-        <SelectField label="Type" name="type" showOptional={false} defaultValue={type ?? ""} placeholder="All" options={[{ value: "ready_made", label: "Ready-made" }, { value: "custom", label: "Custom" }]} />
-        <label className="flex min-h-10 items-center gap-2 text-sm">
-          <input type="checkbox" name="owing" value="1" defaultChecked={owing} className="size-5 accent-[var(--color-walnut)]" /> Balance still owing
-        </label>
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-5">
-          <Button type="submit">Apply</Button>
-          {filtered ? <ButtonLink href="/app/orders" variant="ghost">Clear</ButtonLink> : null}
-        </div>
+      <ModuleHeader href="/app/orders" />
+      <nav aria-label="Order status" className="mb-5 flex flex-wrap gap-2">
+        {tabs.map((t) => (
+          <Link
+            key={t.label}
+            href={buildHref("/app/orders", { status: t.key, q })}
+            aria-current={status === t.key ? "page" : undefined}
+            className={"inline-flex min-h-10 items-center gap-2 border px-3.5 text-sm " + (status === t.key ? "border-brand bg-brand font-semibold text-white" : "border-border-strong text-text-muted hover:text-text")}
+          >
+            {t.label}
+            <span className="text-xs opacity-75">{t.n}</span>
+          </Link>
+        ))}
+      </nav>
+      <form method="get" className="mb-6 flex flex-wrap items-end gap-3 border border-border bg-surface p-4">
+        {status ? <input type="hidden" name="status" value={status} /> : null}
+        <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Order number, name, phone or email" className="min-w-64 flex-1" />
+        <Button type="submit">Search</Button>
+        {q ? (
+          <ButtonLink href={href({ q: undefined })} variant="ghost">
+            Clear
+          </ButtonLink>
+        ) : null}
       </form>
-      <p className="mb-3 text-sm text-text-muted" role="status">{result.total} {result.total === 1 ? "order" : "orders"}</p>
+
+      <p className="mb-3 text-sm text-text-muted" role="status">
+        {result.total} {result.total === 1 ? "order" : "orders"}
+      </p>
       {result.rows.length === 0 ? (
-        <EmptyState title={filtered ? "No orders match" : "No orders yet"} description={filtered ? "Try clearing a filter." : "Create a ready-made order, or convert an accepted quotation."} />
+        <EmptyState title={q || status ? "No orders match" : "No orders yet"} description={q || status ? "Try a different tab or search." : "Orders placed on the website will appear here."} />
       ) : (
         <TableWrap label="Orders">
           <Table>
             <THead>
               <tr>
-                <TH>Reference</TH>
+                <TH>Order</TH>
                 <TH>Customer</TH>
-                <TH className="hidden md:table-cell">Type</TH>
-                <TH>Status</TH>
+                <TH className="hidden md:table-cell">Status</TH>
+                <TH className="hidden lg:table-cell">How</TH>
                 <TH className="text-right">Total</TH>
-                <TH className="hidden text-right lg:table-cell">Paid</TH>
-                <TH className="hidden text-right lg:table-cell">Outstanding</TH>
-                <TH className="hidden xl:table-cell">Created</TH>
+                <TH className="hidden lg:table-cell">Placed</TH>
               </tr>
             </THead>
             <tbody>
               {result.rows.map((r) => (
                 <TR key={r.id}>
-                  <TD className="whitespace-nowrap"><Link className="font-medium text-walnut underline" href={`/app/orders/${r.id}`}>{r.reference}</Link></TD>
-                  <TD>{r.customerName}</TD>
-                  <TD className="hidden md:table-cell">{orderTypeLabel(r.type)}</TD>
-                  <TD><StatusBadge tone={ORDER_TONE[r.status]}>{orderStatusLabel(r.status, r.type)}</StatusBadge></TD>
+                  <TD>
+                    <Link href={`/app/orders/${r.id}`} className="font-medium text-walnut underline">
+                      {r.reference}
+                    </Link>
+                    <div className="text-xs text-text-muted">
+                      {r.itemCount} {r.itemCount === 1 ? "item" : "items"}
+                    </div>
+                  </TD>
+                  <TD>
+                    <div className="font-medium">{r.customerName}</div>
+                    <div className="text-text-muted">{r.phone}</div>
+                    <div className="mt-1 md:hidden">
+                      <StatusBadge tone={ORDER_STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</StatusBadge>
+                    </div>
+                  </TD>
+                  <TD className="hidden md:table-cell">
+                    <StatusBadge tone={ORDER_STATUS_TONE[r.status]}>{STATUS_LABEL[r.status]}</StatusBadge>
+                    {r.isPaid ? (
+                      <StatusBadge tone="success" className="ml-1.5">
+                        Paid
+                      </StatusBadge>
+                    ) : null}
+                  </TD>
+                  <TD className="hidden lg:table-cell">
+                    <div>{FULFILMENT_LABEL[r.fulfilment]}</div>
+                    <div className="text-text-muted">{PAYMENT_LABEL[r.paymentMethod]}</div>
+                  </TD>
                   <TD numeric>{formatMoney(r.total, r.currency)}</TD>
-                  <TD numeric className="hidden lg:table-cell">{r.paid === null ? "—" : formatMoney(r.paid, r.currency)}</TD>
-                  <TD numeric className="hidden lg:table-cell">{r.outstanding === null ? "—" : formatMoney(r.outstanding, r.currency)}</TD>
-                  <TD className="hidden whitespace-nowrap xl:table-cell">{formatDate(r.createdAt, business.timezone)}</TD>
+                  <TD className="hidden whitespace-nowrap lg:table-cell">{formatDateTime(r.createdAt, business.timezone)}</TD>
                 </TR>
               ))}
             </tbody>
           </Table>
         </TableWrap>
       )}
-      <Pagination page={page} pageCount={result.pageCount} hrefFor={(n) => buildHref("/app/orders", { q, status, type, owing: owing ? "1" : undefined, page: String(n) })} />
+      <Pagination page={page} pageCount={result.pageCount} hrefFor={(n) => href({ page: String(n) })} />
     </>
   );
 }

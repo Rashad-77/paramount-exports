@@ -1,9 +1,10 @@
-import { ArrowRight, Hammer, MapPin, MessageCircle, Phone, Ruler, Store } from "lucide-react";
+import { ArrowRight, Hammer, Mail, MapPin, MessageCircle, Phone, Ruler, Store } from "lucide-react";
 import Link from "next/link";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { ProductCard } from "@/components/public/product-card";
 import { Reveal } from "@/components/public/reveal";
+import { ScrollRow } from "@/components/public/scroll-row";
 import { SiteImage } from "@/components/public/site-image";
 import { ButtonLink } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/contact";
@@ -18,9 +19,21 @@ export const revalidate = 300;
 
 /** One stagger step for every list on the page, so everything arrives with the same rhythm. */
 const STEP = 80;
+/** Cards in the scrolling row under the featured project. */
+const PROJECT_CARDS = 6;
+
+interface ProjectCard {
+  id: string;
+  title: string;
+  summary: string | null;
+  year: string | null;
+  url: string;
+  alt: string;
+}
 
 const PLACEHOLDER_CATEGORIES = ["Category one", "Category two", "Category three", "Category four", "Category five", "Category six"];
-const PLACEHOLDER_PIECES = ["Featured piece one", "Featured piece two", "Featured piece three", "Featured piece four"];
+/** The featured row always has at least this many cards; grey placeholders make up the difference. */
+const FEATURED_CARDS = 8;
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -56,12 +69,24 @@ export default async function HomePage() {
   const [business, categories, featured, projects] = await Promise.all([
     getBusinessSettings(),
     safe(() => listPublicCategories(), []),
-    safe<PublicCard[]>(() => listFeaturedProducts(8), []),
+    safe<PublicCard[]>(() => listFeaturedProducts(12), []),
     safe(() => listGalleryProjects(), []),
   ]);
   const shown = categories.filter((c) => c.count > 0).slice(0, 6);
-  const projectImages: { id: string; url: string; alt: string; project: string }[] = projects.flatMap((p) => p.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt, project: p.title }))).slice(0, 5);
-  const mosaic = projectImages.length > 0 ? projectImages : Array.from({ length: 5 }, (_, i) => ({ id: `ph-${i}`, url: "", alt: "", project: `Project ${i + 1}` }));
+  // Recent projects: one row of cards, newest first. Grey placeholders fill any gap.
+  const toCard = (p: (typeof projects)[number]): ProjectCard => ({
+    id: p.id,
+    title: p.title,
+    summary: p.description,
+    year: p.completedOn ? String(p.completedOn).slice(0, 4) : null,
+    url: p.images[0]?.url ?? "",
+    alt: p.images[0]?.alt ?? p.title,
+  });
+  const realProjects = projects.map(toCard);
+  const moreProjects: ProjectCard[] = [
+    ...realProjects.slice(0, PROJECT_CARDS),
+    ...Array.from({ length: Math.max(0, PROJECT_CARDS - realProjects.length) }, (_, i) => ({ id: `ph-${i}`, title: `Project ${realProjects.length + i + 1}`, summary: null, year: null, url: "", alt: "" })),
+  ];
 
   return (
     <>
@@ -159,23 +184,25 @@ export default async function HomePage() {
       <section aria-labelledby="featured-title" className="border-y border-border bg-white section-y">
         <div className="container-page">
           <SectionHead id="featured-title" eyebrow="On the showroom floor" title="Featured pieces" link={featured.length > 0 ? { href: "/products", label: "See the full collection" } : undefined} />
-          <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">
-            {featured.length > 0
-              ? featured.map((p, i) => (
-                  <Reveal as="li" key={p.id} delay={(i % 4) * STEP}>
-                    <ProductCard product={p} currency={business.currency} />
-                  </Reveal>
-                ))
-              : PLACEHOLDER_PIECES.map((n, i) => (
-                  <Reveal as="li" key={n} delay={i * STEP}>
-                    <div className="zoom-frame aspect-[4/5]">
-                      <ImagePlaceholder label={n} className="size-full" />
-                    </div>
-                    <p className="mt-3.5 text-base font-semibold text-text">{n}</p>
-                    <p className="text-[0.8125rem] text-text-muted">Name and details appear once products are published.</p>
-                  </Reveal>
-                ))}
-          </ul>
+        </div>
+        {/* One endless row, running edge to edge; grey placeholders fill it until enough products are featured */}
+        <div className="mt-8">
+          <ScrollRow label="Featured pieces" cardWidth="min(70vw, 17rem)" photoRatio={5 / 4}>
+            {featured.map((p) => (
+              <div key={p.id} className="w-[min(70vw,17rem)] shrink-0 snap-start">
+                <ProductCard product={p} currency={business.currency} />
+              </div>
+            ))}
+            {Array.from({ length: Math.max(0, FEATURED_CARDS - featured.length) }, (_, i) => (
+              <div key={`ph-${i}`} className="w-[min(70vw,17rem)] shrink-0 snap-start">
+                <div className="zoom-frame aspect-[4/5]">
+                  <ImagePlaceholder label={`Featured piece ${featured.length + i + 1}`} className="size-full" compact />
+                </div>
+                <p className="mt-3.5 text-base font-semibold text-text">Featured piece {featured.length + i + 1}</p>
+                <p className="text-[0.8125rem] text-text-muted">Details appear once products are published.</p>
+              </div>
+            ))}
+          </ScrollRow>
         </div>
       </section>
 
@@ -264,20 +291,26 @@ export default async function HomePage() {
       <section aria-labelledby="projects-title" className="border-t border-border bg-white section-y">
         <div className="container-page">
           <SectionHead id="projects-title" eyebrow="Gallery" title="Recent projects" link={{ href: "/gallery", label: "See the gallery" }} />
-          <ul className="mt-8 grid auto-rows-[11rem] grid-cols-2 gap-3 sm:auto-rows-[14rem] md:grid-cols-4">
-            {mosaic.map((img, i) => (
-              <Reveal as="li" key={img.id} delay={i * STEP} className={i === 0 ? "col-span-2 row-span-2" : ""}>
-                <Link href="/gallery" className="group zoom-frame relative block size-full">
-                  {img.url ? (
-                    <SiteImage src={img.url} alt={img.alt || img.project} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+        </div>
+        {/* Recent projects: one endless scrolling row of cards, running edge to edge */}
+        <div className="mt-12">
+        <ScrollRow label="Recent projects" cardWidth="min(70vw, 17rem)" photoRatio={5 / 4}>
+          {moreProjects.map((p) => (
+            <div key={p.id} className="w-[min(70vw,17rem)] shrink-0 snap-start">
+              <Link href="/gallery" className="group block">
+                <div className="zoom-frame relative aspect-[4/5] w-full">
+                  {p.url ? (
+                    <SiteImage src={p.url} alt={p.alt} fill sizes="17rem" className="object-cover" />
                   ) : (
-                    <ImagePlaceholder label={`${img.project} — photograph`} className="size-full" />
+                    <ImagePlaceholder label={`${p.title} — photograph`} className="size-full" compact />
                   )}
-                  <span className="sr-only">{img.project}</span>
-                </Link>
-              </Reveal>
-            ))}
-          </ul>
+                </div>
+                <p className="mt-3 text-base font-semibold leading-snug text-text">{p.title}</p>
+                {p.year ? <p className="mt-0.5 text-[0.8125rem] text-text-muted">{p.year}</p> : null}
+              </Link>
+            </div>
+          ))}
+        </ScrollRow>
         </div>
       </section>
 
@@ -338,22 +371,43 @@ export default async function HomePage() {
 
       {/* 9. Closing enquiry band */}
       <section aria-labelledby="cta-title" className="section-y">
-        <div className="container-page">
-          <Reveal className="ctaband">
-            <h2 id="cta-title" className="font-display max-w-[18ch] text-headline text-white">
+        <div>
+          <Reveal className="ctasoft">
+            <p className="eyebrow justify-center">Get in touch</p>
+            <h2 id="cta-title" className="font-display mx-auto mt-3 max-w-[18ch] text-headline text-brand">
               Let&rsquo;s talk about your piece.
             </h2>
-            <p className="mt-3 max-w-md text-base leading-relaxed text-white/95">Ask about a piece, request a quotation, or arrange a visit.</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <ButtonLink href="/contact" size="cta" variant="light">
+            <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-text-muted">Ask about a piece, request a quotation, or arrange a visit.</p>
+            <div className="mt-6 flex justify-center">
+              <ButtonLink href="/contact" size="cta" className="go">
                 Enquire
               </ButtonLink>
+            </div>
+            <div className="reach">
+              {business.phone ? (
+                <a href={`tel:${business.phone.replace(/\s+/g, "")}`}>
+                  <Phone aria-hidden="true" className="size-4" strokeWidth={1.75} />
+                  {business.phone}
+                </a>
+              ) : null}
               {business.whatsapp ? (
-                <ButtonLink href={whatsappLink(business.whatsapp, business.phoneCountryCode)} variant="onDark" size="cta" target="_blank" rel="noopener noreferrer">
-                  <MessageCircle aria-hidden="true" className="size-4" />
+                <a href={whatsappLink(business.whatsapp, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle aria-hidden="true" className="size-4" strokeWidth={1.75} />
                   WhatsApp
                   <span className="sr-only"> (opens in a new tab)</span>
-                </ButtonLink>
+                </a>
+              ) : null}
+              {business.email ? (
+                <a href={`mailto:${business.email}`}>
+                  <Mail aria-hidden="true" className="size-4" strokeWidth={1.75} />
+                  {business.email}
+                </a>
+              ) : null}
+              {!business.phone && !business.whatsapp && !business.email ? (
+                <Link href="/contact">
+                  <MapPin aria-hidden="true" className="size-4" strokeWidth={1.75} />
+                  Showroom address and contact details
+                </Link>
               ) : null}
             </div>
           </Reveal>

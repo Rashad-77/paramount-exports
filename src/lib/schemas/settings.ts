@@ -12,6 +12,7 @@ export const businessFormSchema = z.object({
   address: blankToNull(z.string().trim().max(400)),
   mapUrl: blankToNull(z.url("Enter a full web address starting with https://").refine((u) => u.startsWith("https://"), "The map link must start with https://")),
   openingHours: blankToNull(z.string().trim().max(600)),
+  bankDetails: blankToNull(z.string().trim().max(600, "Keep the bank details under 600 characters.")),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Use a 3-letter currency code, e.g. LKR."),
   timezone: reqText("Timezone", 60),
   phoneCountryCode: z.string().trim().regex(/^\d{1,3}$/, "Digits only, e.g. 94."),
@@ -23,5 +24,4 @@ export const pagesFormSchema = z.object({
   terms: blankToNull(z.string().max(12000, "Keep this under 12,000 characters.")),
 });
 
-export const crmFormSchema = z.object({ defaultAssigneeId: blankToNull(z.uuid("Choose a valid team member.")) });
 export { optText };

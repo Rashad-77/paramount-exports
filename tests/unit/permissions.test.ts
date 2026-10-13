@@ -6,6 +6,7 @@ import {
   PERMISSIONS,
   ROLES,
   can,
+  isRole,
   renderPermissionMatrix,
   requirePermission,
   scopeOf,
@@ -31,6 +32,12 @@ describe("permission matrix", () => {
     expect(match![1]).toBe(renderPermissionMatrix());
   });
 
+  it("has exactly two roles: owner and staff", () => {
+    expect([...ROLES]).toEqual(["owner", "staff"]);
+    expect(isRole("staff")).toBe(true);
+    for (const retired of ["manager", "sales", "workshop", "finance"]) expect(isRole(retired), retired).toBe(false);
+  });
+
   it("gives the Owner every permission with full scope", () => {
     for (const p of ALL_PERMISSIONS) expect(scopeOf(actor(["owner"]), p), p).toBe("all");
   });
@@ -49,94 +56,49 @@ describe("permission matrix", () => {
       expect(can(undefined, p), p).toBe(false);
     }
   });
-
-  it("restricts sensitive configuration to the Owner", () => {
-    for (const p of ["users:manage", "settings:manage"] as Permission[]) {
-      for (const r of ROLES) expect(can(actor([r]), p), `${r} ${p}`).toBe(r === "owner");
-    }
-  });
 });
 
 describe("least-privilege guarantees (must never regress)", () => {
-  const workshopForbidden: Permission[] = [
-    "customers:view",
-    "customers:write",
-    "leads:view",
-    "quotations:view",
-    "orders:view",
-    "payments:view",
-    "payments:record",
-    "production:view_costs",
-    "expenses:view",
-    "reports:financial",
-    "reports:sales",
-    "files:view_finance",
-    "users:manage",
-    "settings:view",
-    "audit:view",
-  ];
-  it.each(workshopForbidden)("Workshop cannot %s", (p) => {
-    expect(can(actor(["workshop"]), p)).toBe(false);
-  });
-
-  it("Workshop job access is scoped to own jobs, not all jobs", () => {
-    const w = actor(["workshop"]);
-    expect(scopeOf(w, "production:view")).toBe("own");
-    expect(scopeOf(w, "production:update_stage")).toBe("own");
-    expect(scopeOf(w, "production:record_materials")).toBe("own");
-    expect(scopeOf(w, "files:view_customer_private")).toBe("own");
-  });
-
-  it("Finance cannot see customer-uploaded private files or workshop operations", () => {
-    const f = actor(["finance"]);
-    expect(can(f, "files:view_customer_private")).toBe(false);
-    expect(can(f, "production:update_stage")).toBe(false);
-    expect(can(f, "inventory:adjust")).toBe(false);
-    expect(can(f, "users:manage")).toBe(false);
-  });
-
-  it("Finance can see finance data", () => {
-    const f = actor(["finance"]);
-    for (const p of ["payments:view", "payments:record", "payments:void", "expenses:write", "reports:financial", "files:view_finance"] as Permission[]) {
-      expect(can(f, p), p).toBe(true);
+  it("restricts users, settings changes and the audit log to the Owner", () => {
+    for (const p of ["users:manage", "settings:manage", "audit:view"] as Permission[]) {
+      for (const r of ROLES) expect(can(actor([r]), p), `${r} ${p}`).toBe(r === "owner");
     }
   });
 
-  it("Sales cannot adjust stock, void payments, override discounts or see financial reports", () => {
-    const s = actor(["sales"]);
-    for (const p of ["inventory:adjust", "payments:void", "quotations:discount_override", "reports:financial", "orders:cancel_paid", "expenses:view"] as Permission[]) {
-      expect(can(s, p), p).toBe(false);
+  it("lets Staff run orders, messages, customers, the catalogue and the website pages", () => {
+    const s = actor(["staff"]);
+    for (const p of [
+      "orders:view",
+      "orders:update",
+      "orders:cancel",
+      "orders:record_payment",
+      "messages:view",
+      "messages:handle",
+      "customers:view",
+      "products:view",
+      "products:write",
+      "website:manage",
+      "files:view_customer_private",
+      "dashboard:view",
+      "settings:view",
+    ] as Permission[]) {
+      expect(can(s, p), p).toBe(true);
     }
   });
 
-  it("Sales sees only payments on own orders", () => {
-    expect(scopeOf(actor(["sales"]), "payments:view")).toBe("own");
-  });
-
-  it("Manager cannot manage users or sensitive settings", () => {
-    const m = actor(["manager"]);
-    expect(can(m, "users:manage")).toBe(false);
-    expect(can(m, "settings:manage")).toBe(false);
-    expect(can(m, "inventory:adjust")).toBe(true);
-  });
-});
-
-describe("multiple roles", () => {
-  it("unions permissions and lets 'all' beat 'own'", () => {
-    const both = actor(["workshop", "manager"]);
-    expect(scopeOf(both, "production:view")).toBe("all");
-    expect(can(both, "payments:view")).toBe(true);
-
-    const salesFinance = actor(["sales", "finance"]);
-    expect(scopeOf(salesFinance, "payments:view")).toBe("all");
-    expect(can(salesFinance, "users:manage")).toBe(false);
+  it("every permission is held either by Staff and Owner, or by the Owner alone", () => {
+    for (const p of ALL_PERMISSIONS) {
+      const holders = ROLES.filter((r) => PERMISSIONS[p][r as keyof (typeof PERMISSIONS)[typeof p]]);
+      expect(holders[0], p).toBe("owner");
+      expect([1, 2]).toContain(holders.length);
+    }
   });
 });
 
 describe("requirePermission", () => {
   it("throws UNAUTHENTICATED without an actor", () => {
     try {
-      requirePermission(null, "customers:view");
+      requirePermission(null, "orders:view");
       expect.unreachable();
     } catch (e) {
       expect(e).toBeInstanceOf(AppError);
@@ -146,7 +108,7 @@ describe("requirePermission", () => {
 
   it("throws FORBIDDEN when the role lacks the permission", () => {
     try {
-      requirePermission(actor(["workshop"]), "payments:view");
+      requirePermission(actor(["staff"]), "users:manage");
       expect.unreachable();
     } catch (e) {
       expect((e as AppError).code).toBe("FORBIDDEN");
@@ -155,7 +117,6 @@ describe("requirePermission", () => {
   });
 
   it("returns the effective scope when allowed", () => {
-    expect(requirePermission(actor(["workshop"]), "production:view")).toBe("own");
-    expect(requirePermission(actor(["manager"]), "production:view")).toBe("all");
+    expect(requirePermission(actor(["staff"]), "orders:view")).toBe("all");
   });
 });

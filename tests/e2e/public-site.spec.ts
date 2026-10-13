@@ -76,7 +76,7 @@ test.describe("catalogue", () => {
 });
 
 test.describe("enquiries", () => {
-  test("a product enquiry reaches the CRM with the product attached", async ({ page }) => {
+  test("a product enquiry reaches the staff inbox with the product attached", async ({ page }) => {
     const p = phone();
     await page.goto("/products/sample-oak-table");
     await page.getByLabel(/^Your name/).fill("Test Visitor");
@@ -85,10 +85,10 @@ test.describe("enquiries", () => {
     await page.getByLabel(/consent|agree to be contacted/i).check();
     await waitForFormReady(page);
     await page.getByRole("button", { name: /send enquiry/i }).click();
-    await expect(page.getByText(/reference ENQ-\d{6}/)).toBeVisible();
+    await expect(page.getByText(/reference MSG-\d{6}/)).toBeVisible();
 
-    const [lead] = await sql`SELECT l.*, pr.slug FROM leads l JOIN products pr ON pr.id = l.product_id WHERE l.contact_phone = ${p}`;
-    expect(lead).toMatchObject({ kind: "product_enquiry", source: "website", status: "new", contact_name: "Test Visitor", slug: "sample-oak-table" });
+    const [msg] = await sql`SELECT m.*, pr.slug FROM messages m JOIN products pr ON pr.id = m.product_id WHERE m.phone = ${p}`;
+    expect(msg).toMatchObject({ kind: "product_enquiry", is_handled: false, name: "Test Visitor", slug: "sample-oak-table" });
   });
 
   test("ACCEPTANCE #1: a custom enquiry with a reference image is saved, and the file is stored privately", async ({ page }) => {
@@ -103,12 +103,12 @@ test.describe("enquiries", () => {
     await page.getByLabel(/agree to be contacted/i).check();
     await waitForFormReady(page);
     await page.getByRole("button", { name: /request quotation/i }).click();
-    await expect(page.getByText(/reference ENQ-\d{6}/)).toBeVisible();
+    await expect(page.getByText(/reference MSG-\d{6}/)).toBeVisible();
 
-    const [lead] = await sql`SELECT * FROM leads WHERE contact_phone = ${p}`;
-    expect(lead).toMatchObject({ kind: "custom", contact_name: "Custom Visitor" });
-    expect(lead!.payload).toMatchObject({ furnitureType: "Walnut wardrobe", dimensions: "200 x 60 x 220 cm" });
-    const files = await sql`SELECT * FROM uploaded_files WHERE entity_type = 'lead' AND entity_id = ${lead!.id}`;
+    const [msg] = await sql`SELECT * FROM messages WHERE phone = ${p}`;
+    expect(msg).toMatchObject({ kind: "custom", name: "Custom Visitor" });
+    expect(msg!.payload).toMatchObject({ furnitureType: "Walnut wardrobe", dimensions: "200 x 60 x 220 cm" });
+    const files = await sql`SELECT * FROM uploaded_files WHERE entity_type = 'message' AND entity_id = ${msg!.id}`;
     expect(files).toHaveLength(1);
     expect(files[0]).toMatchObject({ status: "linked", visibility: "private", bucket: "private-files", original_name: "sketch.jpg" });
   });
@@ -138,9 +138,13 @@ test.describe("enquiries", () => {
     await page.getByLabel(/^Phone number/).fill(p);
     await page.getByLabel(/^Your message/).fill("Hello, I would like to ask about things.");
     await page.getByLabel(/agree to be contacted/i).check();
-    await page.getByRole("button", { name: /send enquiry/i }).click();
+    // Take a fresh token and submit straight away, so a slow machine or a form still animating in cannot age it past the minimum fill time.
+    await page.locator('input[name="formToken"]').evaluate(async (el: HTMLInputElement) => {
+      el.value = ((await (await fetch("/api/form-token", { cache: "no-store" })).json()) as { token: string }).token;
+    });
+    await page.getByRole("button", { name: /send enquiry/i }).click({ force: true, noWaitAfter: true });
     await expect(page.getByText(/very quick/i)).toBeVisible();
-    expect(await sql`SELECT 1 FROM leads WHERE contact_phone = ${p}`).toHaveLength(0);
+    expect(await sql`SELECT 1 FROM messages WHERE phone = ${p}`).toHaveLength(0);
   });
 
   test("the honeypot makes bots think they succeeded while nothing is stored", async ({ page }) => {
@@ -156,7 +160,7 @@ test.describe("enquiries", () => {
     await waitForFormReady(page);
     await page.getByRole("button", { name: /send enquiry/i }).click();
     await expect(page.getByText(/we have received your enquiry/i)).toBeVisible();
-    expect(await sql`SELECT 1 FROM leads WHERE contact_phone = ${p}`).toHaveLength(0);
+    expect(await sql`SELECT 1 FROM messages WHERE phone = ${p}`).toHaveLength(0);
   });
 
   test("a forged form token is rejected", async ({ page }) => {
@@ -172,7 +176,7 @@ test.describe("enquiries", () => {
     });
     await page.getByRole("button", { name: /send enquiry/i }).click();
     await expect(page.getByText(/form has expired|reload/i)).toBeVisible();
-    expect(await sql`SELECT 1 FROM leads WHERE contact_phone = ${p}`).toHaveLength(0);
+    expect(await sql`SELECT 1 FROM messages WHERE phone = ${p}`).toHaveLength(0);
   });
 });
 
@@ -180,7 +184,7 @@ test.describe("access control for files and staff data", () => {
   test("uploaded private files are not downloadable by the public", async ({ request }) => {
     const [f] = await sql`
       INSERT INTO uploaded_files (bucket, object_key, purpose, original_name, content_type, size_bytes, visibility, status, entity_type, entity_id)
-      VALUES ('private-files', ${`enquiry/2026/01/${crypto.randomUUID().replace(/-/g, "")}.jpg`}, 'enquiry', 'secret.jpg', 'image/jpeg', 100, 'private', 'linked', 'lead', ${crypto.randomUUID()})
+      VALUES ('private-files', ${`enquiry/2026/01/${crypto.randomUUID().replace(/-/g, "")}.jpg`}, 'enquiry', 'secret.jpg', 'image/jpeg', 100, 'private', 'linked', 'message', ${crypto.randomUUID()})
       RETURNING id`;
     expect((await request.get(`/api/files/${f!.id}`, { maxRedirects: 0 })).status()).toBe(404);
     expect((await request.get("/api/files/not-a-uuid")).status()).toBe(404);
@@ -203,20 +207,92 @@ test.describe("access control for files and staff data", () => {
   });
 });
 
+test.describe("ordering (no online payment)", () => {
+  test("a visitor adds a piece, checks out without paying, and gets an order number; the basket empties", async ({ page }) => {
+    const p = phone();
+    await page.goto("/products/sample-priced-stool");
+    await page.getByRole("button", { name: /add to order/i }).click();
+    await expect(page.getByRole("link", { name: /^your order, 1 item/i })).toBeVisible();
+    await page.getByRole("link", { name: /view your order/i }).click();
+    await expect(page).toHaveURL(/\/cart$/);
+    await expect(page.getByText("Sample Priced Stool").first()).toBeVisible();
+    await page.getByRole("link", { name: /continue to checkout/i }).click();
+    await expect(page.getByText(/nothing is charged/i).first()).toBeVisible();
+    // there is no card or payment form anywhere
+    await expect(page.locator('input[autocomplete^="cc-"], iframe[src*="stripe"], iframe[src*="paypal"]')).toHaveCount(0);
+
+    await page.getByLabel(/^Your name/).fill("Order Visitor");
+    await page.getByLabel(/^Phone number/).fill(p);
+    await page.getByLabel(/^Delivery address/).fill("12 Example Road, Colombo");
+    await page.getByLabel(/agree to be contacted/i).check();
+    await waitForFormReady(page);
+    await page.getByRole("button", { name: /place order/i }).click();
+    await expect(page).toHaveURL(/\/order\/confirmed\?ref=ORD-\d{6}/);
+    await expect(page.getByRole("heading", { level: 1, name: /we have your order/i })).toBeVisible();
+    await expect(page.getByText("Sample Priced Stool").first()).toBeVisible();
+
+    const [order] = await sql`SELECT * FROM online_orders WHERE phone = ${p}`;
+    expect(order).toMatchObject({ status: "new", is_paid: false, fulfilment: "delivery", payment_method: "on_delivery", total: "15000.50", customer_name: "Order Visitor" });
+    const items = await sql`SELECT * FROM online_order_items WHERE order_id = ${order!.id}`;
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ product_name: "Sample Priced Stool", quantity: 1, unit_price: "15000.50" });
+    // the basket is empty again
+    expect(await page.evaluate(() => localStorage.getItem("paramount-order-basket-v1"))).toBeNull();
+  });
+
+  test("a price tampered with in the browser is ignored: the order is priced from the database", async ({ page }) => {
+    const p = phone();
+    await page.goto("/products/sample-priced-stool");
+    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.evaluate(() => {
+      const items = JSON.parse(localStorage.getItem("paramount-order-basket-v1")!);
+      items[0].price = "1.00";
+      localStorage.setItem("paramount-order-basket-v1", JSON.stringify(items));
+    });
+    await page.goto("/checkout");
+    await page.getByLabel(/^Your name/).fill("Cheeky Visitor");
+    await page.getByLabel(/^Phone number/).fill(p);
+    await page.getByLabel(/^Delivery address/).fill("1 Cheap Street");
+    await page.getByLabel(/agree to be contacted/i).check();
+    await waitForFormReady(page);
+    await page.getByRole("button", { name: /place order/i }).click();
+    await expect(page).toHaveURL(/\/order\/confirmed/);
+    const [order] = await sql`SELECT total FROM online_orders WHERE phone = ${p}`;
+    expect(order!.total).toBe("15000.50");
+  });
+
+  test("the product with no public price cannot be ordered, only enquired about", async ({ page }) => {
+    await page.goto("/products/sample-oak-table");
+    await expect(page.getByRole("button", { name: /add to order/i })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /enquire about this piece/i })).toBeVisible();
+  });
+
+  test("an empty basket explains itself, and checkout refuses an incomplete form", async ({ page }) => {
+    await page.goto("/cart");
+    await expect(page.getByText(/your order is empty/i).first()).toBeVisible();
+    await page.goto("/products/sample-priced-stool");
+    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.goto("/checkout");
+    await page.getByRole("button", { name: /place order/i }).click();
+    await expect(page.getByText("Your name is required.")).toBeVisible();
+    await expect(page.getByText("Phone number is required.")).toBeVisible();
+  });
+});
+
 test.describe("housekeeping cron", () => {
   test("is closed without the secret and works with it", async ({ request }) => {
     expect((await request.get("/api/cron/housekeeping")).status()).toBe(401);
     expect((await request.get("/api/cron/housekeeping", { headers: { authorization: "Bearer wrong-secret-wrong-secret" } })).status()).toBe(401);
     const ok = await request.get("/api/cron/housekeeping", { headers: { authorization: "Bearer e2e-cron-secret-e2e-cron-secret" } });
     expect(ok.status()).toBe(200);
-    expect(await ok.json()).toMatchObject({ quotationsExpired: expect.any(Number), rateLimitRowsPurged: expect.any(Number), abandonedUploadsRemoved: expect.any(Number) });
+    expect(await ok.json()).toMatchObject({ rateLimitRowsPurged: expect.any(Number), abandonedUploadsRemoved: expect.any(Number) });
   });
 });
 
 test.describe("accessibility with real data", () => {
   // Contrast is measured at rest: a section caught mid-fade by the scroll reveal would be read at partial opacity.
   test.use({ reducedMotion: "reduce" });
-  for (const path of ["/products", "/products/sample-oak-table", "/custom", "/contact"]) {
+  for (const path of ["/products", "/products/sample-oak-table", "/products/sample-priced-stool", "/custom", "/contact", "/cart"]) {
     test(`no serious axe violations on ${path}`, async ({ page }) => {
       await page.goto(path);
       const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

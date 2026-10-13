@@ -15,12 +15,14 @@ import {
   type VariantInput,
 } from "@/lib/schemas/catalogue";
 import { recordAudit } from "./audit";
-import { escapeLike } from "./leads";
 import { linkUploads, publicFileUrl, verifyUploads } from "./files";
 import type { BucketName } from "@/lib/storage";
 import { getStorage } from "@/lib/storage";
 
 /* ───────────────────────────── categories ───────────────────────────── */
+
+/** Escape % and _ so user text matches literally inside LIKE patterns. */
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export async function listCategories(actor: Actor) {
   requirePermission(actor, "products:view");

@@ -1,13 +1,12 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, lt } from "drizzle-orm";
-import { requirePermission, can, scopeOf, type Actor, type Permission } from "@/lib/auth/permissions";
+import { requirePermission, can, type Actor, type Permission } from "@/lib/auth/permissions";
 import { getDb, type DbOrTx } from "@/lib/db/client";
-import { deliveries, productionJobAssignees, productionJobFiles, uploadedFiles } from "@/lib/db/schema";
+import { uploadedFiles } from "@/lib/db/schema";
 import { conflict, forbidden, notFound, rateLimited, validation } from "@/lib/errors";
 import { hitRateLimit } from "@/lib/rate-limit";
 import {
-  DOCUMENT_TYPES,
   IMAGE_TYPES,
   MB,
   PRIVATE_BUCKET,
@@ -32,17 +31,10 @@ export interface UploadPurpose {
   permission: Permission | null;
 }
 
-const IMG_DOC = { ...IMAGE_TYPES, ...DOCUMENT_TYPES };
-
 export const UPLOAD_PURPOSES = {
   enquiry: { bucket: PRIVATE_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: null },
   catalogue: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: "products:write" },
   gallery: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: "website:manage" },
-  lead_attachment: { bucket: PRIVATE_BUCKET, types: IMG_DOC, maxBytes: 10 * MB, permission: "leads:write" },
-  quotation_attachment: { bucket: PRIVATE_BUCKET, types: IMG_DOC, maxBytes: 10 * MB, permission: "quotations:write" },
-  job_reference: { bucket: PRIVATE_BUCKET, types: IMG_DOC, maxBytes: 10 * MB, permission: "production:write" },
-  expense: { bucket: PRIVATE_BUCKET, types: IMG_DOC, maxBytes: 10 * MB, permission: "expenses:write" },
-  delivery_proof: { bucket: PRIVATE_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: "deliveries:update_status" },
 } as const satisfies Record<string, UploadPurpose>;
 
 export type PurposeName = keyof typeof UPLOAD_PURPOSES;
@@ -165,50 +157,15 @@ export function publicFileUrl(file: { bucket: string; objectKey: string }): stri
   return getStorage().publicUrl(file.bucket as BucketName, file.objectKey);
 }
 
-/**
- * Who may open a PRIVATE file. Default deny: unknown entity types are not viewable.
- * Workshop staff (production scope "own") reach only the reference files of jobs they are assigned to.
- */
-export async function canViewFile(actor: Actor, file: { id: string; entityType: string | null; uploadedBy: string | null }, db: DbOrTx = getDb()): Promise<boolean> {
+/** Who may open a PRIVATE file. Default deny: unknown entity types are not viewable. */
+export async function canViewFile(actor: Actor, file: { id: string; entityType: string | null; uploadedBy: string | null }): Promise<boolean> {
   switch (file.entityType) {
-    case "lead":
-    case "customer":
-    case "quotation":
-    case "sales_order":
-      // Workshop holds this permission with scope "own": only the files that came with a job they are assigned to.
-      if (scopeOf(actor, "files:view_customer_private") === "all") return true;
-      return can(actor, "production:view") && (await onAssignedJob(db, actor, file.id));
-    case "production_job":
-      return can(actor, "production:view") && (await onAssignedJob(db, actor, file.id));
-    case "expense":
-      return can(actor, "files:view_finance");
-    case "delivery":
-      // Proof of delivery: everyone who may see deliveries, but delivery staff (scope "own") only their own.
-      if (!can(actor, "deliveries:view")) return false;
-      return scopeOf(actor, "deliveries:view") === "all" || (await onAssignedDelivery(db, actor, file.id));
+    case "message":
+      // Pictures that came with a website message or custom-furniture request.
+      return can(actor, "files:view_customer_private");
     default:
       return false;
   }
-}
-
-async function onAssignedDelivery(db: DbOrTx, actor: Actor, fileId: string): Promise<boolean> {
-  const [r] = await db.select({ id: deliveries.id }).from(deliveries).where(and(eq(deliveries.proofFileId, fileId), eq(deliveries.assigneeId, actor.id))).limit(1);
-  return Boolean(r);
-}
-
-/** Scope "all" sees every job's files; scope "own" only those on jobs the person is assigned to. */
-async function onAssignedJob(db: DbOrTx, actor: Actor, fileId: string): Promise<boolean> {
-  if (scopeOf(actor, "production:view") === "all") {
-    const [r] = await db.select({ id: productionJobFiles.fileId }).from(productionJobFiles).where(eq(productionJobFiles.fileId, fileId)).limit(1);
-    return Boolean(r);
-  }
-  const [r] = await db
-    .select({ id: productionJobFiles.fileId })
-    .from(productionJobFiles)
-    .innerJoin(productionJobAssignees, eq(productionJobAssignees.jobId, productionJobFiles.jobId))
-    .where(and(eq(productionJobFiles.fileId, fileId), eq(productionJobAssignees.userId, actor.id)))
-    .limit(1);
-  return Boolean(r);
 }
 
 export async function getDownloadForActor(actor: Actor | null, fileId: string): Promise<{ download: Download; contentType: string; name: string }> {
@@ -216,7 +173,7 @@ export async function getDownloadForActor(actor: Actor | null, fileId: string): 
   const db = getDb();
   const [file] = await db.select().from(uploadedFiles).where(eq(uploadedFiles.id, fileId)).limit(1);
   if (!file || file.status !== "linked") throw notFound();
-  if (file.visibility === "private" && !(await canViewFile(actor, file, db))) throw notFound();
+  if (file.visibility === "private" && !(await canViewFile(actor, file))) throw notFound();
   const download = await getStorage().download(file.bucket as BucketName, file.objectKey, 120);
   if (file.visibility === "private" && !actor.roles.includes("owner")) {
     await recordAudit(db, actor, { action: "file.view", entityType: "uploaded_file", entityId: file.id, after: { entity: file.entityType, entityId: file.entityId } });

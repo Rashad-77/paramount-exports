@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
 
-type Variant = "up" | "fade" | "left" | "right" | "zoom";
+type Variant = "up" | "fade" | "left" | "right" | "zoom" | "wipe";
 
 /**
  * Reveals its content as it scrolls into view (see `[data-reveal]` in globals.css). The element is only hidden once the page has

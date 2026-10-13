@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
+import { CartLink } from "./cart-link";
 
 export interface NavLink {
   label: string;
@@ -60,6 +61,7 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
             Enquire
           </Link>
         </nav>
+        <CartLink onClick={() => setOpen(false)} />
       </div>
     </header>
   );

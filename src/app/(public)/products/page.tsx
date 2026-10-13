@@ -46,7 +46,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageIntro title="Collection" lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements." />
+      <PageIntro plain title="Collection" lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements." />
       <div className="container-page pt-10 pb-6">
         {categories.length > 0 ? (
           <nav aria-label="Categories" className="flex gap-1 overflow-x-auto border-b border-border">

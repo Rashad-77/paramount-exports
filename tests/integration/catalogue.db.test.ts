@@ -33,14 +33,14 @@ const prod = (o: Record<string, unknown>) => {
 
 describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
   let t: Awaited<ReturnType<typeof setupApp>>;
-  let manager: Actor, sales: Actor, workshop: Actor;
+  let manager: Actor, outsider: Actor, inactive: Actor;
   let tablesId: string, chairsId: string;
 
   beforeAll(async () => {
     t = await setupApp();
-    manager = await makeActor(t, ["manager"]);
-    sales = await makeActor(t, ["sales"]);
-    workshop = await makeActor(t, ["workshop"]);
+    manager = await makeActor(t, ["staff"]);
+    outsider = await makeActor(t, []);
+    inactive = await makeActor(t, ["staff"], "Gone Person", { active: false });
     tablesId = await createCategory(manager, cat("Dining Tables"));
     chairsId = await createCategory(manager, cat("Chairs", { sortOrder: 1 }));
   });
@@ -55,10 +55,13 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     await expect(createCategory(manager, cat("!!!"))).rejects.toMatchObject({ code: "VALIDATION" });
   });
 
-  it("only managers/owners edit the catalogue; workshop can only read", async () => {
-    await expect(createCategory(sales, cat("Nope"))).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(createProduct(workshop, prod({ name: "X", categoryId: tablesId, sku: "X-1" }))).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(listProductsAdmin(workshop, { page: 1, pageSize: 10 })).resolves.toBeTruthy();
+  it("only active staff and owners use the catalogue; people with no role or a switched-off account are refused", async () => {
+    for (const nobody of [outsider, inactive]) {
+      await expect(createCategory(nobody, cat("Nope"))).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(createProduct(nobody, prod({ name: "X", categoryId: tablesId, sku: "X-1" }))).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(listProductsAdmin(nobody, { page: 1, pageSize: 10 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    }
+    await expect(listProductsAdmin(manager, { page: 1, pageSize: 10 })).resolves.toBeTruthy();
   });
 
   it("keeps products hidden until published, and hides price/availability unless approved", async () => {
@@ -137,7 +140,7 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     expect(purged!.n).toBe(1);
 
     // a catalogue upload by someone without the permission cannot even be requested
-    await expect(uploadTestFile("catalogue", JPEG, "image/jpeg", { actor: sales })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(uploadTestFile("catalogue", JPEG, "image/jpeg", { actor: outsider })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("shows only published gallery projects", async () => {

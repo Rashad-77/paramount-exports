@@ -195,7 +195,7 @@
   /* Image frame: slow, subtle zoom on hover (never on touch-only devices) */
   .zoom-frame {
     overflow: hidden;
-    background: var(--color-linen);
+    background: #e4e4e2;
   }
   .zoom-frame > * {
     transition: transform var(--duration-slow) var(--ease-out);
@@ -275,6 +275,21 @@
     transform: scale(1.06);
     transition: opacity 1200ms var(--ease-out) var(--d, 0ms), transform 1600ms var(--ease-out) var(--d, 0ms);
   }
+  /* "wipe": the content is uncovered from top to bottom (clip-path on its first child, so the watched wrapper keeps its box and is
+     still detected), with no movement or fade */
+  .js [data-reveal="wipe"] {
+    opacity: 1;
+    transform: none;
+  }
+  .js [data-reveal="wipe"] > * {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1100ms var(--ease-out) var(--d, 0ms);
+    will-change: clip-path;
+  }
+  .js [data-reveal="wipe"].in > * {
+    clip-path: inset(0 0 0 0);
+    will-change: auto;
+  }
   /* "rule": a hairline that draws from left to right via its background (the box keeps its size) */
   .rule-line {
     background: linear-gradient(rgb(31 138 91 / 0.55), rgb(31 138 91 / 0.55)) no-repeat 0 0 / 100% 100%;
@@ -297,6 +312,11 @@
     .js [data-reveal] {
       opacity: 1 !important;
       transform: none !important;
+      clip-path: none !important;
+      transition: none !important;
+    }
+    .js [data-reveal="wipe"] > * {
+      clip-path: none !important;
       transition: none !important;
     }
   }

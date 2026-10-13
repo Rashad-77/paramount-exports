@@ -21,6 +21,8 @@ export const businessSchema = z.object({
   address: z.string().trim().max(400).nullable(),
   mapUrl: z.string().url().nullable(),
   openingHours: z.string().trim().max(600).nullable(),
+  /** Shown to customers who choose to pay by bank transfer: account name, number, bank. */
+  bankDetails: z.string().trim().max(600).nullable(),
   currency: z.string().length(3),
   timezone: z.string().min(1),
   /** Used only to build WhatsApp links from local numbers (leading 0). Assumption: tied to the LKR default. */
@@ -39,6 +41,7 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   address: null,
   mapUrl: null,
   openingHours: null,
+  bankDetails: null,
   currency: "LKR", // assumption — to be confirmed with the owner
   timezone: DEFAULT_TIMEZONE, // assumption — to be confirmed with the owner
   phoneCountryCode: "94", // assumption — to be confirmed with the owner
@@ -83,21 +86,3 @@ export const getPageContent = cache(async (): Promise<PageContent> => {
     return DEFAULT_PAGES;
   }
 });
-
-export const crmSettingsSchema = z.object({ defaultAssigneeId: z.uuid().nullable() });
-export type CrmSettings = z.infer<typeof crmSettingsSchema>;
-
-/** Sales policy. Sales staff may discount a line up to this percentage; more needs a manager/owner. Default 0 until the owner sets it. */
-export const salesSettingsSchema = z.object({ maxDiscountPercent: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/) });
-export type SalesSettings = z.infer<typeof salesSettingsSchema>;
-export const DEFAULT_SALES: SalesSettings = { maxDiscountPercent: "0" };
-
-/** Workshop policy switches (Owner). Both default to off: the business opts in. */
-export const productionSettingsSchema = z.object({
-  /** When a custom job is completed, add the finished piece to stock (and take it out again on delivery). */
-  createsFinishedStock: z.boolean(),
-  /** Show the labour-cost panel on jobs. Direct labour only; payroll is out of scope. */
-  trackLabour: z.boolean(),
-});
-export type ProductionSettings = z.infer<typeof productionSettingsSchema>;
-export const DEFAULT_PRODUCTION: ProductionSettings = { createsFinishedStock: false, trackLabour: false };

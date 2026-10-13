@@ -17,8 +17,8 @@ import {
 
 /** Step 1 foundation tables. See docs/DATA_MODEL.md. */
 
-export const appRole = pgEnum("app_role", ["owner", "manager", "sales", "workshop", "finance"]);
-export const locationKind = pgEnum("location_kind", ["showroom", "workshop", "warehouse"]);
+/** The database enum still holds the retired roles (manager, sales, workshop, finance); the app uses only owner and staff. */
+export const appRole = pgEnum("app_role", ["owner", "manager", "sales", "workshop", "finance", "staff"]);
 export const fileVisibility = pgEnum("file_visibility", ["public", "private"]);
 export const fileStatus = pgEnum("file_status", ["quarantined", "linked", "purged"]);
 
@@ -78,19 +78,6 @@ export const siteSettings = pgTable("site_settings", {
   updatedBy: uuid("updated_by"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
-
-export const locations = pgTable(
-  "locations",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
-    kind: locationKind("kind").notNull(),
-    isActive: boolean("is_active").notNull().default(true),
-    archivedAt: timestamp("archived_at", { withTimezone: true }),
-    ...timestamps,
-  },
-  (t) => [unique("locations_name_key").on(t.name)],
-);
 
 export const uploadedFiles = pgTable(
   "uploaded_files",

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
-import { ButtonLink } from "@/components/ui/button";
+import { WorkshopSection } from "@/components/public/photo-sections";
 import { DEFAULT_ABOUT } from "@/lib/default-pages";
 import { getPageContent } from "@/lib/settings";
 
@@ -108,43 +108,31 @@ export default async function AboutPage() {
       </section>
 
       {/* The workshop, in pictures */}
-      <section aria-labelledby="pictures-title" className="border-t border-border bg-white section-y">
+      <WorkshopSection id="pictures-title" link={{ href: "/gallery#gallery", label: "See more in the gallery" }} />
+
+      {/* Closing: two frosted cards on a soft gradient, one for each way forward */}
+      <section aria-labelledby="about-cta" className="glassband">
         <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">The workshop</p>
-            <h2 id="pictures-title" className="font-display mt-3 text-headline text-brand">
-              Inside the workshop.
-            </h2>
-          </Reveal>
-          <div className="mt-8 grid auto-rows-[11rem] grid-cols-2 gap-3 md:auto-rows-[14rem] md:grid-cols-4">
-            {["Workshop — the bench", "Workshop — tools", "Workshop — a piece in progress", "Workshop — sanding", "Workshop — the finishing room"].map((l, i) => (
-              <Reveal key={l} delay={(i % 4) * STEP} className={i === 0 ? "col-span-2 row-span-2" : ""}>
-                <div className="zoom-frame size-full">
-                  <ImagePlaceholder label={l} className="size-full" />
-                </div>
+          <h2 id="about-cta" className="sr-only">
+            Come and see it for yourself
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {[
+              { eyebrow: "Ready-made", title: "Come and see it for yourself.", body: "Visit the showroom and sit at the pieces.", href: "/contact", cta: "Plan a visit" },
+              { eyebrow: "Made to measure", title: "Have something built for you.", body: "Tell us about the piece you have in mind.", href: "/custom", cta: "Start a custom enquiry" },
+            ].map((c, i) => (
+              <Reveal key={c.href} variant="fade" delay={i * 60}>
+                <Link href={c.href} className="glasscard group">
+                  <span className="eyebrow">{c.eyebrow}</span>
+                  <span className="font-display mt-3 block text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold leading-tight text-brand">{c.title}</span>
+                  <span className="mt-2 block max-w-sm text-base leading-relaxed text-text-muted">{c.body}</span>
+                  <span className="go mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
+                    {c.cta} <ArrowRight aria-hidden="true" className="size-4" />
+                  </span>
+                </Link>
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Closing */}
-      <section aria-labelledby="about-cta" className="section-y">
-        <div className="container-page">
-          <Reveal className="ctaband">
-            <h2 id="about-cta" className="font-display max-w-[20ch] text-headline text-white">
-              Come and see it for yourself.
-            </h2>
-            <p className="mt-3 max-w-md text-base leading-relaxed text-white/95">Visit the showroom, or tell us about the piece you have in mind.</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <ButtonLink href="/contact" size="cta" variant="light">
-                Plan a visit
-              </ButtonLink>
-              <ButtonLink href="/custom" size="cta" variant="onDark">
-                Start a custom enquiry
-              </ButtonLink>
-            </div>
-          </Reveal>
         </div>
       </section>
     </>

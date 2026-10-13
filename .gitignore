@@ -13,3 +13,4 @@ next-env.d.ts
 .DS_Store
 .e2e-storage
 .local-storage
+.playwright-mcp

@@ -64,7 +64,7 @@ export function EnquiryForm({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <FField name="name" label="Your name" autoComplete="name" required />
-        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" required hint="Include the country code if you are abroad." />
+        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" required />
         <FField name="email" label="Email" type="email" autoComplete="email" />
         <FSelect name="preferredContact" label="Best way to reach you" options={CONTACT_OPTIONS} placeholder="No preference" />
       </div>
