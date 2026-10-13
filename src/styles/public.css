@@ -1308,39 +1308,56 @@ html:has(.page-body) {
     gap: 0.75rem;
     margin-left: auto;
   }
+  /* Frosted-glass boxes like the header: no border, slim, small capitals. The focused one gets a firmer glass instead of an outline. */
   .cat-control {
     appearance: none;
     -webkit-appearance: none;
-    min-height: 2.75rem;
-    padding: 0 2.25rem 0 0.9rem;
-    border: 1px solid var(--color-border-strong);
+    min-height: 2.25rem;
+    padding: 0 2rem 0 0.9rem;
+    border: 0;
     border-radius: 3px;
-    background-color: #fff;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.5'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    outline: none;
+    background-color: rgb(255 255 255 / 0.6);
+    box-shadow: 0 1px 4px rgb(60 40 20 / 0.08);
+    -webkit-backdrop-filter: saturate(1.5) blur(14px);
+    backdrop-filter: saturate(1.5) blur(14px);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 0.9rem center;
-    font-size: 0.875rem;
+    background-position: right 0.8rem center;
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--color-text);
-    transition: border-color 200ms;
+    transition: background-color 200ms;
   }
   .cat-control:hover,
+  .cat-control:focus,
   .cat-control:focus-visible {
-    border-color: var(--color-text);
+    border: 0;
+    outline: none;
+    background-color: rgb(255 255 255 / 0.92);
   }
   .cat-search {
-    width: 16rem;
+    width: 15rem;
     padding-right: 0.9rem;
     background-image: none;
   }
   .cat-search::placeholder {
     color: var(--color-text-muted);
+    opacity: 1;
+  }
+  .cat-search::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
   }
   .cat-meta {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-top: 0.9rem;
+    margin-top: 0.6rem;
   }
   /* Looks like text, not a button: no border, no fill */
   .cat-clear {
