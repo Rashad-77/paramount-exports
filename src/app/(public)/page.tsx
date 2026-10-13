@@ -330,24 +330,66 @@ export default async function HomePage() {
                 Request a quotation
               </ButtonLink>
             </div>
-            {reach.length > 0 ? (
-              <ul className="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[0.8125rem] text-white/85">
-                {reach.map((r) => (
-                  <li key={r.label}>
-                    <a href={r.href} className="inline-flex items-center gap-2.5 transition-colors hover:text-white" {...(r.label === "WhatsApp" ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-                      <r.icon aria-hidden="true" className="size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
-                      {r.value}
-                      {r.label === "WhatsApp" ? <span className="sr-only"> (opens in a new tab)</span> : null}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
           </Reveal>
 
-          <div className="mx-auto mt-14 grid max-w-3xl gap-5 md:grid-cols-2">
-            <Reveal variant="fade" className="glass-dark">
-              <div className="relative h-44 overflow-hidden rounded-2xl bg-white/10">
+          {/* The showroom: one warm-white card on the dark band, details on the left and the map on the right */}
+          <Reveal variant="fade" className="mx-auto mt-14 max-w-4xl">
+            <div className="grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8 md:grid-cols-[1.1fr_1fr]">
+              <div>
+                <p className="eyebrow">Visit the showroom</p>
+                <h3 className="font-display mt-3 text-[1.75rem] leading-tight text-text sm:text-[1.9rem]">Come and see it in person.</h3>
+                <ul className="mt-6 space-y-5 text-[0.875rem]">
+                  <li className="flex gap-4">
+                    <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                    <div>
+                      <p className="font-medium">Address</p>
+                      <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.address ?? "Showroom address to be added."}</div>
+                    </div>
+                  </li>
+                  <li className="flex gap-4">
+                    <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                    <div>
+                      <p className="font-medium">Opening hours</p>
+                      <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.openingHours ?? "Opening hours to be added."}</div>
+                    </div>
+                  </li>
+                  <li className="flex gap-4">
+                    <Phone aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                    <div>
+                      <p className="font-medium">Get in touch</p>
+                      <div className="mt-0.5 text-text-muted">
+                        {reach.length > 0 ? (
+                          <ul className="space-y-1">
+                            {reach.map((r) => (
+                              <li key={r.label}>
+                                <a href={r.href} className="transition-colors hover:text-text" {...(r.label === "WhatsApp" ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                                  {r.value}
+                                  {r.label === "WhatsApp" ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          "Contact details to be added."
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-7">
+                  {business.address && business.mapUrl ? (
+                    <ButtonLink href={business.mapUrl} size="cta" target="_blank" rel="noopener noreferrer">
+                      Get directions
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </ButtonLink>
+                  ) : (
+                    <ButtonLink href="/contact" size="cta">
+                      Send an enquiry
+                    </ButtonLink>
+                  )}
+                </div>
+              </div>
+              <div className="relative min-h-[14rem] overflow-hidden rounded-2xl bg-[#e4e4e2]">
                 {business.address && business.mapUrl ? (
                   <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pill absolute left-3 top-3">
                     Open in maps <ArrowUpRight aria-hidden="true" className="size-3.5" />
@@ -357,30 +399,8 @@ export default async function HomePage() {
                   <span className="pill absolute left-3 top-3">Map to be added</span>
                 )}
               </div>
-              <div className="px-2 pb-2 pt-5">
-                <p className="eyebrow eyebrow-light">Showroom</p>
-                <h3 className="font-display mt-2 text-[1.15rem] text-white">{business.name} Showroom</h3>
-                <p className="mt-3 flex gap-2.5 whitespace-pre-line text-[0.8125rem] leading-relaxed text-white/80">
-                  <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
-                  {business.address ?? "Showroom address to be added."}
-                </p>
-              </div>
-            </Reveal>
-            <Reveal variant="fade" delay={90} className="glass-dark">
-              <div className="px-2 pb-2 pt-3">
-                <p className="eyebrow eyebrow-light">Opening hours</p>
-                <h3 className="font-display mt-2 text-[1.15rem] text-white">Come and see it</h3>
-                <p className="mt-3 flex gap-2.5 whitespace-pre-line text-[0.8125rem] leading-relaxed text-white/80">
-                  <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-[var(--leaf)]" strokeWidth={1.5} />
-                  {business.openingHours ?? "Opening hours to be added."}
-                </p>
-                <p className="mt-5 text-[0.8125rem] leading-relaxed text-white/60">Orders placed online are confirmed by our team before anything is charged.</p>
-                <Link href="/contact" className="link-arrow mt-5 text-[var(--leaf)]">
-                  Contact page <ArrowRight aria-hidden="true" className="size-3.5" />
-                </Link>
-              </div>
-            </Reveal>
-          </div>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>
