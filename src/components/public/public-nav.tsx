@@ -56,6 +56,9 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
               {l.label}
             </Link>
           ))}
+          <Link href="/contact" className="cta">
+            Enquire
+          </Link>
         </nav>
       </div>
     </header>
