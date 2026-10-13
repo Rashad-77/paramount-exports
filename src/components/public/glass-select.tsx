@@ -1,6 +1,5 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 export interface GlassOption {
@@ -11,7 +10,8 @@ export interface GlassOption {
 /**
  * A drop-down in the site's frosted-glass style (the browser's own list cannot be styled). It follows the standard listbox pattern:
  * the button opens the list; Up / Down / Home / End move through it, Enter or Space picks, Escape and Tab close it, and typing a letter
- * jumps to the next option that starts with it. The picked option is marked with a tick, the one under the pointer or cursor is bold.
+ * jumps to the next option that starts with it. The picked option and the one under the pointer or cursor are bold. The box is as
+ * wide as the longest option and the list opens flush against it, so the two read as one piece of glass.
  */
 export function GlassSelect({ label, value, options, onChange, className }: { label: string; value: string; options: GlassOption[]; onChange: (value: string) => void; className?: string }) {
   const id = useId();
@@ -65,7 +65,7 @@ export function GlassSelect({ label, value, options, onChange, className }: { la
   };
 
   return (
-    <div ref={root} className="gs">
+    <div ref={root} className="gs" data-open={open || undefined}>
       <button
         type="button"
         role="combobox"
@@ -78,7 +78,13 @@ export function GlassSelect({ label, value, options, onChange, className }: { la
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKeyDown}
       >
-        {options[selected]?.label}
+        <span className="gs-label">{options[selected]?.label}</span>
+        {/* Invisible copies of every option, bold, so the box is always as wide as the widest one and the list */}
+        <span aria-hidden="true" className="gs-sizer">
+          {options.map((o) => (
+            <span key={o.value}>{o.label}</span>
+          ))}
+        </span>
       </button>
       {open ? (
         <ul id={`${id}-list`} role="listbox" aria-label={label} className="gs-panel">
@@ -93,8 +99,7 @@ export function GlassSelect({ label, value, options, onChange, className }: { la
               onPointerEnter={() => setActive(i)}
               onClick={() => pick(i)}
             >
-              <span data-text={o.label}>{o.label}</span>
-              {i === selected ? <Check aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2} /> : null}
+              {o.label}
             </li>
           ))}
         </ul>

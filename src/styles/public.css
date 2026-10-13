@@ -1352,40 +1352,50 @@ html:has(.page-body) {
     -webkit-appearance: none;
     appearance: none;
   }
-  /* The frosted-glass drop-down: a button that looks like the other boxes, and a list that floats under it */
+  /* The frosted-glass drop-down: a box and a list of exactly the same width, joined with no gap, clear glass with a blur */
   .gs {
+    --gs-glass: rgb(255 255 255 / 0.5);
     position: relative;
   }
   .gs-button {
+    display: grid;
+    align-items: center;
     text-align: left;
     cursor: pointer;
     white-space: nowrap;
   }
-  .gs-button[aria-expanded="true"] {
-    background-color: rgb(255 255 255 / 0.92);
+  .gs-label,
+  .gs-sizer {
+    grid-area: 1 / 1;
+  }
+  .gs-sizer {
+    display: grid;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+  }
+  .gs[data-open] .gs-button {
+    background-color: var(--gs-glass);
+    border-radius: 3px 3px 0 0;
+    box-shadow: none;
   }
   .gs-panel {
     position: absolute;
     left: 0;
-    top: calc(100% + 0.35rem);
+    top: 100%;
     z-index: 40;
-    min-width: 100%;
-    width: max-content;
-    max-width: min(90vw, 24rem);
-    padding: 0.35rem 0;
-    border-radius: 3px;
-    background: rgb(255 255 255 / 0.74);
-    -webkit-backdrop-filter: saturate(1.5) blur(18px);
-    backdrop-filter: saturate(1.5) blur(18px);
-    box-shadow: 0 14px 34px -14px rgb(60 40 20 / 0.45), 0 1px 4px rgb(60 40 20 / 0.1);
+    width: 100%;
+    padding: 0.25rem 0 0.4rem;
+    border-radius: 0 0 3px 3px;
+    background: var(--gs-glass);
+    -webkit-backdrop-filter: saturate(1.6) blur(20px);
+    backdrop-filter: saturate(1.6) blur(20px);
+    box-shadow: 0 16px 30px -14px rgb(60 40 20 / 0.4);
     list-style: none;
   }
   .gs-opt {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
-    padding: 0.6rem 0.9rem;
+    padding: 0.6rem 2rem 0.6rem 0.9rem;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -1393,17 +1403,8 @@ html:has(.page-body) {
     color: var(--color-text);
     cursor: pointer;
   }
-  /* Hover or keyboard position: bold only, no colour. The hidden bold copy keeps the width from shifting. */
-  .gs-opt span {
-    display: inline-grid;
-  }
-  .gs-opt span::after {
-    content: attr(data-text);
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
-    font-weight: 700;
-  }
+  /* The chosen option, and the one under the pointer or keyboard cursor: bold, same size, no colour */
+  .gs-opt[aria-selected="true"],
   .gs-opt[data-active] {
     font-weight: 700;
   }
