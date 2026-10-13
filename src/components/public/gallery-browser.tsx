@@ -17,26 +17,18 @@ export interface GalleryItem {
   ratio: number;
 }
 
-const FILTERS: { key: "all" | GalleryCategory; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "showroom", label: "Showroom" },
-  { key: "workshop", label: "Workshop" },
-  { key: "projects", label: "Projects" },
-];
 const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", workshop: "Workshop", projects: "Project" };
 
 /**
- * One gallery for everything: a filter bar, a staggered masonry of frames, and a full-screen viewer (native <dialog>: focus is
+ * One gallery for everything: a staggered masonry of frames, and a full-screen viewer (native <dialog>: focus is
  * trapped, Esc closes, arrow keys move). Frames are grey stand-ins until real photographs are supplied.
  */
 export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
-  const [filter, setFilter] = useState<"all" | GalleryCategory>("all");
   const [open, setOpen] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
-  const shown = filter === "all" ? items : items.filter((i) => i.category === filter);
-  const count = (k: "all" | GalleryCategory) => (k === "all" ? items.length : items.filter((i) => i.category === k).length);
+  const shown = items;
 
   const show = (i: number) => {
     opener.current = document.activeElement as HTMLElement | null;
@@ -63,17 +55,9 @@ export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
           <p className="eyebrow">The gallery</p>
           <h2 className="font-display mt-3 text-headline text-brand">Our work, up close.</h2>
         </div>
-        <div role="group" aria-label="Filter the gallery" className="flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
-            <button key={f.key} type="button" aria-pressed={filter === f.key} className="gal-filter" onClick={() => setFilter(f.key)}>
-              {f.label}
-              <span aria-hidden="true">{String(count(f.key)).padStart(2, "0")}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
-      <ul key={filter} className="gal-grid mt-10 columns-1 gap-3 sm:columns-2 lg:columns-3">
+      <ul className="gal-grid mt-10 columns-1 gap-3 sm:columns-2 lg:columns-3">
         {shown.map((item, i) => (
           <li key={item.id} className="mb-3 break-inside-avoid">
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>
