@@ -1295,6 +1295,11 @@ html:has(.page-body) {
   }
 
   /* ── Collection filter bar: category at the left; material, sort and search at the right; a plain-text clear link under the search ── */
+  /* All the filter boxes sit together in one very light grey strip that runs the full width of the site; the boxes themselves are white */
+  .cat-strip {
+    padding-block: 0.9rem;
+    background: #f4f4f3;
+  }
   .cat-bar {
     display: flex;
     flex-wrap: wrap;
@@ -1318,11 +1323,11 @@ html:has(.page-body) {
     border: 0;
     border-radius: 3px;
     outline: none;
-    background-color: #efeeec;
+    background-color: #fff;
     background-image: var(--chev);
     background-repeat: no-repeat;
     background-position: right 0.9rem center;
-    box-shadow: inset 0 2px 4px rgb(28 25 22 / 0.16), inset 0 0 0 1px rgb(28 25 22 / 0.03);
+    box-shadow: inset 0 1px 3px rgb(28 25 22 / 0.14);
     font-family: inherit;
     font-size: 0.6875rem;
     font-weight: 500;
@@ -1340,7 +1345,7 @@ html:has(.page-body) {
   .cat-control:focus-visible {
     border: 0;
     outline: none;
-    background-color: #e9e8e5;
+    background-color: #fcfcfb;
   }
   .cat-search {
     width: 17rem;
