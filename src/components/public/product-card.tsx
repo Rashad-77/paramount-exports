@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
   const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group h-full bg-[var(--color-cream)] p-3">
+    <article className="group h-full bg-[#f4f4f3]">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
@@ -24,7 +24,7 @@ export function ProductCard({ product, currency, priority = false }: { product: 
             <ImagePlaceholder label={product.name} className="absolute inset-0" />
           )}
         </div>
-        <div className="px-1 pb-2 pt-4">
+        <div className="px-4 pb-5 pt-4">
           <h3 className="font-display text-[1.2rem] leading-snug text-text">
             <span>{product.name}</span>
           </h3>
