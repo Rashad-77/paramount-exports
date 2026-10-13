@@ -1347,8 +1347,22 @@ html:has(.page-body) {
     outline: none;
     background-color: #fcfcfb;
   }
+  .cat-searchwrap {
+    position: relative;
+  }
+  .cat-searchicon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    width: 0.9rem;
+    height: 0.9rem;
+    transform: translateY(-50%);
+    color: var(--color-text);
+    pointer-events: none;
+  }
   .cat-search {
     width: 17rem;
+    padding-left: 2.5rem;
     padding-right: 0.9rem;
     background-image: none;
   }
@@ -1463,7 +1477,8 @@ html:has(.page-body) {
       margin-left: 0;
     }
     .cat-control,
-    .cat-search {
+    .cat-search,
+    .cat-searchwrap {
       width: 100%;
     }
   }

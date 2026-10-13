@@ -1,5 +1,6 @@
 "use client";
 
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GlassSelect } from "@/components/public/glass-select";
@@ -120,17 +121,20 @@ export function CatalogueBrowser({
                   { value: "name", label: "Sort by: Name (A–Z)" },
                 ]}
               />
-              <input
-                name="q"
-                type="search"
-                aria-label="Search products"
-                placeholder="Search name, wood or code"
-                className="cat-control cat-search"
-                maxLength={80}
-                autoComplete="off"
-                value={typed}
-                onChange={(e) => setTyped(e.target.value)}
-              />
+              <div className="cat-searchwrap">
+                <Search aria-hidden="true" className="cat-searchicon" strokeWidth={1.75} />
+                <input
+                  name="q"
+                  type="search"
+                  aria-label="Search products"
+                  placeholder="Search name, wood or code"
+                  className="cat-control cat-search"
+                  maxLength={80}
+                  autoComplete="off"
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                />
+              </div>
             </div>
             <noscript>
               <select name="category" aria-label="Category" defaultValue={f.category}>
