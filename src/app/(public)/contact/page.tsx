@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { ArrowRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 /** One way to get in touch. A link when the detail is set in Settings; a quiet note until then. */
-function Channel({ icon: Icon, title, value, href, cta, external = false }: { icon: typeof Phone; title: string; value: string | null; href: string | null; cta: string; external?: boolean }) {
+function Channel({ icon: Icon, title, value, href, cta, external = false }: { icon: ComponentType<{ className?: string; strokeWidth?: number; "aria-hidden"?: boolean | "true" | "false" }>; title: string; value: string | null; href: string | null; cta: string; external?: boolean }) {
   const inner: ReactNode = (
     <>
       <span className="ct-ico">
@@ -49,7 +50,7 @@ export default async function ContactPage() {
   const mapped = Boolean(b.address && b.mapUrl);
   const channels = [
     { icon: Phone, title: "Call us", value: b.phone ? [b.phone, b.phoneAlt].filter(Boolean).join("  ·  ") : null, href: b.phone ? `tel:${b.phone.replace(/\s+/g, "")}` : null, cta: "Call now" },
-    { icon: MessageCircle, title: "WhatsApp", value: b.whatsapp, href: b.whatsapp ? whatsappLink(b.whatsapp, b.phoneCountryCode) : null, cta: "Start a chat", external: true },
+    { icon: WhatsAppIcon, title: "WhatsApp", value: b.whatsapp, href: b.whatsapp ? whatsappLink(b.whatsapp, b.phoneCountryCode) : null, cta: "Start a chat", external: true },
     { icon: Mail, title: "Email", value: b.email, href: b.email ? `mailto:${b.email}` : null, cta: "Send an email" },
   ];
   return (
@@ -131,6 +132,12 @@ export default async function ContactPage() {
             <h2 id="inside-title" className="font-display mt-3 text-headline text-brand">
               Come and see it.
             </h2>
+            {b.address ? (
+              <p className="mt-5 flex max-w-md items-start gap-2.5 text-[0.9375rem] leading-relaxed text-text">
+                <MapPin aria-hidden="true" className="mt-1 size-4 shrink-0 text-brand" strokeWidth={1.5} />
+                <span className="whitespace-pre-line">{b.address}</span>
+              </p>
+            ) : null}
           </Reveal>
           <Link href="/gallery#gallery" className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
             See the gallery <ArrowRight aria-hidden="true" className="size-4" />

@@ -10,7 +10,7 @@ export default async function CartPage() {
   const business = await getBusinessSettings();
   return (
     <>
-      <PageIntro plain title="Your cart" lead="Check what you have chosen. You pay nothing online." eyebrow="Cart" />
+      <PageIntro plain title="Your cart" lead="Check what you have chosen." eyebrow="Cart" />
       <div className="container-page py-[var(--section-space)]">
         <CartView currency={business.currency} />
       </div>

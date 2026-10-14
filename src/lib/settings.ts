@@ -45,7 +45,7 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   email: "paramountkapila@yahoo.com",
   phone: "0715500668",
   phoneAlt: "0714099975",
-  whatsapp: null,
+  whatsapp: "0714099975",
   address: "Paramount Export Industries, Stage 2, Nalanda Ellawala Industrial Zone, Paradise, Kuruwita",
   mapUrl: null,
   openingHours: null,

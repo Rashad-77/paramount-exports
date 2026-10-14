@@ -204,6 +204,9 @@ html:has(.page-body) {
       margin-left: auto;
       order: 2;
     }
+    .phead .cart.acct {
+      margin-left: 0;
+    }
     .phead nav {
       position: absolute;
       left: 0;

@@ -82,7 +82,10 @@ async function freshContext(browser: Browser) {
 test.describe("customer accounts", () => {
   test("while switched off there is nothing to sign in to", async ({ page }) => {
     await sql`DELETE FROM site_settings WHERE key = 'accounts'`;
-    expect((await page.goto("/account/sign-in"))?.status()).toBe(404);
+    // the header button still leads somewhere: a short page that says accounts are not available yet
+    expect((await page.goto("/account/sign-in"))?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1, name: /accounts are coming soon/i })).toBeVisible();
+    await expect(page.getByRole("form", { name: /sign in/i })).toHaveCount(0);
     expect((await page.goto("/account"))?.status()).toBe(404);
     expect((await (await page.request.get("/api/account/me")).json()).customer).toBeNull();
   });

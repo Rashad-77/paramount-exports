@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,7 +16,7 @@ export interface NavLink {
  * The public header: a floating pill that firms up once the page has scrolled, with a drop-down
  * menu on narrow screens (closes on Escape, on a link tap and on route change).
  */
-export function PublicHeader({ name, links }: { name: string; links: NavLink[] }) {
+export function PublicHeader({ name, links, accountHref }: { name: string; links: NavLink[]; accountHref: string }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const path = usePathname();
@@ -68,6 +68,12 @@ export function PublicHeader({ name, links }: { name: string; links: NavLink[] }
           ))}
         </nav>
         <CartLink onClick={() => setOpen(false)} />
+        <Link href={accountHref} className="cart acct" aria-label="Account" onClick={() => setOpen(false)}>
+          <User aria-hidden="true" className="size-4" strokeWidth={1.5} />
+          <span className="max-sm:sr-only" aria-hidden="true">
+            Account
+          </span>
+        </Link>
       </div>
     </header>
     </>

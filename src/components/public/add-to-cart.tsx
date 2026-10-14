@@ -37,7 +37,7 @@ export function AddToCart({ productName, productSlug, image, options, currency }
       <h2 id="order-title" className="font-display text-[1.5rem] leading-tight text-walnut">
         Order this piece
       </h2>
-      <p className="mt-1 text-sm text-text-muted">You pay nothing online. We confirm your order, agree delivery with you, and you pay on delivery, by bank transfer or at the showroom.</p>
+      <p className="mt-1 text-sm text-text-muted">We confirm your order, agree delivery with you, and you pay on delivery, by bank transfer or at the showroom.</p>
 
       {orderable.length > 1 ? (
         <fieldset className="mt-5">

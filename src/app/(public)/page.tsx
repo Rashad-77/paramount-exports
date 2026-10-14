@@ -1,6 +1,7 @@
-import { ArrowRight, ArrowUpRight, Clock, Hammer, Handshake, Mail, MapPin, MessageCircle, Phone, Quote, Ruler, TreeDeciduous } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, Hammer, Handshake, Mail, MapPin, Phone, Quote, Ruler, TreeDeciduous } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 import { CountUp } from "@/components/public/count-up";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
@@ -84,7 +85,7 @@ export default async function HomePage() {
     business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
     business.phoneAlt ? { icon: Phone, label: "Call us", value: business.phoneAlt, href: `tel:${business.phoneAlt.replace(/\s+/g, "")}` } : null,
     business.email ? { icon: Mail, label: "Email", value: business.email, href: `mailto:${business.email}` } : null,
-    business.whatsapp ? { icon: MessageCircle, label: "WhatsApp", value: "WhatsApp", href: whatsappLink(business.whatsapp, business.phoneCountryCode) } : null,
+    business.whatsapp ? { icon: WhatsAppIcon, label: "WhatsApp", value: "WhatsApp", href: whatsappLink(business.whatsapp, business.phoneCountryCode) } : null,
   ].filter((x): x is NonNullable<typeof x> => x !== null);
 
   return (

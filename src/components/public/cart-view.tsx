@@ -18,7 +18,7 @@ export function CartView({ currency }: { currency: string }) {
       <div className="mx-auto max-w-md py-16 text-center">
         <ShoppingBag aria-hidden="true" className="mx-auto size-10 text-brand" strokeWidth={1.25} />
         <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
-        <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like. You pay nothing online.</p>
+        <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like.</p>
         <ButtonLink href="/products" size="cta" className="mt-6">
           Browse the collection
         </ButtonLink>
@@ -83,7 +83,7 @@ export function CartView({ currency }: { currency: string }) {
             <dd>{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-sm text-text-muted">You pay nothing online. We call to confirm your order and the delivery charge, and you pay on delivery, by bank transfer or at the showroom.</p>
+        <p className="mt-4 text-sm text-text-muted">We call to confirm your order and the delivery charge, and you pay on delivery, by bank transfer or at the showroom.</p>
         <ButtonLink href="/checkout" size="cta" className="mt-6 w-full justify-center">
           Continue to checkout
         </ButtonLink>

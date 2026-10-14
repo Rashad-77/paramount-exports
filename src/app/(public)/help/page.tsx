@@ -4,7 +4,6 @@ import Link from "next/link";
 import { PageIntro } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
-import { getBusinessSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "We are here to help you",
@@ -21,7 +20,6 @@ const TOPICS = [
 ];
 
 export default async function HelpPage() {
-  const business = await getBusinessSettings();
   return (
     <>
       <PageIntro plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
@@ -124,11 +122,6 @@ export default async function HelpPage() {
                 <ButtonLink href="/contact" size="cta">
                   Contact us
                 </ButtonLink>
-                {business.phone ? (
-                  <ButtonLink href={`tel:${business.phone.replace(/\s+/g, "")}`} size="cta" variant="secondary">
-                    Call {business.phone}
-                  </ButtonLink>
-                ) : null}
               </div>
             </section>
           </Reveal>
