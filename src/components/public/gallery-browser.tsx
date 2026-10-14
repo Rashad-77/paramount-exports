@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { GlassSelect } from "./glass-select";
 import { SiteImage } from "./site-image";
@@ -28,11 +28,13 @@ const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", 
  */
 export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[]; categories?: Array<{ slug: string; name: string }> }) {
   const [category, setCategory] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
-  const shown = category ? items.filter((i) => i.categorySlug === category) : items;
+  const needle = query.trim().toLowerCase();
+  const shown = items.filter((i) => (!category || i.categorySlug === category) && (!needle || i.caption.toLowerCase().includes(needle)));
 
   const show = (i: number) => {
     opener.current = document.activeElement as HTMLElement | null;
@@ -59,14 +61,29 @@ export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[
           <p className="eyebrow">The gallery</p>
           <h2 className="font-display mt-3 text-headline text-brand">Our work, up close.</h2>
         </div>
-        {categories.length > 0 ? (
-          <GlassSelect label="Category" value={category} onChange={setCategory} options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]} />
-        ) : null}
+        <div className="flex flex-wrap gap-3">
+          {categories.length > 0 ? (
+            <GlassSelect label="Category" value={category} onChange={setCategory} options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]} />
+          ) : null}
+          <div className="cat-searchwrap">
+            <Search aria-hidden="true" className="cat-searchicon" strokeWidth={1.75} />
+            <input
+              type="search"
+              aria-label="Search the gallery"
+              placeholder="Search projects"
+              className="cat-control cat-search"
+              maxLength={80}
+              autoComplete="off"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
-      {shown.length === 0 ? <p className="mt-10 text-text-muted">No projects in this category yet. Choose another, or see all categories.</p> : null}
+      {shown.length === 0 ? <p className="mt-10 text-text-muted">No projects match. Try another word, or choose a different category.</p> : null}
 
-      <ul key={category} className="gal-grid mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul key={category + needle} className="gal-grid mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((item, i) => (
           <li key={item.id}>
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>

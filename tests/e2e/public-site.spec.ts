@@ -40,10 +40,19 @@ test.describe("gallery category chooser", () => {
     await expect(chooser).toBeVisible();
     await chooser.click();
     await page.getByRole("option", { name: "Dining Tables" }).click();
-    await expect(page.getByText(/no projects in this category yet/i)).toBeVisible();
+    await expect(page.getByText(/no projects match/i)).toBeVisible();
     await chooser.click();
     await page.getByRole("option", { name: "All categories" }).click();
-    await expect(page.getByText(/no projects in this category yet/i)).toHaveCount(0);
+    await expect(page.getByText(/no projects match/i)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /view larger/i }).first()).toBeVisible();
+
+    // the search box narrows the grid as you type
+    const search = page.getByLabel("Search the gallery");
+    await search.fill("project 3");
+    await expect(page.getByRole("button", { name: /view larger/i })).toHaveCount(1);
+    await search.fill("zzzz");
+    await expect(page.getByText(/no projects match/i)).toBeVisible();
+    await search.fill("");
     await expect(page.getByRole("button", { name: /view larger/i }).first()).toBeVisible();
   });
 });
