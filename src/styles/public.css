@@ -234,7 +234,7 @@ html:has(.page-body) {
     }
   }
   /* Room under the fixed header for pages that do not start with a dark band */
-  .page-body main > :first-child:not(.vhero, .wood-band, .plain-band) {
+  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band) {
     margin-top: 5.25rem;
   }
 
@@ -1430,71 +1430,92 @@ html:has(.page-body) {
     letter-spacing: normal;
     text-transform: none;
   }
-  /* Our history: a quiet vertical timeline. The year sits in the left column, the story in the right, joined by a hairline with a dot per entry. */
-  .history {
-    position: relative;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  /* ── Motion: how the public site moves. Everything here is switched off under prefers-reduced-motion. ── */
+  @media (prefers-reduced-motion: no-preference) {
+    /* A page eases in as you arrive on it */
+    .route-in {
+      animation: route-in 700ms var(--ease-out) backwards;
+    }
+    @keyframes route-in {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 12px, 0);
+      }
+    }
+
+    /* Product cards: lift a little on hover; the name underlines itself */
+    .pcard {
+      transition: transform 450ms var(--ease-out), box-shadow 450ms var(--ease-out);
+    }
+    .pcard h3 span {
+      background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+      transition: background-size 450ms var(--ease-out);
+    }
+    @media (hover: hover) {
+      .pcard:hover {
+        transform: translate3d(0, -4px, 0);
+        box-shadow: var(--shadow-md);
+      }
+      .pcard:hover h3 span {
+        background-size: 100% 1px;
+      }
+    }
+
+    /* Footer links: the underline fades in rather than switching on */
+    .foot a {
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      text-underline-offset: 5px;
+      transition: color 300ms var(--ease-out), text-decoration-color 300ms var(--ease-out), opacity 300ms var(--ease-out);
+    }
+    .foot a:hover {
+      text-decoration-color: currentColor;
+    }
+
+    /* The glass drop-down opens with a short slide and fade; the bold on hover eases in */
+    .gs-panel {
+      animation: gs-open 240ms var(--ease-out) both;
+      transform-origin: top;
+    }
+    @keyframes gs-open {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -6px, 0);
+      }
+    }
+    .gs-opt {
+      -webkit-text-stroke: 0 currentColor;
+      transition: -webkit-text-stroke-width 160ms var(--ease-out);
+    }
+
+    /* A form error slides into place so it is noticed */
+    form p[role="alert"] {
+      animation: err-in 320ms var(--ease-out) both;
+    }
+    @keyframes err-in {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -5px, 0);
+      }
+    }
+
+    /* The "years of woodwork" mark draws its rule from the left */
+    .years-mark.in::before {
+      transform-origin: left;
+      animation: years-rule 1400ms var(--ease-out) 150ms backwards;
+    }
+    @keyframes years-rule {
+      from {
+        transform: scaleX(0);
+      }
+    }
   }
-  .history::before {
+  .years-mark::before {
     content: "";
-    position: absolute;
-    top: 0.6rem;
-    bottom: 0.6rem;
-    left: 0.3125rem;
-    width: 1px;
-    background: var(--color-border-strong);
-  }
-  .history > li {
-    position: relative;
-    padding: 0 0 2.75rem 2rem;
-  }
-  .history > li:last-child {
-    padding-bottom: 0;
-  }
-  .history > li::before {
-    content: "";
-    position: absolute;
-    top: 0.55rem;
-    left: 0;
-    width: 0.625rem;
-    height: 0.625rem;
-    border-radius: 50%;
-    background: var(--color-brand);
-    box-shadow: 0 0 0 4px #fff;
-  }
-  .history-when {
-    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
-    font-weight: 300;
-    line-height: 1.1;
-    color: var(--color-brand);
-  }
-  .history-body {
-    margin-top: 0.6rem;
-  }
-  @media (min-width: 48rem) {
-    .history::before {
-      left: 11.3125rem;
-    }
-    .history > li {
-      display: grid;
-      grid-template-columns: 10rem 1fr;
-      column-gap: 3.5rem;
-      padding-left: 0;
-      padding-bottom: 3.25rem;
-    }
-    .history > li::before {
-      left: 11rem;
-      top: 0.9rem;
-    }
-    .history-when {
-      text-align: right;
-    }
-    .history-body {
-      margin-top: 0.35rem;
-      padding-left: 0.5rem;
-    }
+    display: block;
+    height: 1px;
+    margin-bottom: 1rem;
+    background: var(--color-timber);
   }
   /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
      text, so the strokes are thickened instead: same size, same width, nothing shifts. */

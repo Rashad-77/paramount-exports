@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 export function ProductCard({ product, currency, priority = false }: { product: PublicCard; currency: string; priority?: boolean }) {
   const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group h-full bg-[#f4f4f3]">
+    <article className="group pcard h-full bg-[#f4f4f3]">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (

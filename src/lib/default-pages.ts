@@ -4,11 +4,11 @@
  */
 export const DRAFT_NOTICE = "Draft text — to be reviewed and replaced by the business before launch.";
 
-export const DEFAULT_ABOUT = `We are a woodworking business. We make furniture in two ways: ready-made pieces you can see and buy from our showroom, and made-to-measure pieces built in our workshop to your dimensions, in the wood and finish you choose.
+export const DEFAULT_ABOUT = `Paramount Export Industries began in 2006 in Kuruwita, Sri Lanka. Since then we have worked with timber every day, and that time has taught us which woods suit which jobs, how a joint should be cut so that it lasts, and why a good finish is worth taking slowly.
 
-Every piece starts with the timber. We pick the boards for the job, cut and join them with care, and finish them by hand, so that a piece looks right on the day it arrives and keeps looking right for years.
+Our workshop stands in the Nalanda Ellawala Industrial Zone. We keep the business close enough to its work that the person you speak to knows the piece you are asking about, so a question, a worry or an idea is never passed along a chain.
 
-You can order online without paying anything: we confirm the details with you, agree the delivery, and you pay on delivery, by bank transfer or at the showroom. If you would rather talk it through, visit the showroom or send us a quotation request.`;
+We would rather make fewer things well than many things quickly. If you would like to see how we work, you are welcome to come to the workshop and talk to us in person.`;
 
 export const DEFAULT_PRIVACY = `## What this website collects
 

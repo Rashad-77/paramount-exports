@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { DEFAULT_HISTORY_INTRO, parseHistory, SAMPLE_HISTORY, SAMPLE_OWNER } from "@/lib/history";
+import { SAMPLE_OWNER } from "@/lib/history";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
@@ -18,9 +18,6 @@ const STEP = 80;
 
 export default async function AboutPage() {
   const [pages, business] = await Promise.all([getPageContent(), getBusinessSettings()]);
-  const written = parseHistory(pages.history);
-  const sample = written.length === 0;
-  const milestones = sample ? SAMPLE_HISTORY : written;
   const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
   const ownerRole = pages.ownerRole?.trim() || SAMPLE_OWNER.role;
   const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
@@ -46,31 +43,6 @@ export default async function AboutPage() {
               <ImagePlaceholder label="The workshop team at work" className="size-full" />
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      {/* Our history */}
-      <section id="history" aria-labelledby="history-title" className="scroll-mt-24 border-y border-border bg-white section-y">
-        <div className="container-page">
-          <Reveal className="max-w-2xl">
-            <p className="eyebrow">Our history</p>
-            <h2 id="history-title" className="font-display mt-3 text-headline text-brand">
-              How we got here.
-            </h2>
-            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">{pages.historyIntro?.trim() || DEFAULT_HISTORY_INTRO}</p>
-            {sample ? <p className="mt-3 text-[0.8125rem] text-text-muted">Draft outline: the real milestones will be added here.</p> : null}
-          </Reveal>
-          <ol className="history mt-12">
-            {milestones.map((m, i) => (
-              <Reveal as="li" key={`${m.when}-${i}`} delay={Math.min(i, 4) * STEP}>
-                <p className="history-when font-display">{m.when}</p>
-                <div className="history-body">
-                  <h3 className="text-lg font-semibold text-text">{m.title}</h3>
-                  {m.body ? <p className="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">{m.body}</p> : null}
-                </div>
-              </Reveal>
-            ))}
-          </ol>
         </div>
       </section>
 

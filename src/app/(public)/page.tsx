@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUpRight, Clock, Hammer, Handshake, Mail, MapPin, MessageCircle, Phone, Quote, Ruler, TreeDeciduous } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CountUp } from "@/components/public/count-up";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
@@ -111,7 +112,16 @@ export default async function HomePage() {
       {/* 2. Why choose us */}
       <section aria-labelledby="why-title" className="sec sec-white">
         <div className="container-page">
-          <Head id="why-title" eyebrow="Our approach" title={`Why Choose ${business.name}`} />
+          <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+            <Head id="why-title" eyebrow="Our approach" title={`Why Choose ${business.name}`} />
+            <Reveal variant="fade" delay={STEP} className="years-mark shrink-0 md:text-right">
+              <p className="font-display text-[clamp(3.5rem,2.4rem+4vw,5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
+                <CountUp to={20} suffix="+" />
+              </p>
+              <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text">Years of woodwork</p>
+              <p className="mt-1.5 text-[0.8125rem] text-text-muted">Since 2006, in Kuruwita</p>
+            </Reveal>
+          </div>
           <ul className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4">
             {WHY.map((w, i) => (
               <Reveal as="li" key={w.title} variant="fade" delay={i * STEP} className="why-cell">
