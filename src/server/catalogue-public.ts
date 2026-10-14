@@ -3,8 +3,10 @@ import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL }
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
 import { galleryImages, galleryProjects, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import type { CatalogueSort } from "@/lib/catalogue-sort";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { moneyString } from "@/lib/money";
+import { alias } from "drizzle-orm/pg-core";
 import { publicFileUrl } from "./files";
 
 /**
@@ -77,7 +79,7 @@ export interface CatalogueQuery {
   q?: string;
   category?: string;
   material?: string;
-  sort?: "newest" | "name";
+  sort?: CatalogueSort;
   page?: number;
 }
 
@@ -97,12 +99,26 @@ async function duringBuildSafe<T>(label: string, fallback: T, read: () => Promis
   }
 }
 
+/** The lowest price a visitor can see for a piece: nothing when the price is not shown, so those pieces sort last either way. */
+const shownPrice = sql`(CASE WHEN ${products.showPrice} THEN (SELECT min(${productVariants.listPrice}) FROM ${productVariants} WHERE ${productVariants.productId} = ${products.id} AND ${productVariants.isActive}) END)`;
+
+function orderFor(sort: CatalogueSort | undefined): SQL[] {
+  if (sort === "name") return [asc(products.name)];
+  if (sort === "price-high") return [sql`${shownPrice} DESC NULLS LAST`, desc(products.createdAt)];
+  if (sort === "price-low") return [sql`${shownPrice} ASC NULLS LAST`, desc(products.createdAt)];
+  return [desc(products.createdAt)];
+}
+
 export async function listPublicProducts(query: CatalogueQuery) {
   if (!hasDatabase()) return { items: [] as PublicCard[], total: 0, page: 1, pageCount: 1 };
   const db = getDb();
   const page = Math.max(1, query.page ?? 1);
   const where: SQL[] = [visible!];
-  if (query.category) where.push(eq(productCategories.slug, query.category));
+  if (query.category) {
+    // A group shows everything filed under it, as well as anything filed on the group itself.
+    const inGroup = alias(productCategories, "group_cat");
+    where.push(or(eq(productCategories.slug, query.category), exists(getDb().select({ one: sql`1` }).from(inGroup).where(and(eq(inGroup.id, productCategories.parentId), eq(inGroup.slug, query.category)))))!);
+  }
   if (query.material) where.push(eq(products.material, query.material));
   if (query.q) {
     const like = `%${escapeLike(query.q)}%`;
@@ -122,7 +138,7 @@ export async function listPublicProducts(query: CatalogueQuery) {
       .from(products)
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
       .where(cond)
-      .orderBy(query.sort === "name" ? asc(products.name) : desc(products.createdAt))
+      .orderBy(...orderFor(query.sort))
       .limit(PAGE_SIZE)
       .offset((page - 1) * PAGE_SIZE),
     db.select({ n: sql<number>`count(*)::int` }).from(products).innerJoin(productCategories, eq(productCategories.id, products.categoryId)).where(cond),
@@ -148,7 +164,7 @@ async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
   return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
 }
 
-async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; count: number }>> {
+async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({
@@ -156,6 +172,7 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
       name: productCategories.name,
       slug: productCategories.slug,
       description: productCategories.description,
+      parentId: productCategories.parentId,
       count: sql<number>`count(${products.id}) FILTER (WHERE ${products.isPublished} AND ${products.archivedAt} IS NULL)::int`,
     })
     .from(productCategories)
@@ -163,7 +180,8 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
     .where(and(eq(productCategories.isActive, true), isNull(productCategories.archivedAt)))
     .groupBy(productCategories.id)
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
-  return rows;
+  // A group counts the pieces in the categories under it as well as its own.
+  return rows.map((r) => ({ ...r, count: r.count + rows.filter((c) => c.parentId === r.id).reduce((n, c) => n + c.count, 0) }));
 }
 
 export async function listPublicMaterials(): Promise<string[]> {

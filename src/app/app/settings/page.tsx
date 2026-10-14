@@ -31,6 +31,7 @@ export default async function SettingsPage() {
                 <FField name="whatsapp" label="WhatsApp number" type="tel" defaultValue={business.whatsapp ?? ""} hint="Visitors can open a chat from the website." />
                 <FField name="email" label="Email" type="email" defaultValue={business.email ?? ""} />
                 <FField name="mapUrl" label="Map link" defaultValue={business.mapUrl ?? ""} hint="Only shown once an address is also entered." />
+                <FField name="tiktok" label="TikTok link" defaultValue={business.tiktok ?? ""} hint="The full web address of your TikTok page. Shown in the website footer." />
                 <FTextArea name="address" label="Showroom address" rows={3} defaultValue={business.address ?? ""} />
                 <FTextArea name="openingHours" label="Opening hours" rows={3} defaultValue={business.openingHours ?? ""} hint="One line per day or range, e.g. Mon–Sat 9:00–18:00." />
                 <FTextArea name="bankDetails" label="Bank details for transfers" rows={3} defaultValue={business.bankDetails ?? ""} hint="Shown to customers who choose to pay by bank transfer: account name, number and bank." />

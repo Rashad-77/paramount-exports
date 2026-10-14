@@ -1,4 +1,5 @@
 import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { treeLabel, treeOrder } from "@/lib/category-tree";
 import type { ActionState } from "@/lib/action-state";
 
 export function GalleryForm({
@@ -10,7 +11,7 @@ export function GalleryForm({
   action: (p: ActionState, fd: FormData) => Promise<ActionState>;
   values?: { id?: string; title?: string; description?: string | null; completedOn?: string | null; isPublished?: boolean; sortOrder?: number; categoryId?: string | null };
   submitLabel: string;
-  categories?: Array<{ id: string; name: string }>;
+  categories?: Array<{ id: string; name: string; parentId: string | null }>;
 }) {
   return (
     <ActionForm action={action}>
@@ -19,7 +20,7 @@ export function GalleryForm({
         <FField name="title" label="Project title" required defaultValue={values.title} />
         <FField name="completedOn" label="Completed on" type="date" defaultValue={values.completedOn ?? ""} />
       </div>
-      <FSelect name="categoryId" label="Category" defaultValue={values.categoryId ?? ""} placeholder="No category" options={categories.map((c) => ({ value: c.id, label: c.name }))} hint="Lets visitors filter the Gallery by kind of furniture." />
+      <FSelect name="categoryId" label="Category" defaultValue={values.categoryId ?? ""} placeholder="No category" options={treeOrder(categories).map((c) => ({ value: c.id, label: treeLabel(c) }))} hint="Lets visitors filter the Gallery by kind of furniture." />
       <FTextArea name="description" label="Description" rows={4} defaultValue={values.description ?? ""} />
       <FField name="sortOrder" label="Display order" type="number" min={0} defaultValue={String(values.sortOrder ?? 0)} hint="Lower numbers come first." />
       <FCheckbox name="isPublished" label="Published" hint="Visible on the Gallery page." defaultChecked={values.isPublished} />

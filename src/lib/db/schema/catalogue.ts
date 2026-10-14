@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
 import { profiles, uploadedFiles } from "./foundation";
 
 export const productKind = pgEnum("product_kind", ["stocked", "made_to_order"]);
@@ -17,12 +17,14 @@ export const productCategories = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     description: text("description"),
+    /** The group this category sits under (two levels: a group, then its categories). Empty for a group. */
+    parentId: uuid("parent_id").references((): AnyPgColumn => productCategories.id, { onDelete: "restrict" }),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     ...timestamps,
   },
-  (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)],
+  (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`), index("product_categories_parent_idx").on(t.parentId)],
 );
 
 export const products = pgTable(

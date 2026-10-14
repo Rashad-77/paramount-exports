@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
+import { parseSort } from "@/lib/catalogue-sort";
 import { listPublicProducts } from "@/server/catalogue-public";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     q: clean(sp.get("q"), 80),
     category: clean(sp.get("category"), 100),
     material: clean(sp.get("material"), 100),
-    sort: sp.get("sort") === "name" ? ("name" as const) : ("newest" as const),
+    sort: parseSort(sp.get("sort")),
     page: Math.min(500, Math.max(1, Number.parseInt(sp.get("page") ?? "1", 10) || 1)),
   };
 

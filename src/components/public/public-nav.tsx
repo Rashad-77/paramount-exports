@@ -58,7 +58,7 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
           </span>
         </Link>
         <button type="button" className="toggle" aria-expanded={open} aria-controls={id} aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
-          {open ? <X aria-hidden="true" className="size-5" strokeWidth={1.75} /> : <Menu aria-hidden="true" className="size-5" strokeWidth={1.75} />}
+          {open ? <X aria-hidden="true" className="size-4" strokeWidth={1.5} /> : <Menu aria-hidden="true" className="size-4" strokeWidth={1.5} />}
         </button>
         <nav id={id} aria-label="Primary" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
           {links.map((l) => (

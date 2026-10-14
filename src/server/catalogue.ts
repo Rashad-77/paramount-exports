@@ -32,6 +32,7 @@ export async function listCategories(actor: Actor) {
       name: productCategories.name,
       slug: productCategories.slug,
       description: productCategories.description,
+      parentId: productCategories.parentId,
       sortOrder: productCategories.sortOrder,
       isActive: productCategories.isActive,
       archivedAt: productCategories.archivedAt,
@@ -43,14 +44,28 @@ export async function listCategories(actor: Actor) {
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
 }
 
+/** A category may sit under a group, never under another category and never under itself. */
+async function assertParentUsable(tx: DbOrTx, parentId: string | undefined, selfId?: string) {
+  if (!parentId) return;
+  const bad = validation("Choose a group, or leave this as a group of its own.", { parentId: ["Choose a group, or leave this as a group of its own."] });
+  if (parentId === selfId) throw bad;
+  const [g] = await tx.select({ parentId: productCategories.parentId, archivedAt: productCategories.archivedAt }).from(productCategories).where(eq(productCategories.id, parentId)).limit(1);
+  if (!g || g.parentId || g.archivedAt) throw bad;
+  if (selfId) {
+    const [{ n } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(productCategories).where(eq(productCategories.parentId, selfId));
+    if (n > 0) throw validation("This group has categories under it, so it cannot go under another group.", { parentId: ["This group has categories under it, so it cannot go under another group."] });
+  }
+}
+
 export async function createCategory(actor: Actor, input: CategoryInput): Promise<string> {
   requirePermission(actor, "products:write");
   const slugValue = resolveSlug(input.slug, input.name);
   try {
     return await withTx(async (tx) => {
+      await assertParentUsable(tx, input.parentId);
       const [c] = await tx
         .insert(productCategories)
-        .values({ name: input.name, slug: slugValue, description: input.description ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
+        .values({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
         .returning({ id: productCategories.id });
       await recordAudit(tx, actor, { action: "category.created", entityType: "product_category", entityId: c!.id, after: { name: input.name, slug: slugValue } });
       return c!.id;
@@ -68,9 +83,10 @@ export async function updateCategory(actor: Actor, id: string, input: CategoryIn
     await withTx(async (tx) => {
       const [before] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
       if (!before) throw notFound("That category could not be found.");
+      await assertParentUsable(tx, input.parentId, id);
       await tx
         .update(productCategories)
-        .set({ name: input.name, slug: slugValue, description: input.description ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
+        .set({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
         .where(eq(productCategories.id, id));
       await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { name: before.name, slug: before.slug, isActive: before.isActive }, after: { name: input.name, slug: slugValue, isActive: input.isActive } });
     });

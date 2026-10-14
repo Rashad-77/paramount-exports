@@ -65,9 +65,9 @@ async function main() {
     return fileId;
   };
 
-  const tables = await createCategory(owner, { name: "[Sample] Dining Tables", slug: "sample-dining-tables", description: undefined, sortOrder: 0, isActive: true });
-  const chairs = await createCategory(owner, { name: "[Sample] Chairs", slug: "sample-chairs", description: undefined, sortOrder: 1, isActive: true });
-  const storage = await createCategory(owner, { name: "[Sample] Storage", slug: "sample-storage", description: undefined, sortOrder: 2, isActive: true });
+  const tables = await createCategory(owner, { name: "[Sample] Dining Tables", slug: "sample-dining-tables", description: undefined, sortOrder: 900, isActive: true });
+  const chairs = await createCategory(owner, { name: "[Sample] Chairs", slug: "sample-chairs", description: undefined, sortOrder: 901, isActive: true });
+  const storage = await createCategory(owner, { name: "[Sample] Storage", slug: "sample-storage", description: undefined, sortOrder: 902, isActive: true });
 
   const products = [
     { name: "[Sample] Dining Table 180", cat: tables, sku: "SMP-DT-180", price: "185000", dims: "W 180 × D 90 × H 75 cm", featured: true },

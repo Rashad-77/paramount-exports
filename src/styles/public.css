@@ -159,9 +159,9 @@ html:has(.page-body) {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    width: 1.25rem;
     min-height: 2.75rem;
-    padding-inline: 0.25rem;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.16em;
@@ -173,6 +173,9 @@ html:has(.page-body) {
     color: #7a3d1c;
   }
   .phead .cart-count {
+    position: absolute;
+    top: 0.35rem;
+    right: 0;
     min-width: 1.15rem;
     height: 1.15rem;
     padding-inline: 0.25rem;
@@ -187,7 +190,7 @@ html:has(.page-body) {
   }
   .phead .toggle {
     display: none;
-    width: 2.75rem;
+    width: 1.25rem;
     height: 2.75rem;
     align-items: center;
     justify-content: center;
@@ -1370,8 +1373,12 @@ html:has(.page-body) {
     box-shadow: 0 16px 34px -12px rgb(60 40 20 / 0.45);
     list-style: none;
   }
+  /* Capital letters have no descenders, so the text is nudged down a hair to look centred, not just measure centred */
+  .cat-control {
+    padding-top: 2px;
+  }
   .gs-opt {
-    padding: 0.65rem 2.75rem 0.65rem 1.1rem;
+    padding: calc(0.65rem + 1px) 2.75rem calc(0.65rem - 1px) 1.1rem;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -1531,11 +1538,71 @@ html:has(.page-body) {
       }
     }
   }
+  /* The two-level drop-down: the side list is joined to the main list's right edge and starts level with it */
+  .gc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-right: 0.9rem;
+    white-space: nowrap;
+  }
+  .gc-chev {
+    flex: none;
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--color-text);
+  }
+  .gc-side {
+    left: 100%;
+    top: 100%;
+    width: max-content;
+    min-width: 100%;
+    max-width: 22rem;
+    border-radius: 0 0 3px 0;
+    box-shadow: 16px 16px 34px -12px rgb(60 40 20 / 0.45);
+    animation: gc-side-in 220ms var(--ease-out) both;
+  }
+  @keyframes gc-side-in {
+    from {
+      opacity: 0;
+      transform: translate3d(-8px, 0, 0);
+    }
+  }
+  .gc-side .gs-opt {
+    padding-right: 1.5rem;
+  }
+  .gc-back {
+    display: none;
+  }
+  @media (max-width: 47.99rem) {
+    /* No room beside the list on a phone: the side list slides over it, with a Back row */
+    .gc-side {
+      left: 0;
+      width: 100%;
+      max-width: none;
+      z-index: 41;
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 16px 34px -12px rgb(60 40 20 / 0.45);
+    }
+    .gc-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      cursor: pointer;
+    }
+  }
   /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
      text, so the strokes are thickened instead: same size, same width, nothing shifts. */
   .gs-opt[aria-selected="true"],
   .gs-opt[data-active] {
-    -webkit-text-stroke: 0.55px currentColor;
+    -webkit-text-stroke: 0.3px currentColor;
   }
   @media (max-width: 47.99rem) {
     .gs,
@@ -1584,9 +1651,9 @@ html:has(.page-body) {
 
   /* ── The footer: white, compact, with the same name as the header and its own responsive layout ─────────── */
   .foot {
-    background: #fff;
-    color: #1c1916;
-    border-top: 1px solid var(--color-border);
+    background: #000;
+    color: #fff;
+    border-top: 0;
     font-family: var(--font-sans);
     font-size: 0.8125rem;
   }
@@ -1620,7 +1687,7 @@ html:has(.page-body) {
   }
   @media (min-width: 64rem) {
     .foot-grid {
-      grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+      grid-template-columns: 1.3fr 0.9fr 1fr 1.2fr 1.4fr;
       gap: 2.5rem;
       padding-block: 3rem 2.25rem;
     }
@@ -1632,14 +1699,14 @@ html:has(.page-body) {
     max-width: 21rem;
     margin-top: 1.1rem;
     line-height: 1.7;
-    color: var(--color-text-muted);
+    color: rgb(255 255 255 / 0.65);
   }
   .foot-head {
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #1c1916;
+    color: #fff;
   }
   .foot-list {
     margin-top: 1rem;
@@ -1651,22 +1718,22 @@ html:has(.page-body) {
     display: inline-flex;
     align-items: flex-start;
     gap: 0.6rem;
-    color: #1c1916;
+    color: rgb(255 255 255 / 0.88);
     transition: color 200ms;
   }
   .foot-list a:hover {
-    color: #9a5330;
+    color: #fff;
   }
   .foot-list svg {
     flex: none;
     margin-top: 0.15rem;
-    color: var(--color-text-muted);
+    color: rgb(255 255 255 / 0.55);
   }
   .foot-list .plain {
     display: flex;
     align-items: flex-start;
     gap: 0.6rem;
-    color: var(--color-text-muted);
+    color: rgb(255 255 255 / 0.65);
     white-space: pre-line;
   }
   .foot-bottom {
@@ -1674,11 +1741,11 @@ html:has(.page-body) {
     flex-direction: column;
     gap: 0.6rem;
     padding-block: 1.1rem 1.4rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid rgb(255 255 255 / 0.15);
     font-size: 0.625rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: rgb(255 255 255 / 0.55);
   }
   @media (min-width: 40rem) {
     .foot-bottom {
@@ -1696,6 +1763,16 @@ html:has(.page-body) {
     transition: color 200ms;
   }
   .foot-bottom a:hover {
-    color: #1c1916;
+    color: #fff;
+  }
+  .foot .brand,
+  .foot .brand i {
+    color: #fff;
+  }
+  .foot .brand i {
+    color: rgb(255 255 255 / 0.65);
+  }
+  .foot .brand .mark {
+    filter: brightness(0) invert(1);
   }
 }

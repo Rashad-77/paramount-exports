@@ -3,6 +3,8 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CATALOGUE_SORTS, parseSort, type CatalogueSort } from "@/lib/catalogue-sort";
+import { GlassCascade, type CascadeGroup } from "@/components/public/glass-cascade";
 import { GlassSelect } from "@/components/public/glass-select";
 import { ProductCard } from "@/components/public/product-card";
 import type { PublicCard } from "@/server/catalogue-public";
@@ -17,7 +19,7 @@ export interface CatalogueFilters {
   q: string;
   category: string;
   material: string;
-  sort: "newest" | "name";
+  sort: CatalogueSort;
   page: number;
 }
 
@@ -27,7 +29,7 @@ function hrefFor(f: CatalogueFilters): string {
   if (f.q) u.set("q", f.q);
   if (f.category) u.set("category", f.category);
   if (f.material) u.set("material", f.material);
-  if (f.sort === "name") u.set("sort", "name");
+  if (f.sort !== "newest") u.set("sort", f.sort);
   if (f.page > 1) u.set("page", String(f.page));
   const s = u.toString();
   return s ? `/products?${s}` : "/products";
@@ -45,7 +47,7 @@ export function CatalogueBrowser({
   initialResult,
   currency,
 }: {
-  categories: Array<{ slug: string; name: string }>;
+  categories: CascadeGroup[];
   materials: string[];
   initial: CatalogueFilters;
   initialResult: CatalogueResult;
@@ -104,22 +106,14 @@ export function CatalogueBrowser({
       <div className="cat-strip">
         <div className="container-page">
           <form method="get" action="/products" className="cat-bar" onSubmit={(e) => e.preventDefault()} role="search" aria-label="Filter the collection">
-            <GlassSelect
-              label="Category"
-              value={f.category}
-              onChange={(category) => set({ category })}
-              options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]}
-            />
+            <GlassCascade label="Category" allLabel="All categories" groups={categories} value={f.category} onChange={(category) => set({ category })} />
             <div className="cat-right">
               <GlassSelect label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
               <GlassSelect
                 label="Sort by"
                 value={f.sort}
-                onChange={(sort) => set({ sort: sort === "name" ? "name" : "newest" })}
-                options={[
-                  { value: "newest", label: "Sort by: Newest" },
-                  { value: "name", label: "Sort by: Name (A–Z)" },
-                ]}
+                onChange={(sort) => set({ sort: parseSort(sort) })}
+                options={CATALOGUE_SORTS.map((s) => ({ value: s.value, label: s.label }))}
               />
               <div className="cat-searchwrap">
                 <Search aria-hidden="true" className="cat-searchicon" strokeWidth={1.75} />
@@ -140,9 +134,14 @@ export function CatalogueBrowser({
               <select name="category" aria-label="Category" defaultValue={f.category}>
                 <option value="">All categories</option>
                 {categories.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.name}
-                  </option>
+                  <optgroup key={c.slug} label={c.name}>
+                    <option value={c.slug}>All {c.name}</option>
+                    {c.children.map((k) => (
+                      <option key={k.slug} value={k.slug}>
+                        {k.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <select name="material" aria-label="Wood or material" defaultValue={f.material}>

@@ -12,6 +12,7 @@ export const businessFormSchema = z.object({
   whatsapp: blankToNull(z.string().trim().max(40)),
   address: blankToNull(z.string().trim().max(400)),
   mapUrl: blankToNull(z.url("Enter a full web address starting with https://").refine((u) => u.startsWith("https://"), "The map link must start with https://")),
+  tiktok: blankToNull(z.url("Enter a full web address starting with https://").refine((u) => u.startsWith("https://"), "The TikTok link must start with https://")),
   openingHours: blankToNull(z.string().trim().max(600)),
   bankDetails: blankToNull(z.string().trim().max(600, "Keep the bank details under 600 characters.")),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Use a 3-letter currency code, e.g. LKR."),

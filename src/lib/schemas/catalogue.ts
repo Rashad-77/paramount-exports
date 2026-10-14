@@ -19,6 +19,7 @@ export const categorySchema = z.object({
   name: reqText("Category name", 80),
   slug: slugOrBlank,
   description: optText("Description", 500),
+  parentId: optUuid("group"),
   sortOrder: z.preprocess((v) => (v === "" || v === undefined ? 0 : Number(v)), z.number({ error: "Sort order must be a whole number." }).int().min(0).max(9999)),
   isActive: checkbox,
 });

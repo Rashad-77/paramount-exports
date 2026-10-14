@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/ui/status";
 import { Pagination, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import { treeLabel, treeOrder } from "@/lib/category-tree";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { listCategories, listProductsAdmin } from "@/server/catalogue";
 
@@ -36,7 +37,7 @@ export default async function ProductsAdminPage({ searchParams }: { searchParams
         } />
       <form method="get" className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
         <TextField showOptional={false} label="Search" name="q" type="search" defaultValue={q} placeholder="Name or SKU" />
-        <SelectField showOptional={false} label="Category" name="category" defaultValue={categoryId ?? ""} placeholder="All" options={cats.filter((c) => !c.archivedAt).map((c) => ({ value: c.id, label: c.name }))} />
+        <SelectField showOptional={false} label="Category" name="category" defaultValue={categoryId ?? ""} placeholder="All" options={treeOrder(cats.filter((c) => !c.archivedAt)).map((c) => ({ value: c.id, label: treeLabel(c) }))} />
         <SelectField showOptional={false} label="Status" name="status" defaultValue={status ?? ""} placeholder="Active (published and draft)" options={[{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }, { value: "archived", label: "Archived" }]} />
         <div className="flex gap-2">
           <Button type="submit">Apply</Button>

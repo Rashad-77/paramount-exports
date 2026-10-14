@@ -7,7 +7,6 @@ import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ScrollRow } from "@/components/public/scroll-row";
-import { ProductCard } from "@/components/public/product-card";
 import { ButtonLink } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/contact";
 import { hasDatabase } from "@/lib/env";
@@ -15,7 +14,7 @@ import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 import { parseTestimonials } from "@/lib/testimonials";
-import { listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
+import { listPublicCategories } from "@/server/catalogue-public";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -23,9 +22,8 @@ export const revalidate = 300;
 /** One stagger step for every list on the page, so everything arrives with the same rhythm. */
 const STEP = 90;
 /** The product rows: always this many, with grey labelled placeholders making up the difference. */
-const PRODUCT_ROWS = 5;
-const PLACEHOLDER_ROWS = ["Chairs", "Tables", "Storage", "Beds", "Sofas"];
-const PRODUCT_CARDS = 8;
+const PRODUCT_ROWS = 7;
+const PRODUCT_CARDS = 6;
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -69,18 +67,20 @@ const SERVICES = [
 const CARD_W = "w-[78%] shrink-0 snap-start sm:w-[47%] lg:w-[31%]";
 
 export default async function HomePage() {
-  const [business, pages, categories, featured] = await Promise.all([
+  const [business, pages, categories] = await Promise.all([
     getBusinessSettings(),
     getPageContent(),
     safe(() => listPublicCategories(), []),
-    safe(async () => (await listPublicProducts({ sort: "newest" })).items.slice(0, PRODUCT_CARDS), []),
   ]);
   const reviews = parseTestimonials(pages.testimonials);
-  const real = categories.filter((c) => c.count > 0).slice(0, PRODUCT_ROWS).map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, note: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }));
-  const rows = [
-    ...real,
-    ...PLACEHOLDER_ROWS.filter((n) => !real.some((r) => r.name.toLowerCase().includes(n.toLowerCase().slice(0, 4)))).map((n) => ({ key: `ph-${n}`, name: n, href: "/products", note: "Photograph to be supplied" })),
-  ].slice(0, PRODUCT_ROWS);
+  // One band per group, with the categories under it as the note.
+  const groups = categories.filter((c) => !c.parentId);
+  const rows = groups.slice(0, PRODUCT_ROWS).map((g) => {
+    const kids = categories.filter((c) => c.parentId === g.id).map((c) => c.name);
+    return { key: g.id, name: g.name, href: `/products?category=${g.slug}`, all: kids.join(" · "), lines: kids.length > 6 ? [kids.slice(0, 5).join(" · "), kids.slice(5).join(" · ")] : [], note: kids.length > 0 ? kids.slice(0, 4).join(" · ") + (kids.length > 4 ? " · …" : "") : g.count > 0 ? `${g.count} ${g.count === 1 ? "piece" : "pieces"}` : "Made to order" };
+  });
+  // The collection cards: the first six groups of the catalogue.
+  const cards = rows.slice(0, PRODUCT_CARDS);
   const reach = [
     business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
     business.phoneAlt ? { icon: Phone, label: "Call us", value: business.phoneAlt, href: `tel:${business.phoneAlt.replace(/\s+/g, "")}` } : null,
@@ -157,7 +157,7 @@ export default async function HomePage() {
                   <span className="container-page relative flex items-center justify-between gap-4">
                     <span>
                       <span className="font-display block text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">{r.name}</span>
-                      <span className="mt-1 block text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text/70">{r.note}</span>
+                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 text-[0.6875rem] font-semibold uppercase leading-snug tracking-[0.16em] text-text/70">{r.lines.length > 0 ? r.lines.map((l) => <span key={l}>{l}</span>) : r.all || r.note}</span>
                     </span>
                     <ArrowRight aria-hidden="true" className="size-5 shrink-0 text-text transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={1.5} />
                   </span>
@@ -244,22 +244,17 @@ export default async function HomePage() {
       {/* 6. Browse the category: product cards, newest first */}
       <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
-          <Head id="projects-title" eyebrow="Our collection" title="Browse the collection" intro="Ready-made pieces from the showroom. Open one to see its options and price." />
-          <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {featured.map((p, i) => (
-              <Reveal as="li" key={p.id} variant="up" delay={(i % 4) * 70}>
-                <ProductCard product={p} currency={business.currency} />
-              </Reveal>
-            ))}
-            {Array.from({ length: Math.max(0, PRODUCT_CARDS - featured.length) }, (_, i) => (
-              <Reveal as="li" key={`ph-${i}`} variant="up" delay={((featured.length + i) % 4) * 70}>
-                <div className="h-full bg-[#f4f4f3]">
-                  <ImagePlaceholder label="Product photograph" className="aspect-[4/5] w-full" compact />
+          <Head id="projects-title" eyebrow="Our collection" title="Browse the collection" />
+          <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            {cards.map((c, i) => (
+              <Reveal as="li" key={c.key} variant="up" delay={(i % 3) * 70}>
+                <Link href={c.href} className="block h-full bg-[#f4f4f3]">
+                  <ImagePlaceholder label={`${c.name} — photograph`} className="aspect-[4/5] w-full" compact />
                   <div className="px-4 pb-5 pt-4">
-                    <p className="font-display text-[1.2rem] leading-snug text-text">Product to be added</p>
-                    <p className="mt-1.5 text-[0.8125rem] text-text-muted">Details to be supplied</p>
+                    <p className="font-display text-[1.2rem] leading-snug text-text">{c.name}</p>
+                    <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{c.all || c.note}</p>
                   </div>
-                </div>
+                </Link>
               </Reveal>
             ))}
           </ul>

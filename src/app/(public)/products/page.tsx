@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { CatalogueBrowser } from "@/components/public/catalogue-browser";
 import { PageIntro } from "@/components/public/prose";
 import { getBusinessSettings } from "@/lib/settings";
+import { parseSort } from "@/lib/catalogue-sort";
+import { toGroups } from "@/lib/category-tree";
 import { listPublicCategories, listPublicMaterials, listPublicProducts } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
@@ -20,7 +22,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const q = one(sp.q)?.slice(0, 80);
   const category = one(sp.category);
   const material = one(sp.material);
-  const sort = one(sp.sort) === "name" ? "name" : "newest";
+  const sort = parseSort(one(sp.sort));
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
   const [business, categories, materials, result] = await Promise.all([
@@ -29,6 +31,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     listPublicMaterials(),
     listPublicProducts({ q, category, material, sort, page }),
   ]);
+
+  // The wood types of the timber group come first, then any other material already used on a product.
+  const timber = categories.find((c) => c.slug === "timber-and-wood-planks");
+  const woodNames = timber ? categories.filter((c) => c.parentId === timber.id).map((c) => c.name) : [];
+  const woods = [...woodNames, ...materials.filter((m) => !woodNames.some((w) => w.toLowerCase() === m.toLowerCase()))];
 
   return (
     <>
@@ -40,8 +47,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       />
       <div className="bg-white pt-10 pb-16">
         <CatalogueBrowser
-          categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
-          materials={materials}
+          categories={toGroups(categories)}
+          materials={woods}
           initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}
           initialResult={result}
           currency={business.currency}

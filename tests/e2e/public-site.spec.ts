@@ -39,7 +39,10 @@ test.describe("gallery category chooser", () => {
     const chooser = page.getByRole("combobox", { name: /^category/i });
     await expect(chooser).toBeVisible();
     await chooser.click();
-    await page.getByRole("option", { name: "Dining Tables" }).click();
+    // a group opens its own list to the side; its chevron points right, then left once open
+    await page.getByRole("option", { name: "Furniture" }).click();
+    await expect(page.getByRole("listbox", { name: "Furniture" })).toBeVisible();
+    await page.getByRole("option", { name: "Tables", exact: true }).click();
     await expect(page.getByText(/no projects match/i)).toBeVisible();
     await chooser.click();
     await page.getByRole("option", { name: "All categories" }).click();
@@ -130,10 +133,9 @@ test.describe("catalogue", () => {
     // a dropdown applies as soon as it is changed
     await page.getByRole("button", { name: /clear filters/i }).first().click();
     await page.getByRole("combobox", { name: /^category/i }).click();
-    const options = page.getByRole("option");
-    expect(await options.count()).toBeGreaterThan(1);
-    await options.nth(1).click();
-    await expect(page).toHaveURL(/category=/);
+    await page.getByRole("option", { name: "Furniture" }).click();
+    await page.getByRole("option", { name: "Chairs", exact: true }).click();
+    await expect(page).toHaveURL(/category=chairs/);
     // the keyboard works too: open the sort list, move down, pick with Enter
     await page.getByRole("combobox", { name: /^sort by/i }).press("Enter");
     await page.keyboard.press("ArrowDown");

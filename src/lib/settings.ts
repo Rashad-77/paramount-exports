@@ -22,6 +22,8 @@ export const businessSchema = z.object({
   whatsapp: z.string().trim().max(40).nullable(),
   address: z.string().trim().max(400).nullable(),
   mapUrl: z.string().url().nullable(),
+  /** Link to the business TikTok page. */
+  tiktok: z.string().url().nullable(),
   openingHours: z.string().trim().max(600).nullable(),
   /** Shown to customers who choose to pay by bank transfer: account name, number, bank. */
   bankDetails: z.string().trim().max(600).nullable(),
@@ -48,6 +50,7 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   whatsapp: "0714099975",
   address: "Paramount Export Industries, Stage 2, Nalanda Ellawala Industrial Zone, Paradise, Kuruwita",
   mapUrl: null,
+  tiktok: null,
   openingHours: null,
   bankDetails: null,
   currency: "LKR", // assumption — to be confirmed with the owner

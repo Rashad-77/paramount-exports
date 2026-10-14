@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { GlassSelect } from "./glass-select";
+import { GlassCascade, type CascadeGroup } from "./glass-cascade";
 import { SiteImage } from "./site-image";
 
 export type GalleryCategory = "showroom" | "workshop" | "projects";
@@ -18,6 +18,8 @@ export interface GalleryItem {
   ratio: number;
   /** The product category of the project, or null for stand-ins and uncategorised projects. */
   categorySlug: string | null;
+  /** The group the category sits under, so choosing a group also shows its categories. */
+  groupSlug?: string | null;
 }
 
 const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", workshop: "Workshop", projects: "Project" };
@@ -26,7 +28,7 @@ const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", 
  * One gallery for everything: a staggered masonry of frames, and a full-screen viewer (native <dialog>: focus is
  * trapped, Esc closes, arrow keys move). Frames are grey stand-ins until real photographs are supplied.
  */
-export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[]; categories?: Array<{ slug: string; name: string }> }) {
+export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[]; categories?: CascadeGroup[] }) {
   const [category, setCategory] = useState("");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<number | null>(null);
@@ -34,7 +36,7 @@ export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[
   const opener = useRef<HTMLElement | null>(null);
 
   const needle = query.trim().toLowerCase();
-  const shown = items.filter((i) => (!category || i.categorySlug === category) && (!needle || i.caption.toLowerCase().includes(needle)));
+  const shown = items.filter((i) => (!category || i.categorySlug === category || i.groupSlug === category) && (!needle || i.caption.toLowerCase().includes(needle)));
 
   const show = (i: number) => {
     opener.current = document.activeElement as HTMLElement | null;
@@ -63,7 +65,7 @@ export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[
         </div>
         <div className="flex flex-wrap gap-3">
           {categories.length > 0 ? (
-            <GlassSelect label="Category" value={category} onChange={setCategory} options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]} />
+            <GlassCascade label="Category" allLabel="All categories" groups={categories} value={category} onChange={setCategory} />
           ) : null}
           <div className="cat-searchwrap">
             <Search aria-hidden="true" className="cat-searchicon" strokeWidth={1.75} />

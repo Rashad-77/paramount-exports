@@ -1,10 +1,12 @@
 import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { whatsappLink } from "@/lib/contact";
 import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
 import { PublicHeader, type NavLink } from "./public-nav";
+import { TikTokIcon } from "@/components/public/tiktok-icon";
+import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
+import { whatsappLink } from "@/lib/contact";
 import { Reveal } from "./reveal";
 
 /** Only destinations that exist. */
@@ -45,7 +47,6 @@ const INFORMATION = [
   { label: "About us", href: "/about" },
   { label: "Our process", href: "/about#process" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Made to measure", href: "/custom" },
   { label: "Privacy notice", href: "/privacy" },
   { label: "Terms and conditions", href: "/terms" },
 ];
@@ -53,6 +54,7 @@ const INFORMATION = [
 export function SiteFooter({ business }: { business: BusinessSettings }) {
   const [first = business.name, ...others] = business.name.trim().split(/\s+/);
   const rest = others.join(" ");
+  const phones = [business.phone, business.phoneAlt].filter((p): p is string => Boolean(p));
   return (
     <footer className="foot">
       <div className="container-page">
@@ -92,13 +94,6 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               <li>
                 <Link href="/contact">Contact us</Link>
               </li>
-              {business.whatsapp ? (
-                <li>
-                  <a href={whatsappLink(business.whatsapp, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
-                    WhatsApp us<span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                </li>
-              ) : null}
             </ul>
           </nav>
           <div>
@@ -112,19 +107,29 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                 <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
                 {business.openingHours ?? "Opening hours to be added."}
               </li>
-              {business.phone ? (
-                <li>
-                  <a href={`tel:${business.phone.replace(/\s+/g, "")}`}>
-                    <Phone aria-hidden="true" className="size-4" strokeWidth={1.5} />
-                    {business.phone}
-                  </a>
+            </ul>
+          </div>
+          <div>
+            <p className="foot-head">Contact us</p>
+            <ul className="foot-list">
+              {phones.length > 0 ? (
+                <li className="plain">
+                  <Phone aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                  <span className="grid gap-1">
+                    {phones.map((p) => (
+                      <a key={p} href={`tel:${p.replace(/\s+/g, "")}`}>
+                        {p}
+                      </a>
+                    ))}
+                  </span>
                 </li>
               ) : null}
-              {business.phoneAlt ? (
+              {business.whatsapp ? (
                 <li>
-                  <a href={`tel:${business.phoneAlt.replace(/\s+/g, "")}`}>
-                    <Phone aria-hidden="true" className="size-4" strokeWidth={1.5} />
-                    {business.phoneAlt}
+                  <a href={whatsappLink(business.whatsapp, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
+                    <WhatsAppIcon aria-hidden="true" className="size-4" />
+                    {business.whatsapp}
+                    <span className="sr-only"> on WhatsApp (opens in a new tab)</span>
                   </a>
                 </li>
               ) : null}
@@ -136,9 +141,12 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                   </a>
                 </li>
               ) : null}
-              {!business.phone && !business.email ? (
+              {business.tiktok ? (
                 <li>
-                  <Link href="/contact#enquiry">Send us an enquiry</Link>
+                  <a href={business.tiktok} target="_blank" rel="noopener noreferrer">
+                    <TikTokIcon aria-hidden="true" className="size-4" />
+                    TikTok<span className="sr-only"> (opens in a new tab)</span>
+                  </a>
                 </li>
               ) : null}
             </ul>
