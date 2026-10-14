@@ -10,10 +10,11 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
  * about one card. The row also scrolls by touch, trackpad and keyboard. The two extra copies are hidden from assistive
  * technology and cannot be tabbed to.
  *
- * With `autoplayMs` it also moves on by itself every so often. It stops while the pointer or keyboard focus is on it, while it is
- * off screen or the tab is hidden, and for visitors who prefer reduced motion.
+ * With `autoplay` it also drifts along by itself, slowly and continuously (no stepping, so nothing jumps). It stops while the pointer or
+ * keyboard focus is on it, while it is off screen or the tab is hidden, and for visitors who prefer reduced motion, and picks up
+ * again from wherever it was left.
  */
-export function ScrollRow({ label, children, header, autoplayMs }: { label: string; children: ReactNode; header: ReactNode; autoplayMs?: number }) {
+export function ScrollRow({ label, children, header, autoplay = false, pxPerSecond = 42 }: { label: string; children: ReactNode; header: ReactNode; autoplay?: boolean; pxPerSecond?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -87,15 +88,35 @@ export function ScrollRow({ label, children, header, autoplayMs }: { label: stri
     return () => io.disconnect();
   }, []);
 
-  const auto = Boolean(autoplayMs) && !reduced;
+  const auto = autoplay && !reduced;
   useEffect(() => {
     if (!auto) return;
-    const id = window.setInterval(() => {
-      if (!held.current && visible.current && !document.hidden) go(1);
-    }, autoplayMs);
-    return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auto, autoplayMs]);
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    let last = 0;
+    let pos: number | null = null; // our own fractional position, so slow drift is not lost to rounding
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = Math.min(64, now - last);
+      last = now;
+      if (held.current || !visible.current || document.hidden || dt <= 0) {
+        pos = null; // whoever moved it meanwhile (a press, a swipe) decides where we carry on from
+        return;
+      }
+      const w = setWidth();
+      if (w <= 0) return;
+      if (pos === null) pos = el.scrollLeft;
+      pos += (pxPerSecond * dt) / 1000;
+      if (pos > w * 1.5) pos -= w; // back one copy: identical cards, so the eye sees nothing
+      el.scrollLeft = pos;
+    };
+    raf = requestAnimationFrame((t) => {
+      last = t;
+      raf = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [auto, pxPerSecond, setWidth]);
 
   const btn =
     "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/85 text-black shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
@@ -116,7 +137,7 @@ export function ScrollRow({ label, children, header, autoplayMs }: { label: stri
           role="group"
           aria-label={label}
           tabIndex={0}
-          className="relative flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className={"relative flex gap-5 overflow-x-auto pb-2 " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
         >
           {[0, 1, 2].map((copy) => (
             // The two extra copies are only there to make the row endless.

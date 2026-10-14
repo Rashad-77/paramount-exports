@@ -32,6 +32,34 @@ async function waitForFormReady(page: Page) {
   await page.waitForTimeout(3300);
 }
 
+test.describe("homepage reviews row", () => {
+  test("drifts along continuously, with no step or jump, and stops while the pointer is on it", async ({ page }) => {
+    await page.goto("/");
+    const row = page.getByRole("group", { name: "Customer reviews" });
+    await row.scrollIntoViewIfNeeded();
+    await page.mouse.move(2, 2);
+    await page.waitForTimeout(800);
+    const read = () => row.evaluate((el) => el.scrollLeft);
+    const samples: number[] = [];
+    for (let i = 0; i < 20; i++) {
+      samples.push(await read());
+      await page.waitForTimeout(100);
+    }
+    const deltas = samples.slice(1).map((v, i) => v - samples[i]!).filter((d) => d > -500); // ignore the invisible wrap back one copy
+    expect(deltas.filter((d) => d > 0).length).toBeGreaterThan(10); // it moves, most of the time
+    expect(Math.max(...deltas)).toBeLessThan(25); // a stepped slide would move a whole card (300px or more) at once
+    expect(Math.min(...deltas)).toBeGreaterThan(-1); // and never backwards
+
+    // hovering holds it still
+    const box = (await row.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(300);
+    const held = await read();
+    await page.waitForTimeout(700);
+    expect(Math.abs((await read()) - held)).toBeLessThan(2);
+  });
+});
+
 test.describe("catalogue", () => {
   test("lists published products and links to the product page", async ({ page }) => {
     await page.goto("/products");

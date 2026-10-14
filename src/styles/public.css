@@ -1490,17 +1490,6 @@ html:has(.page-body) {
       }
     }
 
-    /* The header's page links slide a short underline in from the left */
-    .phead nav a {
-      background: linear-gradient(currentColor, currentColor) no-repeat 0.95rem calc(100% - 0.55rem) / 0 1px;
-      transition: color 250ms, border-color 250ms, background-color 250ms, background-size 400ms var(--ease-out);
-    }
-    @media (hover: hover) and (min-width: 72rem) {
-      .phead nav a:hover {
-        background-size: calc(100% - 1.9rem) 1px;
-      }
-    }
-
     /* Footer links: the underline fades in rather than switching on */
     .foot a {
       text-decoration: underline;

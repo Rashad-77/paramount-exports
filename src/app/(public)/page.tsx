@@ -303,7 +303,7 @@ export default async function HomePage() {
 
       {/* 8. Customer reviews: only real ones, entered in Website content; grey placeholders until then */}
       <section aria-labelledby="reviews-title" className="sec sec-cream border-t border-border">
-        <ScrollRow label="Customer reviews" autoplayMs={5000} header={<Head id="reviews-title" eyebrow="Feedback" title="What Our Customers Say" />}>
+        <ScrollRow label="Customer reviews" autoplay header={<Head id="reviews-title" eyebrow="Feedback" title="What Our Customers Say" />}>
           {/* A few reviews are repeated to fill the endless row; the repeats are hidden from screen readers */}
           {Array.from({ length: Math.max(reviews.length, 6) }, (_, i) => (reviews.length > 0 ? reviews[i % reviews.length]! : null)).map((t, i) => (
             <figure key={i} aria-hidden={reviews.length > 0 && i >= reviews.length ? true : undefined} className={CARD_W + " soft-card flex flex-col !px-14"}>
