@@ -29,6 +29,14 @@ export default async function WebsitePage() {
             placeholder={'"The table is exactly what we asked for."\n— Name, Town\n\n"Another review."\n— Name, Town'}
             hint="Only add reviews that customers have really given you. One review per block, separated by a blank line; put the quote first and, on the last line, a dash then the name and town. Leave blank to show no reviews."
           />
+          <FTextArea
+            name="history"
+            label="Our history (About page)"
+            rows={10}
+            defaultValue={pages.history ?? ""}
+            placeholder={"2009\nThe first bench\nWe started with one bench and two hand tools.\n\n2015\nOpening the showroom\nThe story of that year."}
+            hint="One milestone per block, separated by a blank line. First line the year, second line the heading, then the story. Only add what really happened. Leave blank to show a labelled outline."
+          />
           <SubmitButton>Save page content</SubmitButton>
         </ActionForm>
       </Panel>

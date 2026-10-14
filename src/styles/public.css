@@ -1430,6 +1430,72 @@ html:has(.page-body) {
     letter-spacing: normal;
     text-transform: none;
   }
+  /* Our history: a quiet vertical timeline. The year sits in the left column, the story in the right, joined by a hairline with a dot per entry. */
+  .history {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .history::before {
+    content: "";
+    position: absolute;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    left: 0.3125rem;
+    width: 1px;
+    background: var(--color-border-strong);
+  }
+  .history > li {
+    position: relative;
+    padding: 0 0 2.75rem 2rem;
+  }
+  .history > li:last-child {
+    padding-bottom: 0;
+  }
+  .history > li::before {
+    content: "";
+    position: absolute;
+    top: 0.55rem;
+    left: 0;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: var(--color-brand);
+    box-shadow: 0 0 0 4px #fff;
+  }
+  .history-when {
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--color-brand);
+  }
+  .history-body {
+    margin-top: 0.6rem;
+  }
+  @media (min-width: 48rem) {
+    .history::before {
+      left: 11.3125rem;
+    }
+    .history > li {
+      display: grid;
+      grid-template-columns: 10rem 1fr;
+      column-gap: 3.5rem;
+      padding-left: 0;
+      padding-bottom: 3.25rem;
+    }
+    .history > li::before {
+      left: 11rem;
+      top: 0.9rem;
+    }
+    .history-when {
+      text-align: right;
+    }
+    .history-body {
+      margin-top: 0.35rem;
+      padding-left: 0.5rem;
+    }
+  }
   /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
      text, so the strokes are thickened instead: same size, same width, nothing shifts. */
   .gs-opt[aria-selected="true"],
