@@ -233,6 +233,10 @@ html:has(.page-body) {
       border-color: rgb(28 25 22 / 0.1);
     }
   }
+  /* Slide-in animations start a little off to the side; clip that so the page never scrolls sideways (clip, unlike hidden, keeps sticky and fixed things working) */
+  .page-body main {
+    overflow-x: clip;
+  }
   /* Room under the fixed header for pages that do not start with a dark band */
   .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band) {
     margin-top: 5.25rem;
@@ -1461,6 +1465,42 @@ html:has(.page-body) {
       }
     }
 
+    /* Solid buttons rise a hair and gain a soft shadow; pressing returns them */
+    .btn-solid {
+      transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out), transform 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+    }
+    @media (hover: hover) {
+      .btn-solid:hover {
+        transform: translate3d(0, -2px, 0);
+        box-shadow: 0 8px 18px -8px rgb(58 44 35 / 0.45);
+      }
+      .btn-solid:active {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+
+    /* Why-choose cells: the icon drifts up and the cell edge warms on hover */
+    .why-cell svg {
+      transition: transform 450ms var(--ease-out);
+    }
+    @media (hover: hover) {
+      .why-cell:hover svg {
+        transform: translate3d(0, -4px, 0);
+      }
+    }
+
+    /* The header's page links slide a short underline in from the left */
+    .phead nav a {
+      background: linear-gradient(currentColor, currentColor) no-repeat 0.95rem calc(100% - 0.55rem) / 0 1px;
+      transition: color 250ms, border-color 250ms, background-color 250ms, background-size 400ms var(--ease-out);
+    }
+    @media (hover: hover) and (min-width: 72rem) {
+      .phead nav a:hover {
+        background-size: calc(100% - 1.9rem) 1px;
+      }
+    }
+
     /* Footer links: the underline fades in rather than switching on */
     .foot a {
       text-decoration: underline;
@@ -1498,24 +1538,6 @@ html:has(.page-body) {
         transform: translate3d(0, -5px, 0);
       }
     }
-
-    /* The "years of woodwork" mark draws its rule from the left */
-    .years-mark.in::before {
-      transform-origin: left;
-      animation: years-rule 1400ms var(--ease-out) 150ms backwards;
-    }
-    @keyframes years-rule {
-      from {
-        transform: scaleX(0);
-      }
-    }
-  }
-  .years-mark::before {
-    content: "";
-    display: block;
-    height: 1px;
-    margin-bottom: 1rem;
-    background: var(--color-timber);
   }
   /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
      text, so the strokes are thickened instead: same size, same width, nothing shifts. */

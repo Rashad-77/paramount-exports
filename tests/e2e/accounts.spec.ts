@@ -271,6 +271,8 @@ test.describe("customer accounts", () => {
 
   test("no serious accessibility problems on the sign-in and account pages", async ({ page }) => {
     await setAccounts(ON);
+    // Colours are measured on the finished page, not part-way through a fade-in.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/account/sign-in");
     expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);
     await signUp(page);

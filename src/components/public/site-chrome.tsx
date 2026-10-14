@@ -5,6 +5,7 @@ import { whatsappLink } from "@/lib/contact";
 import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
 import { PublicHeader, type NavLink } from "./public-nav";
+import { Reveal } from "./reveal";
 
 /** Only destinations that exist. */
 export const PUBLIC_LINKS: NavLink[] = [
@@ -54,7 +55,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
   return (
     <footer className="foot">
       <div className="container-page">
-        <div className="foot-grid">
+        <Reveal className="foot-grid">
           <div className="foot-about">
             <Link href="/" className="brand" aria-label={`${business.name} — home`}>
               <Image src="/logo-mark.png" alt="" width={40} height={40} className="mark" />
@@ -141,7 +142,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               ) : null}
             </ul>
           </div>
-        </div>
+        </Reveal>
         <div className="foot-bottom">
           <p>
             © {new Date().getFullYear()} {business.name}

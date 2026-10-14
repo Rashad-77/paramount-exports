@@ -28,7 +28,7 @@ export default async function AboutPage() {
       {/* Who we are: editable text beside a portrait photograph */}
       <section aria-labelledby="story-title" className="section-y">
         <div className="container-page grid items-center gap-8 md:grid-cols-12 md:gap-12">
-          <Reveal className="md:col-span-6">
+          <Reveal variant="left" className="md:col-span-6">
             <p className="eyebrow">Who we are</p>
             <h2 id="story-title" className="font-display mt-3 text-headline text-brand">
               Furniture made with care, in our own workshop.
@@ -37,7 +37,7 @@ export default async function AboutPage() {
               <Prose text={pages.about ?? DEFAULT_ABOUT} />
             </div>
           </Reveal>
-          <Reveal delay={STEP} className="md:col-span-6">
+          <Reveal variant="right" delay={STEP} className="md:col-span-6">
             <div className="zoom-frame aspect-[4/5]">
               <ImagePlaceholder label="The workshop team at work" className="size-full" />
             </div>
@@ -48,10 +48,10 @@ export default async function AboutPage() {
       {/* The owner */}
       <section id="owner" aria-labelledby="owner-title" className="scroll-mt-24 bg-[var(--color-ivory,#faf8f4)] section-y">
         <div className="container-page grid items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
-          <Reveal variant="fade">
+          <Reveal variant="left">
             <ImagePlaceholder label={`${ownerName}, photograph`} className="aspect-[4/5] w-full" />
           </Reveal>
-          <Reveal variant="fade" delay={STEP}>
+          <Reveal variant="right" delay={STEP}>
             <p className="eyebrow">Meet the owner</p>
             <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
               {ownerName}
@@ -72,7 +72,7 @@ export default async function AboutPage() {
       {/* The process in full: a picture and a proper explanation for every step (the homepage links here) */}
       <section id="process" aria-labelledby="process-title" className="scroll-mt-24 border-t border-border bg-white section-y">
         <div className="container-page">
-          <Reveal variant="fade" className="max-w-2xl">
+          <Reveal variant="left" className="max-w-2xl">
             <p className="eyebrow">Our process</p>
             <h2 id="process-title" className="font-display mt-4 text-headline text-text">
               From timber to finished piece, step by step.
@@ -87,7 +87,7 @@ export default async function AboutPage() {
                     <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
                   </div>
                 </Reveal>
-                <Reveal variant="fade" delay={STEP}>
+                <Reveal variant={i % 2 === 0 ? "right" : "left"} delay={STEP}>
                   <span aria-hidden="true" className="font-display text-[2.25rem] leading-none text-timber">
                     {String(i + 1).padStart(2, "0")}
                   </span>
@@ -111,7 +111,7 @@ export default async function AboutPage() {
               { eyebrow: "Ready-made", title: "Visit the showroom.", body: "Come and see the timber, the finishes and the joinery in person, and sit at the pieces.", href: "/contact", cta: "Plan a visit" },
               { eyebrow: "Made to measure", title: "Have something built for you.", body: "Tell us the piece you have in mind, with its size and wood, and we will quote before we start.", href: "/custom#quotation", cta: "Request quotation" },
             ].map((c, i) => (
-              <Reveal key={c.href} variant="fade" delay={i * 60}>
+              <Reveal key={c.href} variant={i === 0 ? "left" : "right"} delay={i * 60}>
                 <Link href={c.href} className="glasscard group">
                   <span className="eyebrow">{c.eyebrow}</span>
                   <span className="font-display mt-3 block text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold leading-tight text-brand">{c.title}</span>

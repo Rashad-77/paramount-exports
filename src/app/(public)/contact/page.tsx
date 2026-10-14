@@ -65,7 +65,7 @@ export default async function ContactPage() {
       <section aria-label="Contact details" className="border-y border-[var(--leaf)] bg-white">
         <div className="grid divide-y divide-[var(--leaf)] md:grid-cols-3 md:divide-x md:divide-y-0">
           {channels.map((c, i) => (
-            <Reveal key={c.title} variant="fade" delay={i * 90}>
+            <Reveal key={c.title} variant="up" delay={i * 90}>
               <Channel {...c} />
             </Reveal>
           ))}
@@ -88,7 +88,7 @@ export default async function ContactPage() {
           </div>
         </Reveal>
         <div className="border-b border-[var(--leaf)] bg-white">
-          <Reveal variant="fade" className="container-page grid gap-6 py-10 md:grid-cols-[1.2fr_1fr_auto] md:items-center">
+          <Reveal variant="up" className="container-page grid gap-6 py-10 md:grid-cols-[1.2fr_1fr_auto] md:items-center">
             <div>
               <p className="eyebrow">Find us</p>
               <h2 id="visit-title" className="font-display mt-3 text-[1.75rem] leading-tight text-brand">

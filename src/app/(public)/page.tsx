@@ -39,7 +39,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 /** Eyebrow, light display headline and optional intro: the head of every section. */
 function Head({ id, eyebrow, title, intro, dark = false, center = false }: { id: string; eyebrow: string; title: ReactNode; intro?: string; dark?: boolean; center?: boolean }) {
   return (
-    <Reveal variant="fade" className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+    <Reveal variant={center ? "up" : "left"} className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
       <p className={"eyebrow " + (dark ? "eyebrow-light" : "")}>{eyebrow}</p>
       <h2 id={id} className={"font-display mt-4 text-headline " + (dark ? "text-white" : "text-text")}>
         {title}
@@ -115,7 +115,7 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
             <Head id="why-title" eyebrow="Our approach" title={`Why Choose ${business.name}`} />
-            <Reveal variant="fade" delay={STEP} className="years-mark shrink-0 md:text-right">
+            <Reveal variant="right" delay={STEP} className="years-mark shrink-0 md:text-right">
               <p className="font-display text-[clamp(3.5rem,2.4rem+4vw,5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
                 <CountUp to={20} suffix="+" />
               </p>
@@ -125,7 +125,7 @@ export default async function HomePage() {
           </div>
           <ul className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4">
             {WHY.map((w, i) => (
-              <Reveal as="li" key={w.title} variant="fade" delay={i * STEP} className="why-cell">
+              <Reveal as="li" key={w.title} variant="up" delay={i * STEP} className="why-cell">
                 <w.icon aria-hidden="true" className="size-5 text-timber" strokeWidth={1.25} />
                 <h3 className="font-display mt-6 text-[1.05rem] leading-tight text-text">{w.title}</h3>
                 <p className="mt-3 text-[0.8125rem] leading-relaxed text-text-muted">{w.body}</p>
@@ -139,8 +139,8 @@ export default async function HomePage() {
       <section aria-labelledby="products-title" className="sec sec-cream">
         <div className="container-page">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <Head id="products-title" eyebrow="What we make" title="Our Products" intro="Ready-made pieces from the showroom floor, made in wood. Choose a type to see every piece in it." />
-            <Reveal variant="fade" className="shrink-0 pb-1">
+            <Head id="products-title" eyebrow="What we make" title="Our Products" />
+            <Reveal variant="up" className="shrink-0 pb-1">
               <Link href="/products" className="link-arrow text-text">
                 See the full collection <ArrowRight aria-hidden="true" className="size-3.5" />
               </Link>
@@ -150,7 +150,7 @@ export default async function HomePage() {
         <div>
           <ul className="mt-12">
             {rows.map((r, i) => (
-              <Reveal as="li" key={r.key} variant="fade" delay={i * 60}>
+              <Reveal as="li" key={r.key} variant="up" delay={i * 60}>
                 <Link href={r.href} className="prow group">
                   <ImagePlaceholder label={`${r.name} — photograph`} className="absolute inset-0" compact />
                   <span className="container-page relative flex items-center justify-between gap-4">
@@ -184,7 +184,7 @@ export default async function HomePage() {
             dark
           />
           <div className="mt-12">
-            <Reveal variant="fade">
+            <Reveal variant="up">
               <div className="process-box">
                 <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-white/60">Process</p>
                 <ol>
@@ -216,7 +216,7 @@ export default async function HomePage() {
             </div>
           </Reveal>
           <div>
-            <Reveal variant="fade">
+            <Reveal variant="up">
               <p className="eyebrow">Custom woodwork</p>
               <h2 id="space-title" className="font-display mt-4 text-headline text-text">
                 Made for Your Space
@@ -225,13 +225,13 @@ export default async function HomePage() {
             </Reveal>
             <ul className="mt-10 grid gap-x-8 sm:grid-cols-2">
               {SERVICES.map((s, i) => (
-                <Reveal as="li" key={s.title} variant="fade" delay={(i % 2) * 70} className="svc">
+                <Reveal as="li" key={s.title} variant="up" delay={(i % 2) * 70} className="svc">
                   <h3 className="font-display text-[0.95rem] text-text">{s.title}</h3>
                   <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{s.body}</p>
                 </Reveal>
               ))}
             </ul>
-            <Reveal variant="fade" className="mt-8">
+            <Reveal variant="up" className="mt-8">
               <ButtonLink href="/custom#quotation" size="cta">
                 Plan a custom piece
               </ButtonLink>
@@ -241,17 +241,17 @@ export default async function HomePage() {
       </section>
 
       {/* 6. Browse the category: product cards, newest first */}
-      <section aria-labelledby="projects-title" className="sec sec-cream">
+      <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
           <Head id="projects-title" eyebrow="Our collection" title="Browse the category" intro="Ready-made pieces from the showroom. Open one to see its options and price." />
           <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {featured.map((p, i) => (
-              <Reveal as="li" key={p.id} variant="fade" delay={(i % 4) * 70}>
+              <Reveal as="li" key={p.id} variant="up" delay={(i % 4) * 70}>
                 <ProductCard product={p} currency={business.currency} />
               </Reveal>
             ))}
             {Array.from({ length: Math.max(0, PRODUCT_CARDS - featured.length) }, (_, i) => (
-              <Reveal as="li" key={`ph-${i}`} variant="fade" delay={((featured.length + i) % 4) * 70}>
+              <Reveal as="li" key={`ph-${i}`} variant="up" delay={((featured.length + i) % 4) * 70}>
                 <div className="h-full bg-[#f4f4f3]">
                   <ImagePlaceholder label="Product photograph" className="aspect-[4/5] w-full" compact />
                   <div className="px-4 pb-5 pt-4">
@@ -274,7 +274,7 @@ export default async function HomePage() {
       <section aria-labelledby="about-title" className="sec sec-white border-t border-border">
         <div className="container-page">
           <div>
-            <Reveal variant="fade">
+            <Reveal variant="up">
               <p className="eyebrow">About us</p>
               <h2 id="about-title" className="font-display mt-4 text-headline text-text">
                 About {business.name}
@@ -291,7 +291,7 @@ export default async function HomePage() {
                 ["Made to order", "Built to your size in our workshop"],
                 ["Supply", "Delivered to you, or collect it yourself"],
               ].map(([k, v], i) => (
-                <Reveal key={k} variant="fade" delay={i * 80} className="fact">
+                <Reveal key={k} variant="up" delay={i * 80} className="fact">
                   <dt className="eyebrow">{k}</dt>
                   <dd className="mt-3 text-[0.8125rem] leading-relaxed text-text">{v}</dd>
                 </Reveal>
@@ -332,7 +332,7 @@ export default async function HomePage() {
       {/* 9. Contact: dark call to action */}
       <section aria-labelledby="cta-title" className="sec sec-cta">
         <div className="container-page">
-          <Reveal variant="fade" className="mx-auto max-w-2xl text-center">
+          <Reveal variant="up" className="mx-auto max-w-2xl text-center">
             <h2 id="cta-title" className="font-display text-headline text-white">
               Let&rsquo;s Build Something Beautiful in Wood.
             </h2>
@@ -348,7 +348,7 @@ export default async function HomePage() {
           </Reveal>
 
           {/* The showroom: one warm-white card on the dark band, details on the left and the map on the right */}
-          <Reveal variant="fade" className="mx-auto mt-14 max-w-4xl">
+          <Reveal variant="up" className="mx-auto mt-14 max-w-4xl">
             <div className="grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8 md:grid-cols-[1.1fr_1fr]">
               <div>
                 <p className="eyebrow">Visit the showroom</p>
