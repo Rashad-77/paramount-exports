@@ -243,7 +243,7 @@ export default async function HomePage() {
       {/* 6. Browse the category: product cards, newest first */}
       <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
-          <Head id="projects-title" eyebrow="Our collection" title="Browse the category" intro="Ready-made pieces from the showroom. Open one to see its options and price." />
+          <Head id="projects-title" eyebrow="Our collection" title="Browse the collection" intro="Ready-made pieces from the showroom. Open one to see its options and price." />
           <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
             {featured.map((p, i) => (
               <Reveal as="li" key={p.id} variant="up" delay={(i % 4) * 70}>
