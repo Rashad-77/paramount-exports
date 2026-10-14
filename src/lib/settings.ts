@@ -90,9 +90,13 @@ export const pagesSchema = z.object({
   history: z.string().max(6000).nullable(),
   /** A short paragraph under the history heading. */
   historyIntro: z.string().max(600).nullable(),
+  /** The owner section on the About page. */
+  ownerName: z.string().max(120).nullable(),
+  ownerRole: z.string().max(120).nullable(),
+  ownerBio: z.string().max(1500).nullable(),
 });
 export type PageContent = z.infer<typeof pagesSchema>;
-export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null, testimonials: null, history: null, historyIntro: null };
+export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null, testimonials: null, history: null, historyIntro: null, ownerName: null, ownerRole: null, ownerBio: null };
 
 export const getPageContent = cache(async (): Promise<PageContent> => {
   if (!hasDatabase()) return DEFAULT_PAGES;

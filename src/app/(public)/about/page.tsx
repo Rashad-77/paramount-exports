@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { DEFAULT_HISTORY_INTRO, parseHistory, SAMPLE_HISTORY } from "@/lib/history";
+import { DEFAULT_HISTORY_INTRO, parseHistory, SAMPLE_HISTORY, SAMPLE_OWNER } from "@/lib/history";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
@@ -21,6 +21,10 @@ export default async function AboutPage() {
   const written = parseHistory(pages.history);
   const sample = written.length === 0;
   const milestones = sample ? SAMPLE_HISTORY : written;
+  const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
+  const ownerRole = pages.ownerRole?.trim() || SAMPLE_OWNER.role;
+  const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
+  const ownerSample = !pages.ownerName?.trim() && !pages.ownerBio?.trim();
   return (
     <>
       <PageIntro eyebrow="About us" title="About and craftsmanship" lead="Who we are, what we make, and how a piece comes together in our workshop." brand={business.name} />
@@ -67,6 +71,28 @@ export default async function AboutPage() {
               </Reveal>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* The owner */}
+      <section id="owner" aria-labelledby="owner-title" className="scroll-mt-24 bg-[var(--color-ivory,#faf8f4)] section-y">
+        <div className="container-page grid items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
+          <Reveal variant="fade">
+            <ImagePlaceholder label={`${ownerName}, photograph`} className="aspect-[4/5] w-full" />
+          </Reveal>
+          <Reveal variant="fade" delay={STEP}>
+            <p className="eyebrow">Meet the owner</p>
+            <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
+              {ownerName}
+            </h2>
+            <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p>
+            <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
+              {ownerBio.split(/\n{2,}/).map((para, i) => (
+                <p key={i}>{para.trim()}</p>
+              ))}
+            </div>
+            {ownerSample ? <p className="mt-5 text-[0.8125rem] text-text-muted">Draft outline: the owner&apos;s introduction and photograph will be added here.</p> : null}
+          </Reveal>
         </div>
       </section>
 

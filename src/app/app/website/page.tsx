@@ -1,8 +1,8 @@
-import { ActionForm, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
-import { DEFAULT_HISTORY_INTRO } from "@/lib/history";
+import { DEFAULT_HISTORY_INTRO, SAMPLE_OWNER } from "@/lib/history";
 import { DEFAULT_ABOUT, DEFAULT_PRIVACY, DEFAULT_TERMS } from "@/lib/default-pages";
 import { getSettingsForAdmin } from "@/server/settings";
 import { updatePagesAction } from "../settings/actions";
@@ -31,6 +31,11 @@ export default async function WebsitePage() {
             hint="Only add reviews that customers have really given you. One review per block, separated by a blank line; put the quote first and, on the last line, a dash then the name and town. Leave blank to show no reviews."
           />
           <FTextArea name="historyIntro" label="Our history: short description (About page)" rows={3} defaultValue={pages.historyIntro ?? ""} placeholder={DEFAULT_HISTORY_INTRO} hint="A sentence or two under the heading. Leave blank to show the standard line." />
+          <div className="grid gap-5 md:grid-cols-2">
+            <FField name="ownerName" label="Owner: name (About page)" maxLength={120} defaultValue={pages.ownerName ?? ""} placeholder={SAMPLE_OWNER.name} />
+            <FField name="ownerRole" label="Owner: role" maxLength={120} defaultValue={pages.ownerRole ?? ""} placeholder={SAMPLE_OWNER.role} />
+          </div>
+          <FTextArea name="ownerBio" label="Owner: a little description" rows={5} maxLength={1500} defaultValue={pages.ownerBio ?? ""} placeholder={SAMPLE_OWNER.bio} hint="Plain text, a few sentences. Separate paragraphs with a blank line. Leave all three blank to show a labelled outline." />
           <FTextArea
             name="history"
             label="Our history (About page)"

@@ -25,6 +25,9 @@ export const pagesFormSchema = z.object({
   testimonials: blankToNull(z.string().max(6000, "Keep this under 6,000 characters.")),
   history: blankToNull(z.string().max(6000, "Keep this under 6,000 characters.")),
   historyIntro: blankToNull(z.string().max(600, "Keep this under 600 characters.")),
+  ownerName: blankToNull(z.string().trim().max(120, "Keep the name under 120 characters.")),
+  ownerRole: blankToNull(z.string().trim().max(120, "Keep the role under 120 characters.")),
+  ownerBio: blankToNull(z.string().max(1500, "Keep this under 1,500 characters.")),
 });
 
 export const accountsFormSchema = z

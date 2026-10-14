@@ -25,6 +25,12 @@ export function parseHistory(text: string | null | undefined): Milestone[] {
 
 export const DEFAULT_HISTORY_INTRO = "Where the workshop started, how it has grown, and what we make today. The milestones below tell the story in order.";
 
+export const SAMPLE_OWNER = {
+  name: "Owner name",
+  role: "Owner and founder",
+  bio: "A short introduction to the person behind the business: how they came to woodworking, what they care about in a well-made piece, and what a customer can expect when they deal with them directly.",
+};
+
 /** Shown, labelled as a draft, until the business writes its own history. */
 export const SAMPLE_HISTORY: Milestone[] = [
   { when: "Year", title: "How it began", body: "Tell the story of how the workshop started and who started it." },
