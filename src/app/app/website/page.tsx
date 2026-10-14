@@ -32,7 +32,7 @@ export default async function WebsitePage() {
           />
           <div className="grid gap-5 md:grid-cols-2">
             <FField name="ownerName" label="Owner: name (About page)" maxLength={120} defaultValue={pages.ownerName ?? ""} placeholder={SAMPLE_OWNER.name} />
-            <FField name="ownerRole" label="Owner: role" maxLength={120} defaultValue={pages.ownerRole ?? ""} placeholder={SAMPLE_OWNER.role} />
+            <FField name="ownerRole" label="Owner: role" maxLength={120} defaultValue={pages.ownerRole ?? ""} placeholder="Optional, e.g. Owner" />
           </div>
           <FTextArea name="ownerBio" label="Owner: a little description" rows={5} maxLength={1500} defaultValue={pages.ownerBio ?? ""} placeholder={SAMPLE_OWNER.bio} hint="Plain text, a few sentences. Separate paragraphs with a blank line. Leave all three blank to show a labelled outline." />
           <SubmitButton>Save page content</SubmitButton>

@@ -19,7 +19,7 @@ const STEP = 80;
 export default async function AboutPage() {
   const [pages, business] = await Promise.all([getPageContent(), getBusinessSettings()]);
   const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
-  const ownerRole = pages.ownerRole?.trim() || SAMPLE_OWNER.role;
+  const ownerRole = pages.ownerRole?.trim() || null;
   const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
   return (
     <>
@@ -56,7 +56,7 @@ export default async function AboutPage() {
             <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
               {ownerName}
             </h2>
-            <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p>
+            {ownerRole ? <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
             <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
               {ownerBio.split(/\n{2,}/).map((para, i) => (
                 <p key={i}>{para.trim()}</p>
