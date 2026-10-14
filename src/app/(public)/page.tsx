@@ -376,7 +376,7 @@ export default async function HomePage() {
                         {reach.length > 0 ? (
                           <ul className="space-y-1">
                             {reach.map((r) => (
-                              <li key={r.label}>
+                              <li key={r.href}>
                                 <a href={r.href} className="transition-colors hover:text-text" {...(r.label === "WhatsApp" ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
                                   {r.value}
                                   {r.label === "WhatsApp" ? <span className="sr-only"> (opens in a new tab)</span> : null}
