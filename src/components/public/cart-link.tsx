@@ -9,10 +9,7 @@ export function CartLink({ onClick }: { onClick?: () => void }) {
   const { count } = useCart();
   return (
     <Link href="/cart" className="cart" onClick={onClick} aria-label={count ? `Your cart, ${count} ${count === 1 ? "item" : "items"}` : "Your cart, empty"}>
-      <ShoppingBag aria-hidden="true" className="size-4" strokeWidth={1.5} />
-      <span className="max-sm:sr-only" aria-hidden="true">
-        Cart
-      </span>
+      <ShoppingBag aria-hidden="true" className="size-5" strokeWidth={1.5} />
       {count > 0 ? <span className="cart-count">{count > 99 ? "99+" : count}</span> : null}
     </Link>
   );

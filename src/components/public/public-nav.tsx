@@ -69,10 +69,7 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
         </nav>
         <CartLink onClick={() => setOpen(false)} />
         <Link href={accountHref} className="cart acct" aria-label="Account" onClick={() => setOpen(false)}>
-          <User aria-hidden="true" className="size-4" strokeWidth={1.5} />
-          <span className="max-sm:sr-only" aria-hidden="true">
-            Account
-          </span>
+          <User aria-hidden="true" className="size-5" strokeWidth={1.5} />
         </Link>
       </div>
     </header>
