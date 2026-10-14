@@ -82,7 +82,7 @@ export default async function AboutPage() {
           <ol className="mt-14 space-y-14 md:space-y-20">
             {PROCESS.map((st, i) => (
               <li key={st.title} className="grid items-center gap-6 md:grid-cols-2 md:gap-14">
-                <Reveal variant="wipe" className={i % 2 === 1 ? "md:order-2" : ""}>
+                <Reveal variant={i % 2 === 0 ? "left" : "right"} className={i % 2 === 1 ? "md:order-2" : ""}>
                   <div className="zoom-frame aspect-[4/3]">
                     <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
                   </div>
