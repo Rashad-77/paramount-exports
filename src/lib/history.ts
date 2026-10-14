@@ -23,6 +23,8 @@ export function parseHistory(text: string | null | undefined): Milestone[] {
     .map(([when, title, ...rest]) => ({ when: when!, title: title!, body: rest.join(" ") || null }));
 }
 
+export const DEFAULT_HISTORY_INTRO = "Where the workshop started, how it has grown, and what we make today. The milestones below tell the story in order.";
+
 /** Shown, labelled as a draft, until the business writes its own history. */
 export const SAMPLE_HISTORY: Milestone[] = [
   { when: "Year", title: "How it began", body: "Tell the story of how the workshop started and who started it." },

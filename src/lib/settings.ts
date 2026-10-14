@@ -88,9 +88,11 @@ export const pagesSchema = z.object({
   testimonials: z.string().max(6000).nullable(),
   /** The business history for the About page, as plain text; see parseHistory. */
   history: z.string().max(6000).nullable(),
+  /** A short paragraph under the history heading. */
+  historyIntro: z.string().max(600).nullable(),
 });
 export type PageContent = z.infer<typeof pagesSchema>;
-export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null, testimonials: null, history: null };
+export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: null, testimonials: null, history: null, historyIntro: null };
 
 export const getPageContent = cache(async (): Promise<PageContent> => {
   if (!hasDatabase()) return DEFAULT_PAGES;

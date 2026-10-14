@@ -2,6 +2,7 @@ import { ActionForm, FTextArea, SubmitButton } from "@/components/forms/action-f
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import { DEFAULT_HISTORY_INTRO } from "@/lib/history";
 import { DEFAULT_ABOUT, DEFAULT_PRIVACY, DEFAULT_TERMS } from "@/lib/default-pages";
 import { getSettingsForAdmin } from "@/server/settings";
 import { updatePagesAction } from "../settings/actions";
@@ -29,6 +30,7 @@ export default async function WebsitePage() {
             placeholder={'"The table is exactly what we asked for."\n— Name, Town\n\n"Another review."\n— Name, Town'}
             hint="Only add reviews that customers have really given you. One review per block, separated by a blank line; put the quote first and, on the last line, a dash then the name and town. Leave blank to show no reviews."
           />
+          <FTextArea name="historyIntro" label="Our history: short description (About page)" rows={3} defaultValue={pages.historyIntro ?? ""} placeholder={DEFAULT_HISTORY_INTRO} hint="A sentence or two under the heading. Leave blank to show the standard line." />
           <FTextArea
             name="history"
             label="Our history (About page)"

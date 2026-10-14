@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { parseHistory, SAMPLE_HISTORY } from "@/lib/history";
+import { DEFAULT_HISTORY_INTRO, parseHistory, SAMPLE_HISTORY } from "@/lib/history";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
@@ -53,7 +53,8 @@ export default async function AboutPage() {
             <h2 id="history-title" className="font-display mt-3 text-headline text-brand">
               How we got here.
             </h2>
-            {sample ? <p className="mt-4 text-[0.9375rem] leading-relaxed text-text-muted">Draft outline: the business history will be written here.</p> : null}
+            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">{pages.historyIntro?.trim() || DEFAULT_HISTORY_INTRO}</p>
+            {sample ? <p className="mt-3 text-[0.8125rem] text-text-muted">Draft outline: the real milestones will be added here.</p> : null}
           </Reveal>
           <ol className="history mt-12">
             {milestones.map((m, i) => (
