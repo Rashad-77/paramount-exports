@@ -119,7 +119,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
   }, [auto, pxPerSecond, setWidth]);
 
   const btn =
-    "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/85 text-black shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
+    "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center text-black shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
 
   return (
     <>
