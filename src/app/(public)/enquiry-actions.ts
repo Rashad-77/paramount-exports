@@ -8,6 +8,7 @@ import { clientIp } from "@/lib/rate-limit";
 import { activeCustomer } from "@/lib/auth/customer";
 import { enquirySchema } from "@/lib/schemas/enquiry";
 import { submitEnquiry } from "@/server/messages";
+import { notifyNewMessage } from "@/server/notify";
 
 const THANKS = (ref: string) =>
   `We have received your enquiry (reference ${ref}). Someone from the team will contact you using the details you gave.`;
@@ -29,7 +30,8 @@ export async function submitEnquiryAction(_prev: ActionState, formData: FormData
         throw validation("We could not confirm you are a person. Please try again.");
       }
 
-      const { reference } = await submitEnquiry(input, { ip, accountId: (await activeCustomer())?.id ?? null });
+      const { id, reference } = await submitEnquiry(input, { ip, accountId: (await activeCustomer())?.id ?? null });
+      notifyNewMessage(id);
       return { message: THANKS(reference) };
     },
     { public: true },

@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 
 export interface CascadeGroup {
   slug: string;
@@ -23,6 +23,7 @@ export function GlassCascade({ label, allLabel, groups, value, onChange }: { lab
   const [side, setSide] = useState<number | null>(null); // the group whose list is open
   const [sideActive, setSideActive] = useState(0); // 0 is "All <group>", then its categories
   const [inSide, setInSide] = useState(false);
+  const [sideTop, setSideTop] = useState(0); // how far down the main list the open group sits, so its list starts level with it
 
   const mainCount = groups.length + 1;
   const groupAt = (i: number) => (i > 0 ? groups[i - 1] : undefined);
@@ -32,6 +33,12 @@ export function GlassCascade({ label, allLabel, groups, value, onChange }: { lab
   const owner = groups.find((g) => g.slug === value || g.children.some((c) => c.slug === value));
   const chosen = value ? (owner?.slug === value ? owner.name : (owner?.children.find((c) => c.slug === value)?.name ?? allLabel)) : allLabel;
   const isSelected = (g?: CascadeGroup) => (g ? owner?.slug === g.slug : value === "");
+
+  useLayoutEffect(() => {
+    if (side === null) return;
+    const row = root.current?.querySelector<HTMLElement>(`[id="${id}-m${side}"]`);
+    if (row) setSideTop(row.offsetTop);
+  }, [side, id]);
 
   useEffect(() => {
     if (!open) return;
@@ -173,7 +180,7 @@ export function GlassCascade({ label, allLabel, groups, value, onChange }: { lab
             })}
           </ul>
           {sideGroup ? (
-            <ul role="listbox" aria-label={sideGroup.name} className="gs-panel gc-side">
+            <ul role="listbox" aria-label={sideGroup.name} className="gs-panel gc-side" style={{ "--gc-top": `${sideTop}px` } as CSSProperties}>
               <li role="presentation" className="gc-back" onClick={closeSide}>
                 <ChevronLeft aria-hidden="true" className="gc-chev" strokeWidth={1.75} /> Back
               </li>

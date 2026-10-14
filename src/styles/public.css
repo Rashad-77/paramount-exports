@@ -604,7 +604,6 @@ html:has(.page-body) {
     .glasscard:hover {
       background: rgb(255 255 255 / 0.75);
       border-color: #fff;
-      transform: translate3d(0, -3px, 0);
     }
     .glasscard:hover .go svg {
       transform: translate3d(4px, 0, 0);
@@ -657,33 +656,8 @@ html:has(.page-body) {
       padding-inline: 2.5rem;
     }
   }
-  .ct-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: #f2ede4;
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 520ms var(--ease-out);
-  }
   .ct-ico {
     display: inline-grid;
-    transition: transform 450ms var(--ease-out);
-  }
-  .ct-arrow {
-    transition: transform 350ms var(--ease-out);
-  }
-  @media (hover: hover) {
-    a.ct-card:hover::before {
-      transform: scaleY(1);
-    }
-    a.ct-card:hover .ct-ico {
-      transform: translate3d(0, -4px, 0) scale(1.06);
-    }
-    a.ct-card:hover .ct-arrow {
-      transform: translate3d(4px, 0, 0);
-    }
   }
   .ct-pin {
     position: absolute;
@@ -772,11 +746,6 @@ html:has(.page-body) {
     }
     .ct-ring {
       display: none;
-    }
-    .ct-card::before,
-    .ct-ico,
-    .ct-arrow {
-      transition: none;
     }
   }
 
@@ -1475,19 +1444,9 @@ html:has(.page-body) {
       }
     }
 
-    /* Solid buttons rise a hair and gain a soft shadow; pressing returns them */
+    /* Solid buttons only change colour on hover: they do not move or throw a shadow */
     .btn-solid {
-      transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out), transform 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
-    }
-    @media (hover: hover) {
-      .btn-solid:hover {
-        transform: translate3d(0, -2px, 0);
-        box-shadow: 0 8px 18px -8px rgb(58 44 35 / 0.45);
-      }
-      .btn-solid:active {
-        transform: none;
-        box-shadow: none;
-      }
+      transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out);
     }
 
     /* Why-choose cells: the icon drifts up and the cell edge warms on hover */
@@ -1555,7 +1514,8 @@ html:has(.page-body) {
   }
   .gc-side {
     left: 100%;
-    top: 100%;
+    /* level with the group that opened it: the main list's own top padding is cancelled so the rows line up exactly */
+    top: calc(100% + var(--gc-top, 0px) - 0.25rem);
     width: max-content;
     min-width: 100%;
     max-width: 22rem;
@@ -1579,6 +1539,7 @@ html:has(.page-body) {
     /* No room beside the list on a phone: the side list slides over it, with a Back row */
     .gc-side {
       left: 0;
+      top: 100%;
       width: 100%;
       max-width: none;
       z-index: 41;

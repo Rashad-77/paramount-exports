@@ -22,6 +22,8 @@ export const businessSchema = z.object({
   whatsapp: z.string().trim().max(40).nullable(),
   address: z.string().trim().max(400).nullable(),
   mapUrl: z.string().url().nullable(),
+  /** Where the website sends an email when an order, quotation request or enquiry comes in. Blank: the business email above. */
+  notifyEmail: z.string().trim().email().nullable(),
   /** Link to the business TikTok page. */
   tiktok: z.string().url().nullable(),
   openingHours: z.string().trim().max(600).nullable(),
@@ -48,10 +50,11 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   phone: "0715500668",
   phoneAlt: "0714099975",
   whatsapp: "0714099975",
-  address: "Paramount Export Industries, Stage 2, Nalanda Ellawala Industrial Zone, Paradise, Kuruwita",
-  mapUrl: null,
+  address: "Nalanda Ellawala Industrial Zone - Stage 2,\nParadise,\nKuruwita,\n70500,\nSri Lanka",
+  mapUrl: "https://www.google.com/maps/place/Paramount+Export+Industries/@6.7602757,80.3677279,17z/data=!4m6!3m5!1s0x3ae3bdd69af2fd0f:0x1505184f2a72a5f7!8m2!3d6.7602757!4d80.3677279",
+  notifyEmail: null,
   tiktok: null,
-  openingHours: null,
+  openingHours: "Monday to Saturday: 8:00 am – 5:00 pm\nSunday: Closed",
   bankDetails: null,
   currency: "LKR", // assumption — to be confirmed with the owner
   timezone: DEFAULT_TIMEZONE, // assumption — to be confirmed with the owner

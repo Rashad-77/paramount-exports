@@ -8,7 +8,7 @@ import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ScrollRow } from "@/components/public/scroll-row";
 import { ButtonLink } from "@/components/ui/button";
-import { whatsappLink } from "@/lib/contact";
+import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { hasDatabase } from "@/lib/env";
 import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
@@ -248,7 +248,7 @@ export default async function HomePage() {
           <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-3">
             {cards.map((c, i) => (
               <Reveal as="li" key={c.key} variant="up" delay={(i % 3) * 70}>
-                <Link href={c.href} className="block h-full bg-[#f4f4f3]">
+                <Link href={c.href} className="block h-full border border-black">
                   <ImagePlaceholder label={`${c.name} — photograph`} className="aspect-[4/5] w-full" compact />
                   <div className="px-4 pb-5 pt-4">
                     <p className="font-display text-[1.2rem] leading-snug text-text">{c.name}</p>
@@ -401,6 +401,7 @@ export default async function HomePage() {
                 </div>
               </div>
               <div className="relative min-h-[14rem] overflow-hidden rounded-2xl bg-[#e4e4e2]">
+                {mapEmbedUrl(business.mapUrl) ? <iframe title="Map showing the showroom" src={mapEmbedUrl(business.mapUrl)!} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" /> : null}
                 {business.address && business.mapUrl ? (
                   <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pill absolute left-3 top-3">
                     Open in maps <ArrowUpRight aria-hidden="true" className="size-3.5" />

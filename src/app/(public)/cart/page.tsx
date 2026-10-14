@@ -38,7 +38,7 @@ export default async function CartPage() {
         ))}
         {Array.from({ length: Math.max(0, CARDS - products.length) }, (_, i) => (
           <div key={`ph-${i}`} className={CARD_W}>
-            <div className="h-full bg-[#f4f4f3]">
+            <div className="h-full border border-black">
               <ImagePlaceholder label="Product photograph" className="aspect-[4/5] w-full" compact />
               <div className="px-4 pb-5 pt-4">
                 <p className="font-display text-[1.2rem] leading-snug text-text">Product to be added</p>

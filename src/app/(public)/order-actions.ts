@@ -8,6 +8,7 @@ import { getAccountSettings } from "@/lib/settings";
 import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guard";
 import { clientIp } from "@/lib/rate-limit";
 import { checkoutSchema } from "@/lib/schemas/orders";
+import { notifyNewOrder } from "@/server/notify";
 import { placeOrder } from "@/server/orders";
 
 /** A visitor places an order. No payment is taken: the customer chooses how they intend to pay and staff confirm. */
@@ -32,7 +33,8 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
       const customer = await activeCustomer();
       if (!customer && (await getAccountSettings()).requiredForCheckout) throw validation("Please sign in or create an account to place your order.");
 
-      const { reference } = await placeOrder(input, { ip, accountId: customer?.id ?? null });
+      const { id, reference } = await placeOrder(input, { ip, accountId: customer?.id ?? null });
+      notifyNewOrder(id);
       return { redirectTo: `/order/confirmed?ref=${encodeURIComponent(reference)}&pay=${input.paymentMethod}&how=${input.fulfilment}` };
     },
     { public: true },

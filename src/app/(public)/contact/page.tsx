@@ -7,7 +7,7 @@ import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
-import { whatsappLink } from "@/lib/contact";
+import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
 import { getBusinessSettings } from "@/lib/settings";
 
@@ -48,6 +48,7 @@ function Channel({ icon: Icon, title, value, href, cta, external = false }: { ic
 export default async function ContactPage() {
   const b = await getBusinessSettings();
   const mapped = Boolean(b.address && b.mapUrl);
+  const embed = mapEmbedUrl(b.mapUrl);
   const channels = [
     { icon: Phone, title: "Call us", value: b.phone ? [b.phone, b.phoneAlt].filter(Boolean).join("  ·  ") : null, href: b.phone ? `tel:${b.phone.replace(/\s+/g, "")}` : null, cta: "Call now" },
     { icon: WhatsAppIcon, title: "WhatsApp", value: b.whatsapp, href: b.whatsapp ? whatsappLink(b.whatsapp, b.phoneCountryCode) : null, cta: "Start a chat", external: true },
@@ -76,16 +77,20 @@ export default async function ContactPage() {
       <section aria-labelledby="visit-title">
         <Reveal variant="wipe">
           <div className="relative h-[24rem] bg-[#e4e4e2]">
-            {b.mapUrl ? (
-              <a href={b.mapUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Open the showroom location in maps (opens in a new tab)" />
-            ) : null}
-            <ImagePlaceholder label="Map of the showroom" className="size-full" compact />
-            <span className="ct-ring" aria-hidden="true" />
-            <span className="ct-ring" aria-hidden="true" />
-            <span className="ct-pin" aria-hidden="true">
-              <MapPin className="size-6" strokeWidth={1.5} />
-            </span>
-            {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
+            {embed ? (
+              <iframe title="Map showing the showroom" src={embed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" />
+            ) : (
+              <>
+                {b.mapUrl ? <a href={b.mapUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Open the showroom location in maps (opens in a new tab)" /> : null}
+                <ImagePlaceholder label="Map of the showroom" className="size-full" compact />
+                <span className="ct-ring" aria-hidden="true" />
+                <span className="ct-ring" aria-hidden="true" />
+                <span className="ct-pin" aria-hidden="true">
+                  <MapPin className="size-6" strokeWidth={1.5} />
+                </span>
+                {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
+              </>
+            )}
           </div>
         </Reveal>
         <div className="border-b border-[var(--leaf)] bg-white">
