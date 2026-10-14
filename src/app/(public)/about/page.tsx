@@ -10,7 +10,7 @@ import { DEFAULT_ABOUT } from "@/lib/default-pages";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "About and craftsmanship", description: "The people, workshop and craft behind our furniture.", alternates: { canonical: "/about" } };
+export const metadata: Metadata = { title: "About us", description: "Who we are, how we work, and the craft behind our ready-made and made-to-measure wood furniture.", alternates: { canonical: "/about" } };
 export const revalidate = 300;
 
 const STEP = 80;
@@ -27,15 +27,15 @@ export default async function AboutPage() {
   const ownerSample = !pages.ownerName?.trim() && !pages.ownerBio?.trim();
   return (
     <>
-      <PageIntro eyebrow="About us" title="About and craftsmanship" lead="Who we are, what we make, and how a piece comes together in our workshop." brand={business.name} />
+      <PageIntro eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
 
-      {/* Our story: editable text beside a portrait photograph */}
+      {/* Who we are: editable text beside a portrait photograph */}
       <section aria-labelledby="story-title" className="section-y">
         <div className="container-page grid items-center gap-8 md:grid-cols-12 md:gap-12">
           <Reveal className="md:col-span-6">
-            <p className="eyebrow">Our story</p>
+            <p className="eyebrow">Who we are</p>
             <h2 id="story-title" className="font-display mt-3 text-headline text-brand">
-              The people behind the furniture.
+              Furniture made with care, in our own workshop.
             </h2>
             <div className="mt-5">
               <Prose text={pages.about ?? DEFAULT_ABOUT} />
@@ -107,7 +107,7 @@ export default async function AboutPage() {
             <h2 id="process-title" className="font-display mt-4 text-headline text-text">
               From timber to finished piece, step by step.
             </h2>
-            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">Every piece moves through the same sequence of hands and machines, from selecting the board to the final coat of finish. This is how it goes.</p>
+            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">Every piece follows the same careful sequence, from choosing the boards to the final coat of finish. Here is how it comes together.</p>
           </Reveal>
           <ol className="mt-14 space-y-14 md:space-y-20">
             {PROCESS.map((st, i) => (
@@ -134,12 +134,12 @@ export default async function AboutPage() {
       <section aria-labelledby="about-cta" className="glassband">
         <div className="container-page">
           <h2 id="about-cta" className="sr-only">
-            Come and see it for yourself
+            Visit us or ask for a quotation
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
-              { eyebrow: "Ready-made", title: "Come and see it for yourself.", body: "Visit the showroom and sit at the pieces.", href: "/contact", cta: "Plan a visit" },
-              { eyebrow: "Made to measure", title: "Have something built for you.", body: "Tell us about the piece you have in mind.", href: "/custom#quotation", cta: "Request quotation" },
+              { eyebrow: "Ready-made", title: "Visit the showroom.", body: "Come and see the timber, the finishes and the joinery in person, and sit at the pieces.", href: "/contact", cta: "Plan a visit" },
+              { eyebrow: "Made to measure", title: "Have something built for you.", body: "Tell us the piece you have in mind, with its size and wood, and we will quote before we start.", href: "/custom#quotation", cta: "Request quotation" },
             ].map((c, i) => (
               <Reveal key={c.href} variant="fade" delay={i * 60}>
                 <Link href={c.href} className="glasscard group">

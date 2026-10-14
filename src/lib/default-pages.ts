@@ -4,9 +4,11 @@
  */
 export const DRAFT_NOTICE = "Draft text — to be reviewed and replaced by the business before launch.";
 
-export const DEFAULT_ABOUT = `This page is for the story of the business: who is behind the furniture, the workshop, the timber and the methods.
+export const DEFAULT_ABOUT = `We are a woodworking business. We make furniture in two ways: ready-made pieces you can see and buy from our showroom, and made-to-measure pieces built in our workshop to your dimensions, in the wood and finish you choose.
 
-The business will supply this wording. Until then, this placeholder is shown.`;
+Every piece starts with the timber. We pick the boards for the job, cut and join them with care, and finish them by hand, so that a piece looks right on the day it arrives and keeps looking right for years.
+
+You can order online without paying anything: we confirm the details with you, agree the delivery, and you pay on delivery, by bank transfer or at the showroom. If you would rather talk it through, visit the showroom or send us a quotation request.`;
 
 export const DEFAULT_PRIVACY = `## What this website collects
 

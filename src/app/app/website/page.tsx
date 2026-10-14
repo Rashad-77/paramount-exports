@@ -19,7 +19,7 @@ export default async function WebsitePage() {
       <ModuleHeader href="/app/website" />
       <Panel title="Page content" description="Plain text. Separate paragraphs with a blank line; start a line with ## for a heading and with - for a bullet. Leave blank to show the draft text.">
         <ActionForm action={updatePagesAction}>
-          <FTextArea name="about" label="About and craftsmanship" rows={8} defaultValue={pages.about ?? ""} placeholder={DEFAULT_ABOUT} />
+          <FTextArea name="about" label="About us: who we are (About page)" rows={8} defaultValue={pages.about ?? ""} placeholder={DEFAULT_ABOUT} />
           <FTextArea name="privacy" label="Privacy notice" rows={12} defaultValue={pages.privacy ?? ""} placeholder={DEFAULT_PRIVACY.slice(0, 200) + "…"} hint="The draft text describes what this website really collects. Have your final notice reviewed before launch." />
           <FTextArea name="terms" label="Terms" rows={8} defaultValue={pages.terms ?? ""} placeholder={DEFAULT_TERMS.slice(0, 200) + "…"} />
           <FTextArea
