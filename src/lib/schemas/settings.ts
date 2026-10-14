@@ -8,6 +8,7 @@ export const businessFormSchema = z.object({
   tagline: blankToNull(z.string().trim().max(200, "Keep the tagline under 200 characters.")),
   email: blankToNull(z.email("Enter a valid email address.")),
   phone: blankToNull(z.string().trim().max(40)),
+  phoneAlt: blankToNull(z.string().trim().max(40)),
   whatsapp: blankToNull(z.string().trim().max(40)),
   address: blankToNull(z.string().trim().max(400)),
   mapUrl: blankToNull(z.url("Enter a full web address starting with https://").refine((u) => u.startsWith("https://"), "The map link must start with https://")),

@@ -82,6 +82,7 @@ export default async function HomePage() {
   ].slice(0, PRODUCT_ROWS);
   const reach = [
     business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
+    business.phoneAlt ? { icon: Phone, label: "Call us", value: business.phoneAlt, href: `tel:${business.phoneAlt.replace(/\s+/g, "")}` } : null,
     business.email ? { icon: Mail, label: "Email", value: business.email, href: `mailto:${business.email}` } : null,
     business.whatsapp ? { icon: MessageCircle, label: "WhatsApp", value: "WhatsApp", href: whatsappLink(business.whatsapp, business.phoneCountryCode) } : null,
   ].filter((x): x is NonNullable<typeof x> => x !== null);

@@ -14,6 +14,8 @@ const dbUrl = admin ? (() => { const u = new URL(admin); u.pathname = "/e2e_furn
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  // The tests share one small database and a laptop CPU: fewer at once is steadier than the default of half the cores.
+  workers: process.env.CI ? 2 : 4,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   // The first request to each page compiles nothing (production build) but the database round trips are slow on a laptop: leave room.

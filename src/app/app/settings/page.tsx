@@ -27,6 +27,7 @@ export default async function SettingsPage() {
                 <FField name="name" label="Business name" defaultValue={business.name} required />
                 <FField name="tagline" label="Short description" defaultValue={business.tagline ?? ""} hint="Shown under the name and in search results." />
                 <FField name="phone" label="Telephone" type="tel" defaultValue={business.phone ?? ""} />
+                <FField name="phoneAlt" label="Second telephone" type="tel" defaultValue={business.phoneAlt ?? ""} />
                 <FField name="whatsapp" label="WhatsApp number" type="tel" defaultValue={business.whatsapp ?? ""} hint="Visitors can open a chat from the website." />
                 <FField name="email" label="Email" type="email" defaultValue={business.email ?? ""} />
                 <FField name="mapUrl" label="Map link" defaultValue={business.mapUrl ?? ""} hint="Only shown once an address is also entered." />

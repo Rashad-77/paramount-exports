@@ -48,7 +48,7 @@ export default async function ContactPage() {
   const b = await getBusinessSettings();
   const mapped = Boolean(b.address && b.mapUrl);
   const channels = [
-    { icon: Phone, title: "Call us", value: b.phone, href: b.phone ? `tel:${b.phone.replace(/\s+/g, "")}` : null, cta: "Call now" },
+    { icon: Phone, title: "Call us", value: b.phone ? [b.phone, b.phoneAlt].filter(Boolean).join("  ·  ") : null, href: b.phone ? `tel:${b.phone.replace(/\s+/g, "")}` : null, cta: "Call now" },
     { icon: MessageCircle, title: "WhatsApp", value: b.whatsapp, href: b.whatsapp ? whatsappLink(b.whatsapp, b.phoneCountryCode) : null, cta: "Start a chat", external: true },
     { icon: Mail, title: "Email", value: b.email, href: b.email ? `mailto:${b.email}` : null, cta: "Send an email" },
   ];

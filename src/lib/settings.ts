@@ -17,6 +17,8 @@ export const businessSchema = z.object({
   tagline: z.string().trim().max(200).nullable(),
   email: z.string().trim().email().nullable(),
   phone: z.string().trim().max(40).nullable(),
+  /** A second telephone number. */
+  phoneAlt: z.string().trim().max(40).nullable(),
   whatsapp: z.string().trim().max(40).nullable(),
   address: z.string().trim().max(400).nullable(),
   mapUrl: z.string().url().nullable(),
@@ -40,10 +42,11 @@ export const DEFAULT_BUSINESS_NAME = "Paramount Export Industries";
 export const DEFAULT_BUSINESS: BusinessSettings = {
   name: DEFAULT_BUSINESS_NAME,
   tagline: null,
-  email: null,
-  phone: null,
+  email: "paramountkapila@yahoo.com",
+  phone: "0715500668",
+  phoneAlt: "0714099975",
   whatsapp: null,
-  address: null,
+  address: "Paramount Export Industries, Stage 2, Nalanda Ellawala Industrial Zone, Paradise, Kuruwita",
   mapUrl: null,
   openingHours: null,
   bankDetails: null,

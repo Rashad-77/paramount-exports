@@ -118,6 +118,14 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                   </a>
                 </li>
               ) : null}
+              {business.phoneAlt ? (
+                <li>
+                  <a href={`tel:${business.phoneAlt.replace(/\s+/g, "")}`}>
+                    <Phone aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                    {business.phoneAlt}
+                  </a>
+                </li>
+              ) : null}
               {business.email ? (
                 <li>
                   <a href={`mailto:${business.email}`}>
