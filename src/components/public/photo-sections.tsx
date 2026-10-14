@@ -11,16 +11,14 @@ interface MosaicProps {
   eyebrow: string;
   title: string;
   tiles: string[];
-  /** Put the large tile on the right instead of the left. */
-  flip?: boolean;
   link?: { href: string; label: string };
 }
 
 /**
- * A heading, then one large tile and four smaller ones, edge to edge with hairline joins, fading in together.
+ * A heading, then an even grid of equal tiles (three across on wide screens) fading in together.
  * Plain grey stand-ins until the business supplies photographs. Used on the About and Gallery pages.
  */
-function MosaicSection({ id, anchor, eyebrow, title, tiles, flip = false, link }: MosaicProps) {
+function MosaicSection({ id, anchor, eyebrow, title, tiles, link }: MosaicProps) {
   return (
     <section id={anchor} aria-labelledby={id} className="scroll-mt-20 border-t border-border bg-white section-y">
       <div className="container-page">
@@ -38,26 +36,26 @@ function MosaicSection({ id, anchor, eyebrow, title, tiles, flip = false, link }
           ) : null}
         </Reveal>
       </div>
-      <Reveal variant="fade" className="mt-8">
-        <div className="grid auto-rows-[13rem] grid-cols-2 gap-px bg-white md:auto-rows-[19rem] md:grid-cols-4">
+      <div className="container-page mt-10">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {tiles.map((label, i) => (
-            <div key={label} className={i === 0 ? "col-span-2 row-span-2" + (flip ? " md:col-start-3 md:row-start-1" : "") : ""}>
-              <ImagePlaceholder label={label} className="size-full" compact />
-            </div>
+            <Reveal as="li" key={label} variant="fade" delay={(i % 3) * 70}>
+              <ImagePlaceholder label={label} className="aspect-[4/3] w-full" compact />
+            </Reveal>
           ))}
-        </div>
-      </Reveal>
+        </ul>
+      </div>
     </section>
   );
 }
 
-const WORKSHOP_TILES = ["Workshop — the bench", "Workshop — tools", "Workshop — a piece in progress", "Workshop — sanding", "Workshop — the finishing room"];
-const SHOWROOM_TILES = ["Showroom — the main floor", "Showroom — dining tables", "Showroom — seating", "Showroom — storage", "Showroom — the entrance"];
+const WORKSHOP_TILES = ["Workshop — the bench", "Workshop — tools", "Workshop — a piece in progress", "Workshop — sanding", "Workshop — the finishing room", "Workshop — the timber store"];
+const SHOWROOM_TILES = ["Showroom — the main floor", "Showroom — dining tables", "Showroom — seating", "Showroom — storage", "Showroom — the entrance", "Showroom — finishes and samples"];
 
 export function WorkshopSection({ id, link }: { id: string; link?: MosaicProps["link"] }) {
   return <MosaicSection id={id} anchor="workshop" eyebrow="The workshop" title="Inside the workshop." tiles={WORKSHOP_TILES} link={link} />;
 }
 
 export function ShowroomSection({ id, link }: { id: string; link?: MosaicProps["link"] }) {
-  return <MosaicSection id={id} anchor="showroom" eyebrow="The showroom" title="Inside the showroom." tiles={SHOWROOM_TILES} flip link={link} />;
+  return <MosaicSection id={id} anchor="showroom" eyebrow="The showroom" title="Inside the showroom." tiles={SHOWROOM_TILES} link={link} />;
 }

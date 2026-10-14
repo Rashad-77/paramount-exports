@@ -72,7 +72,7 @@ export default async function AboutPage() {
       </section>
 
       {/* The workshop, in pictures */}
-      <WorkshopSection id="pictures-title" link={{ href: "/gallery#gallery", label: "See more in the gallery" }} />
+      <WorkshopSection id="pictures-title" />
 
       {/* The process in full: a picture and a proper explanation for every step (the homepage links here) */}
       <section id="process" aria-labelledby="process-title" className="scroll-mt-24 border-t border-border bg-white section-y">
