@@ -91,16 +91,14 @@ export default function CustomPage() {
             <h2 id="examples-title" className="font-display mt-3 text-headline text-brand">
               Custom pieces, made to measure
             </h2>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-text-muted">Photographs of finished custom pieces will appear here.</p>
           </Reveal>
           <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {EXAMPLES.map((e, i) => (
               <Reveal as="li" key={e.title} delay={(i % 3) * 80}>
-                <div className="zoom-frame round-xl aspect-[4/3]">
+                <div className="zoom-frame aspect-[4/3]">
                   <ImagePlaceholder label={`Custom example — ${e.title}`} className="size-full" compact />
                 </div>
                 <h3 className="font-display mt-4 text-[1.15rem] leading-snug text-text">{e.title}</h3>
-                <p className="mt-1 text-[0.8125rem] text-text-muted">{e.note}</p>
               </Reveal>
             ))}
           </ul>
@@ -111,10 +109,10 @@ export default function CustomPage() {
 }
 
 const EXAMPLES = [
-  { title: "A dining table built to size", note: "Made to the room it sits in." },
-  { title: "Fitted storage", note: "Cut to fit the space exactly." },
-  { title: "Joinery detail", note: "How the joints are made." },
-  { title: "A finish sample", note: "Stain and sheen, chosen with you." },
-  { title: "A piece in its room", note: "Finished and in place." },
-  { title: "Workshop progress", note: "From timber to finished piece." },
+  { title: "A dining table built to size" },
+  { title: "Fitted storage" },
+  { title: "Joinery detail" },
+  { title: "A finish sample" },
+  { title: "A piece in its room" },
+  { title: "Workshop progress" },
 ];
