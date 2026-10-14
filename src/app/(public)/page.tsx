@@ -5,7 +5,7 @@ import { HeroVideo } from "@/components/public/hero-video";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ScrollRow } from "@/components/public/scroll-row";
-import { SiteImage } from "@/components/public/site-image";
+import { ProductCard } from "@/components/public/product-card";
 import { ButtonLink } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/contact";
 import { hasDatabase } from "@/lib/env";
@@ -13,7 +13,7 @@ import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 import { parseTestimonials } from "@/lib/testimonials";
-import { listGalleryProjects, listPublicCategories } from "@/server/catalogue-public";
+import { listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -23,7 +23,7 @@ const STEP = 90;
 /** The product rows: always this many, with grey labelled placeholders making up the difference. */
 const PRODUCT_ROWS = 5;
 const PLACEHOLDER_ROWS = ["Chairs", "Tables", "Storage", "Beds", "Sofas"];
-const PROJECT_TILES = 12;
+const PRODUCT_CARDS = 8;
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -67,11 +67,11 @@ const SERVICES = [
 const CARD_W = "w-[78%] shrink-0 snap-start sm:w-[47%] lg:w-[31%]";
 
 export default async function HomePage() {
-  const [business, pages, categories, projects] = await Promise.all([
+  const [business, pages, categories, featured] = await Promise.all([
     getBusinessSettings(),
     getPageContent(),
     safe(() => listPublicCategories(), []),
-    safe(() => listGalleryProjects(), []),
+    safe(async () => (await listPublicProducts({ sort: "newest" })).items.slice(0, PRODUCT_CARDS), []),
   ]);
   const reviews = parseTestimonials(pages.testimonials);
   const real = categories.filter((c) => c.count > 0).slice(0, PRODUCT_ROWS).map((c) => ({ key: c.id, name: c.name, href: `/products?category=${c.slug}`, note: `${c.count} ${c.count === 1 ? "piece" : "pieces"}` }));
@@ -79,10 +79,6 @@ export default async function HomePage() {
     ...real,
     ...PLACEHOLDER_ROWS.filter((n) => !real.some((r) => r.name.toLowerCase().includes(n.toLowerCase().slice(0, 4)))).map((n) => ({ key: `ph-${n}`, name: n, href: "/products", note: "Photograph to be supplied" })),
   ].slice(0, PRODUCT_ROWS);
-  const projectTiles = [
-    ...projects.flatMap((p) => p.images.slice(0, 1).map((img) => ({ id: img.id, title: p.title, url: img.url, alt: img.alt || p.title }))),
-    ...Array.from({ length: PROJECT_TILES }, (_, i) => ({ id: `ph-${i}`, title: `Project ${i + 1}`, url: "", alt: "" })),
-  ].slice(0, PROJECT_TILES);
   const reach = [
     business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
     business.email ? { icon: Mail, label: "Email", value: business.email, href: `mailto:${business.email}` } : null,
@@ -233,23 +229,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. Our projects */}
+      {/* 6. Browse the category: product cards, newest first */}
       <section aria-labelledby="projects-title" className="sec sec-cream">
         <div className="container-page">
-          <Head id="projects-title" eyebrow="Completed work" title="Our Projects" intro="A selection of finished pieces and the rooms they went into." />
+          <Head id="projects-title" eyebrow="Our collection" title="Browse the category" intro="Ready-made pieces from the showroom. Open one to see its options and price." />
           <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {projectTiles.map((p, i) => (
+            {featured.map((p, i) => (
               <Reveal as="li" key={p.id} variant="fade" delay={(i % 4) * 70}>
-                <Link href="/gallery" className="group zoom-frame round-lg relative block aspect-[4/5]">
-                  {p.url ? <SiteImage src={p.url} alt={p.alt} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" /> : <ImagePlaceholder label={`${p.title} — photograph`} className="size-full" compact />}
-                  <span className="sr-only">{p.title}</span>
-                </Link>
+                <ProductCard product={p} currency={business.currency} />
+              </Reveal>
+            ))}
+            {Array.from({ length: Math.max(0, PRODUCT_CARDS - featured.length) }, (_, i) => (
+              <Reveal as="li" key={`ph-${i}`} variant="fade" delay={((featured.length + i) % 4) * 70}>
+                <div className="h-full bg-[#f4f4f3]">
+                  <ImagePlaceholder label="Product photograph" className="aspect-[4/5] w-full" compact />
+                  <div className="px-4 pb-5 pt-4">
+                    <p className="font-display text-[1.2rem] leading-snug text-text">Product to be added</p>
+                    <p className="mt-1.5 text-[0.8125rem] text-text-muted">Details to be supplied</p>
+                  </div>
+                </div>
               </Reveal>
             ))}
           </ul>
           <div className="mt-10">
-            <Link href="/gallery" className="link-arrow text-text">
-              See the gallery <ArrowRight aria-hidden="true" className="size-3.5" />
+            <Link href="/products" className="link-arrow text-text">
+              See the full collection <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
           </div>
         </div>
