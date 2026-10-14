@@ -1,6 +1,8 @@
-/** Shown, labelled as a draft, until the business supplies the owner's own introduction. */
+/** The owner introduction shown on the About page until the owner writes their own in Website content. */
 export const SAMPLE_OWNER = {
-  name: "Owner name",
-  role: "Owner and founder",
-  bio: "A short introduction to the person behind the business: how they came to woodworking, what they care about in a well-made piece, and what a customer can expect when they deal with them directly.",
+  name: "Mr. Kapila Bandara",
+  role: "Owner",
+  bio: "Mr. Kapila Bandara is the owner of Paramount Export Industries. The business has worked with timber in Kuruwita since 2006, and he takes an active part in running it, from the first conversation with a customer to the final check before a piece leaves the workshop.
+
+He believes good furniture comes from good materials, careful joinery and an honest price, and he is glad to talk any piece through with you in person. If you would like to speak to him about an order or a made-to-measure piece, call us or send a quotation request.",
 };

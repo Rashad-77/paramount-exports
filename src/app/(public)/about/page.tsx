@@ -21,7 +21,6 @@ export default async function AboutPage() {
   const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
   const ownerRole = pages.ownerRole?.trim() || SAMPLE_OWNER.role;
   const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
-  const ownerSample = !pages.ownerName?.trim() && !pages.ownerBio?.trim();
   return (
     <>
       <PageIntro eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
@@ -63,7 +62,6 @@ export default async function AboutPage() {
                 <p key={i}>{para.trim()}</p>
               ))}
             </div>
-            {ownerSample ? <p className="mt-5 text-[0.8125rem] text-text-muted">Draft outline: the owner&apos;s introduction and photograph will be added here.</p> : null}
           </Reveal>
         </div>
       </section>
