@@ -391,7 +391,7 @@ export async function createGalleryProject(actor: Actor, input: GalleryProjectIn
   return withTx(async (tx) => {
     const [g] = await tx
       .insert(galleryProjects)
-      .values({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder })
+      .values({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
       .returning({ id: galleryProjects.id });
     await recordAudit(tx, actor, { action: "gallery.created", entityType: "gallery_project", entityId: g!.id, after: { title: input.title } });
     return g!.id;
@@ -405,7 +405,7 @@ export async function updateGalleryProject(actor: Actor, id: string, input: Gall
     if (!before) throw notFound("That project could not be found.");
     await tx
       .update(galleryProjects)
-      .set({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder })
+      .set({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
       .where(eq(galleryProjects.id, id));
     await recordAudit(tx, actor, { action: "gallery.updated", entityType: "gallery_project", entityId: id, before: { title: before.title, isPublished: before.isPublished }, after: { title: input.title, isPublished: input.isPublished } });
   });

@@ -32,6 +32,22 @@ async function waitForFormReady(page: Page) {
   await page.waitForTimeout(3300);
 }
 
+test.describe("gallery category chooser", () => {
+  test("sits beside the heading, and a category with no projects says so", async ({ page }) => {
+    await page.goto("/gallery");
+    await page.waitForLoadState("networkidle");
+    const chooser = page.getByRole("combobox", { name: /^category/i });
+    await expect(chooser).toBeVisible();
+    await chooser.click();
+    await page.getByRole("option", { name: "Dining Tables" }).click();
+    await expect(page.getByText(/no projects in this category yet/i)).toBeVisible();
+    await chooser.click();
+    await page.getByRole("option", { name: "All categories" }).click();
+    await expect(page.getByText(/no projects in this category yet/i)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /view larger/i }).first()).toBeVisible();
+  });
+});
+
 test.describe("homepage reviews row", () => {
   test("drifts along continuously, with no step or jump, and stops while the pointer is on it", async ({ page }) => {
     await page.goto("/");

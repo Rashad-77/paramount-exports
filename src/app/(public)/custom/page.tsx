@@ -98,7 +98,7 @@ export default function CustomPage() {
                 <div className="zoom-frame aspect-[4/3]">
                   <ImagePlaceholder label={`Custom example — ${e.title}`} className="size-full" compact />
                 </div>
-                <h3 className="font-display mt-4 text-[1.15rem] leading-snug text-text">{e.title}</h3>
+                <h3 className="mt-4 text-center text-[0.75rem] font-medium uppercase leading-snug tracking-[0.16em] text-text">{e.title}</h3>
               </Reveal>
             ))}
           </ul>

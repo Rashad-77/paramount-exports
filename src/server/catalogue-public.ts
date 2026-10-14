@@ -225,19 +225,22 @@ async function listGalleryProjectsImpl() {
   if (!hasDatabase()) return [];
   const db = getDb();
   const projects = await db
-    .select()
+    .select({ p: galleryProjects, categorySlug: productCategories.slug })
     .from(galleryProjects)
+    .leftJoin(productCategories, eq(productCategories.id, galleryProjects.categoryId))
     .where(and(eq(galleryProjects.isPublished, true), isNull(galleryProjects.archivedAt)))
     .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.completedOn), desc(galleryProjects.createdAt));
   if (projects.length === 0) return [];
+  const rows = projects.map((r) => ({ ...r.p, categorySlug: r.categorySlug }));
   const imgs = await db
     .select({ projectId: galleryImages.projectId, id: galleryImages.id, alt: galleryImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: galleryImages.position })
     .from(galleryImages)
     .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryImages.fileId))
-    .where(and(inArray(galleryImages.projectId, projects.map((p) => p.id)), eq(uploadedFiles.status, "linked")))
+    .where(and(inArray(galleryImages.projectId, rows.map((p) => p.id)), eq(uploadedFiles.status, "linked")))
     .orderBy(asc(galleryImages.position));
-  return projects.map((p) => ({
+  return rows.map((p) => ({
     id: p.id,
+    categorySlug: p.categorySlug,
     title: p.title,
     description: p.description,
     completedOn: p.completedOn,

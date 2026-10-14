@@ -8,7 +8,7 @@ import { PageHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
 import { requireActor } from "@/lib/auth/session";
 import { isAppError } from "@/lib/errors";
-import { getGalleryProjectAdmin } from "@/server/catalogue";
+import { getGalleryProjectAdmin, listCategories } from "@/server/catalogue";
 import { addGalleryImagesAction, archiveGalleryAction, removeGalleryImageAction, updateGalleryAction } from "../actions";
 
 export const metadata = { title: "Gallery project" };
@@ -16,6 +16,7 @@ export const metadata = { title: "Gallery project" };
 export default async function GalleryProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
+  const categories = (await listCategories(actor)).filter((c) => !c.archivedAt);
   let data;
   try {
     data = await getGalleryProjectAdmin(actor, id);
@@ -30,7 +31,7 @@ export default async function GalleryProjectPage({ params }: { params: Promise<{
       {project.archivedAt ? <Alert tone="warning" title="Archived" className="mb-6">This project is hidden from the website.</Alert> : null}
       <div className="min-w-0 space-y-6">
         <Panel title="Details">
-          <GalleryForm action={updateGalleryAction} submitLabel="Save changes" values={{ id: project.id, title: project.title, description: project.description, completedOn: project.completedOn, isPublished: project.isPublished, sortOrder: project.sortOrder }} />
+          <GalleryForm action={updateGalleryAction} submitLabel="Save changes" values={{ id: project.id, title: project.title, description: project.description, completedOn: project.completedOn, isPublished: project.isPublished, sortOrder: project.sortOrder, categoryId: project.categoryId }} categories={categories} />
         </Panel>
         <Panel title="Photographs">
           {images.length > 0 ? (

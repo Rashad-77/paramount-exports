@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { GlassSelect } from "./glass-select";
 import { SiteImage } from "./site-image";
 
 export type GalleryCategory = "showroom" | "workshop" | "projects";
@@ -15,6 +16,8 @@ export interface GalleryItem {
   caption: string;
   /** Width ÷ height of the frame. Varied across items so the columns stagger. */
   ratio: number;
+  /** The product category of the project, or null for stand-ins and uncategorised projects. */
+  categorySlug: string | null;
 }
 
 const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", workshop: "Workshop", projects: "Project" };
@@ -23,12 +26,13 @@ const CATEGORY_LABEL: Record<GalleryCategory, string> = { showroom: "Showroom", 
  * One gallery for everything: a staggered masonry of frames, and a full-screen viewer (native <dialog>: focus is
  * trapped, Esc closes, arrow keys move). Frames are grey stand-ins until real photographs are supplied.
  */
-export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
+export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[]; categories?: Array<{ slug: string; name: string }> }) {
+  const [category, setCategory] = useState("");
   const [open, setOpen] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
-  const shown = items;
+  const shown = category ? items.filter((i) => i.categorySlug === category) : items;
 
   const show = (i: number) => {
     opener.current = document.activeElement as HTMLElement | null;
@@ -55,9 +59,14 @@ export function GalleryBrowser({ items }: { items: GalleryItem[] }) {
           <p className="eyebrow">The gallery</p>
           <h2 className="font-display mt-3 text-headline text-brand">Our work, up close.</h2>
         </div>
+        {categories.length > 0 ? (
+          <GlassSelect label="Category" value={category} onChange={setCategory} options={[{ value: "", label: "All categories" }, ...categories.map((c) => ({ value: c.slug, label: c.name }))]} />
+        ) : null}
       </div>
 
-      <ul className="gal-grid mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {shown.length === 0 ? <p className="mt-10 text-text-muted">No projects in this category yet. Choose another, or see all categories.</p> : null}
+
+      <ul key={category} className="gal-grid mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((item, i) => (
           <li key={item.id}>
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>

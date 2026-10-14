@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { slugify } from "@/lib/contact";
 import { validation } from "@/lib/errors";
-import { checkbox, enumOf, idList, optEnum, optMoney, optText, reqText, reqUuid, slug } from "@/lib/validation";
+import { checkbox, enumOf, idList, optEnum, optMoney, optText, optUuid, reqText, reqUuid, slug } from "@/lib/validation";
 
 export const PRODUCT_KINDS = ["stocked", "made_to_order"] as const;
 export const AVAILABILITY = ["in_stock", "made_to_order", "on_request", "sold"] as const;
@@ -84,6 +84,7 @@ export const galleryProjectSchema = z.object({
   completedOn: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
   isPublished: checkbox,
   sortOrder: z.preprocess((v) => (v === "" || v === undefined ? 0 : Number(v)), z.number().int().min(0).max(9999)),
+  categoryId: optUuid("category"),
 });
 export type GalleryProjectInput = z.output<typeof galleryProjectSchema>;
 

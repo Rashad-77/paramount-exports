@@ -3,13 +3,13 @@ import { GalleryBrowser, type GalleryItem } from "@/components/public/gallery-br
 import { HeroVideo } from "@/components/public/hero-video";
 import { ButtonLink } from "@/components/ui/button";
 import { GALLERY_VIDEO } from "@/lib/home-media";
-import { listGalleryProjects } from "@/server/catalogue-public";
+import { listGalleryProjects, listPublicCategories } from "@/server/catalogue-public";
 
 export const metadata: Metadata = { title: "Gallery", description: "Completed furniture projects.", alternates: { canonical: "/gallery" } };
 export const revalidate = 300;
 
 export default async function GalleryPage() {
-  const projects = await listGalleryProjects();
+  const [projects, categories] = await Promise.all([listGalleryProjects(), listPublicCategories()]);
   const items = buildItems(projects);
   return (
     <>
@@ -28,7 +28,7 @@ export default async function GalleryPage() {
       </section>
       <section id="gallery" aria-label="Photographs" className="scroll-mt-20 bg-white section-y">
         <div className="container-page">
-          <GalleryBrowser items={items} />
+          <GalleryBrowser items={items} categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
           <div className="mt-16 flex flex-col items-start gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-md text-base leading-relaxed text-text-muted">Want something like this made for you? Tell us the piece you have in mind.</p>
             <div className="flex flex-wrap gap-3">
@@ -52,10 +52,10 @@ const PROJECT_FRAMES = 12;
 
 /** Real project photographs when there are any; grey stand-ins make up the rest so the page is never empty. */
 function buildItems(projects: Awaited<ReturnType<typeof listGalleryProjects>>): GalleryItem[] {
-  const real: GalleryItem[] = projects.flatMap((p) => p.images.map((img) => ({ id: img.id, category: "projects" as const, src: img.url, alt: img.alt || p.title, caption: p.title, ratio: RATIO })));
+  const real: GalleryItem[] = projects.flatMap((p) => p.images.map((img) => ({ id: img.id, category: "projects" as const, src: img.url, alt: img.alt || p.title, caption: p.title, ratio: RATIO, categorySlug: p.categorySlug })));
   const spare: GalleryItem[] = Array.from({ length: Math.max(0, PROJECT_FRAMES - real.length) }, (_, i) => {
     const caption = `Project ${real.length + i + 1}`;
-    return { id: `projects-${i}`, category: "projects" as const, src: null, alt: caption, caption, ratio: RATIO };
+    return { id: `projects-${i}`, category: "projects" as const, src: null, alt: caption, caption, ratio: RATIO, categorySlug: null };
   });
   return [...real, ...spare];
 }
