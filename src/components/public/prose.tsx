@@ -53,10 +53,10 @@ export function PageIntro({ title, lead, eyebrow, action, brand }: { title: stri
         ) : null}
         </div>
         {brand ? (
-          // The brand name, large, at the right of the band. On narrow screens the header already shows it.
-          <p aria-hidden="true" className="rise-in rise-in-3 hidden shrink-0 text-right lg:block">
-            <span className="font-display block text-[clamp(2.5rem,1rem+4.2vw,4.75rem)] font-light uppercase leading-none tracking-[0.2em] text-white/90">{brandFirst}</span>
-            {brandRest.length ? <span className="mt-3 block text-[clamp(0.75rem,0.4rem+0.7vw,1.1rem)] font-light uppercase tracking-[0.42em] text-[var(--leaf)]">{brandRest.join(" ")}</span> : null}
+          // The brand name as in the header (same font, weights and spacing), a little larger, centred against the heading.
+          <p aria-hidden="true" className="rise-in rise-in-3 hidden shrink-0 self-center text-right lg:grid lg:gap-[0.55rem]">
+            <span className="block text-[clamp(1.5rem,0.9rem+1.6vw,2.25rem)] font-semibold uppercase leading-none tracking-[0.26em] text-white">{brandFirst}</span>
+            {brandRest.length ? <span className="block text-[clamp(0.6rem,0.5rem+0.25vw,0.78rem)] font-normal uppercase tracking-[0.3em] text-white/75">{brandRest.join(" ")}</span> : null}
           </p>
         ) : null}
       </div>
