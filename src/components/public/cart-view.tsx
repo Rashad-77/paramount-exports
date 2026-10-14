@@ -2,6 +2,7 @@
 
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { SiteImage } from "@/components/public/site-image";
 import { ButtonLink } from "@/components/ui/button";
@@ -10,24 +11,29 @@ import { dec, formatMoney } from "@/lib/money";
 import { MAX_QTY } from "@/lib/order-constants";
 
 /** The order basket: change quantities, remove things, see the total, go to checkout. */
-export function CartView({ currency }: { currency: string }) {
+export function CartView({ currency, suggestions }: { currency: string; suggestions?: ReactNode }) {
   const { items, subtotal, setQuantity, remove } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <ShoppingBag aria-hidden="true" className="mx-auto size-10 text-brand" strokeWidth={1.25} />
-        <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
-        <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like.</p>
-        <ButtonLink href="/products" size="cta" className="mt-6">
-          Browse the collection
-        </ButtonLink>
-      </div>
+      <>
+        <div className="container-page py-[var(--section-space)]">
+          <div className="mx-auto max-w-md text-center">
+            <ShoppingBag aria-hidden="true" className="mx-auto size-10 text-brand" strokeWidth={1.25} />
+            <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
+            <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like.</p>
+            <ButtonLink href="/products" size="cta" className="mt-6">
+              Browse the collection
+            </ButtonLink>
+          </div>
+        </div>
+        {suggestions}
+      </>
     );
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+    <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-[1.6fr_1fr] lg:items-start">
       <ul className="divide-y divide-border border-y border-border" aria-label="Items in your order">
         {items.map((i) => (
           <li key={i.variantId} className="flex gap-4 py-5">
