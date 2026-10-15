@@ -3669,3 +3669,18 @@ a.acct-row {
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
 }
+
+/* Order tracking: the facts and the order summary share one card. */
+.ot-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 39.99rem) {
+  .ot-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.ot-summary {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
