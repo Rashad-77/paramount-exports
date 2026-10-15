@@ -3416,12 +3416,12 @@ a.acct-row {
   text-transform: none;
 }
 .pdp-page .pdp-lead {
-  font-size: 1rem;
+  font-size: 0.875rem;
   line-height: 1.7;
 }
 .pdp-page .pdp-prose,
 .pdp-page .pdp-list li {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 }
 .pdp-page .pp-actions button,
 .pdp-page .ask-btn,
