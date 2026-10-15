@@ -753,3 +753,16 @@ html:has(.app-ui) {
 .app-ui [role="region"][tabindex="0"]::-webkit-scrollbar-track {
   background: #fff;
 }
+
+/* Phones: the search box and its button each take the full width. */
+@media (max-width: 39.99rem) {
+  .app-search > div,
+  .app-search > button {
+    width: 100%;
+    min-width: 0 !important;
+    flex: 1 1 100%;
+  }
+  .app-search > button {
+    min-height: 2.5rem;
+  }
+}
