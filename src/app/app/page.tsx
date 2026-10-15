@@ -61,13 +61,13 @@ export default async function DashboardPage() {
 
       <div className="dash-grid">
         <Figure label="Total sales, last 30 days" value={formatMoney(d.last30.value, d.currency)} hint={`${d.last30.orders} ${d.last30.orders === 1 ? "order" : "orders"} · ${formatMoney(d.last30.paid, d.currency)} paid`} />
-        <Figure label="New orders" value={d.counts.new} hint={d.counts.new ? "Waiting to be confirmed" : "Nothing waiting"} href="/app/orders?view=new" attention={d.counts.new > 0} />
-        <Figure label="Pending quotations" value={d.pendingQuotations} hint={d.pendingQuotations ? "Waiting for a price" : "Nothing waiting"} href="/app/quotations?status=requested" attention={d.pendingQuotations > 0} />
-        <Figure label="Orders in production" value={d.counts.in_progress} hint={`${d.counts.confirmed} confirmed, not started`} href="/app/orders?view=in_progress" />
-        <Figure label="Ready for collection or delivery" value={d.counts.ready + d.counts.out_for_delivery} hint={`${d.counts.out_for_delivery} out for delivery`} href="/app/orders?view=ready" />
-        <Figure label="Awaiting payment" value={d.awaitingPayment} hint="Orders not marked as paid" href="/app/orders?view=unpaid" />
-        <Figure label="Upcoming deliveries" value={d.upcomingDeliveriesCount} hint="Delivery orders not yet completed" href="/app/delivery" />
-        <Figure label="New enquiries" value={d.newEnquiries} hint={d.newEnquiries ? "Waiting for an answer" : "All answered"} href="/app/enquiries?state=new" attention={d.newEnquiries > 0} />
+        <Figure label="New orders" value={d.counts.new} href="/app/orders?view=new" attention={d.counts.new > 0} />
+        <Figure label="Pending quotations" value={d.pendingQuotations} href="/app/quotations?status=requested" attention={d.pendingQuotations > 0} />
+        <Figure label="Orders in production" value={d.counts.in_progress} confirmed, not started`} href="/app/orders?view=in_progress" />
+        <Figure label="Ready for collection or delivery" value={d.counts.ready + d.counts.out_for_delivery} out for delivery`} href="/app/orders?view=ready" />
+        <Figure label="Awaiting payment" value={d.awaitingPayment} href="/app/orders?view=unpaid" />
+        <Figure label="Upcoming deliveries" value={d.upcomingDeliveriesCount} href="/app/delivery" />
+        <Figure label="New enquiries" value={d.newEnquiries} href="/app/enquiries?state=new" attention={d.newEnquiries > 0} />
       </div>
 
       <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[1.5fr_1fr]">
