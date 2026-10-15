@@ -123,10 +123,10 @@ export default async function DeliveryPage({
               <tr>
                 <TH>Order</TH>
                 <TH>Customer</TH>
-                <TH className="hidden md:table-cell">Order content</TH>
+                <TH>Order content</TH>
                 <TH className="text-right">Qty</TH>
-                <TH className="hidden md:table-cell">Status</TH>
-                <TH className="hidden md:table-cell">
+                <TH>Status</TH>
+                <TH>
                   {v.fulfilment === "delivery" ? "Deliver to" : "Collection"}
                 </TH>
                 <TH>
@@ -153,7 +153,7 @@ export default async function DeliveryPage({
                     <div className="font-medium">{r.customerName}</div>
                     <div className="text-text-muted">{r.phone}</div>
                   </TD>
-                  <TD className="hidden max-w-[16rem] md:table-cell">
+                  <TD className="max-w-[16rem]">
                     {r.contents ? (
                       <span className="line-clamp-3 whitespace-pre-line">
                         {r.contents}
@@ -163,10 +163,10 @@ export default async function DeliveryPage({
                     )}
                   </TD>
                   <TD numeric>{r.itemCount}</TD>
-                  <TD className="hidden md:table-cell">
+                  <TD>
                     <OrderTag status={r.status} />
                   </TD>
-                  <TD className="hidden max-w-xs md:table-cell">
+                  <TD className="max-w-xs">
                     <span className="line-clamp-2 whitespace-pre-line">
                       {r.fulfilment === "delivery" ? r.address : "Showroom"}
                     </span>

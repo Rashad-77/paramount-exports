@@ -91,11 +91,9 @@ export default async function QuotationsPage({
                 <tr>
                   <TH>Request</TH>
                   <TH>Customer</TH>
-                  <TH className="hidden md:table-cell">Status</TH>
-                  <TH className="hidden lg:table-cell text-right">
-                    Price sent
-                  </TH>
-                  <TH className="hidden lg:table-cell">Received</TH>
+                  <TH>Status</TH>
+                  <TH className="text-right">Price sent</TH>
+                  <TH>Received</TH>
                 </tr>
               </THead>
               <tbody>
@@ -126,17 +124,17 @@ export default async function QuotationsPage({
                           <QuoteTag status={st} />
                         </div>
                       </TD>
-                      <TD className="hidden md:table-cell">
+                      <TD>
                         <QuoteTag status={st} />
                       </TD>
-                      <TD numeric className="hidden lg:table-cell">
+                      <TD numeric>
                         {r.quotedAmount ? (
                           formatAmount(r.quotedAmount)
                         ) : (
                           <span className="text-text-muted">—</span>
                         )}
                       </TD>
-                      <TD className="hidden whitespace-nowrap lg:table-cell">
+                      <TD className="whitespace-nowrap">
                         {formatDateTime(r.createdAt, business.timezone)}
                       </TD>
                     </TR>

@@ -63,16 +63,12 @@ export default async function CustomersPage({
               <THead>
                 <tr>
                   <TH>Customer</TH>
-                  <TH className="hidden md:table-cell">Email</TH>
+                  <TH>Email</TH>
                   <TH className="text-right">Orders</TH>
-                  <TH className="text-right hidden lg:table-cell">
-                    Quotations
-                  </TH>
-                  <TH className="text-right hidden lg:table-cell">Enquiries</TH>
-                  <TH className="text-right hidden sm:table-cell">
-                    Ordered in total
-                  </TH>
-                  <TH className="hidden lg:table-cell">Last contact</TH>
+                  <TH className="text-right">Quotations</TH>
+                  <TH className="text-right">Enquiries</TH>
+                  <TH className="text-right">Ordered in total</TH>
+                  <TH>Last contact</TH>
                 </tr>
               </THead>
               <tbody>
@@ -92,18 +88,12 @@ export default async function CustomersPage({
                         </div>
                       ) : null}
                     </TD>
-                    <TD className="hidden md:table-cell">{c.email ?? "—"}</TD>
+                    <TD>{c.email ?? "—"}</TD>
                     <TD numeric>{c.orders}</TD>
-                    <TD numeric className="hidden lg:table-cell">
-                      {c.quotations}
-                    </TD>
-                    <TD numeric className="hidden lg:table-cell">
-                      {c.enquiries}
-                    </TD>
-                    <TD numeric className="hidden sm:table-cell">
-                      {formatAmount(c.spent)}
-                    </TD>
-                    <TD className="hidden whitespace-nowrap lg:table-cell">
+                    <TD numeric>{c.quotations}</TD>
+                    <TD numeric>{c.enquiries}</TD>
+                    <TD numeric>{formatAmount(c.spent)}</TD>
+                    <TD className="whitespace-nowrap">
                       {formatDate(c.lastContactAt, business.timezone)}
                     </TD>
                   </TR>

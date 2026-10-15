@@ -87,9 +87,9 @@ export default async function EnquiriesPage({
                 <tr>
                   <TH>Enquiry</TH>
                   <TH>From</TH>
-                  <TH className="hidden md:table-cell">Type</TH>
-                  <TH className="hidden md:table-cell">State</TH>
-                  <TH className="hidden lg:table-cell">Received</TH>
+                  <TH>Type</TH>
+                  <TH>State</TH>
+                  <TH>Received</TH>
                 </tr>
               </THead>
               <tbody>
@@ -119,11 +119,9 @@ export default async function EnquiriesPage({
                         <div className="text-text-muted">{r.phone}</div>
                         <div className="mt-1 md:hidden">{badge}</div>
                       </TD>
-                      <TD className="hidden md:table-cell">
-                        {MESSAGE_KIND_LABEL[r.kind] ?? r.kind}
-                      </TD>
-                      <TD className="hidden md:table-cell">{badge}</TD>
-                      <TD className="hidden whitespace-nowrap lg:table-cell">
+                      <TD>{MESSAGE_KIND_LABEL[r.kind] ?? r.kind}</TD>
+                      <TD>{badge}</TD>
+                      <TD className="whitespace-nowrap">
                         {formatDateTime(r.createdAt, business.timezone)}
                       </TD>
                     </TR>

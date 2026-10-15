@@ -124,11 +124,11 @@ export default async function OrdersPage({
                   <TH className="w-10 text-right">No.</TH>
                   <TH>Order</TH>
                   <TH>Customer</TH>
-                  <TH className="hidden md:table-cell">Order content</TH>
+                  <TH>Order content</TH>
                   <TH className="text-right">Qty</TH>
 
                   <TH className="text-right">Total ({business.currency})</TH>
-                  <TH className="hidden xl:table-cell">Placed</TH>
+                  <TH>Placed</TH>
                 </tr>
               </THead>
               <tbody>
@@ -152,7 +152,7 @@ export default async function OrdersPage({
                         <OrderTag status={r.status} />
                       </div>
                     </TD>
-                    <TD className="hidden max-w-[16rem] md:table-cell">
+                    <TD className="max-w-[16rem]">
                       {r.contents ? (
                         <span className="line-clamp-3 whitespace-pre-line">
                           {r.contents}
@@ -164,7 +164,7 @@ export default async function OrdersPage({
                     <TD numeric>{r.itemCount}</TD>
 
                     <TD numeric>{formatAmount(r.total)}</TD>
-                    <TD className="hidden whitespace-nowrap xl:table-cell">
+                    <TD className="whitespace-nowrap">
                       {formatDateTime(r.createdAt, business.timezone)}
                     </TD>
                   </TR>
