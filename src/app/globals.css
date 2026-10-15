@@ -195,10 +195,10 @@
   }
   /* Rounded photograph frames, as on the product cards and the project grid */
   .round-xl {
-    border-radius: 1.5rem;
+    border-radius: 0;
   }
   .round-lg {
-    border-radius: 1.25rem;
+    border-radius: 0;
   }
   .zoom-frame > * {
     transition: transform var(--duration-slow) var(--ease-out);

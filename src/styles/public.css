@@ -1097,7 +1097,7 @@ html:has(.page-body) {
   /* Rounded cards on a light ground (the three ordering steps) and on dark (the two places to visit) */
   .soft-card {
     border: 1px solid var(--color-border);
-    border-radius: 1.5rem;
+    border-radius: 0;
     background: var(--color-ivory);
     padding: clamp(1.5rem, 3vw, 2.25rem);
   }
@@ -1236,7 +1236,7 @@ html:has(.page-body) {
     min-height: 2.25rem;
     padding: 0 2rem 0 0.9rem;
     border: 0;
-    border-radius: 3px;
+    border-radius: 0;
     outline: none;
     background-color: #fff;
     background-image: var(--chev);
@@ -1317,7 +1317,7 @@ html:has(.page-body) {
     background-color: transparent;
     background-image: var(--chev), var(--glass);
     background-position: right 0.9rem center, 0 0;
-    border-radius: 3px 3px 0 0;
+    border-radius: 0;
     box-shadow: none;
     -webkit-backdrop-filter: saturate(1.6) blur(20px);
     backdrop-filter: saturate(1.6) blur(20px);
@@ -1329,7 +1329,7 @@ html:has(.page-body) {
     z-index: 40;
     width: 100%;
     padding: 0.25rem 0 0.4rem;
-    border-radius: 0 0 3px 3px;
+    border-radius: 0;
     background: var(--glass);
     -webkit-backdrop-filter: saturate(1.6) blur(20px);
     backdrop-filter: saturate(1.6) blur(20px);
@@ -1514,7 +1514,7 @@ html:has(.page-body) {
     width: max-content;
     min-width: 100%;
     max-width: 22rem;
-    border-radius: 0 0 3px 0;
+    border-radius: 0;
     box-shadow: 16px 16px 34px -12px rgb(60 40 20 / 0.45);
     animation: gc-side-in 220ms var(--ease-out) both;
   }
@@ -1538,7 +1538,7 @@ html:has(.page-body) {
       width: 100%;
       max-width: none;
       z-index: 41;
-      border-radius: 0 0 3px 3px;
+      border-radius: 0;
       box-shadow: 0 16px 34px -12px rgb(60 40 20 / 0.45);
     }
     .gc-back {
@@ -1798,7 +1798,7 @@ html:has(.page-body) {
   min-height: 3.25rem;
   padding-inline: 1rem;
   border: 1px solid var(--pf-line);
-  border-radius: 3px;
+  border-radius: 0;
   background-color: #fff;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.875rem;
@@ -1909,7 +1909,7 @@ html:has(.page-body) {
   height: 1.25rem;
   margin-top: 0.1rem;
   border: 1px solid rgb(28 25 22 / 0.45);
-  border-radius: 2px;
+  border-radius: 0;
   background: #fff center / 0.8rem no-repeat;
   transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
   cursor: pointer;
@@ -1927,7 +1927,7 @@ html:has(.page-body) {
 .page-body main form:not(.cat-bar) input[type="file"] {
   padding: 0.9rem 1rem;
   border: 1px dashed var(--pf-line-hover);
-  border-radius: 3px;
+  border-radius: 0;
   background: #faf8f5;
   font-size: 0.875rem;
   transition: border-color 250ms var(--ease-out), background-color 250ms var(--ease-out);
@@ -1940,7 +1940,7 @@ html:has(.page-body) {
   margin-right: 1rem;
   padding: 0.6rem 1.1rem;
   border: 1px solid #331c11;
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -1994,7 +1994,7 @@ html:has(.page-body) {
   min-height: 2.75rem;
   padding: 0 1rem;
   border: 1px solid rgb(28 25 22 / 0.14);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -2036,7 +2036,7 @@ html:has(.page-body) {
     padding: 0.5rem;
     overflow: visible;
     border: 1px solid rgb(28 25 22 / 0.12);
-    border-radius: 3px;
+    border-radius: 0;
     background: #fff;
   }
   .acct-nav a,
@@ -2072,7 +2072,7 @@ html:has(.page-body) {
 }
 .acct-card {
   border: 1px solid rgb(28 25 22 / 0.12);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   padding: clamp(1.25rem, 3vw, 2rem);
 }
@@ -2125,7 +2125,7 @@ html:has(.page-body) {
   display: block;
   padding: 1.25rem 1.25rem 1.1rem;
   border: 1px solid rgb(28 25 22 / 0.12);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   transition: border-color 250ms var(--ease-out);
 }
@@ -2301,7 +2301,7 @@ a.acct-row {
   padding: 2.25rem 1rem;
   text-align: center;
   border: 1px dashed rgb(28 25 22 / 0.22);
-  border-radius: 3px;
+  border-radius: 0;
   color: var(--color-text-muted);
 }
 .acct-empty p {
@@ -2324,7 +2324,7 @@ a.acct-row {
   display: grid;
   gap: 0.35rem;
   padding: clamp(1.25rem, 3vw, 2rem);
-  border-radius: 3px;
+  border-radius: 0;
   background: #331c11;
   color: #fff;
 }
@@ -2451,7 +2451,7 @@ a.acct-row {
   gap: 0.6rem;
   padding: 1.5rem;
   border: 1px solid rgb(28 25 22 / 0.14);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
 }
 .acct-address[data-default] {
@@ -2515,7 +2515,7 @@ a.acct-row {
   min-height: 3rem;
   padding: 0 1.25rem;
   border: 1px solid rgb(28 25 22 / 0.3);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -2553,8 +2553,8 @@ a.acct-row {
   right: 10px;
   z-index: 3;
   display: flex;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
   margin: 0;
@@ -2569,8 +2569,8 @@ a.acct-row {
   transition: box-shadow 200ms var(--ease-out);
 }
 .wish svg {
-  width: 15px;
-  height: 15px;
+  width: 12px;
+  height: 12px;
   fill: #ffc4d9;
   stroke: #1c1916;
   stroke-width: 1.4;
@@ -2603,23 +2603,23 @@ a.acct-row {
   top: 12px;
   right: 12px;
   z-index: 4;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 .wish-photo svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 @media (max-width: 47.99rem) {
   .wish-photo {
     top: 8px;
     right: 8px;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
   .wish-photo svg {
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
   }
 }
 /* The sale strip across the bottom of a card's photograph */
@@ -2671,7 +2671,7 @@ a.acct-row {
   box-sizing: border-box;
   margin: 0 0 0.5rem;
   padding: 0.6rem 1rem;
-  border-radius: 3px;
+  border-radius: 0;
   background: #ffd400;
   color: #1c1916;
   font-size: 0.8125rem;
@@ -2706,7 +2706,7 @@ a.acct-row {
 }
 .ot-card {
   border: 1px solid rgb(28 25 22 / 0.12);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   padding: clamp(1.25rem, 3vw, 2rem);
 }
@@ -2997,7 +2997,7 @@ a.acct-row {
   min-height: 2.75rem;
   padding: 0 1rem;
   border: 1px solid rgb(28 25 22 / 0.25);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
   font-size: 0.875rem;
   color: #1c1916;
@@ -3042,7 +3042,7 @@ a.acct-row {
   display: inline-flex;
   align-items: center;
   border: 1px solid rgb(28 25 22 / 0.25);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
 }
 .pp-qty button {
@@ -3246,7 +3246,7 @@ a.acct-row {
   margin-top: 3.5rem;
   scroll-margin-top: 6rem;
   border: 1px solid rgb(28 25 22 / 0.14);
-  border-radius: 3px;
+  border-radius: 0;
   background: #fff;
 }
 .ask-head {
@@ -3275,7 +3275,7 @@ a.acct-row {
   min-height: 3rem;
   padding: 0 1.5rem;
   border: 1px solid #331c11;
-  border-radius: 3px;
+  border-radius: 0;
   background: transparent;
   font-size: 0.6875rem;
   font-weight: 600;
