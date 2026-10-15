@@ -172,21 +172,16 @@ html:has(.page-body) {
   .phead .cart:hover {
     color: #7a3d1c;
   }
-  .phead .cart-count {
+  /* Something is in the cart: a small red dot on the corner of the bag (the exact count is in the link's label for screen readers) */
+  .phead .cart-dot {
     position: absolute;
-    top: 0.35rem;
-    right: 0;
-    min-width: 1.15rem;
-    height: 1.15rem;
-    padding-inline: 0.25rem;
-    display: grid;
-    place-items: center;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1;
-    color: #fff;
-    background: #1c1916;
+    top: 0.7rem;
+    right: -0.1rem;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: #d32f2f;
+    box-shadow: 0 0 0 2px #fff;
   }
   .phead .toggle {
     display: none;
