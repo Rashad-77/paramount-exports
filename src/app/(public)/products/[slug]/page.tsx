@@ -5,7 +5,7 @@ import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductGallery } from "@/components/public/product-gallery";
 import { StatusBadge } from "@/components/ui/status";
 import { publicEnv } from "@/lib/env";
-import { formatMoney } from "@/lib/money";
+import { Price } from "@/components/public/price";
 import { getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct } from "@/server/catalogue-public";
 
@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: Props) {
     image: p.images.map((i) => i.url),
     url: `${site}/products/${p.slug}`,
     // Only describe an offer when the business chose to show prices publicly.
-    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0] } } : {}),
+    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: p.variants.find((v) => v.price)?.salePrice ?? prices[0] } } : {}),
   };
 
   const details: Array<[string, string]> = [
@@ -73,7 +73,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-10">
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <ProductGallery images={p.images} name={p.name} />
+          <ProductGallery images={p.images} name={p.name} productId={p.id} onSale={p.variants.some((v) => v.salePrice)} />
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{p.categoryName}</p>
@@ -102,7 +102,12 @@ export default async function ProductPage({ params }: Props) {
                     <li key={v.id}>
                       {p.variants.length > 1 ? `${v.label} · ` : ""}
                       <span className="tabular">{v.sku}</span>
-                      {v.price ? ` · ${formatMoney(v.price, business.currency)}` : ""}
+                      {v.price ? (
+                        <>
+                          {" · "}
+                          <Price price={v.price} salePrice={v.salePrice} currency={business.currency} />
+                        </>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

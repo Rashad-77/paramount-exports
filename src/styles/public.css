@@ -475,3 +475,92 @@ html:has(.page-body) {
     }
   }
 }
+
+/* ── Wishlist heart and sale pricing ───────────────────────────────────────────────── */
+@layer components {
+  /* Heart: a small white square on the photograph, top right. Outline when idle, filled brown once saved. */
+  .wish {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-brand);
+    cursor: pointer;
+    transition: background-color 200ms, color 200ms, border-color 200ms;
+  }
+  .wish svg {
+    width: 1rem;
+    height: 1rem;
+    fill: transparent;
+    transition: fill 200ms;
+  }
+  /* Larger tap area than the visible square */
+  .wish::before {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
+  }
+  .wish[aria-pressed="true"] {
+    background: var(--color-brand);
+    border-color: var(--color-brand);
+    color: #fff;
+  }
+  .wish[aria-pressed="true"] svg {
+    fill: currentColor;
+  }
+  @media (hover: hover) {
+    .wish:hover {
+      border-color: var(--color-brand);
+      background: var(--color-mint);
+    }
+    .wish[aria-pressed="true"]:hover {
+      background: var(--color-brand-dark);
+    }
+  }
+  .wish-lg {
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .wish-lg svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Sale strip: flush along the bottom edge of the photograph */
+  .badge-sale {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.75rem;
+    background: var(--color-brand);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Sale prices: the old price faded and struck through, the new price in red */
+  .price-was {
+    margin-right: 0.4em;
+    font-weight: 400;
+    opacity: 0.6;
+  }
+  .price-now {
+    text-decoration: none;
+    background: none;
+    color: var(--color-danger);
+  }
+}

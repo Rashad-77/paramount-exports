@@ -65,12 +65,20 @@ export type ProductInput = z.output<typeof productSchema>;
 export const productUpdateSchema = productBase.omit({ sku: true, listPrice: true }).superRefine(availabilityRule);
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
-export const variantSchema = z.object({
+export const variantBase = z.object({
   sku: z.string({ error: "SKU is required." }).trim().min(1, "SKU is required.").max(60).regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dots, hyphens and underscores only."),
   label: reqText("Option name", 80),
   listPrice: optMoney("Price"),
+  salePrice: optMoney("Sale price"),
   isActive: checkbox,
 });
+/** A sale price needs a normal price and must be lower than it. Apply with `.superRefine` after any `.extend`. */
+export const variantRules = (v: { listPrice?: string; salePrice?: string }, ctx: z.RefinementCtx) => {
+  if (!v.salePrice) return;
+  if (!v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter the normal price too, or clear the sale price." });
+  else if (Number(v.salePrice) >= Number(v.listPrice)) ctx.addIssue({ code: "custom", path: ["salePrice"], message: "The sale price must be lower than the normal price." });
+};
+export const variantSchema = variantBase.superRefine(variantRules);
 export type VariantInput = z.output<typeof variantSchema>;
 
 export const imagesSchema = z.object({

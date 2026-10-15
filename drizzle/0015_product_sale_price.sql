@@ -1,0 +1,2 @@
+ALTER TABLE "product_variants" ADD COLUMN "sale_price" numeric(14, 2);--> statement-breakpoint
+ALTER TABLE "product_variants" ADD CONSTRAINT "product_variants_sale_below_list" CHECK ("product_variants"."sale_price" IS NULL OR ("product_variants"."list_price" IS NOT NULL AND "product_variants"."sale_price" >= 0 AND "product_variants"."sale_price" < "product_variants"."list_price"));

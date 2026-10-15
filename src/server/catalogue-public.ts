@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, exists, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
 import { galleryImages, galleryProjects, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
@@ -28,7 +28,10 @@ export interface PublicCard {
   dimensions: string | null;
   imageUrl: string | null;
   imageAlt: string | null;
+  /** Normal price of the cheapest option. */
   fromPrice: string | null;
+  /** Reduced price of that option while it is on sale. */
+  salePrice: string | null;
   availability: string | null;
 }
 
@@ -51,13 +54,18 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     firstImages(ids),
     ids.length
       ? getDb()
-          .select({ productId: productVariants.productId, min: sql<string | null>`min(${productVariants.listPrice})` })
+          .select({ productId: productVariants.productId, list: productVariants.listPrice, sale: productVariants.salePrice })
           .from(productVariants)
-          .where(and(inArray(productVariants.productId, ids), eq(productVariants.isActive, true)))
-          .groupBy(productVariants.productId)
+          .where(and(inArray(productVariants.productId, ids), eq(productVariants.isActive, true), isNotNull(productVariants.listPrice)))
       : Promise.resolve([]),
   ]);
-  const priceBy = new Map(prices.map((p) => [p.productId, p.min]));
+  // The cheapest option, counting its sale price when it has one.
+  const priceBy = new Map<string, { list: string; sale: string | null }>();
+  for (const v of prices) {
+    const now = Number(v.sale ?? v.list);
+    const best = priceBy.get(v.productId);
+    if (!best || now < Number(best.sale ?? best.list)) priceBy.set(v.productId, { list: v.list!, sale: v.sale });
+  }
   return rows.map((r) => ({
     id: r.id,
     slug: r.slug,
@@ -68,7 +76,8 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     dimensions: r.dimensions,
     imageUrl: images.get(r.id)?.url ?? null,
     imageAlt: images.get(r.id)?.alt ?? null,
-    fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!) : null,
+    fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!.list) : null,
+    salePrice: r.showPrice && priceBy.get(r.id)?.sale ? moneyString(priceBy.get(r.id)!.sale!) : null,
     availability: r.showAvailability && r.availability ? AVAILABILITY_LABEL[r.availability] : null,
   }));
 }
@@ -216,7 +225,7 @@ async function getPublicProductImpl(slugValue: string) {
     seoDescription: p.seoDescription,
     availability: p.showAvailability && p.availability ? AVAILABILITY_LABEL[p.availability] : null,
     images: images.map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
-    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null })),
+    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, salePrice: p.showPrice && v.listPrice && v.salePrice ? moneyString(v.salePrice) : null })),
     updatedAt: p.updatedAt,
   };
 }

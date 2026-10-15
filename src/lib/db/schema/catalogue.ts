@@ -72,6 +72,8 @@ export const productVariants = pgTable(
     sku: text("sku").notNull().unique(),
     label: text("label").notNull().default("Standard"),
     listPrice: numeric("list_price", { precision: 14, scale: 2 }),
+    /** Reduced price while the option is on sale; always below the list price. */
+    salePrice: numeric("sale_price", { precision: 14, scale: 2 }),
     /** Set when stock is tracked for this option (ready-made orders require it). One option ↔ one inventory item. */
     inventoryItemId: uuid("inventory_item_id")
       .references(() => inventoryItems.id, { onDelete: "restrict" })
@@ -80,7 +82,9 @@ export const productVariants = pgTable(
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
   },
-  (t) => [index("product_variants_product_idx").on(t.productId), check("product_variants_price_nonneg", sql`${t.listPrice} IS NULL OR ${t.listPrice} >= 0`)],
+  (t) => [index("product_variants_product_idx").on(t.productId), check("product_variants_price_nonneg", sql`${t.listPrice} IS NULL OR ${t.listPrice} >= 0`),
+    check("product_variants_sale_below_list", sql`${t.salePrice} IS NULL OR (${t.listPrice} IS NOT NULL AND ${t.salePrice} >= 0 AND ${t.salePrice} < ${t.listPrice})`),
+  ],
 );
 
 export const productImages = pgTable(

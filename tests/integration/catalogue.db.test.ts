@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Actor } from "@/lib/auth/permissions";
-import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
+import { productSchema, productUpdateSchema, variantSchema } from "@/lib/schemas/catalogue";
 import {
   addVariant,
   attachGalleryImages,
@@ -14,6 +14,7 @@ import {
   setCategoryArchived,
   setProductArchived,
   updateProduct,
+  updateVariant,
 } from "@/server/catalogue";
 import { getPublicProduct, listGalleryProjects, listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
 import { hasTestDb } from "../helpers/db";
@@ -106,6 +107,21 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     await addVariant(manager, id, { sku: "CT-1-DK", label: "Dark finish", listPrice: undefined, isActive: true });
     await expect(addVariant(manager, id, { sku: "CT-1-DK", label: "Dup", listPrice: undefined, isActive: true })).rejects.toMatchObject({ code: "CONFLICT" });
     expect((await getPublicProduct("coffee-table"))!.variants.map((v) => v.label)).toEqual(["Standard", "Dark finish"]);
+  });
+
+  it("shows a sale price only below the normal price, and only when prices are public", async () => {
+    const id = await createProduct(manager, prod({ name: "Sale Stool", categoryId: tablesId, sku: "SS-1", listPrice: "1000", isPublished: "on", showPrice: "on" }));
+    const [v] = await t.sql`SELECT id FROM product_variants WHERE product_id = ${id}`;
+    const base = { sku: "SS-1", label: "Standard", listPrice: "1000", isActive: "on" };
+    expect(variantSchema.safeParse({ ...base, salePrice: "1000" }).success).toBe(false);
+    expect(variantSchema.safeParse({ ...base, listPrice: "", salePrice: "500" }).success).toBe(false);
+    const ok = variantSchema.parse({ ...base, salePrice: "750" });
+    await updateVariant(manager, v!.id, ok);
+    const card = (await listPublicProducts({ q: "Sale Stool" })).items[0]!;
+    expect([card.fromPrice, card.salePrice]).toEqual(["1000.00", "750.00"]);
+    expect((await getPublicProduct("sale-stool"))!.variants[0]!.salePrice).toBe("750.00");
+    // The database refuses a sale price that is not below the list price, whatever the caller sends.
+    await expect(updateVariant(manager, v!.id, { ...ok, salePrice: "1200.00" })).rejects.toThrow();
   });
 
   it("searches by name, material and SKU, treating % and _ literally", async () => {

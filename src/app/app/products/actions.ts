@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { imagesSchema, productSchema, productUpdateSchema, variantSchema } from "@/lib/schemas/catalogue";
+import { imagesSchema, productSchema, productUpdateSchema, variantBase, variantRules } from "@/lib/schemas/catalogue";
 import { reqUuid } from "@/lib/validation";
 import { addVariant, attachProductImages, createProduct, makeMainImage, removeProductImage, setProductArchived, updateProduct, updateVariant } from "@/server/catalogue";
 
@@ -40,7 +40,7 @@ export async function archiveProductAction(_p: ActionState, fd: FormData): Promi
 }
 
 export async function addVariantAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return runAction(fd, variantSchema.extend({ productId: reqUuid("product") }), async (input, { actor }) => {
+  return runAction(fd, variantBase.extend({ productId: reqUuid("product") }).superRefine(variantRules), async (input, { actor }) => {
     await addVariant(actor!, input.productId, input);
     refresh(input.productId);
     return { message: "Option added." };
@@ -48,7 +48,7 @@ export async function addVariantAction(_p: ActionState, fd: FormData): Promise<A
 }
 
 export async function updateVariantAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return runAction(fd, variantSchema.extend({ variantId: reqUuid("option"), productId: reqUuid("product") }), async (input, { actor }) => {
+  return runAction(fd, variantBase.extend({ variantId: reqUuid("option"), productId: reqUuid("product") }).superRefine(variantRules), async (input, { actor }) => {
     await updateVariant(actor!, input.variantId, input);
     refresh(input.productId);
     return { message: "Option saved." };
