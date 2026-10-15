@@ -23,7 +23,7 @@ export async function ModuleHeader({ href, title, description, actions }: { href
   const tabs = actor ? visibleModuleFor(actor, href) : null;
   return (
     <>
-      <PageHeader title={title ?? m.title} description={description ?? m.description} actions={actions} />
+      <PageHeader title={title ?? m.title} description={description} actions={actions} />
       {tabs ? <ModuleTabs label={tabs.label} pages={tabs.pages} current={href} /> : null}
     </>
   );

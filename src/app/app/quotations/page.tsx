@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { formatMoney } from "@/lib/money";
+import { formatAmount } from "@/lib/money";
 import { QUOTE_STATUSES, isQuoteStatus } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
@@ -131,7 +131,7 @@ export default async function QuotationsPage({
                       </TD>
                       <TD numeric className="hidden lg:table-cell">
                         {r.quotedAmount ? (
-                          formatMoney(r.quotedAmount, business.currency)
+                          formatAmount(r.quotedAmount)
                         ) : (
                           <span className="text-text-muted">—</span>
                         )}

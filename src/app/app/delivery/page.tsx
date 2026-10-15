@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { formatMoney } from "@/lib/money";
+import { formatAmount } from "@/lib/money";
 import { type Fulfilment, type OrderStatus } from "@/lib/schemas/orders";
 import { formatDate } from "@/lib/time";
 import { listOrders } from "@/server/orders";
@@ -93,6 +93,7 @@ export default async function DeliveryPage({
   const countOf = Object.fromEntries(
     KEYS.map((k, i) => [k, counts[i]!.total]),
   ) as Record<View, number>;
+  const currency = result.rows[0]?.currency ?? "LKR";
   const showCharge = view === "charges" || view === "done";
 
   return (
@@ -132,9 +133,9 @@ export default async function DeliveryPage({
                   {v.fulfilment === "delivery" ? "Delivery date" : "Date"}
                 </TH>
                 {showCharge ? (
-                  <TH className="text-right">Delivery charge</TH>
+                  <TH className="text-right">Delivery charge ({currency})</TH>
                 ) : null}
-                <TH className="text-right">Total</TH>
+                <TH className="text-right">Total ({currency})</TH>
               </tr>
             </THead>
             <tbody>
@@ -180,13 +181,13 @@ export default async function DeliveryPage({
                   {showCharge ? (
                     <TD numeric>
                       {Number(r.deliveryCharge) > 0 ? (
-                        formatMoney(r.deliveryCharge, r.currency)
+                        formatAmount(r.deliveryCharge)
                       ) : (
                         <span className="text-text-muted">To be agreed</span>
                       )}
                     </TD>
                   ) : null}
-                  <TD numeric>{formatMoney(r.total, r.currency)}</TD>
+                  <TD numeric>{formatAmount(r.total)}</TD>
                 </TR>
               ))}
             </tbody>

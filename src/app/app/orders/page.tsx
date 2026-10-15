@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { formatMoney } from "@/lib/money";
+import { formatAmount } from "@/lib/money";
 import {
   FULFILMENT_LABEL,
   PAYMENT_LABEL,
@@ -137,7 +137,7 @@ export default async function OrdersPage({
                   <TH className="hidden lg:table-cell">
                     Delivery or collection
                   </TH>
-                  <TH className="text-right">Total</TH>
+                  <TH className="text-right">Total ({business.currency})</TH>
                   <TH className="hidden xl:table-cell">Placed</TH>
                 </tr>
               </THead>
@@ -195,7 +195,7 @@ export default async function OrdersPage({
                         </div>
                       ) : null}
                     </TD>
-                    <TD numeric>{formatMoney(r.total, r.currency)}</TD>
+                    <TD numeric>{formatAmount(r.total)}</TD>
                     <TD className="hidden whitespace-nowrap xl:table-cell">
                       {formatDateTime(r.createdAt, business.timezone)}
                     </TD>

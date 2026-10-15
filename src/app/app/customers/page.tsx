@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, pageOf, type SP } from "@/lib/list-params";
-import { formatMoney } from "@/lib/money";
+import { formatAmount } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/time";
 import { listCustomers } from "@/server/orders";
@@ -101,7 +101,7 @@ export default async function CustomersPage({
                       {c.enquiries}
                     </TD>
                     <TD numeric className="hidden sm:table-cell">
-                      {formatMoney(c.spent, c.currency)}
+                      {formatAmount(c.spent)}
                     </TD>
                     <TD className="hidden whitespace-nowrap lg:table-cell">
                       {formatDate(c.lastContactAt, business.timezone)}
