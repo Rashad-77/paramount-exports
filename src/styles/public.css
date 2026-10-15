@@ -3586,3 +3586,20 @@ a.acct-row {
 .foot-tag {
   font-size: 0.75rem;
 }
+
+/* Footer: smaller still. */
+.foot,
+.foot-list a,
+.foot-list .plain,
+.foot-tag {
+  font-size: 0.6875rem;
+}
+.foot .brand b {
+  font-size: 0.78rem;
+}
+.foot-head {
+  font-size: 0.5625rem;
+}
+.foot-bottom {
+  font-size: 0.5625rem;
+}
