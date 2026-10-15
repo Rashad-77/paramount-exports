@@ -3722,3 +3722,37 @@ a.acct-row {
 .ot-sum-end {
   margin-top: 0.5rem;
 }
+
+/* Order tracking result: smaller type throughout. */
+.ot-ref {
+  font-size: clamp(1.25rem, 3.4vw, 1.5rem);
+}
+.ot-sub,
+.ot-note,
+.ot-help {
+  font-size: 0.75rem;
+}
+.ot-h {
+  font-size: 1.0625rem;
+}
+.ot-facts dd,
+.ot-item,
+.ot-sum dd,
+.ot-sum-total dd {
+  font-size: 0.8125rem;
+}
+.ot-facts dt,
+.ot-sum dt,
+.ot-sum-total dt {
+  font-size: 0.5625rem;
+}
+.ot-step {
+  font-size: 0.5625rem;
+}
+.ot-when {
+  font-size: 0.625rem;
+}
+.ot-thumb {
+  width: 3rem;
+  height: 3rem;
+}
