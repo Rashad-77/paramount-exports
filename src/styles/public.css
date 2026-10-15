@@ -3322,3 +3322,44 @@ a.acct-row {
 .ask-body[hidden] {
   display: none;
 }
+
+/* Header icons: never squeezed narrower than they are, and a wider invisible tap area than the icon itself */
+.phead .cart,
+.phead .toggle {
+  flex: none;
+  position: relative;
+}
+.phead .cart::before,
+.phead .toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0 -0.5rem;
+}
+@media (max-width: 25rem) {
+  .phead .in {
+    gap: 0.9rem;
+  }
+  .phead .cart::before,
+  .phead .toggle::before {
+    inset: 0 -0.35rem;
+  }
+}
+
+/* Touch screens: footer links and tick boxes get a comfortable size to press */
+@media (pointer: coarse) {
+  .foot-list a,
+  .foot-bottom a,
+  .acct-h a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+  }
+  .foot-list {
+    gap: 0.15rem;
+  }
+}
+.page-body main form:not(.cat-bar) input[type="checkbox"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  background-size: 0.95rem;
+}

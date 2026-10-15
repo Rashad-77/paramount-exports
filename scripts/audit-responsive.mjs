@@ -3,8 +3,8 @@
 import { chromium } from "@playwright/test";
 
 const base = "http://localhost:3000";
-const pages = ["/", "/products", "/gallery", "/about", "/contact", "/custom", "/help", "/cart", "/checkout", "/track", "/privacy", "/terms", "/account/sign-in", "/login"];
-const widths = [320, 375, 414, 600, 768, 900, 1024, 1280, 1440, 1920];
+const pages = ["/", "/products", "/products/sample-dining-table-180", "/gallery", "/about", "/contact", "/custom", "/help", "/cart", "/checkout", "/track", "/privacy", "/terms", "/account/sign-in", "/login"];
+const widths = [320, 360, 375, 390, 412, 430, 480, 600, 768, 900, 1024, 1280, 1440, 1920];
 
 const probe = () => {
   const W = innerWidth;

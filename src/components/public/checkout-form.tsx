@@ -26,7 +26,7 @@ const PAYMENT_HELP: Record<PaymentMethod, string> = {
 function Choice({ name, value, checked, onChange, title, help }: { name: string; value: string; checked: boolean; onChange: () => void; title: string; help?: string }) {
   return (
     <label className={"flex cursor-pointer gap-3 border p-4 transition-colors " + (checked ? "border-brand bg-brand/5" : "border-border-strong hover:border-brand")}>
-      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="mt-1 size-4 accent-[var(--color-brand)]" />
+      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="mt-0.5 size-6 shrink-0 accent-[var(--color-brand)]" />
       <span>
         <span className="block text-sm font-semibold">{title}</span>
         {help ? <span className="mt-0.5 block text-sm text-text-muted">{help}</span> : null}
