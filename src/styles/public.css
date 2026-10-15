@@ -3603,3 +3603,31 @@ a.acct-row {
 .foot-bottom {
   font-size: 0.5625rem;
 }
+
+/* Footer: tighter spacing. */
+.foot .foot-grid {
+  gap: 1.25rem 1rem;
+  padding-block: 1.5rem 1.25rem;
+}
+.foot .foot-tag {
+  margin-top: 0.6rem;
+  line-height: 1.5;
+}
+.foot .foot-list {
+  margin-top: 0.6rem;
+  gap: 0.35rem;
+  line-height: 1.35;
+}
+.foot .foot-bottom {
+  gap: 0.25rem 1rem;
+  padding-block: 0.7rem 0.9rem;
+}
+@media (pointer: coarse) {
+  .foot-list a,
+  .foot-bottom a {
+    min-height: 2rem;
+  }
+  .foot-list {
+    gap: 0;
+  }
+}
