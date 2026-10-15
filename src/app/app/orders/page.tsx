@@ -132,6 +132,8 @@ export default async function OrdersPage({
                   <TH className="w-10 text-right">No.</TH>
                   <TH>Order</TH>
                   <TH>Customer</TH>
+                  <TH className="hidden md:table-cell">Order content</TH>
+                  <TH className="text-right">Qty</TH>
                   <TH className="hidden md:table-cell">Status</TH>
                   <TH className="hidden lg:table-cell">Payment</TH>
                   <TH className="hidden lg:table-cell">
@@ -154,9 +156,6 @@ export default async function OrdersPage({
                       >
                         {r.reference}
                       </Link>
-                      <div className="text-xs text-text-muted">
-                        {r.itemCount} {r.itemCount === 1 ? "item" : "items"}
-                      </div>
                     </TD>
                     <TD>
                       <div className="font-medium">{r.customerName}</div>
@@ -167,6 +166,16 @@ export default async function OrdersPage({
                         </StatusBadge>
                       </div>
                     </TD>
+                    <TD className="hidden max-w-[16rem] md:table-cell">
+                      {r.contents ? (
+                        <span className="line-clamp-3 whitespace-pre-line">
+                          {r.contents}
+                        </span>
+                      ) : (
+                        <span className="text-text-muted">No items</span>
+                      )}
+                    </TD>
+                    <TD numeric>{r.itemCount}</TD>
                     <TD className="hidden md:table-cell">
                       <StatusBadge tone={ORDER_STATUS_TONE[r.status]}>
                         {STATUS_LABEL[r.status]}

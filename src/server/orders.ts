@@ -159,6 +159,7 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         scheduledFor: orders.scheduledFor,
         address: orders.address,
         createdAt: orders.createdAt,
+        contents: sql<string>`coalesce((SELECT string_agg(i.product_name || coalesce(' · ' || i.variant_label, ''), E'\n' ORDER BY i.position) FROM online_order_items i WHERE i.order_id = ${orders.id}), '')`,
         itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${orders.id}), 0)`,
       })
       .from(orders)
