@@ -36,7 +36,7 @@ export interface PublicCard {
   availability: string | null;
 }
 
-async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string }>> {
+export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string }>> {
   if (productIds.length === 0) return new Map();
   const rows = await getDb()
     .select({ productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position })

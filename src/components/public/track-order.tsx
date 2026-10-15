@@ -10,6 +10,7 @@ import {
   useFormState,
 } from "@/components/forms/action-form";
 import { OrderStatusPill } from "@/components/public/account-ui";
+import { SiteImage } from "@/components/public/site-image";
 import { Alert } from "@/components/ui/status";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { dec, formatMoney } from "@/lib/money";
@@ -55,10 +56,8 @@ const ORDER = ["new", "confirmed", "in_progress", "delivered"] as const;
 
 function Result({
   timezone,
-  phone,
 }: {
   timezone: string;
-  phone: string | null;
 }) {
   const { state } = useFormState();
   if (!state.ok) return null;
@@ -72,18 +71,16 @@ function Result({
     );
   }
 
-  return <OrderView o={o} timezone={timezone} phone={phone} />;
+  return <OrderView o={o} timezone={timezone} />;
 }
 
 /** One order as its own customer sees it. Used by the number-and-phone lookup and by the signed-in account pages. */
 export function OrderView({
   o,
   timezone,
-  phone,
 }: {
   o: TrackedOrder;
   timezone: string;
-  phone: string | null;
 }) {
   const when = (iso: string | null) =>
     iso ? formatDateTime(iso, timezone) : null;
@@ -99,7 +96,7 @@ export function OrderView({
       className="ot mt-10"
       aria-live="polite"
     >
-      <h2 id="track-result" className="font-display ot-hello">
+      <h2 id="track-result" className="sr-only">
         {o.firstName
           ? `Hello ${o.firstName}, here is your order.`
           : "Here is your order."}
@@ -178,7 +175,21 @@ export function OrderView({
           <ul className="ot-items">
             {o.items.map((i, n) => (
               <li key={n}>
-                <span>
+                <span
+                  className="ot-thumb"
+                  aria-hidden={i.imageUrl ? undefined : "true"}
+                >
+                  {i.imageUrl ? (
+                    <SiteImage
+                      src={i.imageUrl}
+                      alt={i.imageAlt}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </span>
+                <span className="ot-line">
                   <span className="ot-name">{i.name}</span>
                   {i.label ? (
                     <span className="ot-muted"> · {i.label}</span>
@@ -219,13 +230,7 @@ export function OrderView({
       </div>
 
       <p className="ot-help">
-        Need to change something?{" "}
-        {phone ? (
-          <a href={`tel:${phone.replace(/\s+/g, "")}`}>Call us on {phone}</a>
-        ) : (
-          <Link href="/contact">Contact us</Link>
-        )}{" "}
-        and quote {o.reference}.
+        Need to make adjustments? <Link href="/contact">Contact us</Link>
       </p>
     </section>
   );
@@ -235,11 +240,9 @@ export function OrderView({
 export function TrackOrder({
   initialReference,
   timezone,
-  phone,
 }: {
   initialReference?: string;
   timezone: string;
-  phone: string | null;
 }) {
   return (
     <ActionForm action={trackOrderAction}>
@@ -287,7 +290,7 @@ export function TrackOrder({
           Track order
         </SubmitButton>
       </div>
-      <Result timezone={timezone} phone={phone} />
+      <Result timezone={timezone} />
     </ActionForm>
   );
 }

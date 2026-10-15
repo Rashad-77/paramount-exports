@@ -30,7 +30,7 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ r
           All your orders
         </Link>
       </p>
-      <OrderView o={order} timezone={business.timezone} phone={business.phone} />
+      <OrderView o={order} timezone={business.timezone} />
     </div>
   );
 }

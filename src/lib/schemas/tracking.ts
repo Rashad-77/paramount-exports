@@ -41,5 +41,5 @@ export interface TrackedOrder {
   confirmedAt: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;
-  items: Array<{ name: string; label: string | null; quantity: number; lineTotal: string }>;
+  items: Array<{ name: string; label: string | null; quantity: number; lineTotal: string; imageUrl: string | null; imageAlt: string }>;
 }
