@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FileText, Minus, Plus, ShoppingBag } from "lucide-react";
+import { Check, FileText, Minus, Plus, ShoppingBag, Store, Truck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,6 +35,7 @@ export function PurchasePanel({
   mode,
   quote,
   leadTime,
+  deliveryNotes = [],
 }: {
   productName: string;
   productSlug: string;
@@ -44,6 +45,8 @@ export function PurchasePanel({
   mode: "direct" | "quote" | "both";
   quote: QuoteDetails;
   leadTime: string | null;
+  /** Short lines about delivery and collection, shown under the buttons. */
+  deliveryNotes?: string[];
 }) {
   const orderable = options.filter((o) => o.price);
   const [optionId, setOptionId] = useState(options[0]?.id ?? "");
@@ -153,6 +156,7 @@ export function PurchasePanel({
               type="button"
               size="cta"
               variant="secondary"
+              className="pp-flat"
               onClick={() => {
                 addToCart();
                 router.push("/checkout");
@@ -177,6 +181,16 @@ export function PurchasePanel({
           </>
         ) : null}
       </p>
+      {deliveryNotes.length > 0 ? (
+        <ul className="pp-delivery" aria-label="Delivery and collection">
+          {deliveryNotes.map((n, i) => (
+            <li key={n}>
+              {i === 0 ? <Truck aria-hidden="true" strokeWidth={1.5} /> : <Store aria-hidden="true" strokeWidth={1.5} />}
+              <span>{n}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {orderable.length === 0 && mode === "direct" ? <p className="pp-note">Ask us for the price. We reply within one working day.</p> : null}
     </section>
   );

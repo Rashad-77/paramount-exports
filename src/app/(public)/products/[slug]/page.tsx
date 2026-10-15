@@ -33,6 +33,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** The first sentence of a longer text, or its first 180 characters when there is no early full stop. */
+function openingOf(text: string | null): string | null {
+  const t = (text ?? "").replace(/\s+/g, " ").trim();
+  if (!t) return null;
+  const sentence = /^.{1,180}?[.!?](?=\s|$)/.exec(t)?.[0];
+  if (sentence) return sentence;
+  return t.length <= 180 ? t : `${t.slice(0, 180).replace(/\s+\S*$/, "")}…`;
+}
+
 const List = ({ items }: { items: string[] }) => (
   <ul className="pdp-list">
     {items.map((t) => (
@@ -68,6 +77,9 @@ export default async function ProductPage({ params }: Props) {
     const off = percentOff(v.price, v.compare);
     return off && (!best || off > best) ? off : best;
   }, null);
+
+  // The line under the name: the short description, or else the opening of the detailed one.
+  const lead = p.shortDescription ?? openingOf(p.description);
 
   const quote = { productId: p.id, name: p.name, wood: p.material, finish: p.finish, size: p.dimensions };
 
@@ -167,7 +179,7 @@ export default async function ProductPage({ params }: Props) {
   });
 
   return (
-    <>
+    <div className="pdp-page">
       {bestOff ? <p className="sale-bar">Sale · save up to {bestOff}%</p> : null}
       <div className="container-page py-8 md:py-14">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -204,7 +216,7 @@ export default async function ProductPage({ params }: Props) {
                 <StatusBadge tone="neutral">{p.availability}</StatusBadge>
               </p>
             ) : null}
-            {p.shortDescription ? <p className="mt-5 max-w-prose text-base leading-relaxed text-text-muted">{p.shortDescription}</p> : null}
+            {lead ? <p className="mt-5 max-w-prose text-base leading-relaxed text-text-muted">{lead}</p> : null}
 
             <PurchasePanel
               productName={p.name}
@@ -213,6 +225,10 @@ export default async function ProductPage({ params }: Props) {
               currency={business.currency}
               mode={p.purchaseMode}
               leadTime={p.leadTime}
+              deliveryNotes={[
+                "Delivered to your address. The delivery charge is agreed with you when we confirm your order.",
+                business.address ? "Or collect it free from our showroom." : "Or collect it free from the showroom.",
+              ]}
               quote={quote}
               options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare }))}
             />
@@ -254,6 +270,6 @@ export default async function ProductPage({ params }: Props) {
           </section>
         ) : null}
       </div>
-    </>
+    </div>
   );
 }

@@ -2656,7 +2656,7 @@ a.acct-row {
 .sale-bar {
   box-sizing: border-box;
   width: 100%;
-  margin: calc(var(--head-h) + 1px) 0 0; /* sits directly under the fixed header */
+  margin: 0; /* the page wrapper already clears the fixed header */
   padding: 0.8rem 1rem;
   background: #ffd400;
   color: #1c1916;
@@ -3222,4 +3222,43 @@ a.acct-row {
   background: #faf8f5;
   font-size: 0.9375rem;
   line-height: 1.6;
+}
+
+/* The product page sits on plain white, like the footer's opposite */
+.pdp-page {
+  margin-top: calc(var(--head-h) + 1px);
+  min-height: 60vh;
+  background: #fff;
+}
+.pdp-page .ptabs-list button {
+  background: #fff;
+}
+/* The Buy now button keeps its look when the pointer is over it: no fill, no colour change */
+.pp-actions .pp-flat:hover,
+.pp-actions .pp-flat:focus-visible {
+  background-color: transparent;
+  color: var(--color-walnut);
+}
+/* Delivery and collection, just under the buttons */
+.pp-delivery {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0;
+  padding: 1.1rem 0 0;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+  list-style: none;
+}
+.pp-delivery li {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+.pp-delivery svg {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  color: #331c11;
 }
