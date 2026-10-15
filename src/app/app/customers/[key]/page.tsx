@@ -7,6 +7,8 @@ import { requireActor } from "@/lib/auth/session";
 import { isAppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { ORDER_STATUS_TONE } from "@/lib/order-ui";
+import { MESSAGE_KIND_LABEL } from "@/lib/order-ui";
+import { STAFF_QUOTE_LABEL, STAFF_QUOTE_TONE, isQuoteStatus } from "@/lib/quotation-ui";
 import { STATUS_LABEL } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
@@ -27,7 +29,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ key: 
   const business = await getBusinessSettings();
   return (
     <>
-      <PageHeader title={c.name} description={`${c.orders.length} ${c.orders.length === 1 ? "order" : "orders"} · ${formatMoney(c.spent, c.currency)} ordered in total (cancelled orders not counted)`} />
+      <PageHeader title={c.name} description={`${c.orders.length} ${c.orders.length === 1 ? "order" : "orders"} · ${c.quotations.length} ${c.quotations.length === 1 ? "quotation" : "quotations"} · ${c.enquiries.length} ${c.enquiries.length === 1 ? "enquiry" : "enquiries"} · ${formatMoney(c.spent, c.currency)} ordered in total (cancelled orders not counted)`} />
       <div className="grid min-w-0 gap-6 lg:grid-cols-[1fr_1.6fr]">
         <Panel title="Contact">
           <p className="text-sm">
@@ -56,7 +58,9 @@ export default async function CustomerPage({ params }: { params: Promise<{ key: 
             </div>
           ) : null}
         </Panel>
-        <Panel title="Orders">
+        <div className="min-w-0 space-y-6">
+        <Panel title="Order history">
+          {c.orders.length === 0 ? <p className="text-sm text-text-muted">No orders yet.</p> : (
           <TableWrap label="Orders from this customer">
             <Table>
               <THead>
@@ -85,7 +89,51 @@ export default async function CustomerPage({ params }: { params: Promise<{ key: 
               </tbody>
             </Table>
           </TableWrap>
+          )}
         </Panel>
+        <Panel title="Quotation history">
+          {c.quotations.length === 0 ? (
+            <p className="text-sm text-text-muted">No quotation requests.</p>
+          ) : (
+            <ul className="divide-y divide-border text-sm">
+              {c.quotations.map((m) => {
+                const st = isQuoteStatus(m.quoteStatus) ? m.quoteStatus : "requested";
+                return (
+                  <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                    <span>
+                      <Link href={`/app/messages/${m.id}`} className="font-medium text-walnut underline">
+                        {m.reference}
+                      </Link>
+                      <span className="block text-text-muted">{formatDateTime(m.createdAt, business.timezone)}{m.quotedAmount ? ` · ${formatMoney(m.quotedAmount, business.currency)}` : ""}</span>
+                    </span>
+                    <StatusBadge tone={STAFF_QUOTE_TONE[st]}>{STAFF_QUOTE_LABEL[st]}</StatusBadge>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
+        <Panel title="Enquiries">
+          {c.enquiries.length === 0 ? (
+            <p className="text-sm text-text-muted">No enquiries.</p>
+          ) : (
+            <ul className="divide-y divide-border text-sm">
+              {c.enquiries.map((m) => (
+                <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <span className="min-w-0">
+                    <Link href={`/app/messages/${m.id}`} className="font-medium text-walnut underline">
+                      {m.reference}
+                    </Link>
+                    <span className="block text-text-muted">{MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · {formatDateTime(m.createdAt, business.timezone)}</span>
+                    {m.message ? <span className="line-clamp-1 block max-w-md text-text-muted">{m.message}</span> : null}
+                  </span>
+                  {m.isHandled ? <StatusBadge tone="success">Responded</StatusBadge> : m.inProgress ? <StatusBadge tone="warning">In progress</StatusBadge> : <StatusBadge tone="info">New</StatusBadge>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+        </div>
       </div>
     </>
   );

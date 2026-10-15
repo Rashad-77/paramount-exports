@@ -109,7 +109,12 @@ export const imagesSchema = z.object({
   altText: reqText("Image description", 200),
 });
 
+export const GALLERY_AREAS = ["projects", "showroom", "workshop", "workshop_gallery"] as const;
+export type GalleryArea = (typeof GALLERY_AREAS)[number];
+export const GALLERY_AREA_LABEL: Record<GalleryArea, string> = { projects: "Project gallery", showroom: "Showroom images", workshop: "Workshop images", workshop_gallery: "Workshop gallery" };
+
 export const galleryProjectSchema = z.object({
+  area: z.preprocess((v) => (v === "" || v === undefined ? "projects" : v), z.enum(GALLERY_AREAS)),
   title: reqText("Project title", 120),
   description: optText("Description", 2000),
   completedOn: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
@@ -117,7 +122,7 @@ export const galleryProjectSchema = z.object({
   sortOrder: z.preprocess((v) => (v === "" || v === undefined ? 0 : Number(v)), z.number().int().min(0).max(9999)),
   categoryId: optUuid("category"),
 });
-export type GalleryProjectInput = z.output<typeof galleryProjectSchema>;
+export type GalleryProjectInput = Omit<z.output<typeof galleryProjectSchema>, "area"> & { area?: GalleryArea };
 
 export const resolveSlug = (explicit: string | undefined, name: string): string => {
   const candidate = explicit && explicit.length > 0 ? explicit : slugify(name);

@@ -37,7 +37,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         {result.total} {result.total === 1 ? "customer" : "customers"}
       </p>
       {result.rows.length === 0 ? (
-        <EmptyState title={q ? "No customers match" : "No customers yet"} description={q ? "Try a different search." : "Customers appear here once they have placed an order on the website."} />
+        <EmptyState title={q ? "No customers match" : "No customers yet"} description={q ? "Try a different search." : "Customers appear here once they order, ask for a quotation or write to you."} />
       ) : (
         <TableWrap label="Customers">
           <Table>
@@ -46,8 +46,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                 <TH>Customer</TH>
                 <TH className="hidden md:table-cell">Email</TH>
                 <TH className="text-right">Orders</TH>
+                <TH className="text-right hidden lg:table-cell">Quotations</TH>
+                <TH className="text-right hidden lg:table-cell">Enquiries</TH>
                 <TH className="text-right hidden sm:table-cell">Ordered in total</TH>
-                <TH className="hidden lg:table-cell">Last order</TH>
+                <TH className="hidden lg:table-cell">Last contact</TH>
               </tr>
             </THead>
             <tbody>
@@ -62,8 +64,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                   </TD>
                   <TD className="hidden md:table-cell">{c.email ?? "—"}</TD>
                   <TD numeric>{c.orders}</TD>
+                  <TD numeric className="hidden lg:table-cell">{c.quotations}</TD>
+                  <TD numeric className="hidden lg:table-cell">{c.enquiries}</TD>
                   <TD numeric className="hidden sm:table-cell">{formatMoney(c.spent, c.currency)}</TD>
-                  <TD className="hidden whitespace-nowrap lg:table-cell">{formatDate(c.lastOrderAt, business.timezone)}</TD>
+                  <TD className="hidden whitespace-nowrap lg:table-cell">{formatDate(c.lastContactAt, business.timezone)}</TD>
                 </TR>
               ))}
             </tbody>

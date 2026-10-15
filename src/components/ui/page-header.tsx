@@ -32,7 +32,7 @@ export async function ModuleHeader({ href, title, description, actions }: { href
 /** Content block with a thin border. Prefer this to ad-hoc bordered divs. */
 export function Panel({ title, description, children, actions }: { title?: string; description?: string; children: ReactNode; actions?: ReactNode }) {
   return (
-    <section className="flex h-full min-w-0 flex-col border border-border bg-surface shadow-[var(--shadow-sm)]">
+    <section className="flex h-full min-w-0 flex-col border border-border bg-surface">
       {title ? (
         <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
           <div className="min-w-0">

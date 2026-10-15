@@ -461,3 +461,97 @@
     display: none !important;
   }
 }
+
+/* ── Staff area: white, plain, premium. Hairlines instead of boxes and shadows; figures first. ─────────────────────── */
+.app-ui {
+  --shadow-sm: none;
+  --shadow-md: none;
+}
+.app-ui main h1 {
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+/* The strip of figures at the top of the dashboard */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
+@media (min-width: 40rem) {
+  .dash-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.dash-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+a.dash-figure:hover {
+  background: #f9fafb;
+}
+.dash-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.dash-value {
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+}
+.dash-value[data-attention] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+.dash-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+/* Filter tabs above a list */
+.app-tabs {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+}
+.app-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-tabs a:hover {
+  color: #111827;
+}
+.app-tabs a[aria-current="page"] {
+  border-bottom-color: #111827;
+  color: #111827;
+  font-weight: 500;
+}
+.app-tabs a span {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* The search row: no grey box around it */
+.app-search {
+  padding: 0;
+}

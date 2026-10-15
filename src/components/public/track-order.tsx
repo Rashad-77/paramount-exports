@@ -16,44 +16,34 @@ import { orderNumber } from "@/lib/schemas/tracking";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { dec, formatMoney } from "@/lib/money";
 import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
+import type { OrderStatus } from "@/lib/order-constants";
 import type { TrackedOrder } from "@/lib/schemas/tracking";
 import { formatDate, formatDateTime } from "@/lib/time";
 
-/** The steps a customer sees, in order. "Being prepared" has no time of its own: staff only stamp the other three. */
+/** The steps a customer sees, in order. "Being prepared" has no time of its own: staff only stamp the others. */
 function stepsFor(o: TrackedOrder) {
   const delivery = o.fulfilment === "delivery";
-  return [
-    {
-      key: "new",
-      label: "Order received",
-      at: o.placedAt,
-      note: "We have your order. We will call or message you to confirm it.",
-    },
+  const planned = o.scheduledFor ? ` Planned for ${formatDate(o.scheduledFor, "UTC")}.` : "";
+  const steps: Array<{ key: OrderStatus; label: string; at: string | null; note: string }> = [
+    { key: "new", label: "Order received", at: o.placedAt, note: "We have your order. We will call or message you to confirm it." },
     {
       key: "confirmed",
       label: "Confirmed",
       at: o.confirmedAt,
-      note: delivery
-        ? "Your order is confirmed. We will arrange the delivery charge and the day with you."
-        : "Your order is confirmed. We will tell you when it is ready to collect.",
+      note: delivery ? "Your order is confirmed. We will arrange the delivery charge and the day with you." : "Your order is confirmed. We will tell you when it is ready to collect.",
     },
-    {
-      key: "in_progress",
-      label: "Being prepared",
-      at: null,
-      note: "We are preparing your order.",
-    },
-    {
-      key: "delivered",
-      label: delivery ? "Delivered" : "Collected",
-      at: o.deliveredAt,
-      note: delivery
-        ? "Your order has been delivered. Thank you."
-        : "Your order has been collected. Thank you.",
-    },
-  ] as const;
+    { key: "in_progress", label: "Being prepared", at: null, note: "We are preparing your order." },
+    { key: "ready", label: "Ready", at: o.readyAt, note: (delivery ? "Your order is ready and will be sent out soon." : "Your order is ready. You can collect it from the showroom.") + planned },
+  ];
+  if (delivery) steps.push({ key: "out_for_delivery", label: "On its way", at: o.outForDeliveryAt, note: "Your order is out for delivery." + planned });
+  steps.push({
+    key: "delivered",
+    label: delivery ? "Delivered" : "Collected",
+    at: o.deliveredAt,
+    note: delivery ? "Your order has been delivered. Thank you." : "Your order has been collected. Thank you.",
+  });
+  return steps;
 }
-const ORDER = ["new", "confirmed", "in_progress", "delivered"] as const;
 
 function Result({ timezone }: { timezone: string }) {
   const { state } = useFormState();
@@ -82,7 +72,7 @@ export function OrderView({
   const when = (iso: string | null) =>
     iso ? formatDateTime(iso, timezone) : null;
   const steps = stepsFor(o);
-  const at = o.status === "cancelled" ? -1 : ORDER.indexOf(o.status);
+  const at = o.status === "cancelled" ? -1 : steps.findIndex((st) => st.key === o.status);
   const awaitingCharge =
     o.fulfilment === "delivery" && dec(o.deliveryCharge).isZero() && at < 1;
   const current = steps[Math.max(0, at)]!;

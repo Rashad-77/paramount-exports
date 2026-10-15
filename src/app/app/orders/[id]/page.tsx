@@ -13,7 +13,7 @@ import { formatMoney } from "@/lib/money";
 import { NEXT_STATUS_ACTION, ORDER_STATUS_TONE } from "@/lib/order-ui";
 import { FULFILMENT_LABEL, PAYMENT_LABEL, STATUS_LABEL } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDateTime } from "@/lib/time";
+import { formatDate, formatDateTime } from "@/lib/time";
 import { allowedNextStatuses, getOrder } from "@/server/orders";
 import { setPaidAction, setStatusAction, updateDetailsAction } from "../actions";
 
@@ -33,8 +33,8 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const { order: o, items } = data;
   const finished = o.status === "delivered" || o.status === "cancelled";
   const canUpdate = can(actor, "orders:update");
-  const next = allowedNextStatuses(o.status).filter((s) => s !== "cancelled");
-  const canCancel = can(actor, "orders:cancel") && allowedNextStatuses(o.status).includes("cancelled");
+  const next = allowedNextStatuses(o.status, o.fulfilment).filter((s) => s !== "cancelled");
+  const canCancel = can(actor, "orders:cancel") && allowedNextStatuses(o.status, o.fulfilment).includes("cancelled");
   const when = (d: Date | null) => (d ? formatDateTime(d, business.timezone) : null);
   const customerKey = o.phoneKey;
 
@@ -54,6 +54,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       {o.status === "new" ? (
         <Alert tone="info" title="New order" className="mb-6">
           Call or message the customer to confirm the order, agree the delivery charge and time, then press “Confirm order”.
+        </Alert>
+      ) : null}
+      {o.status === "ready" ? (
+        <Alert tone="info" title={o.fulfilment === "delivery" ? "Ready for delivery" : "Ready to collect"} className="mb-6">
+          {o.fulfilment === "delivery" ? "Send it out when the day is agreed, then press “Send out for delivery”." : "Tell the customer it can be collected from the showroom, then press “Mark as completed” once they have it."}
         </Alert>
       ) : null}
       {o.status === "cancelled" ? (
@@ -107,13 +112,14 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </Panel>
 
           {canUpdate && !finished ? (
-            <Panel title="Delivery charge and notes" description="Agree the delivery charge with the customer and enter it here; the total updates. The note is only for staff.">
+            <Panel title="Delivery, date and notes" description="Agree the delivery charge and the day with the customer and enter them here; the total updates. The note is only for staff.">
               <ActionForm action={updateDetailsAction}>
                 <input type="hidden" name="id" value={o.id} />
-                <div className="grid gap-5 md:grid-cols-[14rem_1fr]">
+                <div className="grid gap-5 md:grid-cols-2">
                   <FField name="deliveryCharge" label={`Delivery charge (${o.currency})`} inputMode="decimal" defaultValue={Number(o.deliveryCharge) > 0 ? o.deliveryCharge : ""} />
-                  <FTextArea name="staffNote" label="Staff note" rows={3} defaultValue={o.staffNote ?? ""} />
+                  <FField name="scheduledFor" type="date" label={o.fulfilment === "delivery" ? "Delivery date" : "Collection date"} defaultValue={o.scheduledFor ?? ""} />
                 </div>
+                <FTextArea name="staffNote" label="Staff note" rows={3} defaultValue={o.staffNote ?? ""} />
                 <SubmitButton>Save</SubmitButton>
               </ActionForm>
             </Panel>
@@ -201,7 +207,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <ul className="space-y-1.5 text-sm">
               <li>Placed {when(o.createdAt)}</li>
               {o.confirmedAt ? <li>Confirmed {when(o.confirmedAt)}</li> : null}
-              {o.deliveredAt ? <li>Delivered {when(o.deliveredAt)}</li> : null}
+              {o.readyAt ? <li>Ready {when(o.readyAt)}</li> : null}
+              {o.outForDeliveryAt ? <li>Sent out for delivery {when(o.outForDeliveryAt)}</li> : null}
+              {o.scheduledFor ? <li>{o.fulfilment === "delivery" ? "Planned delivery" : "Planned collection"}: {formatDate(o.scheduledFor, "UTC")}</li> : null}
+              {o.deliveredAt ? <li>{o.fulfilment === "delivery" ? "Delivered" : "Collected"} {when(o.deliveredAt)}</li> : null}
               {o.cancelledAt ? <li>Cancelled {when(o.cancelledAt)}</li> : null}
             </ul>
           </Panel>

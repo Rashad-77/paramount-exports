@@ -13,9 +13,11 @@ import { getMessage } from "@/server/messages";
 import { formatMoney } from "@/lib/money";
 import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
 import { isQuoteStatus } from "@/lib/quotation-ui";
-import { closeQuotationAction, createOrderFromQuotationAction, sendQuoteAction, setHandledAction } from "../actions";
+import { ButtonLink } from "@/components/ui/button";
+import { STAFF_QUOTE_LABEL as QUOTE_STAGE, STAFF_QUOTE_TONE } from "@/lib/quotation-ui";
+import { closeQuotationAction, createOrderFromQuotationAction, sendQuoteAction, setEnquiryStateAction, setHandledAction, startReviewAction } from "../actions";
 
-const STAFF_QUOTE_LABEL: Record<string, string> = { requested: "Waiting for a price", quoted: "Price sent, waiting for the customer", accepted: "Accepted by the customer", declined: "Declined by the customer", cancelled: "Closed" };
+const STAFF_QUOTE_LABEL: Record<string, string> = { requested: "Waiting for a price", under_review: "Being reviewed, waiting for a price", quoted: "Price sent, waiting for the customer", accepted: "Accepted by the customer", declined: "Declined by the customer", cancelled: "Closed" };
 
 export const metadata = { title: "Message" };
 
@@ -42,7 +44,22 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
       <PageHeader
         title={m.reference}
         description={`${MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · received ${formatDateTime(m.createdAt, business.timezone)}`}
-        actions={m.isHandled ? <StatusBadge tone="success">Handled</StatusBadge> : <StatusBadge tone="info">Open</StatusBadge>}
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            {m.kind === "custom" && quote ? (
+              <StatusBadge tone={STAFF_QUOTE_TONE[quote]}>{QUOTE_STAGE[quote]}</StatusBadge>
+            ) : m.isHandled ? (
+              <StatusBadge tone="success">Responded</StatusBadge>
+            ) : m.inProgress ? (
+              <StatusBadge tone="warning">In progress</StatusBadge>
+            ) : (
+              <StatusBadge tone="info">New</StatusBadge>
+            )}
+            <ButtonLink href={m.kind === "custom" ? "/app/quotations" : "/app/enquiries"} variant="secondary">
+              {m.kind === "custom" ? "All quotations" : "All enquiries"}
+            </ButtonLink>
+          </div>
+        }
       />
       <div className="grid min-w-0 gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="min-w-0 space-y-6">
@@ -73,7 +90,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
               ) : null}
               {quote === "declined" && m.declineReason ? <p className="mb-5 text-sm text-text-muted">Their reason: {m.declineReason}</p> : null}
 
-              {canQuote && (quote === "requested" || quote === "quoted" || quote === "declined") ? (
+              {canQuote && (quote === "requested" || quote === "under_review" || quote === "quoted" || quote === "declined") ? (
                 <ActionForm action={sendQuoteAction}>
                   <input type="hidden" name="id" value={m.id} />
                   <div className="grid gap-5 sm:grid-cols-2">
@@ -81,7 +98,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
                     <FField name="validUntil" label="Price valid until" type="date" defaultValue={m.quoteValidUntil ?? ""} />
                   </div>
                   <FTextArea name="note" label="Note to the customer" rows={3} maxLength={1500} defaultValue={m.quoteNote ?? ""} hint="What the price includes, how long it will take, and so on." />
-                  <SubmitButton pendingLabel="Sending…">{quote === "requested" ? "Send price to customer" : "Send a new price"}</SubmitButton>
+                  <SubmitButton pendingLabel="Sending…">{quote === "requested" || quote === "under_review" ? "Send price to customer" : "Send a new price"}</SubmitButton>
                 </ActionForm>
               ) : null}
 
@@ -107,7 +124,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
                 </p>
               ) : null}
 
-              {canQuote && (quote === "requested" || quote === "quoted") ? (
+              {canQuote && (quote === "requested" || quote === "under_review" || quote === "quoted") ? (
                 <ActionForm action={closeQuotationAction} className="mt-6 border-t border-border pt-5">
                   <input type="hidden" name="id" value={m.id} />
                   <FField name="reason" label="Reason for closing (shown to the customer)" maxLength={500} />
@@ -151,7 +168,32 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
             ) : null}
             {m.preferredContact ? <p className="mt-3 text-sm text-text-muted">Prefers: {m.preferredContact}</p> : null}
           </Panel>
-          {can(actor, "messages:handle") ? (
+          {can(actor, "messages:handle") && m.kind === "custom" && quote === "requested" ? (
+            <Panel title="Start on this request" description="Move it to under review while you work out the price.">
+              <ActionForm action={startReviewAction} className="space-y-0">
+                <input type="hidden" name="id" value={m.id} />
+                <SubmitButton>Start review</SubmitButton>
+              </ActionForm>
+            </Panel>
+          ) : null}
+          {can(actor, "messages:handle") && m.kind !== "custom" ? (
+            <Panel title="Where this enquiry stands" description="Keep it up to date so the team can see what still needs an answer.">
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["new", "New", !m.isHandled && !m.inProgress],
+                  ["in_progress", "In progress", !m.isHandled && m.inProgress],
+                  ["responded", "Responded", m.isHandled],
+                ] as const).map(([state, label, current]) => (
+                  <ActionForm key={state} action={setEnquiryStateAction} className="space-y-0">
+                    <input type="hidden" name="id" value={m.id} />
+                    <input type="hidden" name="state" value={state} />
+                    <SubmitButton variant={current ? "primary" : "secondary"}>{label}</SubmitButton>
+                  </ActionForm>
+                ))}
+              </div>
+            </Panel>
+          ) : null}
+          {can(actor, "messages:handle") && m.kind === "custom" ? (
             <Panel title={m.isHandled ? "Handled" : "When you have replied"}>
               <ActionForm action={setHandledAction} className="space-y-0">
                 <input type="hidden" name="id" value={m.id} />

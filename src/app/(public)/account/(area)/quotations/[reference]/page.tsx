@@ -18,7 +18,7 @@ const REF = /^MSG-\d{1,12}$/i;
 
 /** The four steps a quotation goes through, and how far along this one is. */
 function steps(status: QuoteStatus, hasOrder: boolean) {
-  const reached = status === "requested" ? 0 : status === "quoted" ? 1 : status === "accepted" ? (hasOrder ? 3 : 2) : status === "declined" ? 2 : 1;
+  const reached = status === "requested" || status === "under_review" ? 0 : status === "quoted" ? 1 : status === "accepted" ? (hasOrder ? 3 : 2) : status === "declined" ? 2 : 1;
   const names = ["Request received", "Price sent", status === "declined" ? "Declined" : status === "cancelled" ? "Closed" : "Accepted", "Order confirmed"];
   return names.map((label, i) => ({ label, done: i <= reached, current: i === reached }));
 }
@@ -60,7 +60,7 @@ export default async function AccountQuotationPage({ params }: { params: Promise
         </ol>
       </section>
 
-      {price && q.status !== "requested" ? (
+      {price && q.status !== "requested" && q.status !== "under_review" ? (
         <section aria-labelledby="qp-title" className="space-y-5">
           <div className="acct-price">
             <span id="qp-title">Our price</span>

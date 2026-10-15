@@ -183,6 +183,13 @@
       "when": 1792684000000,
       "tag": "0025_random_order_numbers",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792770400000,
+      "tag": "0026_admin_workflow",
+      "breakpoints": true
     }
   ]
 }

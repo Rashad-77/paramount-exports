@@ -3,12 +3,12 @@ import { and, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "dr
 import { normaliseEmail, phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
-import { orderItems, orders, productVariants, products } from "@/lib/db/schema";
+import { messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
 import { conflict, invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
 import { hitRateLimit } from "@/lib/rate-limit";
 import { getBusinessSettings } from "@/lib/settings";
-import type { CheckoutInput, OrderStatus } from "@/lib/schemas/orders";
+import { OPEN_STATUSES, type CheckoutInput, type Fulfilment, type OrderStatus } from "@/lib/schemas/orders";
 import { recordAudit } from "./audit";
 import { recordUpdate } from "./account-updates";
 import { emailCustomer } from "./notify";
@@ -115,6 +115,11 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null;
 
 export interface OrderListFilters {
   status?: OrderStatus | "open";
+  /** "unpaid": not cancelled and not marked paid yet. */
+  payment?: "unpaid" | "paid";
+  fulfilment?: Fulfilment;
+  /** Only these statuses (several at once), e.g. everything waiting to be delivered. */
+  statuses?: OrderStatus[];
   q?: string;
   phoneKey?: string;
   page: number;
@@ -124,8 +129,12 @@ export interface OrderListFilters {
 export async function listOrders(actor: Actor, f: OrderListFilters) {
   requirePermission(actor, "orders:view");
   const where: SQL[] = [];
-  if (f.status === "open") where.push(inArray(orders.status, ["new", "confirmed", "in_progress"]));
+  if (f.status === "open") where.push(inArray(orders.status, [...OPEN_STATUSES]));
   else if (f.status) where.push(eq(orders.status, f.status));
+  if (f.statuses?.length) where.push(inArray(orders.status, f.statuses));
+  if (f.payment === "unpaid") where.push(and(eq(orders.isPaid, false), sql`${orders.status} <> 'cancelled'`)!);
+  if (f.payment === "paid") where.push(eq(orders.isPaid, true));
+  if (f.fulfilment) where.push(eq(orders.fulfilment, f.fulfilment));
   if (f.phoneKey) where.push(eq(orders.phoneKey, f.phoneKey));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
@@ -146,6 +155,9 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         isPaid: orders.isPaid,
         currency: orders.currency,
         total: orders.total,
+        deliveryCharge: orders.deliveryCharge,
+        scheduledFor: orders.scheduledFor,
+        address: orders.address,
         createdAt: orders.createdAt,
         itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${orders.id}), 0)`,
       })
@@ -172,7 +184,7 @@ export async function getOrder(actor: Actor, id: string) {
 export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number>> {
   requirePermission(actor, "orders:view");
   const rows = await getDb().select({ status: orders.status, n: count() }).from(orders).groupBy(orders.status);
-  const out: Record<OrderStatus | "all", number> = { all: 0, new: 0, confirmed: 0, in_progress: 0, delivered: 0, cancelled: 0 };
+  const out: Record<OrderStatus | "all", number> = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0 };
   for (const r of rows) {
     out[r.status] = r.n;
     out.all += r.n;
@@ -184,18 +196,24 @@ export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderSta
 
 const NEXT: Record<OrderStatus, OrderStatus[]> = {
   new: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "delivered", "cancelled"],
-  in_progress: ["delivered", "cancelled"],
+  confirmed: ["in_progress", "ready", "cancelled"],
+  in_progress: ["ready", "cancelled"],
+  ready: ["out_for_delivery", "delivered", "cancelled"],
+  out_for_delivery: ["delivered", "cancelled"],
   delivered: [],
   cancelled: [],
 };
 
-export const allowedNextStatuses = (status: OrderStatus): OrderStatus[] => NEXT[status];
+/** What an order can become next. A showroom pickup is never "out for delivery". */
+export const allowedNextStatuses = (status: OrderStatus, fulfilment?: Fulfilment): OrderStatus[] =>
+  NEXT[status].filter((s) => !(s === "out_for_delivery" && fulfilment === "pickup"));
 
 const STATUS_NOTE: Record<OrderStatus, string> = {
   new: "has been received",
   confirmed: "is confirmed",
   in_progress: "is now being made",
+  ready: "is ready",
+  out_for_delivery: "is out for delivery",
   delivered: "has been delivered. Thank you for ordering with us",
   cancelled: "has been cancelled",
 };
@@ -207,7 +225,7 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
-    if (!NEXT[o.status].includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
+    if (!allowedNextStatuses(o.status, o.fulfilment).includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
     const now = new Date();
     await tx
       .update(orders)
@@ -215,6 +233,8 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
         status,
         handledBy: actor.id,
         ...(status === "confirmed" ? { confirmedAt: now } : {}),
+        ...(status === "ready" ? { readyAt: now } : {}),
+        ...(status === "out_for_delivery" ? { outForDeliveryAt: now } : {}),
         ...(status === "delivered" ? { deliveredAt: now, confirmedAt: o.confirmedAt ?? now } : {}),
         ...(status === "cancelled" ? { cancelledAt: now, cancelReason: reason ?? "Cancelled" } : {}),
       })
@@ -230,7 +250,7 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
   }
 }
 
-export async function updateOrderDetails(actor: Actor, id: string, input: { deliveryCharge: string; staffNote?: string }): Promise<void> {
+export async function updateOrderDetails(actor: Actor, id: string, input: { deliveryCharge: string; staffNote?: string; scheduledFor?: string }): Promise<void> {
   requirePermission(actor, "orders:update");
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
@@ -238,8 +258,8 @@ export async function updateOrderDetails(actor: Actor, id: string, input: { deli
     if (o.status === "delivered" || o.status === "cancelled") throw invalidState("A finished order cannot be changed.");
     const charge = moneyString(input.deliveryCharge);
     const total = moneyString(dec(o.subtotal).plus(charge));
-    await tx.update(orders).set({ deliveryCharge: charge, total, staffNote: input.staffNote ?? null, handledBy: actor.id }).where(eq(orders.id, id));
-    await recordAudit(tx, actor, { action: "order.details_updated", entityType: "order", entityId: id, before: { deliveryCharge: o.deliveryCharge, total: o.total }, after: { deliveryCharge: charge, total } });
+    await tx.update(orders).set({ deliveryCharge: charge, total, staffNote: input.staffNote ?? null, scheduledFor: input.scheduledFor ?? null, handledBy: actor.id }).where(eq(orders.id, id));
+    await recordAudit(tx, actor, { action: "order.details_updated", entityType: "order", entityId: id, before: { deliveryCharge: o.deliveryCharge, total: o.total }, after: { deliveryCharge: charge, total, scheduledFor: input.scheduledFor ?? null } });
   });
 }
 
@@ -256,50 +276,70 @@ export async function setOrderPaid(actor: Actor, id: string, paid: boolean): Pro
   });
 }
 
-/* ───────────────────────────── customers (built from orders) ───────────────────────────── */
+/* ───────────────────────────── customers (built from orders, quotations and enquiries) ───────────────────────────── */
 
+/** Everyone who has ordered, asked for a quotation or written to the business, grouped by phone number. */
 export async function listCustomers(actor: Actor, f: { q?: string; page: number; pageSize: number }) {
   requirePermission(actor, "customers:view");
   const like = f.q ? `%${escapeLike(f.q)}%` : null;
-  const having = like ? sql`HAVING max(customer_name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like}` : sql``;
+  const having = like ? sql`HAVING max(name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like}` : sql``;
   const db = getDb();
+  const source = sql`
+    WITH src AS (
+      SELECT phone_key, customer_name AS name, phone, email, created_at, 'order' AS what, total, status::text AS status, currency, account_id FROM online_orders
+      UNION ALL
+      SELECT phone_key, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END, 0, NULL, NULL, account_id FROM messages
+    )`;
   const rows = (await db.execute(sql`
+    ${source}
     SELECT phone_key AS "phoneKey",
-           (array_agg(customer_name ORDER BY created_at DESC))[1] AS name,
+           (array_agg(name ORDER BY created_at DESC))[1] AS name,
            (array_agg(phone ORDER BY created_at DESC))[1] AS phone,
            (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
-           count(*)::int AS orders,
-           coalesce(sum(total) FILTER (WHERE status <> 'cancelled'), 0)::text AS spent,
-           max(currency) AS currency,
-           max(created_at) AS "lastOrderAt",
+           (count(*) FILTER (WHERE what = 'order'))::int AS orders,
+           (count(*) FILTER (WHERE what = 'quotation'))::int AS quotations,
+           (count(*) FILTER (WHERE what = 'enquiry'))::int AS enquiries,
+           coalesce(sum(total) FILTER (WHERE what = 'order' AND status <> 'cancelled'), 0)::text AS spent,
+           coalesce(max(currency), 'LKR') AS currency,
+           max(created_at) AS "lastContactAt",
            bool_or(account_id IS NOT NULL) AS "hasAccount"
-      FROM online_orders
+      FROM src
      GROUP BY phone_key
      ${having}
      ORDER BY max(created_at) DESC
      LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}
-  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; spent: string; currency: string; lastOrderAt: Date; hasAccount: boolean }[];
-  const [{ n }] = (await db.execute(sql`SELECT count(*)::int AS n FROM (SELECT 1 FROM online_orders GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
+  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; quotations: number; enquiries: number; spent: string; currency: string; lastContactAt: Date; hasAccount: boolean }[];
+  const [{ n }] = (await db.execute(sql`${source} SELECT count(*)::int AS n FROM (SELECT 1 FROM src GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
   return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)) };
 }
 
 export async function getCustomer(actor: Actor, key: string) {
   requirePermission(actor, "customers:view");
   const db = getDb();
-  const list = await db.select().from(orders).where(eq(orders.phoneKey, key)).orderBy(desc(orders.createdAt));
-  if (list.length === 0) throw notFound("That customer could not be found.");
-  const latest = list[0]!;
+  const [list, notes] = await Promise.all([
+    db.select().from(orders).where(eq(orders.phoneKey, key)).orderBy(desc(orders.createdAt)),
+    db
+      .select({ id: messages.id, reference: messages.reference, kind: messages.kind, name: messages.name, phone: messages.phone, email: messages.email, message: messages.message, quoteStatus: messages.quoteStatus, quotedAmount: messages.quotedAmount, isHandled: messages.isHandled, inProgress: messages.inProgress, accountId: messages.accountId, createdAt: messages.createdAt })
+      .from(messages)
+      .where(eq(messages.phoneKey, key))
+      .orderBy(desc(messages.createdAt)),
+  ]);
+  if (list.length === 0 && notes.length === 0) throw notFound("That customer could not be found.");
+  const latest = list[0];
+  const contact = latest ?? notes[0]!;
   const spent = sum(list.filter((o) => o.status !== "cancelled").map((o) => o.total));
   return {
     phoneKey: key,
-    name: latest.customerName,
-    phone: latest.phone,
-    email: list.find((o) => o.email)?.email ?? null,
-    hasAccount: list.some((o) => o.accountId !== null),
+    name: latest ? latest.customerName : (notes[0]!.name),
+    phone: contact.phone,
+    email: list.find((o) => o.email)?.email ?? notes.find((m) => m.email)?.email ?? null,
+    hasAccount: list.some((o) => o.accountId !== null) || notes.some((m) => m.accountId !== null),
     addresses: [...new Set(list.map((o) => o.address).filter((a): a is string => Boolean(a)))].slice(0, 3),
-    currency: latest.currency,
+    currency: latest?.currency ?? "LKR",
     spent: moneyString(spent),
     orders: list,
+    quotations: notes.filter((m) => m.kind === "custom"),
+    enquiries: notes.filter((m) => m.kind !== "custom"),
   };
 }
 
@@ -309,14 +349,13 @@ export async function getDashboard(actor: Actor) {
   requirePermission(actor, "dashboard:view");
   const db = getDb();
   const since = new Date(Date.now() - 30 * 86_400_000);
-  const [counts, recent, unhandled, [rev], daily] = await Promise.all([
+  const [counts, recent, [rev], daily, [unpaid], upcoming, quotes, [quotesPending], enquiries, [enquiriesNew]] = await Promise.all([
     countOrdersByStatus(actor),
     db
       .select({ id: orders.id, reference: orders.reference, status: orders.status, customerName: orders.customerName, total: orders.total, currency: orders.currency, createdAt: orders.createdAt, isPaid: orders.isPaid })
       .from(orders)
       .orderBy(desc(orders.createdAt))
       .limit(6),
-    db.execute(sql`SELECT count(*)::int AS n FROM messages WHERE NOT is_handled`) as unknown as Promise<[{ n: number }]>,
     db
       .select({
         orders: count(),
@@ -331,14 +370,45 @@ export async function getDashboard(actor: Actor) {
         LEFT JOIN (SELECT created_at::date AS day, count(*) AS n FROM online_orders WHERE created_at >= current_date - 29 AND status <> 'cancelled' GROUP BY 1) c ON c.day = d::date
        ORDER BY d
     `) as unknown as Promise<{ day: string; orders: number }[]>,
+    db.select({ n: count() }).from(orders).where(and(eq(orders.isPaid, false), sql`${orders.status} <> 'cancelled'`)),
+    db
+      .select({ id: orders.id, reference: orders.reference, customerName: orders.customerName, status: orders.status, fulfilment: orders.fulfilment, scheduledFor: orders.scheduledFor })
+      .from(orders)
+      .where(and(eq(orders.fulfilment, "delivery"), inArray(orders.status, ["confirmed", "in_progress", "ready", "out_for_delivery"])))
+      .orderBy(sql`${orders.scheduledFor} ASC NULLS LAST`, orders.createdAt)
+      .limit(5),
+    db
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, quoteStatus: messages.quoteStatus, payload: messages.payload, createdAt: messages.createdAt })
+      .from(messages)
+      .where(eq(messages.kind, "custom"))
+      .orderBy(desc(messages.createdAt))
+      .limit(4),
+    db.select({ n: count() }).from(messages).where(and(eq(messages.kind, "custom"), inArray(messages.quoteStatus, ["requested", "under_review"]))),
+    db
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, message: messages.message, isHandled: messages.isHandled, inProgress: messages.inProgress, createdAt: messages.createdAt })
+      .from(messages)
+      .where(sql`${messages.kind} <> 'custom'`)
+      .orderBy(desc(messages.createdAt))
+      .limit(4),
+    db.select({ n: count() }).from(messages).where(and(sql`${messages.kind} <> 'custom'`, eq(messages.isHandled, false))),
   ]);
   const currency = (await getBusinessSettings()).currency;
+  const [upcomingRow] = await db
+    .select({ n: count() })
+    .from(orders)
+    .where(and(eq(orders.fulfilment, "delivery"), inArray(orders.status, ["confirmed", "in_progress", "ready", "out_for_delivery"])));
   return {
     counts,
+    upcomingDeliveriesCount: upcomingRow?.n ?? 0,
     recent,
-    unhandledMessages: unhandled[0]?.n ?? 0,
     last30: { orders: rev?.orders ?? 0, value: rev?.value ?? "0", paid: rev?.paid ?? "0" },
     daily,
+    awaitingPayment: unpaid?.n ?? 0,
+    upcomingDeliveries: upcoming,
+    recentQuotes: quotes,
+    pendingQuotations: quotesPending?.n ?? 0,
+    recentEnquiries: enquiries,
+    newEnquiries: enquiriesNew?.n ?? 0,
     currency,
   };
 }

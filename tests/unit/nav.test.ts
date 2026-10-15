@@ -20,13 +20,13 @@ describe("navigation visibility", () => {
 
   it("shows the order screens to staff and the owner", () => {
     for (const r of ["owner", "staff"] as Role[]) {
-      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Messages", "Customers", "Products", "Website", "Settings"]));
+      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Delivery and collection", "Customers", "Products", "Showroom and workshop", "Website", "Settings"]));
     }
   });
 
   it("no longer offers any CRM or ERP screen", () => {
     const l = pageLabels(actor(["owner"]));
-    for (const gone of ["Enquiries", "Follow-ups", "Quotations", "Sales Orders", "Production", "Stock", "Materials", "Transfers", "Locations", "Suppliers", "Purchase Orders", "Deliveries", "After-Sales Service", "Invoicing", "Expenses", "Reports", "Employees"]) {
+    for (const gone of ["Follow-ups", "Sales Orders", "Production", "Stock", "Materials", "Transfers", "Locations", "Suppliers", "Purchase Orders", "Deliveries", "After-Sales Service", "Invoicing", "Expenses", "Reports", "Employees"]) {
       expect(l, gone).not.toContain(gone);
     }
   });

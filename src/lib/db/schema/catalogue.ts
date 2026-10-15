@@ -132,6 +132,8 @@ export const galleryProjects = pgTable("gallery_projects", {
   sortOrder: integer("sort_order").notNull().default(0),
   /** The kind of furniture this project shows, so the Gallery can be filtered like the Collection. */
   categoryId: uuid("category_id").references(() => productCategories.id, { onDelete: "set null" }),
+  /** Where the photographs belong: the public project gallery, or the showroom and workshop pictures staff keep here. */
+  area: text("area").notNull().default("projects"),
   archivedAt: timestamp("archived_at", { withTimezone: true }),
   ...timestamps,
 });

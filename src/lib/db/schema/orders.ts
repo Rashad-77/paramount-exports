@@ -6,7 +6,7 @@ import { profiles } from "./foundation";
 
 /** Online orders: placed on the public website, paid for offline (on delivery, by bank transfer, or at the showroom). No online payments. */
 
-export const orderStatus = pgEnum("online_order_status", ["new", "confirmed", "in_progress", "delivered", "cancelled"]);
+export const orderStatus = pgEnum("online_order_status", ["new", "confirmed", "in_progress", "ready", "out_for_delivery", "delivered", "cancelled"]);
 export const orderPayment = pgEnum("online_order_payment", ["on_delivery", "bank_transfer", "at_showroom"]);
 export const orderFulfilment = pgEnum("online_order_fulfilment", ["delivery", "pickup"]);
 export const contactMethod = pgEnum("contact_method", ["phone", "whatsapp", "email"]);
@@ -42,6 +42,10 @@ export const orders = pgTable(
     staffNote: text("staff_note"),
     cancelReason: text("cancel_reason"),
     confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    /** The day staff plan to deliver the order or have it ready to collect. */
+    scheduledFor: date("scheduled_for"),
+    readyAt: timestamp("ready_at", { withTimezone: true }),
+    outForDeliveryAt: timestamp("out_for_delivery_at", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     handledBy: uuid("handled_by").references(() => profiles.id, { onDelete: "set null" }),
@@ -93,6 +97,8 @@ export const messages = pgTable(
     reference: text("reference").notNull().unique(),
     kind: text("kind").notNull().default("general"),
     isHandled: boolean("is_handled").notNull().default(false),
+    /** Staff are working on an enquiry but have not answered it yet. */
+    inProgress: boolean("in_progress").notNull().default(false),
     handledAt: timestamp("handled_at", { withTimezone: true }),
     handledBy: uuid("handled_by").references(() => profiles.id, { onDelete: "set null" }),
     name: text("name").notNull(),
@@ -123,7 +129,7 @@ export const messages = pgTable(
     index("messages_handled_idx").on(t.isHandled, t.createdAt),
     index("messages_account_idx").on(t.accountId, t.createdAt),
     check("messages_kind_known", sql`${t.kind} IN ('general', 'product_enquiry', 'custom')`),
-    check("messages_quote_status_known", sql`${t.quoteStatus} IS NULL OR ${t.quoteStatus} IN ('requested', 'quoted', 'accepted', 'declined', 'cancelled')`),
+    check("messages_quote_status_known", sql`${t.quoteStatus} IS NULL OR ${t.quoteStatus} IN ('requested', 'under_review', 'quoted', 'accepted', 'declined', 'cancelled')`),
     check("messages_quote_amount_nonneg", sql`${t.quotedAmount} IS NULL OR ${t.quotedAmount} >= 0`),
   ],
 );

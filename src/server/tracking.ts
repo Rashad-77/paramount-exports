@@ -80,6 +80,9 @@ export async function toTrackedOrder(
     total: order.total,
     placedAt: order.createdAt.toISOString(),
     confirmedAt: order.confirmedAt?.toISOString() ?? null,
+    readyAt: order.readyAt?.toISOString() ?? null,
+    outForDeliveryAt: order.outForDeliveryAt?.toISOString() ?? null,
+    scheduledFor: order.scheduledFor ?? null,
     deliveredAt: order.deliveredAt?.toISOString() ?? null,
     cancelledAt: order.cancelledAt?.toISOString() ?? null,
     items: items.map((i) => ({

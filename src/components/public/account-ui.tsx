@@ -12,7 +12,7 @@ export function Pill({ tone, children }: { tone: "info" | "success" | "warning" 
 
 export const QuoteStatusPill = ({ status }: { status: QuoteStatus }) => <Pill tone={QUOTE_TONE[status]}>{QUOTE_STATUS_LABEL[status]}</Pill>;
 
-const ORDER_TONE: Record<OrderStatus, "info" | "success" | "warning" | "neutral"> = { new: "info", confirmed: "warning", in_progress: "warning", delivered: "success", cancelled: "neutral" };
+const ORDER_TONE: Record<OrderStatus, "info" | "success" | "warning" | "neutral"> = { new: "info", confirmed: "warning", in_progress: "warning", ready: "info", out_for_delivery: "warning", delivered: "success", cancelled: "neutral" };
 export const OrderStatusPill = ({ status }: { status: OrderStatus }) => <Pill tone={ORDER_TONE[status]}>{STATUS_LABEL[status]}</Pill>;
 
 export function SectionHead({ title, id, link }: { title: string; id?: string; link?: { href: string; label: string } }) {

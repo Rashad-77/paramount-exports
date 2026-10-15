@@ -34,11 +34,17 @@ export const NAV: NavGroup[] = [
     modules: [{ label: "Dashboard", description: "New orders, what needs doing today, and recent activity.", pages: [page("Dashboard", "/app", null)] }],
   },
   {
-    label: "Orders",
+    label: "Sales",
     modules: [
-      { label: "Orders", description: "Orders placed on the website: confirm them, agree delivery, and record payment when it arrives.", pages: [page("Orders", "/app/orders", "orders:view")] },
-      { label: "Messages", description: "Contact-form messages, product enquiries and custom-furniture requests from the website.", pages: [page("Messages", "/app/messages", "messages:view")] },
-      { label: "Customers", description: "People who have ordered, with their contact details and order history.", pages: [page("Customers", "/app/customers", "customers:view")] },
+      { label: "Orders", description: "Orders placed on the website, from new to completed: confirm them, follow production, and record payment when it arrives.", pages: [page("Orders", "/app/orders", "orders:view")] },
+      { label: "Quotations", description: "Requests for made-to-measure furniture: review them, send a price, and turn accepted quotations into orders.", pages: [page("Quotations", "/app/quotations", "messages:view")] },
+      { label: "Enquiries", description: "Questions from the contact form and from product pages, from new to responded.", pages: [page("Enquiries", "/app/enquiries", "messages:view")] },
+    ],
+  },
+  {
+    label: "Fulfilment",
+    modules: [
+      { label: "Delivery and collection", description: "Orders ready to go out, on the road, delivered, and collected from the showroom, with the delivery charges agreed.", pages: [page("Delivery and collection", "/app/delivery", "orders:view")] },
     ],
   },
   {
@@ -52,8 +58,13 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
-    label: "Website",
+    label: "People",
+    modules: [{ label: "Customers", description: "People who have ordered, asked for a quotation or written to you, with their contact details and history.", pages: [page("Customers", "/app/customers", "customers:view")] }],
+  },
+  {
+    label: "Business",
     modules: [
+      { label: "Showroom and workshop", description: "Contact details, opening hours, and the photographs of the showroom and the workshop.", pages: [page("Showroom and workshop", "/app/showroom", "website:manage")] },
       {
         label: "Website",
         description: "Page wording and the gallery of finished projects.",

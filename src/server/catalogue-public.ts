@@ -320,7 +320,7 @@ async function listGalleryProjectsImpl() {
     .select({ p: galleryProjects, categorySlug: productCategories.slug })
     .from(galleryProjects)
     .leftJoin(productCategories, eq(productCategories.id, galleryProjects.categoryId))
-    .where(and(eq(galleryProjects.isPublished, true), isNull(galleryProjects.archivedAt)))
+    .where(and(eq(galleryProjects.isPublished, true), eq(galleryProjects.area, "projects"), isNull(galleryProjects.archivedAt)))
     .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.completedOn), desc(galleryProjects.createdAt));
   if (projects.length === 0) return [];
   const rows = projects.map((r) => ({ ...r.p, categorySlug: r.categorySlug }));

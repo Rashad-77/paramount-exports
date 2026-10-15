@@ -1,6 +1,6 @@
 import "server-only";
 import { outer } from "@/lib/db/outer";
-import { and, asc, desc, eq, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { isUniqueViolation } from "@/lib/db/errors";
@@ -393,11 +393,12 @@ export async function makeMainImage(actor: Actor, imageId: string): Promise<void
 
 /* ───────────────────────────── gallery ───────────────────────────── */
 
-export async function listGalleryAdmin(actor: Actor) {
+export async function listGalleryAdmin(actor: Actor, areas: readonly string[] = ["projects"]) {
   requirePermission(actor, "website:manage");
   return getDb()
     .select({
       id: galleryProjects.id,
+      area: galleryProjects.area,
       title: galleryProjects.title,
       isPublished: galleryProjects.isPublished,
       completedOn: galleryProjects.completedOn,
@@ -405,6 +406,7 @@ export async function listGalleryAdmin(actor: Actor) {
       imageCount: sql<number>`(SELECT count(*)::int FROM gallery_images g WHERE g.project_id = ${outer(galleryProjects.id)})`,
     })
     .from(galleryProjects)
+    .where(inArray(galleryProjects.area, [...areas]))
     .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.createdAt));
 }
 
@@ -427,7 +429,7 @@ export async function createGalleryProject(actor: Actor, input: GalleryProjectIn
   return withTx(async (tx) => {
     const [g] = await tx
       .insert(galleryProjects)
-      .values({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
+      .values({ area: input.area ?? "projects", title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
       .returning({ id: galleryProjects.id });
     await recordAudit(tx, actor, { action: "gallery.created", entityType: "gallery_project", entityId: g!.id, after: { title: input.title } });
     return g!.id;

@@ -160,7 +160,7 @@ export async function setMessageHandled(actor: Actor, id: string, handled: boole
     if (!m) throw notFound("That message could not be found.");
     await tx
       .update(messages)
-      .set({ isHandled: handled, handledAt: handled ? new Date() : null, handledBy: handled ? actor.id : null })
+      .set({ isHandled: handled, inProgress: false, handledAt: handled ? new Date() : null, handledBy: handled ? actor.id : null })
       .where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: handled ? "message.handled" : "message.reopened", entityType: "message", entityId: id, before: { isHandled: m.isHandled }, after: { isHandled: handled } });
   });
@@ -285,4 +285,102 @@ export async function createOrderFromQuotation(actor: Actor, id: string, input: 
   });
   if (notify) emailCustomer((notify as { email: string | null }).email, (notify as { subject: string }).subject, (notify as { text: string }).text);
   return created;
+}
+
+/* ───────────────────────────── staff: quotation and enquiry lists ───────────────────────────── */
+
+export type QuoteFilter = "requested" | "under_review" | "quoted" | "accepted" | "declined" | "cancelled";
+export type EnquiryState = "new" | "in_progress" | "responded";
+
+const isQuotation = eq(messages.kind, "custom");
+const isEnquiry = sql`${messages.kind} <> 'custom'`;
+const enquiryStateCond = (s: EnquiryState): SQL =>
+  s === "responded" ? eq(messages.isHandled, true) : s === "in_progress" ? and(eq(messages.isHandled, false), eq(messages.inProgress, true))! : and(eq(messages.isHandled, false), eq(messages.inProgress, false))!;
+
+/** Made-to-measure requests with their quotation status, newest first. */
+export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?: string; page: number; pageSize: number }) {
+  requirePermission(actor, "messages:view");
+  const where: SQL[] = [isQuotation];
+  if (f.status) where.push(eq(messages.quoteStatus, f.status));
+  if (f.q) {
+    const like = `%${escapeLike(f.q)}%`;
+    where.push(or(ilike(messages.reference, like), ilike(messages.name, like), ilike(messages.phone, like), ilike(messages.email, like), ilike(messages.message, like))!);
+  }
+  const cond = and(...where);
+  const db = getDb();
+  const [rows, [totalRow], countRows] = await Promise.all([
+    db
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, phone: messages.phone, message: messages.message, payload: messages.payload, quoteStatus: messages.quoteStatus, quotedAmount: messages.quotedAmount, quotedAt: messages.quotedAt, orderId: messages.orderId, createdAt: messages.createdAt })
+      .from(messages)
+      .where(cond)
+      .orderBy(desc(messages.createdAt))
+      .limit(f.pageSize)
+      .offset((f.page - 1) * f.pageSize),
+    db.select({ n: count() }).from(messages).where(cond),
+    db.select({ status: messages.quoteStatus, n: count() }).from(messages).where(isQuotation).groupBy(messages.quoteStatus),
+  ]);
+  const counts: Record<QuoteFilter | "all", number> = { all: 0, requested: 0, under_review: 0, quoted: 0, accepted: 0, declined: 0, cancelled: 0 };
+  for (const r of countRows) {
+    counts.all += r.n;
+    if (r.status && r.status in counts) counts[r.status as QuoteFilter] = r.n;
+  }
+  const total = totalRow?.n ?? 0;
+  return { rows, counts, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
+}
+
+/** Contact-form messages and product questions, with the state staff have put them in. */
+export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?: string; page: number; pageSize: number }) {
+  requirePermission(actor, "messages:view");
+  const where: SQL[] = [isEnquiry];
+  if (f.state) where.push(enquiryStateCond(f.state));
+  if (f.q) {
+    const like = `%${escapeLike(f.q)}%`;
+    where.push(or(ilike(messages.reference, like), ilike(messages.name, like), ilike(messages.phone, like), ilike(messages.email, like), ilike(messages.message, like))!);
+  }
+  const cond = and(...where);
+  const db = getDb();
+  const [rows, [totalRow], [nNew], [nProg], [nDone]] = await Promise.all([
+    db
+      .select({ id: messages.id, reference: messages.reference, kind: messages.kind, isHandled: messages.isHandled, inProgress: messages.inProgress, name: messages.name, phone: messages.phone, message: messages.message, createdAt: messages.createdAt })
+      .from(messages)
+      .where(cond)
+      .orderBy(desc(messages.createdAt))
+      .limit(f.pageSize)
+      .offset((f.page - 1) * f.pageSize),
+    db.select({ n: count() }).from(messages).where(cond),
+    db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("new"))),
+    db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("in_progress"))),
+    db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("responded"))),
+  ]);
+  const counts = { new: nNew?.n ?? 0, in_progress: nProg?.n ?? 0, responded: nDone?.n ?? 0, all: (nNew?.n ?? 0) + (nProg?.n ?? 0) + (nDone?.n ?? 0) };
+  const total = totalRow?.n ?? 0;
+  return { rows, counts, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
+}
+
+/** Staff move an enquiry between new, in progress and responded. */
+export async function setEnquiryState(actor: Actor, id: string, state: EnquiryState): Promise<void> {
+  requirePermission(actor, "messages:handle");
+  await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That message could not be found.");
+    const responded = state === "responded";
+    await tx
+      .update(messages)
+      .set({ isHandled: responded, inProgress: state === "in_progress", handledAt: responded ? new Date() : null, handledBy: responded || state === "in_progress" ? actor.id : null })
+      .where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: `message.${state}`, entityType: "message", entityId: id, before: { isHandled: m.isHandled, inProgress: m.inProgress }, after: { state } });
+  });
+}
+
+/** Staff start looking at a request: it moves from "new" to "under review". */
+export async function startQuoteReview(actor: Actor, id: string): Promise<void> {
+  requirePermission(actor, "messages:handle");
+  await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That request could not be found.");
+    if (m.kind !== "custom") throw invalidState("Only made-to-measure requests can be reviewed this way.");
+    if (m.quoteStatus !== "requested") throw invalidState("Only a new request can be moved to under review.");
+    await tx.update(messages).set({ quoteStatus: "under_review", handledBy: actor.id }).where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: "quotation.under_review", entityType: "message", entityId: id, before: { status: m.quoteStatus }, after: { status: "under_review" } });
+  });
 }

@@ -63,6 +63,10 @@ export interface TrackedOrder {
   total: string;
   placedAt: string;
   confirmedAt: string | null;
+  readyAt: string | null;
+  outForDeliveryAt: string | null;
+  /** The day staff plan to deliver the order or have it ready, when they have set one. */
+  scheduledFor: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;
   items: Array<{ name: string; label: string | null; quantity: number; lineTotal: string; imageUrl: string | null; imageAlt: string }>;

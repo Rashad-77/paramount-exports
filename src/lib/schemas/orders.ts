@@ -76,6 +76,7 @@ export const orderDetailsSchema = z.object({
     z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, "Enter an amount like 1500 or 1500.50."),
   ),
   staffNote: optText("Note", 1000),
+  scheduledFor: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
 });
 
 export const orderPaidSchema = z.object({ id: z.uuid(), paid: checkbox });

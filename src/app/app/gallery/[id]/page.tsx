@@ -31,7 +31,7 @@ export default async function GalleryProjectPage({ params }: { params: Promise<{
       {project.archivedAt ? <Alert tone="warning" title="Archived" className="mb-6">This project is hidden from the website.</Alert> : null}
       <div className="min-w-0 space-y-6">
         <Panel title="Details">
-          <GalleryForm action={updateGalleryAction} submitLabel="Save changes" values={{ id: project.id, title: project.title, description: project.description, completedOn: project.completedOn, isPublished: project.isPublished, sortOrder: project.sortOrder, categoryId: project.categoryId }} categories={categories} />
+          <GalleryForm action={updateGalleryAction} submitLabel="Save changes" values={{ id: project.id, area: project.area, title: project.title, description: project.description, completedOn: project.completedOn, isPublished: project.isPublished, sortOrder: project.sortOrder, categoryId: project.categoryId }} categories={categories} />
         </Panel>
         <Panel title="Photographs">
           {images.length > 0 ? (

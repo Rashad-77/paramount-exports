@@ -23,7 +23,7 @@ export async function setStatusAction(_p: ActionState, fd: FormData): Promise<Ac
 
 export async function updateDetailsAction(_p: ActionState, fd: FormData): Promise<ActionState> {
   return runAction(fd, orderDetailsSchema, async (input, { actor }) => {
-    await updateOrderDetails(actor!, input.id, { deliveryCharge: input.deliveryCharge, staffNote: input.staffNote });
+    await updateOrderDetails(actor!, input.id, { deliveryCharge: input.deliveryCharge, staffNote: input.staffNote, scheduledFor: input.scheduledFor });
     refresh(input.id);
     return { message: "Order details saved." };
   });

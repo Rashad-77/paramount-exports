@@ -9,13 +9,14 @@ export function GalleryForm({
   categories = [],
 }: {
   action: (p: ActionState, fd: FormData) => Promise<ActionState>;
-  values?: { id?: string; title?: string; description?: string | null; completedOn?: string | null; isPublished?: boolean; sortOrder?: number; categoryId?: string | null };
+  values?: { id?: string; area?: string; title?: string; description?: string | null; completedOn?: string | null; isPublished?: boolean; sortOrder?: number; categoryId?: string | null };
   submitLabel: string;
   categories?: Array<{ id: string; name: string; parentId: string | null }>;
 }) {
   return (
     <ActionForm action={action}>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
+      <input type="hidden" name="area" value={values.area ?? "projects"} />
       <div className="grid gap-5 md:grid-cols-2">
         <FField name="title" label="Project title" required defaultValue={values.title} />
         <FField name="completedOn" label="Completed on" type="date" defaultValue={values.completedOn ?? ""} />
