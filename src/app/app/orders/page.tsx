@@ -152,14 +152,16 @@ export default async function OrdersPage({
                     </TD>
                     <TD className="max-w-[16rem]">
                       {r.contents ? (
-                        <span className="line-clamp-3 whitespace-pre-line">
+                        <span className="whitespace-pre-line">
                           {r.contents}
                         </span>
                       ) : (
                         <span className="text-text-muted">No items</span>
                       )}
                     </TD>
-                    <TD numeric>{r.itemCount}</TD>
+                    <TD numeric className="whitespace-pre-line">
+                      {r.quantities || "0"}
+                    </TD>
 
                     <TD numeric>{formatAmount(r.total)}</TD>
                   </TR>

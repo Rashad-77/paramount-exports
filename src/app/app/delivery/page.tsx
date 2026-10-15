@@ -155,14 +155,14 @@ export default async function DeliveryPage({
                   </TD>
                   <TD className="max-w-[16rem]">
                     {r.contents ? (
-                      <span className="line-clamp-3 whitespace-pre-line">
-                        {r.contents}
-                      </span>
+                      <span className="whitespace-pre-line">{r.contents}</span>
                     ) : (
                       <span className="text-text-muted">No items</span>
                     )}
                   </TD>
-                  <TD numeric>{r.itemCount}</TD>
+                  <TD numeric className="whitespace-pre-line">
+                    {r.quantities || "0"}
+                  </TD>
                   <TD>
                     <OrderTag status={r.status} />
                   </TD>

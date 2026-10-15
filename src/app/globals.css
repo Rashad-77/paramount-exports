@@ -766,3 +766,12 @@ html:has(.app-ui) {
     min-height: 2.5rem;
   }
 }
+
+/* Order content and quantity: one line per item, each item's quantity on the same line as its name. */
+.app-ui [role="region"][tabindex="0"] td .whitespace-pre-line,
+.app-ui [role="region"][tabindex="0"] td.whitespace-pre-line {
+  white-space: pre-line;
+}
+.app-ui [role="region"][tabindex="0"] td .whitespace-pre-line {
+  min-width: 0;
+}
