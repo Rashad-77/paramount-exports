@@ -37,7 +37,7 @@ const DEMO_IDS: Record<Role, string> = {
   staff: "00000000-0000-4000-8000-000000000002",
 };
 const DEMO_NAMES: Record<Role, string> = {
-  owner: "Sample Owner",
+  owner: "Mr. Kapila Bandara",
   staff: "Sample Staff",
 };
 

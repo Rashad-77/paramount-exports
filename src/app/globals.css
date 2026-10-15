@@ -15,8 +15,8 @@
   --font-serif: var(--font-sans);
   --color-ivory: #ffffff;
   --color-surface: #ffffff;
-  --color-paper-deep: #f7f7f8;
-  --color-linen: #f1f2f4;
+  --color-paper-deep: #ffffff;
+  --color-linen: #ffffff;
   --color-linen-dark: #d9dce1;
   --color-walnut: #111827;
   --color-walnut-dark: #030712;
@@ -496,7 +496,7 @@
   transition: background-color 160ms ease;
 }
 a.dash-figure:hover {
-  background: #f9fafb;
+  background: #fff;
 }
 .dash-label {
   font-size: 0.75rem;
@@ -592,4 +592,37 @@ body:has(.app-ui) {
 }
 .app-scroll::-webkit-scrollbar {
   display: none;
+}
+
+/* Staff area brand: the mark with the name in two lines, as on the website */
+.staff-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #111827;
+  text-decoration: none;
+}
+.staff-brand-mark {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+}
+.staff-brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.staff-brand-name b {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.staff-brand-name i {
+  margin-top: 0.15rem;
+  font-size: 0.5625rem;
+  font-style: normal;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b7280;
 }

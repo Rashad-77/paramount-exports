@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Actor } from "@/lib/auth/permissions";
 import { visibleNav } from "@/lib/nav";
 import { AppNav } from "./app-nav";
+import { StaffBrand } from "./staff-brand";
 import { AppNavMobile } from "./app-nav-mobile";
 
 const ROLE_LABEL: Record<string, string> = { owner: "Owner", manager: "Manager", sales: "Sales", workshop: "Workshop", finance: "Finance" };
@@ -41,9 +41,7 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden border-r border-border bg-surface text-text lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
         <div className="flex h-[var(--header-height)] items-center border-b border-border px-5">
-          <Link href="/app" className="text-base font-semibold leading-none text-walnut">
-            {businessName}
-          </Link>
+          <StaffBrand name={businessName} />
         </div>
         <div className="app-scroll flex-1 overflow-y-auto p-3">
           <NavList actor={actor} currentPath={currentPath} />
@@ -61,9 +59,7 @@ export function AppShell({
         </div>
         {/* Mobile / tablet top bar */}
         <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-surface px-[var(--gutter)] text-text lg:hidden">
-          <Link href="/app" className="truncate text-base font-semibold leading-none text-walnut">
-            {businessName}
-          </Link>
+          <StaffBrand name={businessName} />
           <AppNavMobile>
             <NavList actor={actor} currentPath={currentPath} />
             <div className="mt-6 border-t border-border pt-4">
