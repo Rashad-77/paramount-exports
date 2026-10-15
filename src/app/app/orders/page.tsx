@@ -18,7 +18,6 @@ import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatAmount } from "@/lib/money";
 import { type OrderStatus } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDateTime } from "@/lib/time";
 import { countOrdersByStatus, listOrders } from "@/server/orders";
 
 export const metadata = { title: "Orders" };
@@ -128,7 +127,6 @@ export default async function OrdersPage({
                   <TH className="text-right">Qty</TH>
 
                   <TH className="text-right">Total ({business.currency})</TH>
-                  <TH>Placed</TH>
                 </tr>
               </THead>
               <tbody>
@@ -164,9 +162,6 @@ export default async function OrdersPage({
                     <TD numeric>{r.itemCount}</TD>
 
                     <TD numeric>{formatAmount(r.total)}</TD>
-                    <TD className="whitespace-nowrap">
-                      {formatDateTime(r.createdAt, business.timezone)}
-                    </TD>
                   </TR>
                 ))}
               </tbody>
