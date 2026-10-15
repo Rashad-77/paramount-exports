@@ -3631,3 +3631,10 @@ a.acct-row {
     gap: 0;
   }
 }
+
+/* Footer icons: smaller. */
+.foot-list svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
+  margin-top: 0.2rem;
+}

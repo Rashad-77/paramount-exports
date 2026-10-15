@@ -1,9 +1,10 @@
-import { Clock, Facebook, Info, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { BusinessSettings } from "@/lib/settings";
 import { isPlaceholderBusiness } from "@/lib/settings";
 import { PublicHeader, type NavLink } from "./public-nav";
+import { FacebookIcon } from "@/components/public/facebook-icon";
 import { TikTokIcon } from "@/components/public/tiktok-icon";
 import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 import { whatsappLink } from "@/lib/contact";
@@ -141,7 +142,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               {business.facebook ? (
                 <li>
                   <a href={business.facebook} target="_blank" rel="noopener noreferrer">
-                    <Facebook aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                    <FacebookIcon aria-hidden="true" className="size-4" />
                     Facebook<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 </li>
