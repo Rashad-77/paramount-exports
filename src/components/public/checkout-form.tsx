@@ -130,7 +130,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
               help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our showroom. No delivery charge."}
             />
           ))}
-          {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
+          {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" className="pt-4" /> : null}
         </fieldset>
 
         <hr className="border-border" />
