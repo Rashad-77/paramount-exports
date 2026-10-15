@@ -692,3 +692,32 @@ html:has(.app-ui) {
   background: #f3f4f6;
   color: #111827;
 }
+
+/* Staff area: smaller form text and boxes, on phones too. */
+.app-ui :is(input, select, textarea),
+.app-ui .gs-field .gs-button {
+  font-size: 0.8125rem !important;
+}
+.app-ui :is(input, select):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.app-ui .gs-field .gs-button {
+  min-height: 2.25rem !important;
+}
+.app-ui .app-search label,
+.app-ui form label {
+  font-size: 0.75rem;
+}
+[data-searching] ~ .app-results {
+  opacity: 0.55;
+  transition: opacity 150ms ease;
+}
+
+/* The search box needs no visible "Search" heading above it (the placeholder and the button say it); screen readers still read it. */
+.app-search label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
