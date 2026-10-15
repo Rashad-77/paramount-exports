@@ -661,3 +661,8 @@ body:has(.app-ui) {
   font-size: 0.875rem;
   color: #111827;
 }
+
+/* Staff area: smaller type and spacing throughout (a 14px base; the public site's larger-screen steps do not apply here). */
+html:has(.app-ui) {
+  font-size: 87.5%;
+}
