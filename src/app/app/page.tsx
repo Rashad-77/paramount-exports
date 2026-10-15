@@ -63,8 +63,8 @@ export default async function DashboardPage() {
         <Figure label="Total sales, last 30 days" value={formatMoney(d.last30.value, d.currency)} hint={`${d.last30.orders} ${d.last30.orders === 1 ? "order" : "orders"} · ${formatMoney(d.last30.paid, d.currency)} paid`} />
         <Figure label="New orders" value={d.counts.new} href="/app/orders?view=new" attention={d.counts.new > 0} />
         <Figure label="Pending quotations" value={d.pendingQuotations} href="/app/quotations?status=requested" attention={d.pendingQuotations > 0} />
-        <Figure label="Orders in production" value={d.counts.in_progress} confirmed, not started`} href="/app/orders?view=in_progress" />
-        <Figure label="Ready for collection or delivery" value={d.counts.ready + d.counts.out_for_delivery} out for delivery`} href="/app/orders?view=ready" />
+        <Figure label="Orders in production" value={d.counts.in_progress} href="/app/orders?view=in_progress" />
+        <Figure label="Ready for collection or delivery" value={d.counts.ready + d.counts.out_for_delivery} href="/app/orders?view=ready" />
         <Figure label="Awaiting payment" value={d.awaitingPayment} href="/app/orders?view=unpaid" />
         <Figure label="Upcoming deliveries" value={d.upcomingDeliveriesCount} href="/app/delivery" />
         <Figure label="New enquiries" value={d.newEnquiries} href="/app/enquiries?state=new" attention={d.newEnquiries > 0} />

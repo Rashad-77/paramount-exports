@@ -567,3 +567,21 @@ a.dash-figure:hover {
     grid-column: 1 / -1;
   }
 }
+
+/* Staff area: a pure white page, and no underlined links (they darken on hover instead). */
+html:has(.app-ui),
+body:has(.app-ui) {
+  background: #fff;
+}
+.app-ui a,
+.app-ui .underline,
+.app-ui a.underline {
+  text-decoration: none;
+}
+.app-ui a:hover {
+  color: #000;
+}
+.dash-value[data-attention] {
+  text-decoration: none;
+  font-weight: 600;
+}
