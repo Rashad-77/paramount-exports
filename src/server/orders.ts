@@ -3,6 +3,7 @@ import { and, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "dr
 import { normaliseEmail, phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
+import { outer } from "@/lib/db/outer";
 import { messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
 import { conflict, invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
@@ -159,8 +160,8 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         scheduledFor: orders.scheduledFor,
         address: orders.address,
         createdAt: orders.createdAt,
-        contents: sql<string>`coalesce((SELECT string_agg(i.product_name || coalesce(' · ' || i.variant_label, ''), E'\n' ORDER BY i.position) FROM online_order_items i WHERE i.order_id = ${orders.id}), '')`,
-        itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${orders.id}), 0)`,
+        contents: sql<string>`coalesce((SELECT string_agg(i.product_name || coalesce(' · ' || i.variant_label, ''), E'\n' ORDER BY i.position) FROM online_order_items i WHERE i.order_id = ${outer(orders.id)}), '')`,
+        itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${outer(orders.id)}), 0)`,
       })
       .from(orders)
       .where(cond)
