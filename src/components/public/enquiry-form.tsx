@@ -30,12 +30,15 @@ export function EnquiryForm({
   variants,
   turnstileSiteKey,
   submitLabel = "Send enquiry",
+  wide = false,
 }: {
   kind: "general" | "product_enquiry" | "custom";
   productId?: string;
   variants?: VariantOption[];
   turnstileSiteKey?: string;
   submitLabel?: string;
+  /** Spread across the full width: name, phone and email in one row, the tick and the button on one line. */
+  wide?: boolean;
 }) {
   const [token, setToken] = useState("");
   useEffect(() => {
@@ -70,14 +73,15 @@ export function EnquiryForm({
         </label>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className={wide ? (variants && variants.length > 1 ? "grid gap-5 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-5 sm:grid-cols-3") : "grid gap-5 sm:grid-cols-2"}>
         <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
         <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required />
         <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} />
-        <FSelect name="preferredContact" label="Best way to reach you" options={CONTACT_OPTIONS} placeholder="No preference" />
+        {wide ? null : <FSelect name="preferredContact" label="Best way to reach you" options={CONTACT_OPTIONS} placeholder="No preference" />}
+        {wide && variants && variants.length > 1 ? <FSelect name="variantId" label="Option" options={variants.map((v) => ({ value: v.id, label: v.label }))} placeholder="Not sure yet" /> : null}
       </div>
 
-      {variants && variants.length > 1 ? (
+      {!wide && variants && variants.length > 1 ? (
         <FSelect name="variantId" label="Option" options={variants.map((v) => ({ value: v.id, label: v.label }))} placeholder="Not sure yet" />
       ) : variants?.length === 1 ? (
         <input type="hidden" name="variantId" value={variants[0]!.id} />
@@ -102,16 +106,18 @@ export function EnquiryForm({
         name="message"
         label={kind === "custom" ? "Anything else we should know?" : "Your message"}
         required={kind === "general"}
-        rows={kind === "custom" ? 4 : 5}
+        rows={kind === "custom" ? 4 : wide ? 3 : 5}
         maxLength={2000}
       />
 
       {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
 
-      <FCheckbox name="consent" label="I agree to be contacted about this enquiry." hint="We use your details only to reply to you. See the Privacy notice." />
-      <SubmitButton size="cta" pendingLabel="Sending…">
-        {submitLabel}
-      </SubmitButton>
+      <div className={wide ? "flex flex-col gap-5 md:flex-row md:items-center md:justify-between" : "space-y-5"}>
+        <FCheckbox name="consent" label="I agree to be contacted about this enquiry." hint="We use your details only to reply to you. See the Privacy notice." />
+        <SubmitButton size="cta" pendingLabel="Sending…" className={wide ? "shrink-0" : undefined}>
+          {submitLabel}
+        </SubmitButton>
+      </div>
     </ActionForm>
   );
 }

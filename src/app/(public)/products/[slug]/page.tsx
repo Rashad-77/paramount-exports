@@ -241,15 +241,14 @@ export default async function ProductPage({ params }: Props) {
         </div>
 
         <AskDisclosure title="Have a question about this piece?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
-          <div className="max-w-2xl">
-            <EnquiryForm
-              kind="product_enquiry"
-              productId={p.id}
-              variants={p.variants.map((v) => ({ id: v.id, label: v.label }))}
-              turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-              submitLabel="Send enquiry"
-            />
-          </div>
+          <EnquiryForm
+            kind="product_enquiry"
+            wide
+            productId={p.id}
+            variants={p.variants.map((v) => ({ id: v.id, label: v.label }))}
+            turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            submitLabel="Send enquiry"
+          />
         </AskDisclosure>
 
         {related.length ? (
