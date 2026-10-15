@@ -88,6 +88,13 @@ async function main() {
     if (p.sku === "SMP-DT-180") await addVariant(owner, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });
   }
 
+  // Proper sample descriptions, features and care notes: the same text the 0024 migration puts on a demo database that already exists.
+  const { readFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  for (const statement of readFileSync(join(process.cwd(), "drizzle", "0024_sample_product_descriptions.sql"), "utf8").split("--> statement-breakpoint")) {
+    if (statement.trim()) await db.execute(sql.raw(statement));
+  }
+
   const g = await createGalleryProject(owner, { title: "[Sample] Completed project", description: "Sample project for development and demos only.", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
   if (withImages) await attachGalleryImages(owner, g, [await upload("gallery", 800, 600), await upload("gallery", 800, 600)], "Sample project photograph");
 
