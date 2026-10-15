@@ -54,11 +54,7 @@ function stepsFor(o: TrackedOrder) {
 }
 const ORDER = ["new", "confirmed", "in_progress", "delivered"] as const;
 
-function Result({
-  timezone,
-}: {
-  timezone: string;
-}) {
+function Result({ timezone }: { timezone: string }) {
   const { state } = useFormState();
   if (!state.ok) return null;
   const o = state.data as TrackedOrder | null | undefined;
@@ -89,6 +85,10 @@ export function OrderView({
   const awaitingCharge =
     o.fulfilment === "delivery" && dec(o.deliveryCharge).isZero() && at < 1;
   const current = steps[Math.max(0, at)]!;
+  // Anything the total is short of the sum of the items and the delivery charge is a discount.
+  const discount = dec(o.subtotal)
+    .plus(dec(o.deliveryCharge))
+    .minus(dec(o.total));
 
   return (
     <section
@@ -172,9 +172,9 @@ export function OrderView({
 
         <div className="ot-summary">
           <h3 className="ot-h">Order summary</h3>
-          <ul className="ot-items">
-            {o.items.map((i, n) => (
-              <li key={n}>
+          {o.items.map((i, n) => (
+            <div key={n} className="ot-piece">
+              <div className="ot-item">
                 <span
                   className="ot-thumb"
                   aria-hidden={i.imageUrl ? undefined : "true"}
@@ -189,24 +189,30 @@ export function OrderView({
                     />
                   ) : null}
                 </span>
-                <span className="ot-line">
-                  <span className="ot-name">{i.name}</span>
+                <span className="ot-name">
+                  {i.name}
                   {i.label ? (
                     <span className="ot-muted"> · {i.label}</span>
                   ) : null}
-                  <span className="ot-muted ot-qty">Qty {i.quantity}</span>
                 </span>
-                <span className="ot-money">
-                  {formatMoney(i.lineTotal, o.currency)}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <dl className="ot-sum">
-            <div>
-              <dt>Subtotal</dt>
-              <dd>{formatMoney(o.subtotal, o.currency)}</dd>
+              </div>
+              <dl className="ot-sum">
+                <div>
+                  <dt>
+                    {i.quantity > 1 ? `Price (Qty ${i.quantity})` : "Price"}
+                  </dt>
+                  <dd>{formatMoney(i.lineTotal, o.currency)}</dd>
+                </div>
+              </dl>
             </div>
+          ))}
+          <dl className="ot-sum ot-sum-end">
+            {discount.gt(0) ? (
+              <div>
+                <dt>Discount</dt>
+                <dd>− {formatMoney(discount, o.currency)}</dd>
+              </div>
+            ) : null}
             {o.fulfilment === "delivery" ? (
               <div>
                 <dt>Delivery</dt>

@@ -3701,3 +3701,24 @@ a.acct-row {
   flex: 1;
   min-width: 0;
 }
+
+/* Order summary: the piece (photo and name), its price, then discount, delivery and total. */
+.ot-piece + .ot-piece {
+  margin-top: 0.5rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
+.ot-item {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+}
+.ot-piece .ot-sum {
+  margin-top: 0.75rem;
+  padding-top: 0;
+  border-top: 0;
+}
+.ot-sum-end {
+  margin-top: 0.5rem;
+}
