@@ -2,19 +2,16 @@ import { ActionForm, SubmitButton } from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert, StatusBadge } from "@/components/ui/status";
-import { ROLES, requirePermission } from "@/lib/auth/permissions";
+import { ROLES, ROLE_LABEL, requirePermission } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { listUsers } from "@/server/users";
 import { setActiveAction, setRolesAction } from "./actions";
 
-export const metadata = { title: "Employees" };
+export const metadata = { title: "Users" };
 
 const ROLE_HELP: Record<string, string> = {
-  owner: "Everything, including users and settings.",
-  manager: "Runs the business day to day; no user or business-setting changes.",
-  sales: "Enquiries, customers, quotations, orders and payments.",
-  workshop: "Assigned jobs, materials, receiving goods, own deliveries.",
-  finance: "Payments, expenses, supplier payments and financial reports.",
+  owner: "Everything, including users, settings and the audit log.",
+  staff: "Orders, messages, customers, products, gallery and website pages. No users or business settings.",
 };
 
 export default async function UsersPage() {
@@ -37,7 +34,7 @@ export default async function UsersPage() {
                 {ROLES.map((r) => (
                   <label key={r} className="flex min-h-10 items-start gap-3 text-sm">
                     <input type="checkbox" name="roles" value={r} defaultChecked={u.roles.includes(r)} className="mt-0.5 size-5 shrink-0 accent-[var(--color-walnut)]" />
-                    <span><span className="font-medium capitalize">{r}</span><span className="block text-text-muted">{ROLE_HELP[r]}</span></span>
+                    <span><span className="font-medium">{ROLE_LABEL[r]}</span><span className="block text-text-muted">{ROLE_HELP[r]}</span></span>
                   </label>
                 ))}
               </fieldset>

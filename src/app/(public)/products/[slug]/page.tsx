@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddToCart } from "@/components/public/add-to-cart";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductGallery } from "@/components/public/product-gallery";
 import { StatusBadge } from "@/components/ui/status";
@@ -115,9 +116,17 @@ export default async function ProductPage({ params }: Props) {
             </div>
           </dl>
 
+          <AddToCart
+            productName={p.name}
+            productSlug={p.slug}
+            image={p.images[0]?.url ?? null}
+            currency={business.currency}
+            options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price }))}
+          />
+
           <section id="enquire" aria-labelledby="enquire-title" className="mt-7 scroll-mt-6 border border-border bg-surface p-6">
             <h2 id="enquire-title" className="font-display text-[1.5rem] leading-tight text-walnut">
-              Enquire about this piece
+              {prices.length ? "Ask about this piece" : "Enquire about this piece"}
             </h2>
             <p className="mt-1 mb-5 text-sm text-text-muted">Tell us how to reach you and we will get back to you about {p.name}.</p>
             <EnquiryForm

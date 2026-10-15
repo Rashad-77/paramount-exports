@@ -46,3 +46,18 @@ Performance notes: animations use only `transform` and `opacity` (plus backgroun
 ## Not done
 
 Real photography and the final brand typeface/colours are still placeholders: when the owner supplies a logo, palette or font, change the tokens and nothing else. No dark mode.
+
+## Third pass: neutral, editorial, order-ready
+
+Later changes that supersede parts of the tables above:
+
+| Area | What |
+|---|---|
+| Images | Every photo placeholder is plain flat grey (`#e4e4e2`), with no wood colour or texture, including the sample images made by the seed script |
+| Header | Charcoal-brown bar, small uppercase tracked links, a light-green line draws in under the hovered or current page, outlined "Enquire" button, a basket icon with a count |
+| Homepage | "Featured pieces" and "Recent projects" are endless carousels (black arrows centred on the photographs, no scrollbar); the closing band is white to mint with a green glow and contact links |
+| Gallery | Video hero like the homepage, then one filterable masonry (Showroom, Workshop, Projects) with a full-screen viewer (native `<dialog>`) |
+| Contact | Contact cards, then the map with a dropping, pulsing pin, then the enquiry form, then the showroom strip; staggered, restrained motion |
+| About | Two frosted-glass cards (visit, or custom piece) on a mint and sand gradient; workshop mosaic shared with the gallery code |
+| Ordering | Product page "Order this piece" panel, basket page, checkout (delivery or pickup, how you plan to pay) and a confirmation page, all in the same plain style |
+| Motion | `Reveal` gained a `wipe` variant; every animation switches off under `prefers-reduced-motion` |

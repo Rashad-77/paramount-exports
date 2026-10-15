@@ -20,9 +20,10 @@ export default function CustomPage() {
         title="Made to your measurements"
         eyebrow="Made to order"
         lead="Send us the details of what you have in mind. There is no obligation, and an enquiry does not create an order."
+        action={{ href: "#examples", label: "See examples" }}
       />
       <div>
-        <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
+        <div id="quotation" className="container-page scroll-mt-20 grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
           <Reveal
             as="section"
             aria-labelledby="process-title"
@@ -83,21 +84,21 @@ export default function CustomPage() {
         </div>
       </div>
 
-      <section aria-labelledby="examples-title" className="border-t border-border bg-white section-y">
+      <section id="examples" aria-labelledby="examples-title" className="scroll-mt-20 border-t border-border bg-white section-y">
         <div className="container-page">
           <Reveal>
-            <p className="eyebrow">Made to order</p>
+            <p className="eyebrow">Examples</p>
             <h2 id="examples-title" className="font-display mt-3 text-headline text-brand">
-              Examples of made-to-order work
+              Custom pieces, made to measure
             </h2>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-text-muted">Photographs of finished custom pieces will appear here.</p>
           </Reveal>
-          <ul className="mt-8 grid auto-rows-[12rem] grid-cols-2 gap-3 md:auto-rows-[15rem] md:grid-cols-3">
+          <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {EXAMPLES.map((e, i) => (
-              <Reveal as="li" key={e} delay={(i % 3) * 80} className={i === 0 ? "row-span-2" : i === 4 ? "md:col-span-2" : ""}>
-                <div className="zoom-frame size-full">
-                  <ImagePlaceholder label={e} className="size-full" />
+              <Reveal as="li" key={e.title} delay={(i % 3) * 80}>
+                <div className="zoom-frame aspect-[4/3]">
+                  <ImagePlaceholder label={`Custom example — ${e.title}`} className="size-full" compact />
                 </div>
+                <h3 className="mt-4 text-center text-[0.75rem] font-medium uppercase leading-snug tracking-[0.16em] text-text">{e.title}</h3>
               </Reveal>
             ))}
           </ul>
@@ -108,11 +109,10 @@ export default function CustomPage() {
 }
 
 const EXAMPLES = [
-  "Custom example — a dining table built to size",
-  "Custom example — fitted storage",
-  "Custom example — joinery detail",
-  "Custom example — a finish sample",
-  "Custom example — a piece in its room",
-  "Custom example — workshop progress",
-  "Custom example — delivered piece",
+  { title: "A dining table built to size" },
+  { title: "Fitted storage" },
+  { title: "Joinery detail" },
+  { title: "A finish sample" },
+  { title: "A piece in its room" },
+  { title: "Workshop progress" },
 ];

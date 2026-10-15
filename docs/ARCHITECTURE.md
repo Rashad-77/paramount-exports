@@ -3,131 +3,89 @@
 ## 1. Shape
 
 A **modular monolith**: one Next.js (App Router) application deployed on Vercel, one PostgreSQL database (Supabase).
-No microservices. Modules are folders with clear boundaries; the UI never talks to the database directly.
+No microservices. The UI never talks to the database directly.
 
 ```
 Browser ──► Next.js (Vercel)
-              ├─ (public)  server components, enquiry Server Actions
-              ├─ (app)     authenticated internal app (CRM / ERP)
-              └─ api/      cron + signed-upload endpoints
+              ├─ (public)  website, basket, checkout, enquiry forms (Server Actions)
+              ├─ app/      staff area: dashboard, orders, messages, customers, catalogue, website, users, settings
+              └─ api/      cron + signed-upload endpoints + form token + health
                     │
                     ▼
-           Service layer  (src/server/<module>)   ← authorization + validation + transactions
+           Service layer  (src/server/*)   ← authorization + validation + transactions
                     │
                     ▼
-           Drizzle ► Postgres (Supabase pooler)        Supabase Auth (identity)   Supabase Storage (private files)
+           Drizzle ► Postgres (Supabase pooler)      Supabase Auth (identity)   Supabase Storage (files)
 ```
 
 ## 2. Layering rules
 
-1. **Routes / Server Actions are thin.** They parse input (Zod), resolve the actor, call a service, map errors to UI.
-2. **Services own business rules.** Every service function takes an explicit `actor` and calls
-   `requirePermission(actor, "<resource>:<action>")` first. Services are the only code that writes to the DB.
-3. **No DB access from client components.** The browser never holds a service-role key or a DB string.
-4. **Transactions** wrap every multi-row business operation (order confirm, stock reserve, payment, transfer,
-   goods receipt, consumption, quotation conversion). Stock rows are locked with `SELECT … FOR UPDATE` in a
-   deterministic order (by `item_id, location_id`) to avoid deadlocks.
-5. **Audit**: sensitive services call `audit.record(tx, {...})` inside the same transaction as the change.
-6. **Errors**: services throw typed `AppError`s (`Forbidden`, `NotFound`, `Validation`, `Conflict`,
-   `InsufficientStock` …). Unknown errors are logged server-side with a request id and shown to users as a generic message.
+1. **Routes and Server Actions are thin.** They parse input (Zod), resolve the actor, call a service, map errors to the UI (`runAction`).
+2. **Services own the business rules.** Every staff function takes an explicit `actor` and calls `requirePermission(actor, "<resource>:<action>")`
+   first. Services are the only code that writes to the database.
+3. **No database access from client components.** The browser never holds a service-role key or a connection string.
+4. **Transactions** wrap every multi-row operation (placing an order with its lines, a status change with its audit entry). Orders are
+   locked with `SELECT … FOR UPDATE` while their status or payment flag changes.
+5. **Audit:** every staff change to an order, message, user or setting writes `audit_logs` in the same transaction.
+6. **Errors:** services throw typed `AppError`s (`FORBIDDEN`, `NOT_FOUND`, `VALIDATION`, `CONFLICT`, `INVALID_STATE`, `RATE_LIMITED`).
+   Unknown errors are logged with a reference and shown to people as a generic message.
 
-## 3. Proposed structure
+## 3. Layout
 
 ```
-.
-├─ docs/                       planning + handover docs
-├─ drizzle/                    SQL migrations (generated + custom) — version controlled
-├─ scripts/                    migrate, seed, create-owner CLI
-├─ src/
-│  ├─ app/
-│  │  ├─ (public)/             home, products, custom, about, gallery, contact, legal
-│  │  ├─ (auth)/login …
-│  │  ├─ (app)/app/…           internal app (layout enforces login + role-filtered nav)
-│  │  ├─ api/                  cron/, uploads/
-│  │  ├─ sitemap.ts  robots.ts
-│  │  └─ error.tsx  not-found.tsx  global-error.tsx
-│  ├─ components/
-│  │  ├─ ui/                   Button, Input, Select, Table, Dialog, Alert, StatusBadge, EmptyState …
-│  │  ├─ public/               site header/footer, hero, product card …
-│  │  └─ app/                  app shell, sidebar, page header, filters, pagination
-│  ├─ lib/
-│  │  ├─ auth/                 session, permissions matrix, requirePermission
-│  │  ├─ db/                   client, schema/*.ts, tx helper
-│  │  ├─ money.ts  quantity.ts decimal helpers (decimal.js)
-│  │  ├─ env.ts                Zod-validated environment
-│  │  ├─ errors.ts  logger.ts  request-id, AppError
-│  │  ├─ rate-limit.ts  storage.ts  settings.ts  time.ts
-│  ├─ server/                  services per module: crm, quotations, sales, inventory,
-│  │                           production, purchasing, finance, delivery, aftersales, files, audit
-│  └─ styles/tokens.css        design tokens
-├─ tests/                      unit/, integration/ (real Postgres), e2e/ (Playwright)
-└─ .env.example  README.md  vercel.json
+src/
+  app/
+    (public)/        home, products, product page, cart, checkout, order/confirmed, custom, about, gallery, contact, legal
+    (auth)/login
+    app/             staff area (layout requires a signed-in, active person)
+      orders/ messages/ customers/ products/ categories/ gallery/ website/ users/ settings/
+    api/             cron/, uploads/, files/, form-token/, health/
+  components/        ui/ (buttons, fields, tables), public/ (site chrome, cart, checkout, gallery), app/ (shell, forms)
+  lib/               auth/ (session, permissions), db/ (client, schema/), cart.ts, order-constants.ts, money.ts, settings.ts …
+  server/            orders.ts, messages.ts, catalogue.ts, catalogue-public.ts, files.ts, settings.ts, users.ts, audit.ts
+drizzle/             SQL migrations (version controlled)
+tests/               unit/, integration/ (real Postgres), e2e/ (Playwright)
 ```
 
-## 4. Authentication & sessions
+## 4. Ordering without payment
 
-- **Supabase Auth** (email + password; optional magic link) via `@supabase/ssr` cookies.
-- Middleware refreshes the session cookie. **Authorization never trusts the cookie alone**: server code calls
-  `supabase.auth.getUser()` (verified against Auth server) and then loads the user's active roles from
-  `user_roles`. A deactivated profile (`profiles.is_active = false`) is rejected even with a valid session.
-- No public sign-up: Owner invites staff. Initial Owner is created with `pnpm create-owner` (service-role key, run locally only).
-- Auth is hidden behind `getActor()`; tests inject actors directly, so business logic is testable without Supabase.
+1. **Basket** (`src/lib/cart.ts`): kept in the browser's `localStorage`, shared between tabs. It stores what is needed to display the
+   basket. It is never trusted.
+2. **Checkout** posts only variant ids and quantities (JSON), the customer's details and their choices.
+3. **`placeOrder`** (`src/server/orders.ts`): checks the form token (anti-spam), rate limits per address and per phone, then reads each
+   option from the database. It refuses anything unpublished, archived, inactive or without a public price. It computes the subtotal
+   with decimal arithmetic and, in one transaction, inserts the order and its lines with the **name, option, SKU and price copied
+   onto them**, and an audit entry.
+4. **Confirmation page** shows the order number, and the bank details if the customer chose transfer. The summary comes from a copy the
+   checkout kept in `sessionStorage`; the basket is emptied on that page.
+5. **Staff** move the order on, agree the delivery charge (total = subtotal + charge) and record payment. There is no payment code in the system.
 
-## 5. Authorization (server-enforced)
+## 5. Authentication and authorization
 
-- Roles: `owner`, `manager`, `sales`, `workshop`, `finance`. Users can hold several; permissions are the **union**.
-- Permissions are strings `resource:action`. The matrix is in `docs/ROLE_PERMISSIONS.md` and implemented in
-  `src/lib/auth/permissions.ts`. A test asserts that the code matrix equals the documented matrix and that
-  every service function declares a permission.
-- "Scoped" permissions (e.g. workshop sees only **assigned** jobs) are enforced in the query (`WHERE assigned_to = actor`),
-  not only after fetching.
-- UI hides inaccessible navigation, but the server is authoritative.
-- **RLS**: enabled on every table in `public` with **no policies** for `anon`/`authenticated` — Supabase's auto-generated
-  REST API therefore returns nothing. The app's server-side DB role bypasses RLS and relies on the service layer.
-  A test connects as `anon`/`authenticated` roles and asserts zero access. (If client-side Supabase reads are ever
-  introduced, explicit policies and tests must be added first.)
+- **Supabase Auth** (email + password) via `@supabase/ssr` cookies; the session cookie is refreshed in `src/proxy.ts`. Authorization never
+  trusts the cookie alone: `getActor()` verifies the user, then loads active roles from `user_roles`. A deactivated profile is refused.
+- No public sign-up: the Owner creates staff with `pnpm create-user`. Auth is behind `getActor()`, so tests inject actors directly.
+- Two roles, `owner` and `staff` (`src/lib/auth/permissions.ts`; table in `docs/ROLE_PERMISSIONS.md`, generated and checked by a test).
+- **RLS** is enabled on every public table with **no policies** for `anon`/`authenticated`; the app's server role bypasses it and relies on the
+  service layer. A test asserts the API roles have no access.
 
 ## 6. Files
 
-- Private bucket `private-files` (customer reference images, expense attachments, delivery proofs) and public bucket
-  `public-media` (catalogue/gallery images chosen for publication).
-- Upload flow: client requests `POST /api/uploads/sign` with declared name/type/size → server checks permission or
-  public-form context, size ≤ limit, content-type allow-list (jpeg, png, webp; pdf for attachments), generates a
-  random object key, returns a signed upload URL → client uploads directly → client calls the form action with the
-  object key → server verifies the object exists, re-checks size/type from Storage metadata, writes `uploaded_files`.
-- Public-form uploads are accepted into a quarantine prefix, linked only when the enquiry is saved; orphans are purged by cron.
-- Reads: server checks permission then returns a signed URL valid for minutes. No public listing of the private bucket.
+Private bucket `private-files` (pictures sent with custom requests) and public bucket `public-media` (catalogue and gallery images).
+Uploads: the client asks `POST /api/uploads/sign`; the server checks permission (or the public enquiry context, with a rate limit), size and
+content type, issues a signed URL, and later verifies the real bytes (magic numbers) before linking the file. Unlinked uploads are
+purged by the daily cron. Private files open only through `/api/files/[id]` for staff.
 
-## 7. Public enquiry pipeline
+## 7. Public forms and spam
 
-`form → Server Action → Zod validation → honeypot + min-fill-time + optional Turnstile → DB rate limit (per IP hash and per phone/email)
-→ transaction: find-or-warn customer by normalised phone/email, create customer if none, create lead (+ product context) → attach files → audit/activity`.
-Duplicates are **flagged** on the lead (`possible_duplicate_of`) — never merged silently. IPs are stored as salted hashes only.
+Honeypot field, signed time-stamped token (not instant, not stale), optional Cloudflare Turnstile, and per-IP and per-phone rate limits
+(IPs are stored only as salted hashes). Applies to enquiries and to orders.
 
-## 8. Inventory model (core idea)
+## 8. Money, time
 
-Single immutable **ledger** `inventory_movements`; each row carries `on_hand_delta` and `reserved_delta`.
-`inventory_balances(item, location)` is a transactional cache updated in the same transaction (with `CHECK on_hand >= 0`,
-`reserved >= 0`, `reserved <= on_hand`). Available = on_hand − reserved. Movements are never updated or deleted
-(DB trigger blocks it); corrections are new movements. A reconciliation query/test proves `balance = Σ movements`.
+`numeric(14,2)` money; `decimal.js` in TypeScript with strings at the boundary. Timestamps are UTC `timestamptz`; display uses the
+configured time zone (default `Asia/Colombo`, unconfirmed).
 
-## 9. Money & numbers
+## 9. Observability
 
-`numeric(14,2)` money, `numeric(14,3)` quantity. TypeScript uses `decimal.js` (strings at the boundary). Totals are
-computed in one place (`lib/money.ts`) and re-validated server-side; client-supplied totals are never trusted.
-
-## 10. Time
-
-Stored UTC `timestamptz`; date-only business fields use `date`. Display and date-range report boundaries use the
-configured timezone (`site_settings.timezone`).
-
-## 11. Observability & reliability
-
-Structured JSON logs with request id; Vercel logs. Backups: Supabase daily backups (plan-dependent) + documented
-`pg_dump` procedure and restore drill (`docs/OPERATIONS.md`, Step 7). Health endpoint `/api/health` (no secrets).
-
-## 12. Future phases (not built; not to be added quietly)
-
-Online checkout/payments; accounting (double-entry, tax, bank reconciliation); payroll/attendance; multi-branch;
-WhatsApp Business API; barcode/QR; 3D/AR; customer tracking portal; production scheduling/capacity; native apps;
-server-rendered PDFs; CSV import; notification providers.
+Structured logs with a reference on unexpected errors (Vercel logs); `/api/health` (no secrets); the audit log.

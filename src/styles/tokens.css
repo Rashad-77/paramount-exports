@@ -12,32 +12,42 @@
  */
 @theme {
   /* Surfaces and ink */
-  --color-ivory: #ffffff;
-  --color-paper-deep: #f5faf6;
-  --color-linen: #edf5ef;
-  --color-linen-dark: #cfe0d4;
-  --color-walnut: #6e3511;
-  --color-walnut-dark: #4f2509;
-  --color-charcoal: #1d1b18;
-  --color-stone: #77776c;
+  --color-ivory: #fefcf9;
+  --color-paper-deep: #f7f4ee;
+  --color-linen: #e8e3dc;
+  --color-linen-dark: #dbcfb9;
+  --color-walnut: #331c11;
+  --color-walnut-dark: #200f07;
+  --color-charcoal: #1c1916;
+  --color-stone: #8a7f74;
   --color-olive: #53634d;
   --color-olive-dark: #44523f;
   /* Brand: a deep saddle brown. Mint is the light green used for soft backgrounds and the page gradient. */
-  --color-brand: #6e3511;
-  --color-brand-dark: #4f2509;
-  --color-mint: #e6f2ea;
-  --color-mint-deep: #d3e8da;
-  --color-surface: #ffffff;
+  --color-brand: #331c11;
+  --color-brand-dark: #200f07;
+  --color-mint: #efe9df;
+  --color-mint-deep: #dbcfb9;
+  --color-surface: #fefcf9;
+  /* Rhythm for the public site: warm cream, a deeper cream for contrast, and bark brown for the dark sections */
+  --color-cream: #f7f4ee;
+  --color-cream-deep: #e8e3dc;
+  --color-bark: #200f07;
+  --color-bark-2: #331c11;
+  /* The warm accents from the design reference */
+  --color-timber: #825535;
+  --color-oak: #c5aa86;
+  --color-beige: #dbcfb9;
+  --color-copper: #b06239;
 
   /* Accent: a muted brass. Decorative (rules, hover lines, small marks); use brass-text for any text. */
-  --color-brass: #9a7440;
-  --color-brass-text: #6b5126;
+  --color-brass: #825535;
+  --color-brass-text: #6b4529;
 
   /* Semantic */
-  --color-text: #1d1b18;
-  --color-text-muted: #55584f;
-  --color-border: #e1e8e3;
-  --color-border-strong: #77776c;
+  --color-text: #1c1916;
+  --color-text-muted: #6a5f56;
+  --color-border: #dbd6cd;
+  --color-border-strong: #8a7f74;
   --color-danger: #8f2d26;
   --color-danger-bg: #f6e4e1;
   --color-warning: #7a4f0e;
@@ -46,11 +56,11 @@
   --color-success-bg: #e3e9df;
   --color-info: #3b4a57;
   --color-info-bg: #e2e8ed;
-  --color-focus: #3a2c23;
+  --color-focus: #331c11;
 
   /* Type: an editorial serif for display, a precise grotesque for everything else */
-  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: var(--font-sans);
+  --font-sans: "Epilogue Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Urbanist Variable", "Epilogue Variable", ui-sans-serif, system-ui, sans-serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -62,12 +72,12 @@
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
   /* Fluid display sizes for the public site (use with font-display) */
-  --text-headline: clamp(1.5rem, 1.15rem + 1.1vw, 2rem);
-  --text-headline--line-height: 1.12;
-  --text-headline--letter-spacing: -0.015em;
-  --text-display: clamp(1.875rem, 1.3rem + 2vw, 2.875rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.022em;
+  --text-headline: clamp(1.9rem, 1.3rem + 1.7vw, 2.75rem);
+  --text-headline--line-height: 1.08;
+  --text-headline--letter-spacing: -0.03em;
+  --text-display: clamp(2.4rem, 1.4rem + 3.4vw, 4.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
 
   /* Radii: none. Square edges are part of the identity. */
   --radius-sm: 0;
@@ -89,13 +99,13 @@
 
 :root {
   /* Layout rules */
-  --content-width: 80rem; /* public site max width */
+  --content-width: 72rem; /* public site max width */
   --reading-width: 40rem;
   --gutter: 1.25rem;
   --header-height: 3.75rem;
   --touch-target: 2.75rem; /* 44px minimum for workshop/phone use */
   /* Vertical rhythm for public sections */
-  --section-space: clamp(2.5rem, 1.75rem + 3vw, 4.5rem);
+  --section-space: clamp(4rem, 2.5rem + 6vw, 8rem);
 }
 
 @media (min-width: 48rem) {

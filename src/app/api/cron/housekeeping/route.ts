@@ -2,10 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { purgeRateLimits } from "@/lib/rate-limit";
-import { getBusinessSettings } from "@/lib/settings";
-import { todayLocal } from "@/lib/time";
 import { purgeStaleQuarantine } from "@/server/files";
-import { expireStaleQuotations } from "@/server/quotations";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -22,7 +19,6 @@ function authorised(req: Request): boolean {
 
 /**
  * Daily housekeeping, called by Vercel Cron (which sends `Authorization: Bearer $CRON_SECRET`):
- *  - mark sent quotations past their valid-until date as expired;
  *  - delete old rate-limit counters;
  *  - remove uploads that were never attached to a record.
  * Each step is independent: one failing does not stop the others.
@@ -39,8 +35,6 @@ export async function GET(req: Request) {
       result[name] = "failed";
     }
   };
-  const tz = (await getBusinessSettings()).timezone;
-  await step("quotationsExpired", () => expireStaleQuotations(db, todayLocal(tz)));
   await step("rateLimitRowsPurged", () => purgeRateLimits(db));
   await step("abandonedUploadsRemoved", () => purgeStaleQuarantine(db));
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });

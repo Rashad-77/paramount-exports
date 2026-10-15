@@ -1,472 +1,325 @@
 import "server-only";
-import { outer } from "@/lib/db/outer";
-import { and, asc, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
-import { can, requirePermission, scopeOf, type Actor } from "@/lib/auth/permissions";
-import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
-import { customers, inventoryBalances, locations, payments, productVariants, profiles, quotationItems, quotationRevisions, quotations, salesOrderItems, salesOrders } from "@/lib/db/schema";
-import { forbidden, invalidState, notFound, validation } from "@/lib/errors";
-import { dec, moneyString, outstandingBalance, qtyString } from "@/lib/money";
-import type { QuotationItemInput } from "@/lib/schemas/quotation";
+import { and, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { normaliseEmail, phoneKey } from "@/lib/contact";
+import { requirePermission, type Actor } from "@/lib/auth/permissions";
+import { getDb, withTx } from "@/lib/db/client";
+import { orderItems, orders, productVariants, products } from "@/lib/db/schema";
+import { conflict, invalidState, notFound, rateLimited, validation } from "@/lib/errors";
+import { dec, moneyString, sum } from "@/lib/money";
+import { hitRateLimit } from "@/lib/rate-limit";
 import { getBusinessSettings } from "@/lib/settings";
+import type { CheckoutInput, OrderStatus } from "@/lib/schemas/orders";
 import { recordAudit } from "./audit";
-import { fulfilReservations, releaseReservations, reserveForOrder } from "./inventory";
-import { escapeLike } from "./leads";
-import { computeAndCheck, specification, type Computed } from "./pricing";
-import { cancelJobForOrder, createJobForOrder, releaseJobOutputOnDelivery } from "./production";
 
-export type OrderStatus = (typeof salesOrders.$inferSelect)["status"];
-export type OrderType = (typeof salesOrders.$inferSelect)["type"];
-export type PaymentMethod = (typeof payments.$inferSelect)["method"];
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
-export const ORDER_STATUS_ORDER: OrderStatus[] = ["draft", "confirmed", "preparing", "ready", "delivered"];
+export const ORDER_LIMITS = {
+  perIp: { limit: 6, windowSeconds: 600 },
+  perPhone: { limit: 5, windowSeconds: 3600 },
+} as const;
 
-/* ───────────────────────────── helpers ───────────────────────────── */
-
-async function lockOrder(tx: DbOrTx, id: string) {
-  const [o] = await tx.select().from(salesOrders).where(eq(salesOrders.id, id)).for("update");
-  if (!o) throw notFound("That order could not be found.");
-  return o;
-}
-
-/** Net money received: payments minus voids (voids are stored as negative rows). */
-export async function netPaid(db: DbOrTx, orderId: string): Promise<string> {
-  const [r] = await db.select({ s: sql<string>`coalesce(sum(${payments.amount}), 0)::text` }).from(payments).where(eq(payments.orderId, orderId));
-  return moneyString(r?.s ?? "0");
-}
-
-/** Resolve each ready-made line to the stock item behind its product option; refuse untracked products. */
-async function resolveStockItems(db: DbOrTx, items: QuotationItemInput[]): Promise<Map<string, string>> {
-  const ids = [...new Set(items.map((i) => i.variantId).filter((v): v is string => Boolean(v)))];
-  const map = new Map<string, string>();
-  if (ids.length === 0) return map;
-  const rows = await db.select({ id: productVariants.id, sku: productVariants.sku, inventoryItemId: productVariants.inventoryItemId }).from(productVariants).where(inArray(productVariants.id, ids));
-  const untracked = rows.filter((r) => !r.inventoryItemId).map((r) => r.sku);
-  if (untracked.length) {
-    throw validation(`Turn on stock tracking first for: ${untracked.join(", ")}. Ready-made orders need counted stock so they cannot oversell.`, { itemsJson: [`Stock tracking is off for ${untracked.join(", ")}.`] });
-  }
-  for (const r of rows) map.set(r.id, r.inventoryItemId!);
-  return map;
-}
-
-async function insertLines(tx: DbOrTx, orderId: string, c: Computed, stockItems: Map<string, string>) {
-  await tx.insert(salesOrderItems).values(
-    c.lines.map((l, idx) => ({
-      orderId,
-      position: idx + 1,
-      variantId: l.item.variantId ?? null,
-      inventoryItemId: l.item.variantId ? (stockItems.get(l.item.variantId) ?? null) : null,
-      description: l.item.description,
-      specification: specification(l.item),
-      quantity: qtyString(l.item.quantity),
-      unitPrice: moneyString(l.item.unitPrice),
-      discountAmount: moneyString(l.item.discountAmount),
-      lineTotal: l.lineTotal,
-    })),
-  );
-}
-
-/* ───────────────────────────── creating and editing ───────────────────────────── */
-
-export interface ReadyMadeOrderInput {
-  customerId: string;
-  locationId: string;
-  deliveryCharge: string;
-  depositTerms?: string;
-  notes?: string;
-  items: QuotationItemInput[];
-}
-
-async function assertReadyMadeInput(db: DbOrTx, input: ReadyMadeOrderInput) {
-  const [cust] = await db.select({ id: customers.id, archivedAt: customers.archivedAt }).from(customers).where(eq(customers.id, input.customerId)).limit(1);
-  if (!cust || cust.archivedAt) throw validation("Choose an active customer.", { customerId: ["Choose an active customer."] });
-  const [loc] = await db.select({ id: locations.id, archivedAt: locations.archivedAt, isActive: locations.isActive }).from(locations).where(eq(locations.id, input.locationId)).limit(1);
-  if (!loc || loc.archivedAt || !loc.isActive) throw validation("Choose an active location.", { locationId: ["Choose an active location."] });
-  if (input.items.some((i) => i.kind !== "ready_made" || !i.variantId)) throw validation("A ready-made order can only contain ready-made products.", { itemsJson: ["Every line must be a product from the catalogue."] });
-}
-
-export async function createReadyMadeOrder(actor: Actor, input: ReadyMadeOrderInput): Promise<string> {
-  requirePermission(actor, "orders:write");
-  const db = getDb();
-  await assertReadyMadeInput(db, input);
-  const computed = await computeAndCheck(db, actor, input);
-  const stockItems = await resolveStockItems(db, input.items);
-  const currency = (await getBusinessSettings()).currency;
-  return withTx(async (tx) => {
-    const [{ ref }] = (await tx.execute(sql`SELECT next_reference('order') AS ref`)) as unknown as [{ ref: string }];
-    const [o] = await tx
-      .insert(salesOrders)
-      .values({
-        reference: ref,
-        customerId: input.customerId,
-        type: "ready_made",
-        locationId: input.locationId,
-        currency,
-        subtotal: computed.totals.subtotal,
-        discountTotal: computed.totals.discountTotal,
-        deliveryCharge: computed.totals.deliveryCharge,
-        total: computed.totals.total,
-        depositTerms: input.depositTerms ?? null,
-        notes: input.notes ?? null,
-        createdBy: actor.id,
-      })
-      .returning({ id: salesOrders.id });
-    await insertLines(tx, o!.id, computed, stockItems);
-    await recordAudit(tx, actor, { action: "order.created", entityType: "sales_order", entityId: o!.id, after: { reference: ref, type: "ready_made", total: computed.totals.total } });
-    return o!.id;
-  });
-}
-
-/** Edit a DRAFT ready-made order (customer fixed; lines, location, delivery, notes). Confirmed orders are locked. */
-export async function updateReadyMadeDraft(actor: Actor, id: string, input: Omit<ReadyMadeOrderInput, "customerId">): Promise<void> {
-  requirePermission(actor, "orders:write");
-  const db = getDb();
-  const existing = await lockOrderSnapshot(db, id);
-  await assertReadyMadeInput(db, { ...input, customerId: existing.customerId });
-  const computed = await computeAndCheck(db, actor, input);
-  const stockItems = await resolveStockItems(db, input.items);
-  await withTx(async (tx) => {
-    const o = await lockOrder(tx, id);
-    if (o.status !== "draft") throw invalidState("Only a draft order can be edited.");
-    if (o.type !== "ready_made") throw invalidState("Custom orders take their lines from the accepted quotation.");
-    await tx.delete(salesOrderItems).where(eq(salesOrderItems.orderId, id));
-    await tx
-      .update(salesOrders)
-      .set({
-        locationId: input.locationId,
-        subtotal: computed.totals.subtotal,
-        discountTotal: computed.totals.discountTotal,
-        deliveryCharge: computed.totals.deliveryCharge,
-        total: computed.totals.total,
-        depositTerms: input.depositTerms ?? null,
-        notes: input.notes ?? null,
-      })
-      .where(eq(salesOrders.id, id));
-    await insertLines(tx, id, computed, stockItems);
-    await recordAudit(tx, actor, { action: "order.draft_updated", entityType: "sales_order", entityId: id, before: { total: o.total }, after: { total: computed.totals.total } });
-  });
-}
-
-async function lockOrderSnapshot(db: DbOrTx, id: string) {
-  const [o] = await db.select().from(salesOrders).where(eq(salesOrders.id, id)).limit(1);
-  if (!o) throw notFound("That order could not be found.");
-  return o;
-}
-
-/** Notes, deposit terms and wanted-by date can change while the order is still a draft (any type). */
-export async function updateOrderTerms(actor: Actor, id: string, input: { depositTerms?: string; requestedCompletionDate?: string; notes?: string }): Promise<void> {
-  requirePermission(actor, "orders:write");
-  await withTx(async (tx) => {
-    const o = await lockOrder(tx, id);
-    if (o.status === "delivered" || o.status === "cancelled") throw invalidState("A finished order can no longer be edited.");
-    await tx
-      .update(salesOrders)
-      .set({ depositTerms: input.depositTerms ?? null, requestedCompletionDate: input.requestedCompletionDate ?? null, notes: input.notes ?? null })
-      .where(eq(salesOrders.id, id));
-    await recordAudit(tx, actor, { action: "order.terms_updated", entityType: "sales_order", entityId: id, before: { depositTerms: o.depositTerms, requestedCompletionDate: o.requestedCompletionDate }, after: { depositTerms: input.depositTerms ?? null, requestedCompletionDate: input.requestedCompletionDate ?? null } });
-  });
-}
+/* ───────────────────────────── placing an order (public, no payment) ───────────────────────────── */
 
 /**
- * Accepted quotation → order. The order gets its own copy of the accepted lines and prices (so later catalogue price
- * changes cannot alter it) and keeps the link to the exact revision the customer accepted. One order per quotation.
+ * A visitor places an order. Nothing is charged: the customer chooses how they intend to pay (on delivery, bank transfer, at the
+ * showroom) and staff confirm the order. Prices, names and availability always come from the database, never from the browser.
+ * Callers must have passed the form guard (honeypot / token / Turnstile) already.
  */
-export async function convertQuotationToOrder(actor: Actor, quotationId: string, input: { locationId?: string; depositTerms?: string; requestedCompletionDate?: string; notes?: string }): Promise<string> {
-  requirePermission(actor, "quotations:convert");
-  requirePermission(actor, "orders:write");
+export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null; accountId?: string | null }): Promise<{ id: string; reference: string }> {
+  const db = getDb();
+  const key = phoneKey(input.phone);
+
+  const ipHit = await hitRateLimit(db, { scope: "order-ip", value: ctx.ip ?? "unknown", ...ORDER_LIMITS.perIp });
+  if (!ipHit.allowed) throw rateLimited("You have placed several orders recently. Please wait a few minutes, or call us instead.");
+  const phoneHit = await hitRateLimit(db, { scope: "order-phone", value: key, ...ORDER_LIMITS.perPhone });
+  if (!phoneHit.allowed) throw rateLimited("We already have several orders from this phone number. We will be in touch shortly.");
+
+  // Merge repeated lines for the same option.
+  const wanted = new Map<string, number>();
+  for (const l of input.cart) wanted.set(l.variantId, Math.min(99, (wanted.get(l.variantId) ?? 0) + l.quantity));
+
+  const rows = await db
+    .select({
+      variantId: productVariants.id,
+      label: productVariants.label,
+      sku: productVariants.sku,
+      price: productVariants.listPrice,
+      variantActive: productVariants.isActive,
+      productId: products.id,
+      name: products.name,
+      published: products.isPublished,
+      archivedAt: products.archivedAt,
+      showPrice: products.showPrice,
+    })
+    .from(productVariants)
+    .innerJoin(products, eq(products.id, productVariants.productId))
+    .where(inArray(productVariants.id, [...wanted.keys()]));
+  const byId = new Map(rows.map((r) => [r.variantId, r]));
+
+  const lines = [...wanted.entries()].map(([variantId, quantity], i) => {
+    const r = byId.get(variantId);
+    const ok = r && r.variantActive && r.published && !r.archivedAt && r.showPrice && r.price !== null;
+    if (!ok) throw validation("One of the items in your order is no longer available. Please review your order and try again.");
+    const unit = dec(r.price!);
+    return { position: i + 1, productId: r.productId, variantId, productName: r.name, variantLabel: r.label === "Standard" ? null : r.label, sku: r.sku, unit, quantity, line: unit.times(quantity) };
+  });
+
+  const subtotal = sum(lines.map((l) => l.line));
+  const { currency } = await getBusinessSettings();
+  const email = input.email ?? null;
+
   return withTx(async (tx) => {
-    const [q] = await tx.select().from(quotations).where(eq(quotations.id, quotationId)).for("update");
-    if (!q) throw notFound("That quotation could not be found.");
-    if (q.status === "converted") throw invalidState("This quotation has already been turned into an order.");
-    if (q.status !== "accepted") throw invalidState("Only an accepted quotation can become an order.");
-    const [rev] = await tx.select().from(quotationRevisions).where(and(eq(quotationRevisions.quotationId, q.id), eq(quotationRevisions.revisionNo, q.currentRevisionNo)));
-    const items = await tx.select().from(quotationItems).where(eq(quotationItems.revisionId, rev!.id)).orderBy(asc(quotationItems.position));
-    const kinds = new Set(items.map((i) => i.kind));
-    if (kinds.size > 1) throw validation("This quotation mixes ready-made and custom items. Split it into two quotations (one of each) so each can be handled correctly.");
-    const type: OrderType = items[0]!.kind;
-
-    let locationId: string | null = null;
-    let stock = new Map<string, string>();
-    if (type === "ready_made") {
-      if (!input.locationId) throw validation("Choose the location the stock comes from.", { locationId: ["Choose a location."] });
-      const [loc] = await tx.select({ id: locations.id, archivedAt: locations.archivedAt }).from(locations).where(eq(locations.id, input.locationId)).limit(1);
-      if (!loc || loc.archivedAt) throw validation("Choose an active location.", { locationId: ["Choose an active location."] });
-      locationId = loc.id;
-      stock = await resolveStockItems(tx, items.map((i) => ({ variantId: i.variantId ?? undefined }) as QuotationItemInput));
-    }
-
     const [{ ref }] = (await tx.execute(sql`SELECT next_reference('order') AS ref`)) as unknown as [{ ref: string }];
-    const [o] = await tx
-      .insert(salesOrders)
+    const [order] = await tx
+      .insert(orders)
       .values({
         reference: ref,
-        customerId: q.customerId,
-        quotationId: q.id,
-        quotationRevisionId: rev!.id,
-        type,
-        locationId,
-        currency: q.currency,
-        subtotal: rev!.subtotal,
-        discountTotal: rev!.discountTotal,
-        deliveryCharge: rev!.deliveryCharge,
-        total: rev!.total,
-        depositTerms: input.depositTerms ?? null,
-        requestedCompletionDate: input.requestedCompletionDate ?? null,
-        notes: input.notes ?? null,
-        createdBy: actor.id,
+        customerName: input.name,
+        phone: input.phone,
+        phoneKey: key,
+        email,
+        emailLower: email ? normaliseEmail(email) : null,
+        fulfilment: input.fulfilment,
+        address: input.fulfilment === "delivery" ? (input.address ?? null) : null,
+        paymentMethod: input.paymentMethod,
+        currency,
+        subtotal: moneyString(subtotal),
+        deliveryCharge: "0.00",
+        total: moneyString(subtotal),
+        customerNote: input.note ?? null,
+        accountId: ctx.accountId ?? null,
       })
-      .returning({ id: salesOrders.id });
-    await tx.insert(salesOrderItems).values(
-      items.map((i) => ({
-        orderId: o!.id,
-        position: i.position,
-        variantId: i.variantId,
-        inventoryItemId: i.variantId ? (stock.get(i.variantId) ?? null) : null,
-        description: i.description,
-        specification: i.specification,
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
-        discountAmount: i.discountAmount,
-        lineTotal: i.lineTotal,
+      .returning({ id: orders.id, reference: orders.reference });
+    await tx.insert(orderItems).values(
+      lines.map((l) => ({
+        orderId: order!.id,
+        position: l.position,
+        productId: l.productId,
+        variantId: l.variantId,
+        productName: l.productName,
+        variantLabel: l.variantLabel,
+        sku: l.sku,
+        unitPrice: moneyString(l.unit),
+        quantity: l.quantity,
+        lineTotal: moneyString(l.line),
       })),
     );
-    await tx.update(quotations).set({ status: "converted" }).where(eq(quotations.id, q.id));
-    await recordAudit(tx, actor, { action: "quotation.converted", entityType: "quotation", entityId: q.id, after: { orderId: o!.id, reference: ref, type } });
-    await recordAudit(tx, actor, { action: "order.created", entityType: "sales_order", entityId: o!.id, after: { reference: ref, type, total: rev!.total, quotation: q.reference } });
-    return o!.id;
+    await recordAudit(tx, null, { action: "order.placed_from_website", entityType: "order", entityId: order!.id, after: { reference: order!.reference, lines: lines.length, total: moneyString(subtotal) } });
+    return { id: order!.id, reference: order!.reference };
   });
 }
 
-/* ───────────────────────────── lifecycle ───────────────────────────── */
+/* ───────────────────────────── staff: reading orders ───────────────────────────── */
 
-/**
- * Confirm a draft. Ready-made: reserves the stock in the same transaction, or fails with exact shortages and changes
- * nothing. Custom: confirmation creates the production job in the same transaction.
- */
-export async function confirmOrder(actor: Actor, id: string, now: Date = new Date()): Promise<void> {
-  requirePermission(actor, "orders:confirm");
-  await withTx(async (tx) => {
-    const o = await lockOrder(tx, id);
-    if (o.status !== "draft") throw invalidState("Only a draft order can be confirmed.");
-    const lines = await tx.select().from(salesOrderItems).where(eq(salesOrderItems.orderId, id)).orderBy(asc(salesOrderItems.position));
-    if (lines.length === 0) throw validation("The order has no items.");
-    if (o.type === "ready_made") {
-      if (!o.locationId) throw validation("Choose the location the stock comes from.");
-      // Merge identical items so the shortage message is one line per product.
-      const reserveLines = lines.map((l) => ({ orderItemId: l.id, itemId: l.inventoryItemId!, quantity: l.quantity }));
-      if (reserveLines.some((l) => !l.itemId)) throw validation("A line has no counted stock behind it. Turn on stock tracking for that product.");
-      await reserveForOrder(tx, actor.id, id, o.locationId, reserveLines);
-    }
-    await tx.update(salesOrders).set({ status: "confirmed", confirmedAt: now }).where(eq(salesOrders.id, id));
-    if (o.type === "custom") await createJobForOrder(tx, actor, o);
-    await recordAudit(tx, actor, { action: "order.confirmed", entityType: "sales_order", entityId: id, after: { reference: o.reference, total: o.total } });
-  });
-}
-
-const FORWARD: Record<string, OrderStatus[]> = {
-  confirmed: ["preparing", "ready", "delivered"],
-  preparing: ["ready", "delivered"],
-  ready: ["delivered"],
-};
-
-/** Move a confirmed order forward. Delivery is the moment reserved stock actually leaves. Production NEVER does this for you. */
-export async function advanceOrder(actor: Actor, id: string, to: "preparing" | "ready" | "delivered", now: Date = new Date()): Promise<void> {
-  requirePermission(actor, "orders:write");
-  await withTx((tx) => advanceOrderInTx(tx, actor, id, to, now));
-}
-
-/**
- * The transition itself, for callers that already hold the right permission (the delivery module marks an order
- * delivered when its delivery is). Locks the order, so a double submit moves it once and the second attempt is refused.
- */
-export async function advanceOrderInTx(tx: DbOrTx, actor: Actor, id: string, to: "preparing" | "ready" | "delivered", now: Date = new Date()): Promise<void> {
-  const o = await lockOrder(tx, id);
-  if (!(FORWARD[o.status] ?? []).includes(to)) throw invalidState(`An order that is ${o.status} cannot move to ${to}.`);
-  if (to === "delivered" && o.type === "ready_made") await fulfilReservations(tx, actor.id, id);
-  if (to === "delivered" && o.type === "custom") await releaseJobOutputOnDelivery(tx, actor, id);
-  await tx.update(salesOrders).set({ status: to, deliveredAt: to === "delivered" ? now : null }).where(eq(salesOrders.id, id));
-  await recordAudit(tx, actor, { action: `order.${to}`, entityType: "sales_order", entityId: id, before: { status: o.status }, after: { status: to } });
-}
-
-/** Cancel with a reason. Reserved stock is released exactly once. Once money has been taken, a Manager/Owner must do it. */
-export async function cancelOrder(actor: Actor, id: string, reason: string, now: Date = new Date()): Promise<void> {
-  requirePermission(actor, "orders:cancel");
-  const why = reason.trim();
-  if (!why) throw validation("Say why the order is being cancelled.", { reason: ["Add a short reason."] });
-  await withTx(async (tx) => {
-    const o = await lockOrder(tx, id);
-    if (o.status === "cancelled") throw invalidState("This order is already cancelled.");
-    if (o.status === "delivered") throw invalidState("A delivered order cannot be cancelled. Record a return or complaint instead.");
-    const paid = dec(await netPaid(tx, id));
-    if (paid.gt(0) && !can(actor, "orders:cancel_paid")) throw forbidden("Money has already been received on this order. A manager or the owner must cancel it (and refund the customer).");
-    const released = await releaseReservations(tx, actor.id, id, `Order cancelled: ${why}`);
-    await cancelJobForOrder(tx, actor, id, why);
-    await tx.update(salesOrders).set({ status: "cancelled", cancelledAt: now, cancelReason: why }).where(eq(salesOrders.id, id));
-    // A converted quotation stays converted; the cancelled order keeps the history.
-    await recordAudit(tx, actor, { action: "order.cancelled", entityType: "sales_order", entityId: id, before: { status: o.status, netPaid: paid.toFixed(2) }, after: { reservationsReleased: released }, reason: why });
-  });
-}
-
-/* ───────────────────────────── payments ───────────────────────────── */
-
-export async function recordPayment(
-  actor: Actor,
-  input: { orderId: string; amount: string; method: PaymentMethod; paidAt?: Date; reference?: string; note?: string },
-): Promise<string> {
-  requirePermission(actor, "payments:record");
-  const amount = dec(input.amount);
-  if (!amount.gt(0)) throw validation("Enter an amount greater than zero.", { amount: ["Enter an amount greater than zero."] });
-  return withTx(async (tx) => {
-    const o = await lockOrder(tx, input.orderId); // serialises concurrent payments on the same order
-    if (o.status === "draft") throw invalidState("Confirm the order before recording payments against it.");
-    if (o.status === "cancelled") throw invalidState("This order is cancelled. Payments cannot be added.");
-    const outstanding = outstandingBalance(o.total, [await netPaid(tx, o.id)]);
-    if (amount.gt(outstanding)) {
-      throw validation(`That is more than the outstanding balance (${outstanding.toFixed(2)} ${o.currency}).`, { amount: [`The most you can record is ${outstanding.toFixed(2)}.`] });
-    }
-    const [p] = await tx
-      .insert(payments)
-      .values({ orderId: o.id, amount: moneyString(amount), method: input.method, paidAt: input.paidAt ?? new Date(), reference: input.reference ?? null, note: input.note ?? null, recordedBy: actor.id })
-      .returning({ id: payments.id });
-    await recordAudit(tx, actor, { action: "payment.recorded", entityType: "payment", entityId: p!.id, after: { orderId: o.id, amount: moneyString(amount), method: input.method } });
-    return p!.id;
-  });
-}
-
-/** Reverse a payment (never deleted): adds a negative row linked to the original, with a reason. Audited. */
-export async function voidPayment(actor: Actor, paymentId: string, reason: string): Promise<string> {
-  requirePermission(actor, "payments:void");
-  const why = reason.trim();
-  if (!why) throw validation("Say why this payment is being voided.", { reason: ["Add a short reason."] });
-  return withTx(async (tx) => {
-    const [p] = await tx.select().from(payments).where(eq(payments.id, paymentId));
-    if (!p) throw notFound("That payment could not be found.");
-    await lockOrder(tx, p.orderId);
-    if (dec(p.amount).lte(0)) throw invalidState("That entry is already a reversal.");
-    const [already] = await tx.select({ id: payments.id }).from(payments).where(eq(payments.voidsPaymentId, paymentId));
-    if (already) throw invalidState("That payment has already been voided.");
-    const [v] = await tx
-      .insert(payments)
-      .values({ orderId: p.orderId, amount: moneyString(dec(p.amount).negated()), method: p.method, voidsPaymentId: paymentId, note: `Voided: ${why}`, recordedBy: actor.id })
-      .returning({ id: payments.id });
-    await recordAudit(tx, actor, { action: "payment.voided", entityType: "payment", entityId: paymentId, before: { amount: p.amount }, after: { reversalId: v!.id }, reason: why });
-    return v!.id;
-  });
-}
-
-/* ───────────────────────────── reading ───────────────────────────── */
-
-export interface OrderFilters {
-  status?: OrderStatus;
-  type?: OrderType;
+export interface OrderListFilters {
+  status?: OrderStatus | "open";
   q?: string;
-  customerId?: string;
-  withBalanceOnly?: boolean;
+  phoneKey?: string;
   page: number;
   pageSize: number;
 }
 
-/** Sales staff see payment figures only for orders they created (payments:view scope "own"). */
-function paymentVisibility(actor: Actor, createdBy: string | null): boolean {
-  const scope = scopeOf(actor, "payments:view");
-  return scope === "all" || (scope === "own" && createdBy === actor.id);
-}
-
-export async function listOrders(actor: Actor, f: OrderFilters) {
+export async function listOrders(actor: Actor, f: OrderListFilters) {
   requirePermission(actor, "orders:view");
   const where: SQL[] = [];
-  if (f.status) where.push(eq(salesOrders.status, f.status));
-  if (f.type) where.push(eq(salesOrders.type, f.type));
-  if (f.customerId) where.push(eq(salesOrders.customerId, f.customerId));
+  if (f.status === "open") where.push(inArray(orders.status, ["new", "confirmed", "in_progress"]));
+  else if (f.status) where.push(eq(orders.status, f.status));
+  if (f.phoneKey) where.push(eq(orders.phoneKey, f.phoneKey));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
-    where.push(or(ilike(salesOrders.reference, like), ilike(customers.name, like), ilike(customers.company, like))!);
+    where.push(or(ilike(orders.reference, like), ilike(orders.customerName, like), ilike(orders.phone, like), ilike(orders.email, like))!);
   }
-  const paidSql = sql<string>`coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${outer(salesOrders.id)}), 0)::text`;
-  if (f.withBalanceOnly) where.push(sql`${salesOrders.status} <> 'cancelled' AND ${salesOrders.status} <> 'draft' AND ${salesOrders.total} > coalesce((SELECT sum(p.amount) FROM payments p WHERE p.order_id = ${outer(salesOrders.id)}), 0)`);
   const cond = where.length ? and(...where) : undefined;
   const db = getDb();
-  const [rows, countRows] = await Promise.all([
+  const [rows, [totalRow]] = await Promise.all([
     db
       .select({
-        id: salesOrders.id,
-        reference: salesOrders.reference,
-        type: salesOrders.type,
-        status: salesOrders.status,
-        currency: salesOrders.currency,
-        total: salesOrders.total,
-        createdBy: salesOrders.createdBy,
-        createdAt: salesOrders.createdAt,
-        customerId: customers.id,
-        customerName: customers.name,
-        paid: paidSql,
+        id: orders.id,
+        reference: orders.reference,
+        status: orders.status,
+        customerName: orders.customerName,
+        phone: orders.phone,
+        fulfilment: orders.fulfilment,
+        paymentMethod: orders.paymentMethod,
+        isPaid: orders.isPaid,
+        currency: orders.currency,
+        total: orders.total,
+        createdAt: orders.createdAt,
+        itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${orders.id}), 0)`,
       })
-      .from(salesOrders)
-      .innerJoin(customers, eq(customers.id, salesOrders.customerId))
+      .from(orders)
       .where(cond)
-      .orderBy(desc(salesOrders.createdAt))
+      .orderBy(desc(orders.createdAt))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
-    db.select({ n: sql<number>`count(*)::int` }).from(salesOrders).innerJoin(customers, eq(customers.id, salesOrders.customerId)).where(cond),
+    db.select({ n: count() }).from(orders).where(cond),
   ]);
-  const n = countRows[0]?.n ?? 0;
-  return {
-    rows: rows.map((r) => {
-      const visible = paymentVisibility(actor, r.createdBy);
-      return { ...r, paid: visible ? moneyString(r.paid) : null, outstanding: visible ? outstandingBalance(r.total, [r.paid]).toFixed(2) : null };
-    }),
-    total: n,
-    pageCount: Math.max(1, Math.ceil(n / f.pageSize)),
-  };
+  const total = totalRow?.n ?? 0;
+  return { rows, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
 }
 
 export async function getOrder(actor: Actor, id: string) {
   requirePermission(actor, "orders:view");
   const db = getDb();
-  const [row] = await db
-    .select({ o: salesOrders, customerName: customers.name, customerPhone: customers.phone, customerCompany: customers.company, locationName: locations.name, quotationReference: quotations.reference })
-    .from(salesOrders)
-    .innerJoin(customers, eq(customers.id, salesOrders.customerId))
-    .leftJoin(locations, eq(locations.id, salesOrders.locationId))
-    .leftJoin(quotations, eq(quotations.id, salesOrders.quotationId))
-    .where(eq(salesOrders.id, id))
-    .limit(1);
-  if (!row) throw notFound("That order could not be found.");
-  const items = await db.select().from(salesOrderItems).where(eq(salesOrderItems.orderId, id)).orderBy(asc(salesOrderItems.position));
+  const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  if (!order) throw notFound("That order could not be found.");
+  const items = await db.select().from(orderItems).where(eq(orderItems.orderId, id)).orderBy(orderItems.position);
+  return { order, items };
+}
 
-  let money: { entries: Array<typeof payments.$inferSelect & { voided: boolean; recordedByName: string | null }>; paid: string; outstanding: string } | null = null;
-  if (paymentVisibility(actor, row.o.createdBy)) {
-    const entries = await db.select().from(payments).where(eq(payments.orderId, id)).orderBy(asc(payments.createdAt));
-    const voidedIds = new Set(entries.filter((e) => e.voidsPaymentId).map((e) => e.voidsPaymentId));
-    const staffIds = [...new Set(entries.map((e) => e.recordedBy).filter((x): x is string => Boolean(x)))];
-    const names = staffIds.length ? await db.select({ id: profiles.id, name: profiles.fullName }).from(profiles).where(inArray(profiles.id, staffIds)) : [];
-    const nameOf = new Map(names.map((n) => [n.id, n.name]));
-    const paid = moneyString(entries.reduce((s, e) => s.plus(e.amount), dec(0)));
-    money = {
-      entries: entries.map((e) => ({ ...e, voided: voidedIds.has(e.id), recordedByName: e.recordedBy ? (nameOf.get(e.recordedBy) ?? null) : null })),
-      paid,
-      outstanding: outstandingBalance(row.o.total, [paid]).toFixed(2),
-    };
+export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number>> {
+  requirePermission(actor, "orders:view");
+  const rows = await getDb().select({ status: orders.status, n: count() }).from(orders).groupBy(orders.status);
+  const out: Record<OrderStatus | "all", number> = { all: 0, new: 0, confirmed: 0, in_progress: 0, delivered: 0, cancelled: 0 };
+  for (const r of rows) {
+    out[r.status] = r.n;
+    out.all += r.n;
   }
+  return out;
+}
 
-  // Draft ready-made orders: show what is available right now so staff see shortages BEFORE confirming.
-  let availability: Record<string, string> | null = null;
-  if (row.o.status === "draft" && row.o.type === "ready_made" && row.o.locationId) {
-    const ids = items.map((i) => i.inventoryItemId).filter((x): x is string => Boolean(x));
-    const bal = ids.length ? await db.select().from(inventoryBalances).where(and(inArray(inventoryBalances.itemId, ids), eq(inventoryBalances.locationId, row.o.locationId))) : [];
-    availability = {};
-    for (const i of items) {
-      const b = bal.find((x) => x.itemId === i.inventoryItemId);
-      availability[i.id] = qtyString(b ? dec(b.onHand).minus(b.reserved) : 0);
-    }
-  }
+/* ───────────────────────────── staff: changing orders ───────────────────────────── */
+
+const NEXT: Record<OrderStatus, OrderStatus[]> = {
+  new: ["confirmed", "cancelled"],
+  confirmed: ["in_progress", "delivered", "cancelled"],
+  in_progress: ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: [],
+};
+
+export const allowedNextStatuses = (status: OrderStatus): OrderStatus[] => NEXT[status];
+
+export async function setOrderStatus(actor: Actor, id: string, status: OrderStatus, reason?: string): Promise<void> {
+  requirePermission(actor, status === "cancelled" ? "orders:cancel" : "orders:update");
+  await withTx(async (tx) => {
+    const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!o) throw notFound("That order could not be found.");
+    if (!NEXT[o.status].includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
+    const now = new Date();
+    await tx
+      .update(orders)
+      .set({
+        status,
+        handledBy: actor.id,
+        ...(status === "confirmed" ? { confirmedAt: now } : {}),
+        ...(status === "delivered" ? { deliveredAt: now, confirmedAt: o.confirmedAt ?? now } : {}),
+        ...(status === "cancelled" ? { cancelledAt: now, cancelReason: reason ?? "Cancelled" } : {}),
+      })
+      .where(eq(orders.id, id));
+    await recordAudit(tx, actor, { action: `order.${status}`, entityType: "order", entityId: id, before: { status: o.status }, after: { status }, reason });
+  });
+}
+
+export async function updateOrderDetails(actor: Actor, id: string, input: { deliveryCharge: string; staffNote?: string }): Promise<void> {
+  requirePermission(actor, "orders:update");
+  await withTx(async (tx) => {
+    const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!o) throw notFound("That order could not be found.");
+    if (o.status === "delivered" || o.status === "cancelled") throw invalidState("A finished order cannot be changed.");
+    const charge = moneyString(input.deliveryCharge);
+    const total = moneyString(dec(o.subtotal).plus(charge));
+    await tx.update(orders).set({ deliveryCharge: charge, total, staffNote: input.staffNote ?? null, handledBy: actor.id }).where(eq(orders.id, id));
+    await recordAudit(tx, actor, { action: "order.details_updated", entityType: "order", entityId: id, before: { deliveryCharge: o.deliveryCharge, total: o.total }, after: { deliveryCharge: charge, total } });
+  });
+}
+
+/** Staff record that the money has been received offline (cash, transfer, or at the showroom). */
+export async function setOrderPaid(actor: Actor, id: string, paid: boolean): Promise<void> {
+  requirePermission(actor, "orders:record_payment");
+  await withTx(async (tx) => {
+    const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!o) throw notFound("That order could not be found.");
+    if (o.status === "cancelled") throw invalidState("A cancelled order cannot be marked as paid.");
+    if (o.isPaid === paid) throw conflict(paid ? "That order is already marked as paid." : "That order is already marked as not paid.");
+    await tx.update(orders).set({ isPaid: paid, paidAt: paid ? new Date() : null, handledBy: actor.id }).where(eq(orders.id, id));
+    await recordAudit(tx, actor, { action: paid ? "order.marked_paid" : "order.marked_unpaid", entityType: "order", entityId: id, before: { isPaid: o.isPaid }, after: { isPaid: paid } });
+  });
+}
+
+/* ───────────────────────────── customers (built from orders) ───────────────────────────── */
+
+export async function listCustomers(actor: Actor, f: { q?: string; page: number; pageSize: number }) {
+  requirePermission(actor, "customers:view");
+  const like = f.q ? `%${escapeLike(f.q)}%` : null;
+  const having = like ? sql`HAVING max(customer_name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like}` : sql``;
+  const db = getDb();
+  const rows = (await db.execute(sql`
+    SELECT phone_key AS "phoneKey",
+           (array_agg(customer_name ORDER BY created_at DESC))[1] AS name,
+           (array_agg(phone ORDER BY created_at DESC))[1] AS phone,
+           (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
+           count(*)::int AS orders,
+           coalesce(sum(total) FILTER (WHERE status <> 'cancelled'), 0)::text AS spent,
+           max(currency) AS currency,
+           max(created_at) AS "lastOrderAt",
+           bool_or(account_id IS NOT NULL) AS "hasAccount"
+      FROM online_orders
+     GROUP BY phone_key
+     ${having}
+     ORDER BY max(created_at) DESC
+     LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}
+  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; spent: string; currency: string; lastOrderAt: Date; hasAccount: boolean }[];
+  const [{ n }] = (await db.execute(sql`SELECT count(*)::int AS n FROM (SELECT 1 FROM online_orders GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
+  return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)) };
+}
+
+export async function getCustomer(actor: Actor, key: string) {
+  requirePermission(actor, "customers:view");
+  const db = getDb();
+  const list = await db.select().from(orders).where(eq(orders.phoneKey, key)).orderBy(desc(orders.createdAt));
+  if (list.length === 0) throw notFound("That customer could not be found.");
+  const latest = list[0]!;
+  const spent = sum(list.filter((o) => o.status !== "cancelled").map((o) => o.total));
   return {
-    order: row.o,
-    customer: { id: row.o.customerId, name: row.customerName, phone: row.customerPhone, company: row.customerCompany },
-    locationName: row.locationName,
-    quotationReference: row.quotationReference,
-    items,
-    money,
-    availability,
+    phoneKey: key,
+    name: latest.customerName,
+    phone: latest.phone,
+    email: list.find((o) => o.email)?.email ?? null,
+    hasAccount: list.some((o) => o.accountId !== null),
+    addresses: [...new Set(list.map((o) => o.address).filter((a): a is string => Boolean(a)))].slice(0, 3),
+    currency: latest.currency,
+    spent: moneyString(spent),
+    orders: list,
   };
 }
 
+/* ───────────────────────────── dashboard ───────────────────────────── */
+
+export async function getDashboard(actor: Actor) {
+  requirePermission(actor, "dashboard:view");
+  const db = getDb();
+  const since = new Date(Date.now() - 30 * 86_400_000);
+  const [counts, recent, unhandled, [rev], daily] = await Promise.all([
+    countOrdersByStatus(actor),
+    db
+      .select({ id: orders.id, reference: orders.reference, status: orders.status, customerName: orders.customerName, total: orders.total, currency: orders.currency, createdAt: orders.createdAt, isPaid: orders.isPaid })
+      .from(orders)
+      .orderBy(desc(orders.createdAt))
+      .limit(6),
+    db.execute(sql`SELECT count(*)::int AS n FROM messages WHERE NOT is_handled`) as unknown as Promise<[{ n: number }]>,
+    db
+      .select({
+        orders: count(),
+        value: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.status} <> 'cancelled'), 0)::text`,
+        paid: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.isPaid}), 0)::text`,
+      })
+      .from(orders)
+      .where(gte(orders.createdAt, since)),
+    db.execute(sql`
+      SELECT to_char(d::date, 'YYYY-MM-DD') AS day, coalesce(c.n, 0)::int AS orders
+        FROM generate_series(current_date - 29, current_date, interval '1 day') d
+        LEFT JOIN (SELECT created_at::date AS day, count(*) AS n FROM online_orders WHERE created_at >= current_date - 29 AND status <> 'cancelled' GROUP BY 1) c ON c.day = d::date
+       ORDER BY d
+    `) as unknown as Promise<{ day: string; orders: number }[]>,
+  ]);
+  const currency = (await getBusinessSettings()).currency;
+  return {
+    counts,
+    recent,
+    unhandledMessages: unhandled[0]?.n ?? 0,
+    last30: { orders: rev?.orders ?? 0, value: rev?.value ?? "0", paid: rev?.paid ?? "0" },
+    daily,
+    currency,
+  };
+}

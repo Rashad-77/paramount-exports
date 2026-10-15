@@ -21,6 +21,8 @@ const supabaseHost = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  // A separate build folder for the browser tests (NEXT_DIST_DIR=.next-e2e) lets them build while `pnpm dev` keeps running.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   reactStrictMode: true,
   images: {

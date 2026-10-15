@@ -6,7 +6,7 @@ test.describe("public site", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText(/placeholders until the real content is supplied/i)).toBeVisible();
-    await expect(page).toHaveTitle(/furniture/i);
+    await expect(page).toHaveTitle(/paramount export industries/i);
   });
 
   test("every primary navigation link leads to a real page with a heading", async ({ page, request }) => {
@@ -35,7 +35,7 @@ test.describe("public site", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();
     await expect(page.getByRole("button", { name: /close menu/i })).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /showroom/i })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /^contact$/i })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: /open menu/i })).toHaveAttribute("aria-expanded", "false");
   });
@@ -77,14 +77,17 @@ test.describe("access control", () => {
   });
 
   test("deep internal links and the print view are protected too", async ({ page }) => {
-    for (const path of ["/app/orders", "/app/quotations", "/app/customers", "/app/production", "/app/production/00000000-0000-4000-8000-000000000000", "/app/suppliers", "/app/purchase-orders", "/app/purchase-orders/new", "/app/deliveries", "/app/expenses", "/app/after-sales", "/app/reports", "/app/users", "/print/quotations/00000000-0000-4000-8000-000000000000"]) {
+    for (const path of ["/app/orders", "/app/orders/00000000-0000-4000-8000-000000000000", "/app/messages", "/app/customers", "/app/products", "/app/settings", "/app/users", "/app/website"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/login/);
     }
   });
 
-  test("the sample preview route does not exist in production", async ({ request }) => {
-    expect((await request.get("/dev/preview/app")).status()).toBe(404);
+  test("the retired CRM and ERP screens no longer exist", async ({ request }) => {
+    for (const path of ["/app/leads", "/app/quotations", "/app/stock", "/app/production", "/app/payments", "/app/reports", "/print/quotations/00000000-0000-4000-8000-000000000000"]) {
+      // Signed out, the staff area sends everything to the login page; either way, none of these screens is served.
+      expect([307, 404], path).toContain((await request.get(path, { maxRedirects: 0 })).status());
+    }
   });
 
   test("security headers are sent", async ({ request }) => {
@@ -129,7 +132,7 @@ test.describe("access control", () => {
 test.describe("accessibility (axe, WCAG 2.1 A/AA)", () => {
   // Measure the settled page, not a frame mid-way through an entrance animation.
   test.use({ reducedMotion: "reduce" });
-  for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/privacy", "/terms"]) {
+  for (const path of ["/", "/login", "/products", "/custom", "/contact", "/about", "/gallery", "/cart", "/checkout", "/track", "/help", "/privacy", "/terms"]) {
     test(`no serious or critical violations on ${path}`, async ({ page }) => {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

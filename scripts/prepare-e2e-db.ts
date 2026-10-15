@@ -43,6 +43,12 @@ async function main() {
     VALUES ('sample-oak-table', 'Sample Oak Table', ${cat!.id}, 'stocked', 'Oak', 'Natural oil', 'W 180 x D 90 x H 75 cm', 'Fixture product used by the automated tests.', true, true)
     RETURNING id`;
   await sql`INSERT INTO product_variants (product_id, sku, label) VALUES (${prod!.id}, 'E2E-OAK-1', 'Standard')`;
+  // A priced product with its price shown publicly: the one customers can order.
+  const [stool] = await sql`
+    INSERT INTO products (slug, name, category_id, kind, material, description, is_published, is_featured, show_price)
+    VALUES ('sample-priced-stool', 'Sample Priced Stool', ${cat!.id}, 'stocked', 'Teak', 'Fixture product that can be ordered.', true, false, true)
+    RETURNING id`;
+  await sql`INSERT INTO product_variants (product_id, sku, label, list_price) VALUES (${stool!.id}, 'E2E-STOOL-1', 'Standard', 15000.50)`;
   await sql.end();
   console.log(`Prepared ${E2E_DB}`);
 }

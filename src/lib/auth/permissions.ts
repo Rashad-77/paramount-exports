@@ -10,100 +10,49 @@ import { forbidden, unauthenticated } from "@/lib/errors";
  *           database query (e.g. WHERE assigned_to = actor.id), not after fetching.
  */
 
-export const ROLES = ["owner", "manager", "sales", "workshop", "finance"] as const;
+export const ROLES = ["owner", "staff"] as const;
 export type Role = (typeof ROLES)[number];
+
+export const ROLE_LABEL: Record<Role, string> = { owner: "Owner", staff: "Staff" };
 
 export type Scope = "all" | "own";
 
 type Grants = Partial<Record<Role, Scope>>;
 
-const OM: Grants = { owner: "all", manager: "all" };
-const OMS: Grants = { ...OM, sales: "all" };
-const OMF: Grants = { ...OM, finance: "all" };
+const BOTH: Grants = { owner: "all", staff: "all" };
+const OWNER: Grants = { owner: "all" };
 
 /** Owner always holds every permission (asserted by a test). */
 export const PERMISSIONS = {
   // Administration
-  "users:manage": { owner: "all" },
-  "settings:manage": { owner: "all" },
-  "settings:view": OM,
-  "website:manage": OM,
-  "audit:view": OM,
+  "users:manage": OWNER,
+  "settings:manage": OWNER,
+  "settings:view": BOTH,
+  "website:manage": BOTH,
+  "audit:view": OWNER,
 
-  // CRM
-  "customers:view": { ...OMS, finance: "all" },
-  "customers:write": OMS,
-  "leads:view": OMS,
-  "leads:write": OMS,
-  "leads:assign": OMS,
-  "followups:manage": OMS,
+  // Online orders
+  "orders:view": BOTH,
+  "orders:update": BOTH,
+  "orders:cancel": BOTH,
+  "orders:record_payment": BOTH,
 
-  // Quotations
-  "quotations:view": { ...OMS, finance: "all" },
-  "quotations:write": OMS,
-  "quotations:send": OMS,
-  "quotations:convert": OMS,
-  "quotations:discount_override": OM,
+  // Website messages (contact form, product enquiries, custom requests)
+  "messages:view": BOTH,
+  "messages:handle": BOTH,
 
-  // Orders & payments
-  "orders:view": { ...OMS, finance: "all" },
-  "orders:write": OMS,
-  "orders:confirm": OMS,
-  "orders:cancel": OMS,
-  "orders:cancel_paid": OM,
-  "payments:view": { ...OM, sales: "own", finance: "all" },
-  "payments:record": { ...OMF, sales: "all" },
-  "payments:void": OMF,
+  // Customers (built from their orders)
+  "customers:view": BOTH,
 
-  // Catalogue & inventory
-  "products:view": { ...OMS, workshop: "all", finance: "all" },
-  "products:write": OM,
-  "inventory:view": { ...OMS, workshop: "all", finance: "all" },
-  "inventory:view_materials": { ...OM, workshop: "all", finance: "all" },
-  "inventory:adjust": OM,
-  "inventory:transfer": { ...OMS, workshop: "all" },
-
-  // Workshop
-  "production:view": { ...OM, workshop: "own" },
-  "production:view_status": { ...OM, sales: "all" },
-  "production:write": OM,
-  "production:update_stage": { ...OM, workshop: "own" },
-  "production:record_materials": { ...OM, workshop: "own" },
-  "production:view_costs": OMF,
-
-  // Purchasing
-  "suppliers:view": { ...OM, workshop: "all", finance: "all" },
-  "suppliers:write": OM,
-  "purchasing:view": { ...OM, workshop: "all", finance: "all" },
-  "purchasing:write": OM,
-  "purchasing:receive": { ...OM, workshop: "all" },
-  "purchasing:record_payment": OMF,
-
-  // Delivery & after-sales
-  "deliveries:view": { ...OMS, workshop: "own", finance: "all" },
-  "deliveries:write": OMS,
-  "deliveries:update_status": { ...OMS, workshop: "own" },
-  "aftersales:view": { ...OMS, workshop: "all" },
-  "aftersales:manage": OMS,
-
-  // Finance & reports
-  "expenses:view": OMF,
-  "expenses:write": OMF,
-  "expenses:void": OMF,
-  "expenses:manage_categories": OM,
-  "reports:sales": { ...OM, sales: "own", finance: "all" },
-  "reports:financial": OMF,
-  "reports:operations": { ...OM, workshop: "own" },
+  // Catalogue
+  "products:view": BOTH,
+  "products:write": BOTH,
 
   // Files
-  "files:view_customer_private": { ...OMS, workshop: "own" },
-  "files:view_finance": OMF,
+  "files:view_customer_private": BOTH,
 
-  // Dashboards
-  "dashboard:owner": OM,
-  "dashboard:sales": { owner: "all", manager: "all", sales: "all" },
-  "dashboard:workshop": { owner: "all", manager: "all", workshop: "all" },
-  "dashboard:finance": { owner: "all", manager: "all", finance: "all" },
+  // Dashboard
+  "dashboard:view": BOTH,
 } as const satisfies Record<string, Grants>;
 
 export type Permission = keyof typeof PERMISSIONS;

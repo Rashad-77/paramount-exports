@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const placeholder = isPlaceholderBusiness(business);
   return {
     metadataBase: new URL(publicEnv().NEXT_PUBLIC_SITE_URL),
-    title: { default: placeholder ? "Wood furniture — showroom & made-to-order" : business.name, template: `%s · ${business.name}` },
+    title: { default: business.name, template: `%s · ${business.name}` },
     description:
       business.tagline ?? "Ready-made and made-to-order wood furniture from our workshop, with a showroom you can visit.",
     // A site still showing placeholder details must not be indexed.
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {/* Marks that scripting is available, so scroll-reveal content may start hidden (see Reveal). */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />

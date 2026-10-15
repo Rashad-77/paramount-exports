@@ -32,161 +32,93 @@ async function main() {
   const db = getDb();
   await ensureDemoStaff(db);
 
-  const [{ n }] = (await db.execute(sql`SELECT count(*)::int AS n FROM product_categories WHERE name LIKE '[Sample]%'`)) as unknown as [{ n: number }];
-  if (n > 0) {
+  // Already seeded with the current sample data (orders exist): nothing to do.
+  const [{ done }] = (await db.execute(sql`SELECT count(*)::int AS done FROM online_orders WHERE customer_name LIKE '[Sample]%'`)) as unknown as [{ done: number }];
+  if (done > 0) {
     console.log("Sample data already present; nothing to do.");
     process.exit(0);
   }
+  // An older sample set (from before online orders: products with no public price, no orders) would leave nothing to order. Replace it.
+  // Only rows labelled "[Sample]" are touched.
+  await db.execute(sql`DELETE FROM product_images WHERE product_id IN (SELECT id FROM products WHERE name LIKE '[Sample]%')`);
+  await db.execute(sql`DELETE FROM product_variants WHERE product_id IN (SELECT id FROM products WHERE name LIKE '[Sample]%')`);
+  await db.execute(sql`DELETE FROM products WHERE name LIKE '[Sample]%'`);
+  await db.execute(sql`DELETE FROM product_categories WHERE name LIKE '[Sample]%'`);
+  await db.execute(sql`DELETE FROM gallery_images WHERE project_id IN (SELECT id FROM gallery_projects WHERE title LIKE '[Sample]%')`);
+  await db.execute(sql`DELETE FROM gallery_projects WHERE title LIKE '[Sample]%'`);
+  await db.execute(sql`DELETE FROM messages WHERE name LIKE '[Sample]%'`);
 
-  const manager: Actor = { id: DEMO_STAFF.manager, fullName: DEMO_STAFF_NAMES.manager, roles: ["manager"], isActive: true };
   const owner: Actor = { id: DEMO_STAFF.owner, fullName: DEMO_STAFF_NAMES.owner, roles: ["owner"], isActive: true };
-  const sales: Actor = { id: DEMO_STAFF.sales, fullName: DEMO_STAFF_NAMES.sales, roles: ["sales"], isActive: true };
 
   const { createCategory, createProduct, attachProductImages, createGalleryProject, attachGalleryImages, addVariant } = await import("../src/server/catalogue");
   const { requestUpload } = await import("../src/server/files");
   const { writeLocalObject } = await import("../src/lib/storage/local");
-  const { submitEnquiry } = await import("../src/server/enquiries");
+  const { submitEnquiry } = await import("../src/server/messages");
   const { enquirySchema } = await import("../src/lib/schemas/enquiry");
-  const { changeLeadStatus, assignLead } = await import("../src/server/leads");
-  const { updateCrmSettings, updateSalesSettings } = await import("../src/server/settings");
-  const { createCustomerFromLead } = await import("../src/server/customers");
-  const { createFollowUp, addActivity } = await import("../src/server/crm");
-  const { createQuotation, sendQuotation, decideQuotation } = await import("../src/server/quotations");
-  const { addDaysLocal } = await import("../src/lib/time");
-  const { enableStockTracking, recordManualMovement, setLowStockThreshold, transferStock, createInventoryItem } = await import("../src/server/inventory");
-  const { createReadyMadeOrder, confirmOrder, recordPayment, advanceOrder, convertQuotationToOrder } = await import("../src/server/orders");
-  const { getDb: db2 } = await import("../src/lib/db/client");
+  const { placeOrder, setOrderStatus, setOrderPaid, updateOrderDetails } = await import("../src/server/orders");
+  const { checkoutSchema } = await import("../src/lib/schemas/orders");
 
-  const upload = async (purpose: "catalogue" | "gallery", actor: Actor, top: [number, number, number], bottom: [number, number, number], w = 640, h = 800) => {
-    const bytes = samplePng(w, h, top, bottom);
-    const { fileId, signed } = await requestUpload({ purpose, fileName: "sample.png", contentType: "image/png", size: bytes.byteLength }, { actor, ip: null });
+  const upload = async (purpose: "catalogue" | "gallery", w = 640, h = 800) => {
+    const bytes = samplePng(w, h);
+    const { fileId, signed } = await requestUpload({ purpose, fileName: "sample.png", contentType: "image/png", size: bytes.byteLength }, { actor: owner, ip: null });
     await writeLocalObject(signed.bucket, signed.key, bytes);
     return fileId;
   };
 
-  const tables = await createCategory(manager, { name: "[Sample] Dining Tables", slug: "sample-dining-tables", description: undefined, sortOrder: 0, isActive: true });
-  const chairs = await createCategory(manager, { name: "[Sample] Chairs", slug: "sample-chairs", description: undefined, sortOrder: 1, isActive: true });
-  const storage = await createCategory(manager, { name: "[Sample] Storage", slug: "sample-storage", description: undefined, sortOrder: 2, isActive: true });
+  const tables = await createCategory(owner, { name: "[Sample] Dining Tables", slug: "sample-dining-tables", description: undefined, sortOrder: 900, isActive: true });
+  const chairs = await createCategory(owner, { name: "[Sample] Chairs", slug: "sample-chairs", description: undefined, sortOrder: 901, isActive: true });
+  const storage = await createCategory(owner, { name: "[Sample] Storage", slug: "sample-storage", description: undefined, sortOrder: 902, isActive: true });
 
   const products = [
-    { name: "[Sample] Dining Table 180", cat: tables, sku: "SMP-DT-180", price: "185000", material: "Sample timber", dims: "W 180 × D 90 × H 75 cm", tones: [[150, 110, 78], [118, 84, 58]] as const, featured: true },
-    { name: "[Sample] Dining Table 220", cat: tables, sku: "SMP-DT-220", price: "225000", material: "Sample timber", dims: "W 220 × D 95 × H 75 cm", tones: [[140, 100, 70], [108, 76, 52]] as const, featured: true },
-    { name: "[Sample] Spindle Chair", cat: chairs, sku: "SMP-CH-01", price: "32000", material: "Sample timber", dims: "W 45 × D 50 × H 88 cm", tones: [[170, 130, 96], [130, 96, 68]] as const, featured: true },
-    { name: "[Sample] Low Stool", cat: chairs, sku: "SMP-ST-01", price: "14500", material: "Sample timber", dims: "Ø 35 × H 45 cm", tones: [[160, 122, 88], [122, 90, 62]] as const, featured: false },
-    { name: "[Sample] Sideboard", cat: storage, sku: "SMP-SB-01", price: "148000", material: "Sample timber", dims: "W 160 × D 45 × H 80 cm", tones: [[135, 98, 70], [100, 72, 50]] as const, featured: false },
+    { name: "[Sample] Dining Table 180", cat: tables, sku: "SMP-DT-180", price: "185000", dims: "W 180 × D 90 × H 75 cm", featured: true },
+    { name: "[Sample] Dining Table 220", cat: tables, sku: "SMP-DT-220", price: "225000", dims: "W 220 × D 95 × H 75 cm", featured: true },
+    { name: "[Sample] Spindle Chair", cat: chairs, sku: "SMP-CH-01", price: "32000", dims: "W 45 × D 50 × H 88 cm", featured: true },
+    { name: "[Sample] Low Stool", cat: chairs, sku: "SMP-ST-01", price: "14500", dims: "Ø 35 × H 45 cm", featured: true },
+    { name: "[Sample] Sideboard", cat: storage, sku: "SMP-SB-01", price: "148000", dims: "W 160 × D 45 × H 80 cm", featured: true },
+    { name: "[Sample] Bookcase", cat: storage, sku: "SMP-BK-01", price: "96000", dims: "W 90 × D 35 × H 200 cm", featured: false },
   ];
   for (const p of products) {
-    const id = await createProduct(manager, {
+    const id = await createProduct(owner, {
       name: p.name, slug: undefined, categoryId: p.cat, kind: "stocked", description: "Sample data for development and demos only. Not a real product.",
-      material: p.material, finish: "Sample finish", dimensions: p.dims, sku: p.sku, listPrice: p.price,
-      isPublished: true, isFeatured: p.featured, showAvailability: false, availability: undefined, showPrice: false, seoTitle: undefined, seoDescription: undefined,
+      material: "Sample timber", finish: "Sample finish", dimensions: p.dims, sku: p.sku, listPrice: p.price,
+      isPublished: true, isFeatured: p.featured, showAvailability: false, availability: undefined, showPrice: true, seoTitle: undefined, seoDescription: undefined,
     });
-    if (withImages) {
-      const f = await upload("catalogue", manager, [...p.tones[0]] as [number, number, number], [...p.tones[1]] as [number, number, number]);
-      await attachProductImages(manager, id, [f], `${p.name} (sample image)`);
-    }
-    if (p.sku === "SMP-DT-180") await addVariant(manager, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });
+    if (withImages) await attachProductImages(owner, id, [await upload("catalogue")], `${p.name} (sample image)`);
+    if (p.sku === "SMP-DT-180") await addVariant(owner, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });
   }
 
-  const g = await createGalleryProject(manager, { title: "[Sample] Completed project", description: "Sample project for development and demos only.", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
-  if (withImages) {
-    const gi = [await upload("gallery", manager, [170, 140, 110], [120, 92, 68], 800, 600), await upload("gallery", manager, [150, 120, 92], [104, 80, 60], 800, 600)];
-    await attachGalleryImages(manager, g, gi, "Sample project photograph");
-  }
+  const g = await createGalleryProject(owner, { title: "[Sample] Completed project", description: "Sample project for development and demos only.", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
+  if (withImages) await attachGalleryImages(owner, g, [await upload("gallery", 800, 600), await upload("gallery", 800, 600)], "Sample project photograph");
 
-  await updateCrmSettings(owner, { defaultAssigneeId: sales.id });
-  const enquiries = [
-    { kind: "custom", name: "[Sample] Nimal Perera", phone: "0771110001", furnitureType: "Dining table", dimensions: "200 × 100 cm", material: "Teak", budgetRange: "150k–200k", message: "Sample enquiry for demos." },
-    { kind: "general", name: "[Sample] Kumari Silva", phone: "0771110002", message: "Sample question about showroom opening hours." },
-    { kind: "custom", name: "[Sample] Ruwan Fernando", phone: "0771110003", furnitureType: "Wardrobe", dimensions: "240 × 60 × 230 cm", message: "Sample custom wardrobe request." },
-    { kind: "general", name: "[Sample] Ayesha Rahim", phone: "0771110004", message: "Sample enquiry about delivery to another city." },
-    { kind: "general", name: "[Sample] Dilshan Jayasinghe", phone: "0771110005", message: "Sample enquiry that was lost to another supplier." },
-  ];
-  const ids: string[] = [];
-  for (const [i, e] of enquiries.entries()) {
-    const input = enquirySchema.parse({ ...e, consent: "on" });
-    ids.push((await submitEnquiry(input, { ip: `198.51.100.${i + 1}` })).leadId);
-  }
-  await changeLeadStatus(sales, ids[1]!, "contacted");
-  await changeLeadStatus(sales, ids[2]!, "quotation_sent");
-  await changeLeadStatus(sales, ids[4]!, "lost", "Chose another supplier (sample)");
-  await assignLead(manager, ids[3]!, null);
+  // Messages from the website
+  const message = (m: Record<string, string>) => submitEnquiry(enquirySchema.parse({ consent: "on", fileIds: [], ...m }), { ip: null });
+  await message({ kind: "general", name: "[Sample] Kamal Silva", phone: "0771110010", email: "kamal@example.test", preferredContact: "email", message: "Sample message: do you export to Singapore, and what are the lead times?" });
+  await message({ kind: "custom", name: "[Sample] Nimal Perera", phone: "0771110001", furnitureType: "Dining table", dimensions: "200 × 100 cm", material: "Teak", budgetRange: "150k–200k", message: "Sample custom request for demos." });
 
-  // CRM + quotations (sample)
-  await updateSalesSettings(owner, { maxDiscountPercent: "10" });
-  const c1 = await createCustomerFromLead(sales, ids[0]!);
-  const c3 = await createCustomerFromLead(sales, ids[2]!);
-  await addActivity(sales, { leadId: ids[0]!, customerId: undefined, type: "call", body: "Sample call: discussed dimensions and wood choice." });
-  await createFollowUp(sales, { leadId: ids[0]!, customerId: undefined, assignedTo: sales.id, title: "Sample: confirm table dimensions", dueOn: addDaysLocal(-2, "Asia/Colombo"), notes: undefined });
-  await createFollowUp(sales, { leadId: ids[2]!, customerId: undefined, assignedTo: sales.id, title: "Sample: chase wardrobe quotation", dueOn: addDaysLocal(3, "Asia/Colombo"), notes: undefined });
-  const q = (leadId: string | undefined, customerId: string, desc: string, price: string) =>
-    createQuotation(sales, {
-      customerId, leadId, validUntil: addDaysLocal(30, "Asia/Colombo"), deliveryCharge: "5000.00", terms: "Sample terms: 50% deposit, balance on delivery.", customerNotes: undefined, internalNotes: undefined,
-      items: [{ kind: "custom", variantId: undefined, description: desc, dimensions: "200 × 100 × 75 cm", material: "Sample timber", finish: "Sample finish", notes: undefined, quantity: "1.000", unitPrice: price, discountAmount: "0.00" }],
-    } as never);
-  await q(ids[0]!, c1, "[Sample] Custom dining table", "210000.00"); // stays a draft
-  const sent = await q(ids[2]!, c3, "[Sample] Custom wardrobe", "320000.00");
-  await sendQuotation(sales, sent);
-  const won = await q(undefined, c1, "[Sample] Console table", "98000.00");
-  await sendQuotation(sales, won);
-  await decideQuotation(sales, won, "accepted");
+  // Orders placed on the website, then handled by staff
+  const variants = (await db.execute(sql`SELECT id, sku FROM product_variants ORDER BY sku`)) as unknown as { id: string; sku: string }[];
+  const v = (sku: string) => variants.find((x) => x.sku === sku)!.id;
+  const order = (o: Record<string, unknown>, lines: [string, number][]) =>
+    placeOrder(checkoutSchema.parse({ consent: "on", fulfilment: "delivery", paymentMethod: "on_delivery", ...o, cart: JSON.stringify(lines.map(([sku, quantity]) => ({ variantId: v(sku), quantity }))) }), { ip: null });
 
-  // Stock, orders and payments (sample)
-  const showroom = ((await db2().execute(sql`SELECT id FROM locations WHERE kind = 'showroom' LIMIT 1`)) as unknown as Array<{ id: string }>)[0]!.id;
-  const workshopLoc = ((await db2().execute(sql`SELECT id FROM locations WHERE kind = 'workshop' LIMIT 1`)) as unknown as Array<{ id: string }>)[0]!.id;
-  const variants = (await db2().execute(sql`SELECT v.id, v.sku FROM product_variants v ORDER BY v.sku`)) as unknown as Array<{ id: string; sku: string }>;
-  const items: Record<string, string> = {};
-  for (const v of variants) items[v.sku] = await enableStockTracking(manager, v.id);
-  const opening: Record<string, string> = { "SMP-DT-180": "3", "SMP-DT-220": "1", "SMP-CH-01": "12", "SMP-ST-01": "6", "SMP-SB-01": "2", "SMP-DT-180-DK": "2" };
-  for (const [sku, qty] of Object.entries(opening)) if (items[sku]) await recordManualMovement(manager, { itemId: items[sku]!, locationId: showroom, kind: "opening", quantity: qty, reason: "Sample opening balance" });
-  await setLowStockThreshold(manager, { itemId: items["SMP-DT-220"]!, locationId: showroom, threshold: "2" });
-  await setLowStockThreshold(manager, { itemId: items["SMP-SB-01"]!, locationId: showroom, threshold: "2" });
-  const timber = await createInventoryItem(manager, { kind: "raw_material", sku: "SMP-TIM-01", name: "[Sample] Timber plank 50×150", unit: "m", costPrice: "1800.00" });
-  await recordManualMovement(manager, { itemId: timber, locationId: workshopLoc, kind: "opening", quantity: "24", reason: "Sample opening balance" });
-  await setLowStockThreshold(manager, { itemId: timber, locationId: workshopLoc, threshold: "30" });
-  await transferStock(sales, { fromLocationId: showroom, toLocationId: workshopLoc, items: [{ itemId: items["SMP-ST-01"]!, quantity: "1" }], note: "Sample: sent to the workshop for refinishing" });
-  const variantId = (sku: string) => variants.find((v) => v.sku === sku)!.id;
-  const order = await createReadyMadeOrder(sales, {
-    customerId: c1, locationId: showroom, deliveryCharge: "2500.00", depositTerms: "Sample: half now, half on delivery",
-    items: [{ kind: "ready_made", variantId: variantId("SMP-CH-01"), description: "[Sample] Spindle Chair", quantity: "4", unitPrice: "32000.00", discountAmount: "6400.00" }] as never,
-  });
-  await confirmOrder(sales, order);
-  await recordPayment(sales, { orderId: order, amount: "62050.00", method: "bank_transfer", reference: "SAMPLE-TRX-1" });
-  const delivered = await createReadyMadeOrder(sales, { customerId: c3, locationId: showroom, deliveryCharge: "0.00", items: [{ kind: "ready_made", variantId: variantId("SMP-ST-01"), description: "[Sample] Low Stool", quantity: "2", unitPrice: "14500.00", discountAmount: "0.00" }] as never });
-  await confirmOrder(sales, delivered);
-  await recordPayment(sales, { orderId: delivered, amount: "29000.00", method: "cash" });
-  await advanceOrder(sales, delivered, "delivered");
+  await order({ name: "[Sample] Nimal Perera", phone: "0771110001", email: "nimal@example.test", address: "12 Example Road\nColombo 03", note: "Sample: please call after 5 pm." }, [["SMP-DT-180", 1], ["SMP-CH-01", 6]]);
+  const confirmed = await order({ name: "[Sample] Dilani Fernando", phone: "0771110002", fulfilment: "pickup", paymentMethod: "at_showroom" }, [["SMP-SB-01", 1]]);
+  const inProgress = await order({ name: "[Sample] Ruwan Jayasuriya", phone: "0771110003", address: "5 Sample Lane\nKandy", paymentMethod: "bank_transfer" }, [["SMP-DT-220", 1]]);
+  const delivered = await order({ name: "[Sample] Kamal Silva", phone: "0771110010", address: "8 Sample Avenue\nGalle" }, [["SMP-ST-01", 4], ["SMP-BK-01", 1]]);
+  const cancelled = await order({ name: "[Sample] Anoma Wijesinghe", phone: "0771110004", address: "3 Sample Street\nNegombo" }, [["SMP-CH-01", 2]]);
 
-  // Workshop and purchasing (sample)
-  const workshopStaff: Actor = { id: DEMO_STAFF.workshop, fullName: DEMO_STAFF_NAMES.workshop, roles: ["workshop"], isActive: true };
-  const { saveSupplier, createPurchaseOrder, markPurchaseOrderSent, receiveGoods, getPurchaseOrder } = await import("../src/server/purchasing");
-  const { setAssignees, changeStage, planMaterial, recordConsumption, addIssue } = await import("../src/server/production");
-  const supplier = await saveSupplier(manager, { name: "[Sample] Timber supplier", contactName: "Sample contact", suppliedMaterials: "Hardwood planks (sample)" });
-  const po = await createPurchaseOrder(manager, { supplierId: supplier, locationId: workshopLoc, expectedOn: addDaysLocal(5, "Asia/Colombo"), notes: "Sample purchase order", items: [{ itemId: timber, quantity: "40", expectedUnitCost: "1800.00" }] });
-  await markPurchaseOrderSent(manager, po);
-  const poLine = (await getPurchaseOrder(manager, po)).lines[0]!;
-  await receiveGoods(workshopStaff, po, { note: "Sample: first delivery", lines: [{ purchaseOrderItemId: poLine.id, quantity: "25" }] });
-  const customOrder = await convertQuotationToOrder(sales, won, { requestedCompletionDate: addDaysLocal(14, "Asia/Colombo"), depositTerms: "Sample: half now, half on delivery" });
-  await confirmOrder(sales, customOrder);
-  const [{ id: jobId }] = (await db2().execute(sql`SELECT id FROM production_jobs WHERE order_id = ${customOrder}`)) as unknown as [{ id: string }];
-  await setAssignees(manager, jobId, [workshopStaff.id]);
-  await planMaterial(manager, jobId, { itemId: timber, plannedQuantity: "12" });
-  await changeStage(workshopStaff, jobId, "cutting_preparation");
-  await recordConsumption(workshopStaff, { jobId, itemId: timber, locationId: workshopLoc, quantity: "8", wasteQuantity: "1", note: "Sample usage", requestKey: crypto.randomUUID() });
-  await addIssue(workshopStaff, jobId, "delay", "Sample: waiting for the varnish delivery.");
+  await setOrderStatus(owner, confirmed.id, "confirmed");
+  await setOrderStatus(owner, inProgress.id, "confirmed");
+  await updateOrderDetails(owner, inProgress.id, { deliveryCharge: "8500", staffNote: "Sample: delivery booked for Friday." });
+  await setOrderStatus(owner, inProgress.id, "in_progress");
+  await setOrderPaid(owner, inProgress.id, true);
+  await setOrderStatus(owner, delivered.id, "confirmed");
+  await updateOrderDetails(owner, delivered.id, { deliveryCharge: "4500" });
+  await setOrderStatus(owner, delivered.id, "delivered");
+  await setOrderPaid(owner, delivered.id, true);
+  await setOrderStatus(owner, cancelled.id, "cancelled", "Sample: customer changed their mind.");
 
-  // Deliveries, expenses and an after-sales case (sample)
-  const finance: Actor = { id: DEMO_STAFF.finance, fullName: DEMO_STAFF_NAMES.finance, roles: ["finance"], isActive: true };
-  const { createDelivery } = await import("../src/server/deliveries");
-  const { createExpense, listExpenseCategories } = await import("../src/server/expenses");
-  const { createCase } = await import("../src/server/aftersales");
-  await createDelivery(sales, { orderId: order, scheduledOn: addDaysLocal(1, "Asia/Colombo"), windowStart: "10:00", windowEnd: "13:00", addressLine: "Sample address, 12 Example Road", contactName: "[Sample] Nimal Perera", contactPhone: "0771110001", fee: "2500.00", assigneeId: workshopStaff.id, notes: "Sample: call on arrival" });
-  const cats = await listExpenseCategories(finance);
-  const cat = (n: string) => cats.find((c) => c.name === n)!.id;
-  await createExpense(finance, { spentOn: addDaysLocal(-3, "Asia/Colombo"), categoryId: cat("Transport and fuel"), amount: "6400.00", description: "Sample: van fuel", method: "cash" });
-  await createExpense(finance, { spentOn: addDaysLocal(-1, "Asia/Colombo"), categoryId: cat("Utilities"), amount: "18250.00", description: "Sample: workshop electricity", payee: "Sample utility", method: "bank_transfer", reference: "SAMPLE-UTIL-1" });
-  await createCase(sales, { customerId: c3, orderId: delivered, type: "warranty", subject: "[Sample] Wobbling stool", description: "Sample warranty case for demos.", assigneeId: workshopStaff.id, dueOn: addDaysLocal(7, "Asia/Colombo") });
-  console.log("Sample data created: categories, products, a gallery project, enquiries, customers, follow-ups and quotations. All labelled [Sample].");
+  console.log("Sample data created: categories, products, a gallery project, messages and orders. All labelled [Sample].");
   process.exit(0);
 }
 

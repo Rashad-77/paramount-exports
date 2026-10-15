@@ -18,16 +18,16 @@ const variants: Record<Variant, string> = {
   ghost: "bg-transparent text-text border-transparent hover:bg-linen",
   danger: "bg-danger text-ivory border-danger hover:bg-transparent hover:text-danger",
   // For use on dark (walnut) bands
-  light: "bg-ivory text-walnut border-ivory hover:bg-ivory/90",
+  light: "bg-white text-walnut-dark border-white hover:bg-white/85",
   // Outline for use on dark (wood) bands
-  onDark: "bg-transparent text-ivory border-ivory/50 hover:bg-ivory/10 hover:border-ivory",
+  onDark: "bg-white/5 text-ivory border-white/45 hover:bg-white/15 hover:border-white",
 };
 
 const sizes: Record<Size, string> = {
   md: "min-h-10 px-4 text-sm tracking-[0.01em]",
   lg: "min-h-[var(--touch-target)] px-6 text-base tracking-[0.01em]",
-  // Public calls to action: small caps-style label, generous padding.
-  cta: "min-h-11 px-5 text-[0.8125rem] font-semibold tracking-[0.01em]",
+  // Public calls to action: small tracked capitals, generous padding.
+  cta: "min-h-12 rounded-[3px] px-7 text-[0.6875rem] font-semibold uppercase tracking-[0.16em]",
 };
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {

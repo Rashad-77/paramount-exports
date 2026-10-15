@@ -14,7 +14,6 @@ import { isAppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
 import { getProductAdmin, listCategories } from "@/server/catalogue";
-import { enableTrackingAction } from "../../orders/actions";
 import { addImagesAction, addVariantAction, archiveProductAction, mainImageAction, removeImageAction, updateProductAction, updateVariantAction } from "../actions";
 
 export const metadata = { title: "Product" };
@@ -52,7 +51,7 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
           )}
         </Panel>
 
-        <Panel title="Options & prices" description="Each option has its own SKU. Prices are only shown on the website if “Show price publicly” is on.">
+        <Panel title="Options & prices" description="Each option has its own SKU. Customers can only add an option to their order when it has a price and “Show price publicly” is on for the product.">
           <ul className="divide-y divide-border">
             {variants.map((v) => (
               <li key={v.id} className="py-4 first:pt-0">
@@ -70,20 +69,6 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
                     </div>
                     <SubmitButton>Save option</SubmitButton>
                   </ActionForm>
-                  <div className="mt-3 text-sm">
-                    {v.inventoryItemId ? (
-                      <span className="text-text-muted">
-                        Stock is counted. <Link className="underline" href={`/app/stock/${v.inventoryItemId}`}>View stock</Link>
-                      </span>
-                    ) : (
-                      <ActionForm action={enableTrackingAction} className="space-y-0">
-                        <input type="hidden" name="variantId" value={v.id} />
-                        <input type="hidden" name="productId" value={product.id} />
-                        <span className="mr-3 text-text-muted">Stock is not counted, so this option cannot be sold in a ready-made order.</span>
-                        <SubmitButton variant="secondary" pendingLabel="Turning on…">Turn on stock tracking</SubmitButton>
-                      </ActionForm>
-                    )}
-                  </div>
                   </>
                 ) : (
                   <p className="text-sm">{v.label} · {v.sku} {v.listPrice ? `· ${formatMoney(v.listPrice, business.currency)}` : ""}{v.salePrice ? ` · sale ${formatMoney(v.salePrice, business.currency)}` : ""} {!v.isActive ? <StatusBadge>Inactive</StatusBadge> : null}</p>

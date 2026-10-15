@@ -41,6 +41,9 @@ export const enquirySchema = z
     if (v.kind === "product_enquiry" && !v.productId) {
       ctx.addIssue({ code: "custom", path: ["message"], message: "This enquiry is missing its product. Please open the product page and try again." });
     }
+    if (v.targetDate && v.targetDate < new Date(Date.now() - 36 * 3600_000).toISOString().slice(0, 10)) {
+      ctx.addIssue({ code: "custom", path: ["targetDate"], message: "Choose a date that is today or later." });
+    }
     if (v.preferredContact === "email" && !v.email) {
       ctx.addIssue({ code: "custom", path: ["email"], message: "Add your email address, or choose a different contact method." });
     }

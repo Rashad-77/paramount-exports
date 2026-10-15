@@ -5,8 +5,10 @@ import { runAction } from "@/lib/actions";
 import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guard";
 import { validation } from "@/lib/errors";
 import { clientIp } from "@/lib/rate-limit";
+import { activeCustomer } from "@/lib/auth/customer";
 import { enquirySchema } from "@/lib/schemas/enquiry";
-import { submitEnquiry } from "@/server/enquiries";
+import { submitEnquiry } from "@/server/messages";
+import { notifyNewMessage } from "@/server/notify";
 
 const THANKS = (ref: string) =>
   `We have received your enquiry (reference ${ref}). Someone from the team will contact you using the details you gave.`;
@@ -17,7 +19,7 @@ export async function submitEnquiryAction(_prev: ActionState, formData: FormData
     enquirySchema,
     async (input, ctx) => {
       // Bots tend to fill every field. Pretend it worked so they learn nothing, but store nothing.
-      if (input[HONEYPOT_FIELD]) return { message: THANKS("ENQ-000000") };
+      if (input[HONEYPOT_FIELD]) return { message: THANKS("MSG-000000") };
 
       const token = checkFormToken(input.formToken);
       if (token === "too-fast") throw validation("That was very quick. Please check your details and send the form again.");
@@ -28,7 +30,8 @@ export async function submitEnquiryAction(_prev: ActionState, formData: FormData
         throw validation("We could not confirm you are a person. Please try again.");
       }
 
-      const { reference } = await submitEnquiry(input, { ip });
+      const { id, reference } = await submitEnquiry(input, { ip, accountId: (await activeCustomer())?.id ?? null });
+      notifyNewMessage(id);
       return { message: THANKS(reference) };
     },
     { public: true },

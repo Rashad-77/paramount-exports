@@ -1,7 +1,7 @@
 import { can, type Actor, type Permission } from "@/lib/auth/permissions";
 
 /**
- * Internal navigation: seven groups, one entry per module.
+ * Internal navigation: a few groups, one entry per module.
  *
  * - A module with several screens lists them as `pages`; the first page the person may open is where the entry links,
  *   and the module's other screens appear as tabs above the page.
@@ -31,89 +31,41 @@ const page = (label: string, href: string, permission: Permission | null): NavPa
 export const NAV: NavGroup[] = [
   {
     label: "General",
-    modules: [{ label: "Dashboard", description: "Business overview, pending tasks, sales summary and alerts.", pages: [page("Dashboard", "/app", null)] }],
+    modules: [{ label: "Dashboard", description: "New orders, what needs doing today, and recent activity.", pages: [page("Dashboard", "/app", null)] }],
   },
   {
-    label: "Sales",
+    label: "Orders",
     modules: [
-      { label: "Customers", description: "Customer profiles, contact details, purchase history and communication records.", pages: [page("Customers", "/app/customers", "customers:view")] },
-      {
-        label: "Enquiries",
-        description: "New enquiries, follow-ups, custom requests and lead conversion.",
-        pages: [page("Enquiries", "/app/leads", "leads:view"), page("Follow-ups", "/app/follow-ups", "followups:manage")],
-      },
-      { label: "Quotations", description: "Price estimates, custom specifications, revisions and customer approvals.", pages: [page("Quotations", "/app/quotations", "quotations:view")] },
-      { label: "Sales Orders", description: "Confirmed purchases, order status, payment terms and completion dates.", pages: [page("Sales Orders", "/app/orders", "orders:view")] },
+      { label: "Orders", description: "Orders placed on the website: confirm them, agree delivery, and record payment when it arrives.", pages: [page("Orders", "/app/orders", "orders:view")] },
+      { label: "Messages", description: "Contact-form messages, product enquiries and custom-furniture requests from the website.", pages: [page("Messages", "/app/messages", "messages:view")] },
+      { label: "Customers", description: "People who have ordered, with their contact details and order history.", pages: [page("Customers", "/app/customers", "customers:view")] },
     ],
   },
   {
-    label: "Manufacturing",
-    modules: [
-      {
-        label: "Production",
-        description: "Workshop job cards, work stages, staff assignments, deadlines and quality inspections.",
-        pages: [page("Production", "/app/production", "production:view")],
-      },
-      {
-        label: "Inventory",
-        description: "Raw materials, hardware, finished goods, stock movements and reorder alerts.",
-        pages: [
-          page("Stock", "/app/stock", "inventory:view"),
-          page("Materials", "/app/materials", "inventory:view_materials"),
-          page("Transfers", "/app/transfers", "inventory:transfer"),
-          page("Locations", "/app/locations", "inventory:view"),
-        ],
-      },
-      {
-        label: "Procurement",
-        description: "Suppliers, purchase orders, incoming materials and supplier invoices.",
-        pages: [page("Suppliers", "/app/suppliers", "suppliers:view"), page("Purchase Orders", "/app/purchase-orders", "purchasing:view")],
-      },
-    ],
-  },
-  {
-    label: "Fulfilment",
-    modules: [
-      { label: "Deliveries", description: "Delivery schedules, vehicle assignments, installation and proof of delivery.", pages: [page("Deliveries", "/app/deliveries", "deliveries:view")] },
-      { label: "After-Sales Service", description: "Warranty claims, repairs, defects and customer complaints.", pages: [page("After-Sales Service", "/app/after-sales", "aftersales:view")] },
-    ],
-  },
-  {
-    label: "Finance",
-    modules: [
-      { label: "Invoicing", description: "Customer invoices, receipts, advance payments and outstanding balances.", pages: [page("Invoicing", "/app/payments", "payments:view")] },
-      {
-        label: "Expenses",
-        description: "Operating costs, wages, utilities, transport and other business expenditure.",
-        pages: [page("Expenses", "/app/expenses", "expenses:view"), page("Categories", "/app/expenses/categories", "expenses:manage_categories")],
-      },
-    ],
-  },
-  {
-    label: "Business management",
+    label: "Catalogue",
     modules: [
       {
         label: "Products",
-        description: "Furniture catalogue, product variants, dimensions, finishes, pricing and images.",
+        description: "The furniture shown on the website: options, prices, photographs and what is published.",
         pages: [page("Products", "/app/products", "products:view"), page("Categories", "/app/categories", "products:view")],
       },
-      { label: "Employees", description: "Staff profiles, roles, attendance and assigned responsibilities.", pages: [page("Employees", "/app/users", "users:manage")] },
-      { label: "Reports", description: "Sales performance, production efficiency, stock valuation and profitability.", pages: [page("Reports", "/app/reports", null)] },
+    ],
+  },
+  {
+    label: "Website",
+    modules: [
+      {
+        label: "Website",
+        description: "Page wording and the gallery of finished projects.",
+        pages: [page("Pages", "/app/website", "website:manage"), page("Gallery", "/app/gallery", "website:manage")],
+      },
     ],
   },
   {
     label: "System",
     modules: [
-      {
-        label: "Website",
-        description: "Homepage content, gallery, showroom details and published product listings.",
-        pages: [page("Pages", "/app/website", "website:manage"), page("Gallery", "/app/gallery", "website:manage")],
-      },
-      {
-        label: "Settings",
-        description: "Business details, user permissions, tax rules, numbering and system configuration.",
-        pages: [page("Settings", "/app/settings", "settings:view")],
-      },
+      { label: "Users", description: "Who can sign in to this area, and whether they are an owner or staff.", pages: [page("Users", "/app/users", "users:manage")] },
+      { label: "Settings", description: "Business name, contact details, opening hours and bank details for transfers.", pages: [page("Settings", "/app/settings", "settings:view")] },
     ],
   },
 ];

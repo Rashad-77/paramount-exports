@@ -110,8 +110,50 @@
     {
       "idx": 15,
       "version": "7",
-      "when": 1792048524095,
-      "tag": "0015_product_sale_price",
+      "when": 1791820000000,
+      "tag": "0015_online_orders_only",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791906400000,
+      "tag": "0016_customer_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791992800000,
+      "tag": "0017_gallery_category",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792079200000,
+      "tag": "0018_category_tree",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792165600000,
+      "tag": "0019_sample_categories_last",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792252000000,
+      "tag": "0020_sample_products_into_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792338400000,
+      "tag": "0021_product_sale_price",
       "breakpoints": true
     }
   ]

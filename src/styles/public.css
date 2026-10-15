@@ -4,15 +4,15 @@
  */
 /* The public site reads at 15px; the staff area keeps the browser default. */
 html:has(.page-body) {
-  font-size: 93.75%;
+  font-size: 100%;
 }
 
 :root {
   --wood-0: #1b0e05;
   --wood-1: #2d1608;
-  --wood-2: #4a2410;
-  --leaf: #c6ecd3;
-  --leaf-deep: #9fd6b3;
+  --wood-2: #200f07;
+  --leaf: #c5aa86;
+  --leaf-deep: #a98d68;
 }
 
 @layer components {
@@ -26,126 +26,189 @@ html:has(.page-body) {
     }
   }
 
-  /* ── One hover for every text link and menu item: a block of tone fills up from the base ── */
-  .fill-hover {
-    position: relative;
-    isolation: isolate;
+  /* ── Header: a full-width bar fixed to the top of every page, clear frosted glass with black type ──────── */
+  :root {
+    --head-h: 4.5rem;
   }
-  .fill-hover::before {
+  .phead {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    color: #1c1916;
+    border-bottom: 1px solid rgb(28 25 22 / 0.1);
+  }
+  /* The glass */
+  .phead::before {
     content: "";
     position: absolute;
     inset: 0;
-    z-index: -1;
-    background: var(--fill, var(--color-mint));
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 280ms var(--ease-out);
+    z-index: 0;
+    pointer-events: none;
+    -webkit-backdrop-filter: saturate(1.5) blur(18px);
+    backdrop-filter: saturate(1.5) blur(18px);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.62) 0%, rgb(255 255 255 / 0.5) 100%);
   }
-  @media (hover: hover) {
-    .fill-hover:hover::before {
-      transform: scaleY(1);
-    }
-  }
-  .on-wood .fill-hover {
-    --fill: rgb(255 255 255 / 0.12);
-  }
-  .fill-hover[aria-current="page"]::before {
-    transform: scaleY(1);
-  }
-
-  /* ── Header ─────────────────────────────────────────────────────────────────────── */
-  .phead {
-    position: sticky;
+  /* The white container: exactly the size of the bar, directly behind it at the top of the page. It is not part of the
+     header: it stays where it is and scrolls away with the page, while the header stays put. */
+  .head-back {
+    position: absolute;
     top: 0;
-    z-index: 60;
-    color: #fff;
-    background: linear-gradient(180deg, rgb(45 22 8 / 0.97), rgb(27 14 5 / 0.97));
-    backdrop-filter: saturate(1.4) blur(14px);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.08);
-    transition: box-shadow var(--duration-base);
-  }
-  .phead.scrolled {
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.1), 0 14px 30px -16px rgb(0 0 0 / 0.6);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: calc(var(--head-h) + 1px);
+    background: #fff;
+    pointer-events: none;
   }
   .phead .in {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding-block: 1.05rem;
-    transition: padding var(--duration-base);
+    gap: 1.5rem;
+    height: var(--head-h);
+    max-width: calc(var(--content-width) + 8rem);
+    margin-inline: auto;
+    padding: 0 var(--gutter);
   }
-  .phead.scrolled .in {
-    padding-block: 0.7rem;
-  }
-  .phead .logo {
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #fff;
+  .phead .logo,
+  .foot .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
     line-height: 1;
+    white-space: nowrap;
+    color: #1c1916;
+  }
+  .phead .logo .mark {
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .foot .brand .mark {
+    flex: none;
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+  .phead .logo .name,
+  .foot .brand .name {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .phead .logo b,
+  .foot .brand b {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+  }
+  .phead .logo i,
+  .foot .brand i {
+    font-style: normal;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #3a332d;
+  }
+  @media (max-width: 30rem) {
+    .phead .logo .mark {
+      width: 1.9rem;
+      height: 1.9rem;
+    }
+    .phead .logo b,
+    .foot .brand b {
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+    }
+    .phead .logo i,
+    .foot .brand i {
+      font-size: 0.56rem;
+      letter-spacing: 0.22em;
+    }
   }
   .phead nav {
     margin-left: auto;
+    margin-right: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.25rem;
   }
   .phead nav a {
-    --fill: rgb(255 255 255 / 0.1);
-    position: relative;
-    isolation: isolate;
-    padding: 0.55rem 0.85rem;
-    font-size: 0.875rem;
+    padding: 0.7rem 0.95rem;
+    border: 1px solid transparent;
+    font-size: 0.6875rem;
     font-weight: 500;
-    color: rgb(255 255 255 / 0.86);
-    transition: color 200ms;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1c1916;
+    white-space: nowrap;
+    transition: color 250ms, border-color 250ms, background-color 250ms;
   }
-  .phead nav a::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--fill);
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 280ms var(--ease-out);
+  /* No box on hover or on the current page: the current page is simply bolder */
+  .phead nav a:hover {
+    color: #1c1916;
   }
-  .phead nav a:hover,
   .phead nav a[aria-current="page"] {
-    color: #fff;
-  }
-  .phead nav a:hover::before,
-  .phead nav a[aria-current="page"]::before {
-    transform: scaleY(1);
-  }
-  .phead nav a.cta {
-    margin-left: 0.5rem;
-    padding: 0.6rem 1.1rem;
-    background: #fff;
-    color: var(--color-brand);
+    color: #1c1916;
     font-weight: 700;
   }
-  .phead nav a.cta::before {
-    display: none;
+  .phead .cart {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    min-height: 2.75rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1c1916;
+    transition: color 250ms;
   }
-  .phead nav a.cta:hover {
-    background: var(--leaf);
+  .phead .cart:hover {
+    color: #7a3d1c;
+  }
+  .phead .cart-count {
+    position: absolute;
+    top: 0.35rem;
+    right: 0;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding-inline: 0.25rem;
+    display: grid;
+    place-items: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+    color: #fff;
+    background: #1c1916;
   }
   .phead .toggle {
     display: none;
-    margin-left: auto;
-    width: 2.75rem;
+    width: 1.25rem;
     height: 2.75rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgb(255 255 255 / 0.3);
+    border: 0;
     background: transparent;
-    color: #fff;
+    color: #1c1916;
   }
-  @media (max-width: 51.25rem) {
+  @media (max-width: 72rem) {
     .phead .toggle {
       display: inline-flex;
+      order: 3;
+    }
+    .phead .cart {
+      margin-left: auto;
+      order: 2;
+    }
+    .phead .cart.acct {
+      margin-left: 0;
     }
     .phead nav {
       position: absolute;
@@ -157,8 +220,8 @@ html:has(.page-body) {
       align-items: stretch;
       gap: 0;
       padding: 0.5rem var(--gutter) 1rem;
-      background: rgb(27 14 5 / 0.98);
-      border-top: 1px solid rgb(255 255 255 / 0.1);
+      background: rgb(255 255 255 / 0.98);
+      border-top: 1px solid rgb(28 25 22 / 0.1);
       opacity: 0;
       visibility: hidden;
       transform: translate3d(0, -8px, 0);
@@ -170,15 +233,19 @@ html:has(.page-body) {
       transform: none;
     }
     .phead nav a {
-      padding: 0.95rem 0.25rem;
-      font-size: 1rem;
-      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+      padding: 0.95rem 0.5rem;
+      font-size: 0.85rem;
+      border-width: 0 0 1px;
+      border-color: rgb(28 25 22 / 0.1);
     }
-    .phead nav a.cta {
-      margin: 0.75rem 0 0;
-      text-align: center;
-      border-bottom: 0;
-    }
+  }
+  /* Slide-in animations start a little off to the side; clip that so the page never scrolls sideways (clip, unlike hidden, keeps sticky and fixed things working) */
+  .page-body main {
+    overflow-x: clip;
+  }
+  /* Room under the fixed header for pages that do not start with a dark band */
+  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band) {
+    margin-top: 5.25rem;
   }
 
   /* ── Polished wood band (hero, page heads, visit section, footer) ───────────────── */
@@ -188,7 +255,7 @@ html:has(.page-body) {
     overflow: hidden;
     color: #fff;
     background:
-      radial-gradient(70% 60% at 88% 0%, rgb(198 236 211 / 0.16), transparent 70%),
+      radial-gradient(70% 60% at 88% 0%, rgb(197 170 134 / 0.16), transparent 70%),
       radial-gradient(60% 55% at 0% 100%, rgb(214 150 80 / 0.2), transparent 70%),
       linear-gradient(160deg, var(--wood-2) 0%, var(--wood-1) 48%, var(--wood-0) 100%);
   }
@@ -207,6 +274,13 @@ html:has(.page-body) {
     position: relative;
     z-index: 1;
   }
+  /* Plain page header: neutral charcoal, no wood colour or grain */
+  .plain-band {
+    color: #fff;
+    background:
+      radial-gradient(60% 90% at 90% 0%, rgb(197 170 134 / 0.14), transparent 70%),
+      linear-gradient(160deg, #331c11 0%, #26140c 55%, #200f07 100%);
+  }
   .on-wood-muted {
     color: rgb(255 255 255 / 0.84);
   }
@@ -223,10 +297,15 @@ html:has(.page-body) {
     isolation: isolate;
     overflow: hidden;
     display: flex;
-    align-items: flex-end;
-    min-height: calc(100svh - 4.75rem);
+    align-items: center;
+    min-height: 100svh;
+    min-height: max(36rem, 100svh);
     color: #fff;
-    background: var(--wood-0);
+    background: #200f07;
+  }
+  /* Shorter variant for inner pages (Gallery): still a video hero, but the content starts higher up the page */
+  .vhero.vhero-short {
+    min-height: clamp(22rem, 62svh, 38rem);
   }
   .vhero .media {
     position: absolute;
@@ -242,19 +321,21 @@ html:has(.page-body) {
     inset: 0;
     z-index: -1;
     background:
-      linear-gradient(90deg, rgb(27 14 5 / 0.72) 0%, rgb(27 14 5 / 0.25) 60%, transparent 100%),
-      linear-gradient(180deg, rgb(27 14 5 / 0.2) 0%, rgb(27 14 5 / 0.15) 45%, rgb(27 14 5 / 0.9) 100%);
+      linear-gradient(90deg, rgb(32 15 7 / 0.72) 0%, rgb(32 15 7 / 0.25) 60%, transparent 100%),
+      linear-gradient(180deg, rgb(32 15 7 / 0.2) 0%, rgb(32 15 7 / 0.15) 45%, rgb(32 15 7 / 0.9) 100%);
   }
   .vhero h1 {
-    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
+    font-family: var(--font-sans);
+    font-size: clamp(2.25rem, 1rem + 3.8vw, 4rem);
+    font-weight: 300;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     color: #fff;
   }
   .vhero h1 em {
     font-style: normal;
-    color: var(--leaf);
+    font-weight: 300;
+    color: #fff;
   }
   .vhero .pause {
     position: absolute;
@@ -420,7 +501,7 @@ html:has(.page-body) {
   @media (hover: hover) {
     .vcard:hover {
       background: rgb(255 255 255 / 0.1);
-      border-color: rgb(198 236 211 / 0.5);
+      border-color: rgb(197 170 134 / 0.5);
       transform: translate3d(0, -4px, 0);
     }
   }
@@ -433,8 +514,8 @@ html:has(.page-body) {
     padding: clamp(2.2rem, 6vw, 4.2rem);
     color: #fff;
     background:
-      radial-gradient(80% 120% at 100% 0%, rgb(198 236 211 / 0.2), transparent 65%),
-      linear-gradient(135deg, #7a3a13, var(--color-brand) 55%, var(--wood-2));
+      radial-gradient(80% 120% at 100% 0%, rgb(197 170 134 / 0.2), transparent 65%),
+      linear-gradient(135deg, #43251a, var(--color-brand) 55%, var(--wood-2));
   }
   .ctaband::before {
     content: "";
@@ -445,6 +526,402 @@ html:has(.page-body) {
     background-size: cover;
     mix-blend-mode: soft-light;
     opacity: 0.8;
+  }
+
+  /* Soft closing band: white fading to mint with a green glow in one corner, a hairline frame, centred copy */
+  .ctasoft {
+    position: relative;
+    padding: clamp(2.5rem, 6vw, 4.25rem) var(--gutter);
+    text-align: center;
+    color: var(--color-brand);
+    border-block: 1px solid var(--leaf);
+    background:
+      radial-gradient(70% 120% at 100% 0%, var(--leaf) 0%, rgb(197 170 134 / 0) 65%),
+      linear-gradient(180deg, #ffffff 0%, #ece6dc 100%);
+  }
+  .ctasoft .go {
+    background: linear-gradient(135deg, #4a2a1a, var(--color-brand));
+    border-color: var(--color-brand);
+    color: #fff;
+  }
+  @media (hover: hover) {
+    .ctasoft .go:hover {
+      background: linear-gradient(135deg, var(--color-brand), #200f07);
+    }
+  }
+  .ctasoft .reach {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 2rem;
+    margin: 2rem auto 0;
+    padding-top: 1.5rem;
+    max-width: 38rem;
+    border-top: 1px solid rgb(197 170 134 / 0.9);
+  }
+  .ctasoft .reach a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-brand);
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+    transition: background-size 350ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .ctasoft .reach a:hover {
+      background-size: 100% 1px;
+    }
+  }
+
+  /* Glass band (About page): two frosted cards over a soft mint-and-sand gradient, full width */
+  .glassband {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+    border-block: 1px solid var(--leaf);
+    background:
+      radial-gradient(50% 120% at 0% 0%, rgb(197 170 134 / 0.95) 0%, rgb(197 170 134 / 0) 70%),
+      radial-gradient(50% 120% at 100% 100%, rgb(219 207 185 / 0.7) 0%, rgb(219 207 185 / 0) 70%),
+      linear-gradient(135deg, #f2ede4, #f5ece2);
+  }
+  .glasscard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: rgb(255 255 255 / 0.55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgb(255 255 255 / 0.85);
+    transition: background-color 300ms var(--ease-out), border-color 300ms var(--ease-out), transform 400ms var(--ease-out);
+  }
+  .glasscard .go svg {
+    transition: transform 350ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .glasscard:hover {
+      background: rgb(255 255 255 / 0.75);
+      border-color: #fff;
+    }
+    .glasscard:hover .go svg {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glasscard,
+    .glasscard .go svg {
+      transition: none;
+      transform: none !important;
+    }
+  }
+
+  /* ── Contact page: header glow, contact cards, map, form ─────────────────────────── */
+  .ct-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    text-align: center;
+    background: linear-gradient(180deg, #ffffff, #f2ede4);
+    padding-block: clamp(3rem, 7vw, 5.5rem);
+  }
+  .ct-hero::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    background:
+      radial-gradient(40% 50% at 80% 20%, rgb(197 170 134 / 0.9), transparent 70%),
+      radial-gradient(35% 45% at 15% 80%, rgb(219 207 185 / 0.45), transparent 70%);
+    animation: ct-drift 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes ct-drift {
+    to {
+      transform: translate3d(4%, -3%, 0) scale(1.08);
+    }
+  }
+  .ct-card {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    padding: 2.5rem var(--gutter);
+    text-align: center;
+  }
+  @media (min-width: 48rem) {
+    .ct-card {
+      padding-inline: 2.5rem;
+    }
+  }
+  .ct-ico {
+    display: inline-grid;
+  }
+  .ct-pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    margin: -1.5rem 0 0 -1.5rem;
+    color: #fff;
+    background: var(--color-brand);
+    box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.45);
+  }
+  .ct-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3rem;
+    height: 3rem;
+    margin: -1.5rem 0 0 -1.5rem;
+    border: 1px solid var(--color-brand);
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Entrances: they start when the section scrolls into view (the parent gains .in) */
+  [data-reveal].in .ct-ico {
+    animation: ct-pop 800ms var(--ease-out) 300ms backwards;
+  }
+  [data-reveal].in .ct-pin {
+    animation: ct-drop 800ms cubic-bezier(0.34, 1.4, 0.64, 1) 900ms backwards;
+  }
+  [data-reveal].in .ct-ring {
+    animation: ct-ring 3s ease-out 1.7s infinite;
+  }
+  [data-reveal].in .ct-ring + .ct-ring {
+    animation-delay: 3.2s;
+  }
+  [data-reveal].in .ct-form form > * {
+    animation: ct-rise 750ms var(--ease-out) backwards;
+  }
+  [data-reveal].in .ct-form form > :nth-child(1) { animation-delay: 150ms; }
+  [data-reveal].in .ct-form form > :nth-child(2) { animation-delay: 220ms; }
+  [data-reveal].in .ct-form form > :nth-child(3) { animation-delay: 290ms; }
+  [data-reveal].in .ct-form form > :nth-child(4) { animation-delay: 360ms; }
+  [data-reveal].in .ct-form form > :nth-child(5) { animation-delay: 430ms; }
+  [data-reveal].in .ct-form form > :nth-child(6) { animation-delay: 500ms; }
+  [data-reveal].in .ct-form form > :nth-child(7) { animation-delay: 570ms; }
+  [data-reveal].in .ct-form form > :nth-child(n + 8) { animation-delay: 640ms; }
+  @keyframes ct-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+  @keyframes ct-drop {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -2.5rem, 0);
+    }
+  }
+  @keyframes ct-ring {
+    0% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(3.2);
+    }
+  }
+  @keyframes ct-rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ct-hero::before,
+    [data-reveal].in .ct-ico,
+    [data-reveal].in .ct-pin,
+    [data-reveal].in .ct-ring,
+    [data-reveal].in .ct-form form > * {
+      animation: none !important;
+    }
+    .ct-ring {
+      display: none;
+    }
+  }
+
+  /* Frosted glass panel for content laid over a photograph or gradient */
+  .glasspanel {
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    background: rgb(255 255 255 / 0.55);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgb(255 255 255 / 0.85);
+  }
+  .glasspanel-strong {
+    background: rgb(255 255 255 / 0.72);
+  }
+
+  /* ── Gallery: staggered frames, full-screen viewer ───────────────────── */
+  .gal-grid {
+    animation: gal-fade 450ms var(--ease-out) both;
+  }
+  @keyframes gal-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .gal-tile {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    background: #e4e4e2;
+    text-align: left;
+  }
+  .gal-cap {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 2.5rem 1.1rem 1rem;
+    color: #fff;
+    background: linear-gradient(180deg, transparent, rgb(32 15 7 / 0.72));
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out);
+  }
+  .gal-tile:hover .gal-cap,
+  .gal-tile:focus-visible .gal-cap {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .gal-cap {
+      opacity: 1;
+    }
+  }
+  .gal-cat {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--leaf);
+  }
+  .gal-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .gal-dialog {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(14 14 14 / 0.96);
+    color: #fff;
+  }
+  .gal-dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+  .gal-dialog[open] {
+    animation: gal-fade 300ms var(--ease-out) both;
+  }
+  .gal-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.5rem 1fr 4.5rem;
+    align-items: center;
+    height: 100%;
+    padding: 4rem 0 2rem;
+  }
+  .gal-fig {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    min-width: 0;
+  }
+  .gal-frame {
+    position: relative;
+    width: min(100%, calc((100dvh - 12rem) * var(--r, 1.5)));
+    max-height: calc(100dvh - 12rem);
+    background: #e4e4e2;
+    display: grid;
+    place-items: center;
+  }
+  .gal-fig figcaption {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .gal-count {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    color: rgb(255 255 255 / 0.65);
+  }
+  .gal-ph {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #55554f;
+  }
+  .gal-btn {
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    color: #fff;
+    background: transparent;
+    transition: transform 250ms var(--ease-out), background-color 250ms;
+  }
+  @media (hover: hover) {
+    .gal-btn:hover {
+      background: rgb(255 255 255 / 0.12);
+    }
+  }
+  .gal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+  .gal-prev {
+    justify-self: center;
+  }
+  .gal-next {
+    justify-self: center;
+  }
+  @media (max-width: 40rem) {
+    .gal-stage {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr auto;
+      padding-inline: 1rem;
+    }
+    .gal-prev,
+    .gal-next {
+      position: absolute;
+      bottom: 0.75rem;
+    }
+    .gal-prev {
+      left: 0.75rem;
+    }
+    .gal-next {
+      right: 0.75rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gal-grid,
+    .gal-dialog[open] {
+      animation: none;
+    }
+    .gal-cap,
+    .gal-btn {
+      transition: none;
+    }
   }
 
   /* Footer wordmark: an outline of the business name along the bottom edge */
@@ -459,13 +936,12 @@ html:has(.page-body) {
     letter-spacing: -0.04em;
     line-height: 1;
     color: transparent;
-    -webkit-text-stroke: 1.5px rgb(198 236 211 / 0.14);
+    -webkit-text-stroke: 1.5px rgb(197 170 134 / 0.14);
     pointer-events: none;
     user-select: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fill-hover::before,
     .phead nav a::before,
     .step::before {
       transition: none;
@@ -476,7 +952,793 @@ html:has(.page-body) {
   }
 }
 
-/* ── Wishlist heart and sale pricing ───────────────────────────────────────────────── */
+/* ── Sections: warm white and off-white in rhythm, deep walnut bands, light display type, rounded photographs ───────── */
+@layer components {
+  .sec {
+    padding-block: var(--section-space);
+  }
+  .sec-white {
+    background: #fff;
+  }
+  .sec-cream {
+    background: var(--color-ivory);
+  }
+  .sec-bark {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background: #1b0f08;
+  }
+  /* The closing call to action: walnut with a faint diagonal grain */
+  .sec-cta {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background:
+      repeating-linear-gradient(115deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, #301c11 0%, #281610 100%);
+  }
+  .eyebrow {
+    color: #9a5330;
+  }
+  .eyebrow.eyebrow-light,
+  .on-wood .eyebrow {
+    color: var(--leaf);
+  }
+
+  /* A text link with an arrow that leans forward on hover */
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding-block: 0.4rem;
+  }
+  .link-arrow svg {
+    transition: transform 350ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .link-arrow:hover svg,
+    a:hover .link-arrow svg {
+      transform: translate3d(5px, 0, 0);
+    }
+  }
+
+  /* Why choose us: four columns divided by hairlines */
+  .why-cell {
+    padding: 0.5rem 2rem 1.5rem;
+  }
+  @media (min-width: 64rem) {
+    .why-cell + .why-cell {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+  @media (max-width: 63.99rem) {
+    .why-cell:nth-child(n + 3) {
+      border-top: 1px solid var(--color-border);
+      padding-top: 2rem;
+    }
+    .why-cell:nth-child(even) {
+      border-left: 1px solid var(--color-border);
+    }
+  }
+  @media (max-width: 39.99rem) {
+    .why-cell {
+      padding-inline: 0;
+      border-left: 0 !important;
+    }
+    .why-cell + .why-cell {
+      border-top: 1px solid var(--color-border);
+      padding-top: 2rem;
+    }
+  }
+
+  /* Craft band */
+  .collage-tile {
+    overflow: hidden;
+    background: #e4e4e2;
+  }
+  .process-box {
+    border: 1px solid rgb(255 255 255 / 0.55);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .process-box ol {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 2rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 40rem) {
+    .process-box ol {
+      grid-template-columns: 1fr 1fr;
+      grid-auto-flow: column;
+      grid-template-rows: repeat(3, auto);
+    }
+  }
+  .process-box li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding-block: 1rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.4);
+  }
+  .process-box li > span:first-child {
+    min-width: 1.25rem;
+    font-size: 0.625rem;
+    color: var(--leaf);
+  }
+
+  /* Made for your space: six services in two columns, each under a hairline */
+  .svc {
+    padding-block: 1.1rem 1.4rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* About: three facts divided by hairlines */
+  .fact {
+    padding: 0.25rem 1.25rem 0.5rem;
+  }
+  .fact + .fact {
+    border-left: 1px solid var(--color-border);
+  }
+  @media (max-width: 39.99rem) {
+    .fact {
+      padding-inline: 0;
+    }
+    .fact + .fact {
+      border-left: 0;
+      border-top: 1px solid var(--color-border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+  }
+
+  /* Rounded cards on a light ground (the three ordering steps) and on dark (the two places to visit) */
+  .soft-card {
+    border: 1px solid var(--color-border);
+    border-radius: 1.5rem;
+    background: var(--color-ivory);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  /* A product type: a wide grey band about 4 cm tall (smaller on phones), stacked flush against the next */
+  .prow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 11.5rem;
+    border-bottom: 1px solid #fff;
+  }
+  @media (min-width: 40rem) {
+    .prow {
+      height: 13rem;
+    }
+  }
+  .prow .image-placeholder {
+    transition: background-color 300ms;
+  }
+  @media (hover: hover) {
+    .prow:hover .image-placeholder {
+      background-color: #d9d9d6;
+    }
+  }
+  /* Order tracking: a vertical line of steps, done in walnut, the current one ringed in copper */
+  .track-steps {
+    display: grid;
+    list-style: none;
+  }
+  .track-steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 1rem;
+    padding-bottom: 1.75rem;
+  }
+  .track-steps li:last-child {
+    padding-bottom: 0;
+  }
+  .track-steps li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(0.75rem - 1px);
+    top: 1.5rem;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-border);
+  }
+  .track-steps li[data-state="done"]:not(:last-child)::before {
+    background: #331c11;
+  }
+  .track-dot {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid #c9c2b8;
+    border-radius: 999px;
+    background: #fff;
+    color: #fff;
+  }
+  .track-steps li[data-state="done"] .track-dot,
+  .track-steps li[data-state="now"] .track-dot:has(svg) {
+    border-color: #331c11;
+    background: #331c11;
+  }
+  .track-steps li[data-state="now"] .track-dot {
+    border-color: #b06239;
+    box-shadow: 0 0 0 4px rgb(176 98 57 / 0.18);
+  }
+  .track-steps li[data-state="now"] .track-dot:has(svg) {
+    box-shadow: none;
+  }
+  .track-label {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: var(--color-text);
+  }
+  .track-steps li[data-state="next"] .track-label {
+    color: var(--color-text-muted);
+  }
+  .track-when {
+    margin-top: 0.15rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+  .track-note {
+    margin-top: 0.5rem;
+    max-width: 32rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+  .sec-cream .soft-card {
+    background: #fff;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: #f1ece4;
+    color: #1c1916;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* ── Collection filter bar: category at the left; material, sort and search at the right; a plain-text clear link under the search ── */
+  /* All the filter boxes sit together in one very light grey strip that runs the full width of the site; the boxes themselves are white */
+  .cat-strip {
+    padding-block: 0.9rem;
+    background: #f4f4f3;
+  }
+  .cat-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .cat-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+  /* The boxes: light grey, no border, pressed in with an inward shadow. The open list is the header's glass, so what is behind it shows through. */
+  .cat-control {
+    --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 2.25rem;
+    padding: 0 2rem 0 0.9rem;
+    border: 0;
+    border-radius: 3px;
+    outline: none;
+    background-color: #fff;
+    background-image: var(--chev);
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    box-shadow: inset 0 1px 3px rgb(28 25 22 / 0.14);
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    transition: background-color 200ms;
+  }
+  .gs-panel,
+  .gs[data-open] .gs-button {
+    --glass: linear-gradient(180deg, rgb(255 255 255 / 0.6) 0%, rgb(255 255 255 / 0.44) 100%);
+  }
+  .cat-control:hover,
+  .cat-control:focus,
+  .cat-control:focus-visible {
+    border: 0;
+    outline: none;
+    background-color: #fcfcfb;
+  }
+  .cat-searchwrap {
+    position: relative;
+  }
+  .cat-searchicon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    width: 0.9rem;
+    height: 0.9rem;
+    transform: translateY(-50%);
+    color: var(--color-text);
+    pointer-events: none;
+  }
+  .cat-search {
+    width: 17rem;
+    padding-left: 2.5rem;
+    padding-right: 0.9rem;
+    background-image: none;
+  }
+  .cat-search::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+  .cat-search::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  /* The frosted-glass drop-down: a box and a list of exactly the same width, joined with no gap, clear glass with a blur */
+  .gs {
+    position: relative;
+  }
+  .gs-button {
+    display: grid;
+    min-width: 12.5rem;
+    padding-left: 1.1rem;
+    padding-right: 2.75rem;
+    align-items: center;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .gs-label,
+  .gs-sizer {
+    grid-area: 1 / 1;
+  }
+  .gs-sizer {
+    display: grid;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+  }
+  .gs[data-open] .gs-button {
+    background-color: transparent;
+    background-image: var(--chev), var(--glass);
+    background-position: right 0.9rem center, 0 0;
+    border-radius: 3px 3px 0 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: saturate(1.6) blur(20px);
+    backdrop-filter: saturate(1.6) blur(20px);
+  }
+  .gs-panel {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 40;
+    width: 100%;
+    padding: 0.25rem 0 0.4rem;
+    border-radius: 0 0 3px 3px;
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(1.6) blur(20px);
+    backdrop-filter: saturate(1.6) blur(20px);
+    border-bottom: 1px solid rgb(28 25 22 / 0.1);
+    box-shadow: 0 16px 34px -12px rgb(60 40 20 / 0.45);
+    list-style: none;
+  }
+  /* Capital letters have no descenders, so the text is nudged down a hair to look centred, not just measure centred */
+  .cat-control {
+    padding-top: 2px;
+  }
+  .gs-opt {
+    padding: calc(0.65rem + 1px) 2.75rem calc(0.65rem - 1px) 1.1rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+  /* The same glass list inside forms: the closed box matches the text boxes around it, the open list is the header's glass */
+  .gs-field {
+    --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+    width: 100%;
+  }
+  .gs-field .gs-button {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    background-color: var(--color-surface);
+    background-image: var(--chev);
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--color-text);
+    outline: none;
+  }
+  @media (min-width: 48rem) {
+    .gs-field .gs-button {
+      min-height: 2.5rem;
+      font-size: 0.875rem;
+    }
+  }
+  .gs-field .gs-button:focus-visible,
+  .gs-field[data-open] .gs-button {
+    border-color: var(--color-walnut);
+  }
+  .gs-field .gs-button[aria-invalid="true"] {
+    border-color: var(--color-danger);
+    border-width: 2px;
+  }
+  .gs-field .gs-button:disabled {
+    background-color: var(--color-linen);
+    cursor: not-allowed;
+  }
+  .gs-field[data-open] .gs-button {
+    border-radius: 0;
+    background-color: transparent;
+  }
+  .gs-field .gs-panel {
+    border-radius: 0;
+  }
+  .gs-field .gs-opt {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  /* ── Motion: how the public site moves. Everything here is switched off under prefers-reduced-motion. ── */
+  @media (prefers-reduced-motion: no-preference) {
+    /* A page eases in as you arrive on it */
+    .route-in {
+      animation: route-in 700ms var(--ease-out) backwards;
+    }
+    @keyframes route-in {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 12px, 0);
+      }
+    }
+
+    /* Product cards: lift a little on hover; the name underlines itself */
+    .pcard {
+      transition: transform 450ms var(--ease-out), box-shadow 450ms var(--ease-out);
+    }
+    .pcard h3 span {
+      background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+      transition: background-size 450ms var(--ease-out);
+    }
+    @media (hover: hover) {
+      .pcard:hover {
+        transform: translate3d(0, -4px, 0);
+        box-shadow: var(--shadow-md);
+      }
+      .pcard:hover h3 span {
+        background-size: 100% 1px;
+      }
+    }
+
+    /* Solid buttons only change colour on hover: they do not move or throw a shadow */
+    .btn-solid {
+      transition: background-color 300ms var(--ease-out), color 300ms var(--ease-out);
+    }
+
+    /* Why-choose cells: the icon drifts up and the cell edge warms on hover */
+    .why-cell svg {
+      transition: transform 450ms var(--ease-out);
+    }
+    @media (hover: hover) {
+      .why-cell:hover svg {
+        transform: translate3d(0, -4px, 0);
+      }
+    }
+
+    /* Footer links: the underline fades in rather than switching on */
+    .foot a {
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      text-underline-offset: 5px;
+      transition: color 300ms var(--ease-out), text-decoration-color 300ms var(--ease-out), opacity 300ms var(--ease-out);
+    }
+    .foot a:hover {
+      text-decoration-color: currentColor;
+    }
+
+    /* The glass drop-down opens with a short slide and fade; the bold on hover eases in */
+    .gs-panel {
+      animation: gs-open 240ms var(--ease-out) both;
+      transform-origin: top;
+    }
+    @keyframes gs-open {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -6px, 0);
+      }
+    }
+    .gs-opt {
+      -webkit-text-stroke: 0 currentColor;
+      transition: -webkit-text-stroke-width 160ms var(--ease-out);
+    }
+
+    /* A form error slides into place so it is noticed */
+    form p[role="alert"] {
+      animation: err-in 320ms var(--ease-out) both;
+    }
+    @keyframes err-in {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -5px, 0);
+      }
+    }
+  }
+  /* The two-level drop-down: the side list is joined to the main list's right edge and starts level with it */
+  .gc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-right: 0.9rem;
+    white-space: nowrap;
+  }
+  .gc-chev {
+    flex: none;
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--color-text);
+  }
+  .gc-side {
+    left: 100%;
+    /* level with the group that opened it: the main list's own top padding is cancelled so the rows line up exactly */
+    top: calc(100% + var(--gc-top, 0px) - 0.25rem);
+    width: max-content;
+    min-width: 100%;
+    max-width: 22rem;
+    border-radius: 0 0 3px 0;
+    box-shadow: 16px 16px 34px -12px rgb(60 40 20 / 0.45);
+    animation: gc-side-in 220ms var(--ease-out) both;
+  }
+  @keyframes gc-side-in {
+    from {
+      opacity: 0;
+      transform: translate3d(-8px, 0, 0);
+    }
+  }
+  .gc-side .gs-opt {
+    padding-right: 1.5rem;
+  }
+  .gc-back {
+    display: none;
+  }
+  @media (max-width: 47.99rem) {
+    /* No room beside the list on a phone: the side list slides over it, with a Back row */
+    .gc-side {
+      left: 0;
+      top: 100%;
+      width: 100%;
+      max-width: none;
+      z-index: 41;
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 16px 34px -12px rgb(60 40 20 / 0.45);
+    }
+    .gc-back {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      cursor: pointer;
+    }
+  }
+  /* The chosen option, and the one under the pointer or keyboard cursor, look bold. A real bold weight is wider and reads as larger
+     text, so the strokes are thickened instead: same size, same width, nothing shifts. */
+  .gs-opt[aria-selected="true"],
+  .gs-opt[data-active] {
+    -webkit-text-stroke: 0.3px currentColor;
+  }
+  @media (max-width: 47.99rem) {
+    .gs,
+    .gs-button {
+      width: 100%;
+    }
+    .gs-panel {
+      width: 100%;
+    }
+  }
+  .cat-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.6rem;
+  }
+  /* Looks like text, not a button: no border, no fill */
+  .cat-clear {
+    border: 0;
+    background: none;
+    padding: 0.25rem 0;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 200ms;
+  }
+  .cat-clear:hover {
+    color: var(--color-text);
+  }
+  @media (max-width: 47.99rem) {
+    .cat-bar,
+    .cat-right {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
+      margin-left: 0;
+    }
+    .cat-control,
+    .cat-search,
+    .cat-searchwrap {
+      width: 100%;
+    }
+  }
+
+  /* ── The footer: white, compact, with the same name as the header and its own responsive layout ─────────── */
+  .foot {
+    background: #000;
+    color: #fff;
+    border-top: 0;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+  }
+  .foot .brand b {
+    font-size: 0.95rem;
+  }
+  .foot .brand i {
+    font-size: 0.6rem;
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem 1.5rem;
+    padding-block: 2.5rem 2rem;
+  }
+  .foot-about,
+  .foot-visit {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 48rem) {
+    .foot-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .foot-about {
+      grid-column: 1 / -1;
+    }
+    .foot-visit {
+      grid-column: auto;
+    }
+  }
+  @media (min-width: 64rem) {
+    .foot-grid {
+      grid-template-columns: 1.3fr 0.9fr 1fr 1.2fr 1.4fr;
+      gap: 2.5rem;
+      padding-block: 3rem 2.25rem;
+    }
+    .foot-about {
+      grid-column: auto;
+    }
+  }
+  .foot-tag {
+    max-width: 21rem;
+    margin-top: 1.1rem;
+    line-height: 1.7;
+    color: rgb(255 255 255 / 0.65);
+  }
+  .foot-head {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .foot-list {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.6rem;
+    line-height: 1.45;
+  }
+  .foot-list a {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: rgb(255 255 255 / 0.88);
+    transition: color 200ms;
+  }
+  .foot-list a:hover {
+    color: #fff;
+  }
+  .foot-list svg {
+    flex: none;
+    margin-top: 0.15rem;
+    color: rgb(255 255 255 / 0.55);
+  }
+  .foot-list .plain {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: rgb(255 255 255 / 0.65);
+    white-space: pre-line;
+  }
+  .foot-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-block: 1.1rem 1.4rem;
+    border-top: 1px solid rgb(255 255 255 / 0.15);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.55);
+  }
+  @media (min-width: 40rem) {
+    .foot-bottom {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .foot-bottom nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+  }
+  .foot-bottom a {
+    transition: color 200ms;
+  }
+  .foot-bottom a:hover {
+    color: #fff;
+  }
+  .foot .brand,
+  .foot .brand i {
+    color: #fff;
+  }
+  .foot .brand i {
+    color: rgb(255 255 255 / 0.65);
+  }
+  .foot .brand .mark {
+    filter: brightness(0) invert(1);
+  }
+}
+
+/* ── Wishlist heart and sale pricing ─────────────────────────────────────────────── */
 @layer components {
   /* Heart: a small white square on the photograph, top right. Outline when idle, filled brown once saved. */
   .wish {

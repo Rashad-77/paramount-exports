@@ -1,7 +1,6 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
 import { profiles, uploadedFiles } from "./foundation";
-import { inventoryItems } from "./inventory";
 
 export const productKind = pgEnum("product_kind", ["stocked", "made_to_order"]);
 export const availabilityStatus = pgEnum("availability_status", ["in_stock", "made_to_order", "on_request", "sold"]);
@@ -18,12 +17,14 @@ export const productCategories = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     description: text("description"),
+    /** The group this category sits under (two levels: a group, then its categories). Empty for a group. */
+    parentId: uuid("parent_id").references((): AnyPgColumn => productCategories.id, { onDelete: "restrict" }),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     ...timestamps,
   },
-  (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)],
+  (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`), index("product_categories_parent_idx").on(t.parentId)],
 );
 
 export const products = pgTable(
@@ -74,10 +75,6 @@ export const productVariants = pgTable(
     listPrice: numeric("list_price", { precision: 14, scale: 2 }),
     /** Reduced price while the option is on sale; always below the list price. */
     salePrice: numeric("sale_price", { precision: 14, scale: 2 }),
-    /** Set when stock is tracked for this option (ready-made orders require it). One option ↔ one inventory item. */
-    inventoryItemId: uuid("inventory_item_id")
-      .references(() => inventoryItems.id, { onDelete: "restrict" })
-      .unique(),
     isActive: boolean("is_active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
@@ -111,6 +108,8 @@ export const galleryProjects = pgTable("gallery_projects", {
   completedOn: date("completed_on"),
   isPublished: boolean("is_published").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
+  /** The kind of furniture this project shows, so the Gallery can be filtered like the Collection. */
+  categoryId: uuid("category_id").references(() => productCategories.id, { onDelete: "set null" }),
   archivedAt: timestamp("archived_at", { withTimezone: true }),
   ...timestamps,
 });

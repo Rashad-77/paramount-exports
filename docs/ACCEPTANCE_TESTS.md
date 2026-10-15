@@ -1,45 +1,34 @@
-# Acceptance Tests
+# Acceptance tests
 
-Status key: ☐ not started · ◐ partial · ☑ passing (automated). Updated at the end of each step; nothing is ticked without a passing test.
+The flows the system must keep working, and the automated test behind each. Database tests are in `tests/integration/*.db.test.ts`
+(they need `TEST_ADMIN_DATABASE_URL`), browser tests in `tests/e2e/*.spec.ts` (run against a production build).
 
-| # | Flow | Test level | Step | Status |
-|---|------|-----------|------|--------|
-| 1 | Visitor submits custom enquiry with valid details + image → appears in CRM, assignee can view | integration + e2e | 2 | ☑ `enquiries.db.test.ts` (service → leads list/detail as the assigned user, file linked privately) and Playwright `public-site.spec.ts` (real browser upload + DB check). Staff *screen* viewing is covered by the service test; it needs Supabase sign-in to e2e |
-| 2 | Staff create customer, lead, follow-up task and quotation | integration | 3 | ☑ `crm.db.test.ts` (ACCEPTANCE #2): exact decimal totals, specs, follow-up, link to enquiry. Also covered: discount limit, revisions, immutability (incl. raw-SQL attempts), concurrent send, expiry |
-| 3 | Accepted quotation → order, preserving customer and line items (no duplication) | integration | 3/4 | ☑ `inventory-orders.db.test.ts`: lines, prices, totals, customer and revision link preserved; one order per quotation even under a race; mixed ready-made/custom is refused with a clear message |
-| 4 | Ready-made order reserves/deducts stock once; concurrent orders can't oversell | integration (real Postgres, parallel tx) | 4 | ☑ `inventory-orders.db.test.ts`: ten simultaneous confirmations for 3 units → exactly 3 succeed; opposite-order multi-line orders never deadlock; reserve at confirm, deduct once at delivery, release once on cancel; balances always reconcile to the ledger |
-| 5 | Custom order creates production job with specs + reference images | integration | 5 | ☑ `workshop-purchasing.db.test.ts` (ACCEPTANCE #5): one job per confirmed custom order, specification and quotation reference files copied, duplicate job impossible |
-| 6 | Workshop updates assigned job stage; unauthorized roles blocked from finance data | integration + authz matrix | 1 (matrix), 5 | ☑ permission-matrix unit tests + `workshop-purchasing.db.test.ts`: workshop sees/updates only assigned jobs and files, never customer name, prices, costs, payments or orders; sales see stage only; finance cannot open jobs |
-| 7 | Timber receipt increases stock only by quantity actually received (partial receipts) | integration | 5 | ☑ two-part receipt; over-receipt refused; five simultaneous receipts can never exceed the ordered quantity; sent lines locked (also at DB level); supplier invoice/payments capped and append-only |
-| 8 | Material consumption decreases stock once, linked to correct job | integration | 5 | ☑ used + wasted movements reference the job; repeated and simultaneous submissions with the same key deduct once; shortage records nothing; unassigned workers refused |
-| 9 | Job completion records status; optional finished-goods movement without duplicates | integration | 5 | ☑ default: status only, delivery moves no stock; with the setting on: output added once even after rework, removed once on delivery; cancelling the order cancels the job |
-| 10 | Payments update outstanding balance with decimal arithmetic | unit + integration | 4 | ☑ `money.test.ts` + `inventory-orders.db.test.ts`: exact decimals, overpayment refused, voids as linked negative rows, concurrent payments serialised |
-| 11 | Showroom ↔ workshop transfer records both sides atomically | integration | 4 | ☑ paired movements share the transfer id; a transfer short on any line leaves no trace at all |
-| 12 | Public visitors cannot access internal customers/orders/suppliers/files (app + DB roles) | integration + e2e | 1 (DB roles), 2 | ☑ DB-role table + function denial; `/app/*` (including production, suppliers, purchase orders, deliveries, expenses, after-sales, reports) redirects signed-out visitors; private-file download 404; staff upload purposes closed to anonymous; file access is scope-aware (workshop only reaches files of assigned jobs/deliveries) |
-| 13 | Key forms show understandable validation/error messages | e2e + unit (schemas) + service tests | 2–6 | ☑ every form goes through one framework that shows a summary plus per-field messages and keeps what was typed; enquiry, login and empty-submit cases are browser-tested; service-level messages (shortages, over-receipt, over-payment, missing reasons, bad windows…) are asserted in the integration tests. Not covered: a scripted browser run of every internal form |
-| 14 | App builds; migrations apply to clean DB; tests pass | CI | every step | ☑ locally at the end of Step 7: lint, typecheck, build, 190 unit/integration tests (15 migrations applied to a clean database per test file) and 45 browser tests all pass. The GitHub Actions workflow has **not** been run on GitHub |
+| # | Flow | Test |
+|---|---|---|
+| 1 | A visitor adds a priced piece to the basket; the header shows the count | e2e `ordering › a visitor adds a piece…` |
+| 2 | They check out **without paying** (no card field, no payment iframe) and get an order number `ORD-nnnnnn`; the basket empties; the confirmation shows what they ordered | e2e `ordering › a visitor adds a piece…` |
+| 3 | The order is stored as `new`, unpaid, with the price **read from the database** | `orders.db` `places an order priced from the database…`; e2e |
+| 4 | A price changed in the browser is ignored | `orders.db` `never trusts a price…`; e2e `price tampered with…` |
+| 5 | Hidden, unpublished, unpriced or unknown items cannot be ordered; repeated lines merge | `orders.db` |
+| 6 | The checkout requires an address for delivery, sensible payment choices, consent, and quantities 1 to 99 | `orders.db` `validates the checkout…`; e2e `checkout refuses an incomplete form` |
+| 7 | An order keeps its names and prices when the catalogue changes later | `orders.db` `keeps its prices and names…` |
+| 8 | Orders from one address or phone number are rate limited | `orders.db` `limits how many orders…` |
+| 9 | Staff move an order new → confirmed → in progress → delivered; impossible moves are refused; every step is audited | `orders.db` `moves an order through its statuses…` |
+| 10 | Cancelling needs a reason and cannot be undone; a cancelled order cannot be marked paid | `orders.db` `cancelling needs a reason…` |
+| 11 | The delivery charge changes the total; payment is recorded once, can be undone, and is audited | `orders.db` `recalculates the total…` |
+| 12 | A finished order cannot be edited | `orders.db` `a finished order cannot be edited` |
+| 13 | Orders can be searched and filtered, counted by status; a `%` search matches nothing | `orders.db` `filters and searches orders…` |
+| 14 | Customers are built from orders by phone number, with history | `orders.db` `builds a customer list…` |
+| 15 | The dashboard summarises orders, messages and the last 30 days | `orders.db` `summarises the dashboard` |
+| 16 | A product with no public price cannot be ordered, only enquired about | e2e `no public price cannot be ordered` |
+| 17 | A contact message, a product enquiry and a custom request (with a picture) reach the staff inbox; staff mark them handled and reopen them | `orders.db` (messages); e2e `enquiries` |
+| 18 | Spam: honeypot, too-fast, forged token and rate limits store nothing | e2e `enquiries`; `orders.db` |
+| 19 | Only Owner and Staff can see or change orders, messages and customers; people with no role or a switched-off account are refused | `orders.db`; `catalogue.db`; `permissions.test` |
+| 20 | Only the Owner manages users and settings; there is always an active owner | `users.db`; `permissions.test` |
+| 21 | Signed-out visitors are sent to sign in from every staff page; the old CRM and ERP screens no longer exist | e2e `access control` |
+| 22 | Private files are not downloadable by the public | e2e `access control for files and staff data` |
+| 23 | Migrations apply to a clean database, leave the order tables and none of the retired tables, and every table has row level security | `foundation.db` |
+| 24 | Public pages (including basket and checkout) have no serious accessibility violations; no sideways scroll on a phone | e2e `accessibility` |
 
-## Step 6 flows (beyond the numbered list)
-
-| Flow | Status |
-|------|--------|
-| Delivery: schedule only confirmed orders, one open delivery per order, window validated; assigned staff update status, others refused; "delivered" needs proof and delivers the order (stock out) exactly once even under double submit; failed needs a reason and is rescheduled as a new delivery | ☑ `operations.db.test.ts` |
-| Expenses: finance/owner/manager only; never edited or deleted (also blocked in SQL); void needs a reason and drops out of totals | ☑ `operations.db.test.ts` |
-| After-sales: state flow, resolution required to resolve/close, closed is final, workshop view-only | ☑ `operations.db.test.ts` |
-| Reports: sales/financial/operations figures match their stated definitions (reversals netted, unaccepted quotations never counted, void expenses excluded, operational net cash is labelled "not profit"); sales staff see only their own; owner dashboard owner/manager only | ☑ `operations.db.test.ts` |
-| CSV exports: permission per export, no cost column for the workshop, spreadsheet-formula neutralised | ☑ `operations.db.test.ts` |
-
-## Cross-cutting automated checks
-
-- **Money/decimal**: `0.1 + 0.2` style cases, rounding rule, totals recomputed on server.
-- **Ledger**: `balance = Σ movements` reconciliation after randomised sequences of operations.
-- **Immutability**: UPDATE/DELETE on `inventory_movements`, `audit_logs` fails.
-- **RLS**: connecting as `anon` / `authenticated` returns zero rows / permission denied on every `public` table.
-- **Rate limit / spam**: honeypot rejects; N+1th submission in window rejected; oversized/disallowed upload rejected.
-- **Accessibility smoke**: Playwright + axe on home, product list, contact, login, dashboard.
-- **Responsive**: screenshots at 390×844 and 1440×900 reviewed manually per module before sign-off.
-
-## CI (GitHub Actions, added Step 1)
-
-`pnpm install --frozen-lockfile` → `lint` → `typecheck` → start Postgres service → `db:migrate` on clean DB →
-`test` → `build`. E2E on pull requests against a Postgres service.
+Manual checks that are not automated: the layout and animation of each page in a real browser at phone and desktop widths; the staff
+screens' appearance; sending a real email or text (none is sent by the system).

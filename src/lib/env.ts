@@ -18,6 +18,10 @@ const serverSchema = z.object({
   IP_HASH_SALT: z.string().min(16, "IP_HASH_SALT must be at least 16 characters").optional(),
   CRON_SECRET: z.string().min(16).optional(),
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  /** Sends the owner an email when an order or message arrives (Resend). Without it, nothing is sent. */
+  RESEND_API_KEY: z.string().min(1).optional(),
+  /** The "from" address for those emails, e.g. "Paramount website <orders@yourdomain.lk>". Must be on a domain verified with Resend. */
+  MAIL_FROM: z.string().min(3).optional(),
   DEMO_MODE: booleanString,
   /** "local" stores uploads on disk and is refused in production. Default: Supabase Storage. */
   STORAGE_DRIVER: z.enum(["supabase", "local"]).default("supabase"),

@@ -1,4 +1,5 @@
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { GlassSelect } from "@/components/public/glass-select";
 import { cn } from "@/lib/cn";
 
 /**
@@ -9,7 +10,7 @@ import { cn } from "@/lib/cn";
 const control =
   "block w-full min-h-11 border border-border-strong bg-surface px-3 py-2 text-base md:min-h-10 md:text-sm " +
   "text-text placeholder:text-text-muted/70 transition-[border-color,box-shadow] duration-[var(--duration-base)] ease-[var(--ease-out)] " +
-  "focus:border-walnut focus:shadow-[inset_0_-2px_0_var(--color-brand)] " +
+  "focus:border-walnut focus:shadow-none focus-visible:outline-none " +
   "disabled:bg-linen disabled:cursor-not-allowed aria-[invalid=true]:border-danger aria-[invalid=true]:border-2";
 
 interface FieldShellProps {
@@ -112,30 +113,36 @@ export function TextAreaField({ label, hint, error, required, showOptional, clas
   );
 }
 
-export interface SelectFieldProps extends FieldShellProps, Omit<SelectHTMLAttributes<HTMLSelectElement>, "className"> {
+export interface SelectFieldProps extends FieldShellProps {
+  name?: string;
+  id?: string;
   options: ReadonlyArray<{ value: string; label: string }>;
   placeholder?: string;
+  value?: string;
+  defaultValue?: string;
+  disabled?: boolean;
+  onValueChange?: (value: string) => void;
 }
 
-export function SelectField({ label, hint, error, required, showOptional, className, id: idProp, options, placeholder, ...props }: SelectFieldProps) {
+/** A drop-down in the site's glass style. It posts its value with the form under `name`, like a native select. */
+export function SelectField({ label, hint, error, required, showOptional, className, id: idProp, options, placeholder, name, value, defaultValue, disabled, onValueChange }: SelectFieldProps) {
   const ids = useFieldIds(idProp);
+  const all = placeholder ? [{ value: "", label: placeholder }, ...options] : [...options];
   return (
     <Shell {...ids} {...{ label, hint, error, required, showOptional, className }}>
-      <select
+      <GlassSelect
+        variant="field"
         id={ids.id}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(hint, error, ids)}
-        className={cn(control, "pr-8")}
-        {...props}
-      >
-        {placeholder ? <option value="">{placeholder}</option> : null}
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+        label={label}
+        name={name}
+        options={all}
+        value={value}
+        defaultValue={defaultValue}
+        disabled={disabled}
+        invalid={Boolean(error)}
+        describedBy={describedBy(hint, error, ids)}
+        onChange={onValueChange}
+      />
     </Shell>
   );
 }

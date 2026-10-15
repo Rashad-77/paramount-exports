@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useActionState, useContext, type ComponentProps, type ReactNode } from "react";
+import { createContext, useActionState, useContext, useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import type { ActionState } from "@/lib/action-state";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,27 @@ import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
 
 type Action = (prev: ActionState, formData: FormData) => Promise<ActionState>;
+
+const OFFLINE_MESSAGE = "We could not reach the server. Check your connection and press the button again. Everything you typed has been kept.";
+const SECRET_FIELD = /password|token|secret/i;
+
+/**
+ * Runs the Server Action, but never lets a dropped connection or a server hiccup throw the page away: the typed values come
+ * back with a plain message instead. Redirects and other framework signals (they carry a "NEXT_" digest) pass straight through.
+ */
+function guarded(action: Action): Action {
+  return async (prev, formData) => {
+    try {
+      return await action(prev, formData);
+    } catch (error) {
+      const digest = (error as { digest?: unknown } | null)?.digest;
+      if (typeof digest === "string" && digest.startsWith("NEXT_")) throw error;
+      const values: Record<string, string> = {};
+      for (const [k, v] of formData.entries()) if (typeof v === "string" && !k.startsWith("$ACTION") && !SECRET_FIELD.test(k)) values[k] = v;
+      return { error: OFFLINE_MESSAGE, values };
+    }
+  };
+}
 
 const Ctx = createContext<{ state: ActionState; pending: boolean }>({ state: {}, pending: false });
 export const useFormState = () => useContext(Ctx);
@@ -30,7 +51,19 @@ export function ActionForm({
   hideOnSuccess?: boolean;
   successTitle?: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction, pending] = useActionState(guarded(action), {});
+  const form = useRef<HTMLFormElement>(null);
+  const alert = useRef<HTMLDivElement>(null);
+
+  // After a failed attempt, take the person to the problem: the first field that needs fixing, or else the message at the top.
+  useEffect(() => {
+    if (state.ok || (!state.error && !state.fieldErrors)) return;
+    const bad = form.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+    const target = bad ?? alert.current;
+    target?.focus({ preventScroll: true });
+    target?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [state]);
+
   if (state.ok && hideOnSuccess) {
     return (
       <Alert tone="success" title={successTitle ?? "Thank you"}>
@@ -40,16 +73,22 @@ export function ActionForm({
   }
   return (
     <form
+      ref={form}
       action={formAction}
       noValidate
       className={cn("space-y-5", className)}
       onSubmit={(e) => {
         // A file transfer is still running: do not submit yet (the uploader shows a waiting message).
-        if (e.currentTarget.dataset.uploading === "true") e.preventDefault();
+        // A submit already in flight is never sent twice (a second tap, or Enter pressed again).
+        if (e.currentTarget.dataset.uploading === "true" || pending) e.preventDefault();
       }}
     >
       <Ctx.Provider value={{ state, pending }}>
-        {state.error ? <Alert tone="danger">{state.error}</Alert> : null}
+        {state.error ? (
+          <div ref={alert} tabIndex={-1} className="outline-none">
+            <Alert tone="danger">{state.error}</Alert>
+          </div>
+        ) : null}
         {state.ok && state.message ? <Alert tone="success">{state.message}</Alert> : null}
         {children}
       </Ctx.Provider>

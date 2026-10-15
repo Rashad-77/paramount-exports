@@ -30,3 +30,5 @@ Everyone shares one database, so people's test entries accumulate. To start fres
 ## How it is guarded (for the developers)
 
 `src/lib/auth/demo-deployment.ts` (switch), `src/lib/auth/demo.ts` (`demoSignInAllowed`), `src/proxy.ts`, `src/app/demo/*`. The switch needs `DEMO_DEPLOYMENT=true`, a database and **no** Supabase variables; sign-in additionally refuses once the business name is no longer the placeholder. `scripts/prepare-demo-db.ts` runs from `pnpm vercel-build` and does nothing unless the switch is on.
+
+_Auto-deploy check: pushing to main from a local checkout deploys to Vercel (tested 2026-10-13)._

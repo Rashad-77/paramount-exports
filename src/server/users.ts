@@ -1,6 +1,6 @@
 import "server-only";
 import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
-import { ROLES, requirePermission, type Actor, type Role } from "@/lib/auth/permissions";
+import { ROLES, isRole, requirePermission, type Actor, type Role } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
 import { invalidState, notFound, validation } from "@/lib/errors";
@@ -17,7 +17,7 @@ export async function listUsers(actor: Actor) {
   const byId = new Map<string, { id: string; name: string; isActive: boolean; roles: Role[] }>();
   for (const r of rows) {
     const u = byId.get(r.id) ?? { id: r.id, name: r.name, isActive: r.isActive, roles: [] };
-    if (r.role) u.roles.push(r.role);
+    if (r.role && isRole(r.role)) u.roles.push(r.role); // roles retired from the app are ignored
     byId.set(r.id, u);
   }
   return [...byId.values()];
@@ -44,12 +44,12 @@ export async function setUserRoles(actor: Actor, userId: string, roles: string[]
     await tx.execute(sql`SELECT pg_advisory_xact_lock(7001)`);
     const [p] = await tx.select().from(profiles).where(eq(profiles.id, userId)).for("update");
     if (!p) throw notFound("That person could not be found.");
-    const before = (await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((r) => r.role);
+    const before = (await tx.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((r) => r.role as string);
     const losesOwner = before.includes("owner") && !wanted.includes("owner");
     if (losesOwner && p.isActive && (await otherActiveOwners(tx, userId)) === 0) throw invalidState("There must always be at least one active owner. Make someone else an owner first.");
     const toRemove = before.filter((r) => !wanted.includes(r));
-    const toAdd = wanted.filter((r) => !before.includes(r as Role));
-    if (toRemove.length) await tx.delete(userRoles).where(and(eq(userRoles.userId, userId), inArray(userRoles.role, toRemove)));
+    const toAdd = wanted.filter((r) => !before.includes(r));
+    if (toRemove.length) await tx.delete(userRoles).where(and(eq(userRoles.userId, userId), inArray(userRoles.role, toRemove as (typeof userRoles.$inferSelect)["role"][])));
     if (toAdd.length) await tx.insert(userRoles).values(toAdd.map((role) => ({ userId, role: role as Role, grantedBy: actor.id })));
     await recordAudit(tx, actor, { action: "user.roles_changed", entityType: "profile", entityId: userId, before: { roles: before }, after: { roles: wanted } });
   });

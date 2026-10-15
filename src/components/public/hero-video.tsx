@@ -27,7 +27,7 @@ export function HeroVideo({ desktop, mobile, poster }: { desktop: string | null;
   if (!desktop) {
     return (
       <div className="media image-placeholder" aria-hidden="true">
-        <span className="absolute top-6 right-[var(--gutter)] bg-white/85 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Video to be supplied</span>
+        <span className="absolute bottom-6 right-[var(--gutter)] bg-white/85 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Video to be supplied</span>
       </div>
     );
   }

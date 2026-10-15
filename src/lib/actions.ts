@@ -13,6 +13,8 @@ export interface ActionOutcome {
   redirectTo?: string;
   /** Shown above the form after success when not redirecting. */
   message?: string;
+  /** Data handed back to the form (for example the order a customer looked up). */
+  data?: unknown;
 }
 
 export interface ActionContext {
@@ -80,5 +82,6 @@ export async function runAction<S extends z.ZodType>(
   }
 
   if (outcome?.redirectTo) redirect(outcome.redirectTo);
-  return { ok: true, message: outcome?.message };
+  return { ok: true, message: outcome?.message, data: outcome?.data };
 }
+ 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { PrintButton } from "@/components/app/print-button";
+import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
-import { ButtonLink } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { Alert, StatusBadge } from "@/components/ui/status";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
@@ -10,281 +10,201 @@ import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { isAppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
-import { ORDER_TONE } from "@/lib/order-ui";
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABEL, orderStatusLabel, orderTypeLabel } from "@/lib/schemas/orders";
+import { NEXT_STATUS_ACTION, ORDER_STATUS_TONE } from "@/lib/order-ui";
+import { FULFILMENT_LABEL, PAYMENT_LABEL, STATUS_LABEL } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDate, formatDateTime } from "@/lib/time";
-import { getOrder } from "@/server/orders";
-import { getJobStatusForOrder } from "@/server/production";
-import { listDeliveriesForOrder } from "@/server/deliveries";
-import { listCasesForOrder } from "@/server/aftersales";
-import { CASE_TONE, DELIVERY_TONE } from "@/lib/ops-ui";
-import { CASE_STATUS_LABEL, CASE_TYPE_LABEL, DELIVERY_STATUS_LABEL } from "@/lib/schemas/operations";
-import { STAGE_LABEL, STAGE_TONE, type JobStage } from "@/lib/production";
-import { advanceOrderAction, cancelOrderAction, confirmOrderAction, recordPaymentAction, updateTermsAction, voidPaymentAction } from "../actions";
+import { formatDateTime } from "@/lib/time";
+import { allowedNextStatuses, getOrder } from "@/server/orders";
+import { setPaidAction, setStatusAction, updateDetailsAction } from "../actions";
 
 export const metadata = { title: "Order" };
 
 export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
-  let d;
+  let data;
   try {
-    d = await getOrder(actor, id);
+    data = await getOrder(actor, id);
   } catch (e) {
     if (isAppError(e) && e.code === "NOT_FOUND") notFound();
     throw e;
   }
   const business = await getBusinessSettings();
-  const [job, orderDeliveries, orderCases] = await Promise.all([d.order.type === "custom" ? getJobStatusForOrder(actor, d.order.id) : Promise.resolve(null), listDeliveriesForOrder(actor, d.order.id), listCasesForOrder(actor, d.order.id)]);
-  const { order: o, items, money } = d;
-  const cur = o.currency;
-  const canWrite = can(actor, "orders:write");
-  const live = o.status !== "cancelled" && o.status !== "delivered";
-  const short = d.availability ? items.filter((i) => Number(d.availability![i.id]) < Number(i.quantity)) : [];
-
-  const advance = (to: "preparing" | "ready" | "delivered", label: string, primary = false) => (
-    <ActionForm action={advanceOrderAction} className="space-y-0">
-      <input type="hidden" name="id" value={o.id} />
-      <input type="hidden" name="to" value={to} />
-      <ConfirmSubmit
-        title={`${label}?`}
-        description={to === "delivered" ? (o.type === "ready_made" ? "The reserved stock is deducted from the location now. This cannot be undone and the order becomes final." : "The order becomes final.") : "The status is updated for everyone."}
-        confirmLabel={label}
-        destructive={false}
-        variant={primary ? "primary" : "secondary"}
-      >
-        {label}
-      </ConfirmSubmit>
-    </ActionForm>
-  );
+  const { order: o, items } = data;
+  const finished = o.status === "delivered" || o.status === "cancelled";
+  const canUpdate = can(actor, "orders:update");
+  const next = allowedNextStatuses(o.status).filter((s) => s !== "cancelled");
+  const canCancel = can(actor, "orders:cancel") && allowedNextStatuses(o.status).includes("cancelled");
+  const when = (d: Date | null) => (d ? formatDateTime(d, business.timezone) : null);
+  const customerKey = o.phoneKey;
 
   return (
     <>
       <PageHeader
-        title={`${o.reference} · ${d.customer.name}`}
-        description={`${orderTypeLabel(o.type)}${d.quotationReference ? ` from ${d.quotationReference}` : ""}${d.locationName ? ` · stock from ${d.locationName}` : ""}`}
-        actions={d.quotationReference && o.quotationId ? <Link className="inline-flex min-h-10 items-center underline" href={`/app/quotations/${o.quotationId}`}>View quotation</Link> : undefined}
+        title={o.reference}
+        description={`Placed ${formatDateTime(o.createdAt, business.timezone)}`}
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge tone={ORDER_STATUS_TONE[o.status]}>{STATUS_LABEL[o.status]}</StatusBadge>
+            {o.isPaid ? <StatusBadge tone="success">Paid</StatusBadge> : <StatusBadge tone="warning">Not paid yet</StatusBadge>}
+            <PrintButton />
+          </div>
+        }
       />
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <StatusBadge tone={ORDER_TONE[o.status]}>{orderStatusLabel(o.status, o.type)}</StatusBadge>
-        {o.requestedCompletionDate ? <span className="text-sm text-text-muted">Wanted by {formatDate(o.requestedCompletionDate, business.timezone)}</span> : null}
-        {o.status === "cancelled" ? <span className="text-sm text-text-muted">Reason: {o.cancelReason}</span> : null}
-      </div>
-
-      {job ? (
-        <div className="mb-6 flex flex-wrap items-center gap-3 border border-border bg-surface px-4 py-3 text-sm">
-          <span className="font-medium">Workshop</span>
-          <StatusBadge tone={STAGE_TONE[job.stage as JobStage]}>{STAGE_LABEL[job.stage as JobStage]}</StatusBadge>
-          <span className="text-text-muted">Job {job.reference}{job.targetDate ? ` · due ${formatDate(job.targetDate, business.timezone)}` : ""}</span>
-          {job.linkable ? <Link className="inline-flex min-h-10 items-center underline" href={`/app/production/${job.id}`}>Open job</Link> : null}
-        </div>
+      {o.status === "new" ? (
+        <Alert tone="info" title="New order" className="mb-6">
+          Call or message the customer to confirm the order, agree the delivery charge and time, then press “Confirm order”.
+        </Alert>
       ) : null}
-
-      {o.status === "draft" && short.length > 0 ? (
-        <Alert tone="warning" title="Not enough stock to confirm yet" className="mb-6">
-          {short.map((i) => `${i.description}: available ${Number(d.availability![i.id])}, needed ${Number(i.quantity)}`).join("; ")}. Confirming will be refused until stock is received or the quantity is reduced.
+      {o.status === "cancelled" ? (
+        <Alert tone="danger" title="Cancelled" className="mb-6">
+          {o.cancelReason}
         </Alert>
       ) : null}
 
-      <div className="mb-6 flex flex-wrap items-start gap-3">
-        {o.status === "draft" && canWrite && o.type === "ready_made" ? <ButtonLink href={`/app/orders/${o.id}/edit`} variant="secondary">Edit draft</ButtonLink> : null}
-        {o.status === "draft" && can(actor, "orders:confirm") ? (
-          <ActionForm action={confirmOrderAction} className="space-y-0">
-            <input type="hidden" name="id" value={o.id} />
-            <ConfirmSubmit title="Confirm this order?" description={o.type === "ready_made" ? "Stock is reserved for this customer now. If any item is short, nothing is reserved and you will see exactly what is missing. After confirming, the lines and prices are locked." : "The order is confirmed and its lines and prices are locked."} confirmLabel="Confirm order" destructive={false} variant="primary">
-              Confirm order
-            </ConfirmSubmit>
-          </ActionForm>
-        ) : null}
-        {canWrite && o.status === "confirmed" ? advance("preparing", o.type === "custom" ? "Mark in production" : "Start preparing") : null}
-        {canWrite && (o.status === "confirmed" || o.status === "preparing") ? advance("ready", "Mark ready for delivery / pickup") : null}
-        {canWrite && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready") ? advance("delivered", "Mark delivered", true) : null}
-      </div>
-
-      <div className="grid items-start gap-6 xl:grid-cols-3">
-        <div className="min-w-0 space-y-6 xl:col-span-2">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0 space-y-6">
           <Panel title="Items">
-            <TableWrap label="Order items">
+            <TableWrap label="Items in this order">
               <Table>
                 <THead>
                   <tr>
-                    <TH>Description</TH>
+                    <TH>Item</TH>
+                    <TH className="text-right">Price</TH>
                     <TH className="text-right">Qty</TH>
-                    <TH className="text-right">Unit price</TH>
-                    <TH className="hidden text-right sm:table-cell">Discount</TH>
-                    <TH className="text-right">Line total</TH>
+                    <TH className="text-right">Total</TH>
                   </tr>
                 </THead>
                 <tbody>
-                  {items.map((i) => {
-                    const s = (i.specification ?? {}) as Record<string, string>;
-                    return (
-                      <TR key={i.id}>
-                        <TD>
-                          <div className="font-medium">{i.description}</div>
-                          {Object.keys(s).length ? (
-                            <ul className="mt-1 text-xs text-text-muted">
-                              {s.dimensions ? <li>Dimensions: {s.dimensions}</li> : null}
-                              {s.material ? <li>Wood / material: {s.material}</li> : null}
-                              {s.finish ? <li>Finish: {s.finish}</li> : null}
-                              {s.notes ? <li>{s.notes}</li> : null}
-                            </ul>
-                          ) : null}
-                          {d.availability ? <div className="mt-1 text-xs text-text-muted">Available now: {Number(d.availability[i.id])}</div> : null}
-                        </TD>
-                        <TD numeric>{Number(i.quantity)}</TD>
-                        <TD numeric>{formatMoney(i.unitPrice, cur)}</TD>
-                        <TD numeric className="hidden sm:table-cell">{Number(i.discountAmount) ? formatMoney(i.discountAmount, cur) : "—"}</TD>
-                        <TD numeric>{formatMoney(i.lineTotal, cur)}</TD>
-                      </TR>
-                    );
-                  })}
+                  {items.map((i) => (
+                    <TR key={i.id}>
+                      <TD>
+                        <div className="font-medium">{i.productName}</div>
+                        <div className="text-text-muted">{[i.variantLabel, i.sku].filter(Boolean).join(" · ")}</div>
+                      </TD>
+                      <TD numeric>{formatMoney(i.unitPrice, o.currency)}</TD>
+                      <TD numeric>{i.quantity}</TD>
+                      <TD numeric>{formatMoney(i.lineTotal, o.currency)}</TD>
+                    </TR>
+                  ))}
                 </tbody>
               </Table>
             </TableWrap>
-            <dl className="ml-auto mt-4 max-w-xs space-y-1 text-sm">
-              <div className="flex justify-between"><dt className="text-text-muted">Subtotal</dt><dd className="tabular">{formatMoney(o.subtotal, cur)}</dd></div>
-              <div className="flex justify-between"><dt className="text-text-muted">Discounts</dt><dd className="tabular">− {formatMoney(o.discountTotal, cur)}</dd></div>
-              <div className="flex justify-between"><dt className="text-text-muted">Delivery</dt><dd className="tabular">{formatMoney(o.deliveryCharge, cur)}</dd></div>
-              <div className="flex justify-between border-t border-border pt-1 text-base font-semibold"><dt>Total</dt><dd className="tabular">{formatMoney(o.total, cur)}</dd></div>
+            <dl className="mt-4 ml-auto max-w-xs space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-text-muted">Items</dt>
+                <dd>{formatMoney(o.subtotal, o.currency)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-muted">Delivery</dt>
+                <dd>{Number(o.deliveryCharge) > 0 ? formatMoney(o.deliveryCharge, o.currency) : "To be agreed"}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
+                <dt>Total to pay</dt>
+                <dd>{formatMoney(o.total, o.currency)}</dd>
+              </div>
             </dl>
           </Panel>
 
-          {money ? (
-            <Panel title="Payments" description="Money received against this order. Entries are never deleted; a mistake is voided and the void is recorded.">
-              <dl className="mb-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                <div><dt className="text-text-muted">Order total</dt><dd className="tabular text-lg font-semibold">{formatMoney(o.total, cur)}</dd></div>
-                <div><dt className="text-text-muted">Received</dt><dd className="tabular text-lg font-semibold">{formatMoney(money.paid, cur)}</dd></div>
-                <div><dt className="text-text-muted">Outstanding</dt><dd className="tabular text-lg font-semibold">{formatMoney(money.outstanding, cur)}</dd></div>
-              </dl>
-              {money.entries.length === 0 ? (
-                <p className="mb-6 text-sm text-text-muted">No payments recorded yet.</p>
-              ) : (
-                <TableWrap label="Payments" className="mb-6">
-                  <Table>
-                    <THead>
-                      <tr>
-                        <TH>When</TH>
-                        <TH>Method</TH>
-                        <TH className="text-right">Amount</TH>
-                        <TH className="hidden md:table-cell">Reference / by</TH>
-                        <TH>{can(actor, "payments:void") ? "Action" : "Status"}</TH>
-                      </tr>
-                    </THead>
-                    <tbody>
-                      {money.entries.map((e) => (
-                        <TR key={e.id}>
-                          <TD className="whitespace-nowrap">{formatDateTime(e.paidAt, business.timezone)}</TD>
-                          <TD>{PAYMENT_METHOD_LABEL[e.method]}</TD>
-                          <TD numeric className={e.voidsPaymentId ? "text-danger" : ""}>{formatMoney(e.amount, cur)}</TD>
-                          <TD className="hidden md:table-cell">
-                            {e.reference ?? e.note ?? "—"}
-                            <div className="text-xs text-text-muted">{e.recordedByName ?? ""}</div>
-                          </TD>
-                          <TD>
-                            {e.voidsPaymentId ? (
-                              <StatusBadge tone="danger">Reversal</StatusBadge>
-                            ) : e.voided ? (
-                              <StatusBadge tone="neutral">Voided</StatusBadge>
-                            ) : can(actor, "payments:void") ? (
-                              <details>
-                                <summary className="cursor-pointer text-sm underline">Void…</summary>
-                                <ActionForm action={voidPaymentAction} className="mt-3 min-w-56 space-y-3">
-                                  <input type="hidden" name="paymentId" value={e.id} />
-                                  <input type="hidden" name="orderId" value={o.id} />
-                                  <FField name="reason" label="Why is it being voided?" required />
-                                  <ConfirmSubmit title="Void this payment?" description="A reversal is added and the outstanding balance goes back up. The original entry stays on record. This is audited." confirmLabel="Void payment">
-                                    Void payment
-                                  </ConfirmSubmit>
-                                </ActionForm>
-                              </details>
-                            ) : (
-                              <StatusBadge tone="success">Recorded</StatusBadge>
-                            )}
-                          </TD>
-                        </TR>
-                      ))}
-                    </tbody>
-                  </Table>
-                </TableWrap>
-              )}
-              {can(actor, "payments:record") && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready" || o.status === "delivered") && Number(money.outstanding) > 0 ? (
-                <ActionForm action={recordPaymentAction} className="border-t border-border pt-6">
-                  <h3 className="text-sm font-semibold">Record a payment or deposit</h3>
-                  <input type="hidden" name="orderId" value={o.id} />
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <FField name="amount" label={`Amount (${cur})`} required inputMode="decimal" hint={`Up to ${formatMoney(money.outstanding, cur)}`} />
-                    <FSelect name="method" label="Method" required defaultValue="cash" options={PAYMENT_METHODS.map((m) => ({ value: m, label: PAYMENT_METHOD_LABEL[m] }))} />
-                    <FField name="reference" label="Reference" hint="Receipt or transfer number" />
-                  </div>
-                  <SubmitButton>Record payment</SubmitButton>
-                </ActionForm>
-              ) : null}
+          {canUpdate && !finished ? (
+            <Panel title="Delivery charge and notes" description="Agree the delivery charge with the customer and enter it here; the total updates. The note is only for staff.">
+              <ActionForm action={updateDetailsAction}>
+                <input type="hidden" name="id" value={o.id} />
+                <div className="grid gap-5 md:grid-cols-[14rem_1fr]">
+                  <FField name="deliveryCharge" label={`Delivery charge (${o.currency})`} inputMode="decimal" defaultValue={Number(o.deliveryCharge) > 0 ? o.deliveryCharge : ""} />
+                  <FTextArea name="staffNote" label="Staff note" rows={3} defaultValue={o.staffNote ?? ""} />
+                </div>
+                <SubmitButton>Save</SubmitButton>
+              </ActionForm>
+            </Panel>
+          ) : o.staffNote ? (
+            <Panel title="Staff note">
+              <p className="whitespace-pre-line text-sm">{o.staffNote}</p>
             </Panel>
           ) : null}
         </div>
 
         <div className="min-w-0 space-y-6">
-          {orderDeliveries.length > 0 || (can(actor, "deliveries:write") && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready")) ? (
-            <Panel title="Delivery">
-              {orderDeliveries.length === 0 ? <p className="mb-3 text-sm text-text-muted">Not scheduled yet.</p> : (
-                <ul className="mb-3 divide-y divide-border text-sm">
-                  {orderDeliveries.map((x) => (
-                    <li key={x.id} className="flex items-center justify-between gap-3 py-2">
-                      <div><Link className="font-medium text-walnut underline" href={`/app/deliveries/${x.id}`}>{x.reference}</Link><span className="block text-xs text-text-muted">{formatDate(x.scheduledOn, business.timezone)}{x.assigneeName ? ` · ${x.assigneeName}` : ""}</span></div>
-                      <StatusBadge tone={DELIVERY_TONE[x.status]}>{DELIVERY_STATUS_LABEL[x.status]}</StatusBadge>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {can(actor, "deliveries:write") && (o.status === "confirmed" || o.status === "preparing" || o.status === "ready") && !orderDeliveries.some((x) => x.status === "planned" || x.status === "out_for_delivery") ? <ButtonLink href={`/app/deliveries/new?orderId=${o.id}`} variant="secondary">Schedule delivery</ButtonLink> : null}
-            </Panel>
-          ) : null}
-          {orderCases.length > 0 || (can(actor, "aftersales:manage") && o.status !== "draft" && o.status !== "cancelled") ? (
-            <Panel title="After-sales">
-              {orderCases.length === 0 ? <p className="mb-3 text-sm text-text-muted">No cases for this order.</p> : (
-                <ul className="mb-3 divide-y divide-border text-sm">
-                  {orderCases.map((c) => (
-                    <li key={c.id} className="flex items-center justify-between gap-3 py-2">
-                      <div><Link className="font-medium text-walnut underline" href={`/app/after-sales/${c.id}`}>{c.reference}</Link><span className="block text-xs text-text-muted">{CASE_TYPE_LABEL[c.type]} · {c.subject}</span></div>
-                      <StatusBadge tone={CASE_TONE[c.status]}>{CASE_STATUS_LABEL[c.status]}</StatusBadge>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {can(actor, "aftersales:manage") && o.status !== "draft" && o.status !== "cancelled" ? <ButtonLink href={`/app/after-sales/new?customerId=${o.customerId}&orderId=${o.id}`} variant="secondary">Open a case</ButtonLink> : null}
-            </Panel>
-          ) : null}
-          {live && canWrite ? (
-            <Panel title="Terms and notes">
-              <ActionForm action={updateTermsAction}>
-                <input type="hidden" name="id" value={o.id} />
-                <FTextArea name="depositTerms" label="Deposit and payment terms" rows={2} defaultValue={o.depositTerms ?? ""} />
-                <FField name="requestedCompletionDate" label="Wanted by" type="date" defaultValue={o.requestedCompletionDate ?? ""} />
-                <FTextArea name="notes" label="Notes" rows={2} defaultValue={o.notes ?? ""} />
-                <SubmitButton variant="secondary">Save</SubmitButton>
-              </ActionForm>
-            </Panel>
-          ) : o.depositTerms || o.notes ? (
-            <Panel title="Terms and notes">
-              <div className="space-y-3 text-sm">
-                {o.depositTerms ? <p><span className="text-text-muted">Terms: </span>{o.depositTerms}</p> : null}
-                {o.notes ? <p className="whitespace-pre-line"><span className="text-text-muted">Notes: </span>{o.notes}</p> : null}
+          <Panel title="Customer">
+            <p className="font-medium">{o.customerName}</p>
+            <p className="mt-1 text-sm">
+              <a className="underline" href={`tel:${o.phone.replace(/\s+/g, "")}`}>
+                {o.phone}
+              </a>
+            </p>
+            {o.email ? (
+              <p className="text-sm">
+                <a className="underline" href={`mailto:${o.email}`}>
+                  {o.email}
+                </a>
+              </p>
+            ) : null}
+            <p className="mt-3 text-sm">
+              <Link className="underline" href={`/app/customers/${customerKey}`}>
+                All orders from this customer
+              </Link>
+            </p>
+            <dl className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
+              <div>
+                <dt className="text-text-muted">{FULFILMENT_LABEL[o.fulfilment]}</dt>
+                <dd className="whitespace-pre-line font-medium">{o.fulfilment === "delivery" ? o.address : "The customer will collect from the showroom."}</dd>
+              </div>
+              <div>
+                <dt className="text-text-muted">Customer plans to pay</dt>
+                <dd className="font-medium">{PAYMENT_LABEL[o.paymentMethod]}</dd>
+              </div>
+              {o.customerNote ? (
+                <div>
+                  <dt className="text-text-muted">Customer’s note</dt>
+                  <dd className="whitespace-pre-line">{o.customerNote}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </Panel>
+
+          {canUpdate && !finished ? (
+            <Panel title="Move this order on">
+              <div className="space-y-3">
+                {next.map((s) => (
+                  <ActionForm key={s} action={setStatusAction} className="space-y-0">
+                    <input type="hidden" name="id" value={o.id} />
+                    <input type="hidden" name="status" value={s} />
+                    <SubmitButton>{NEXT_STATUS_ACTION[s] ?? STATUS_LABEL[s]}</SubmitButton>
+                  </ActionForm>
+                ))}
+                {canCancel ? (
+                  <ActionForm action={setStatusAction} className="space-y-3 border-t border-border pt-4">
+                    <input type="hidden" name="id" value={o.id} />
+                    <input type="hidden" name="status" value="cancelled" />
+                    <FField name="reason" label="Reason for cancelling" required />
+                    <ConfirmSubmit variant="danger" title="Cancel this order?" description="The order is cancelled and cannot be reopened. Tell the customer." confirmLabel="Cancel order">
+                      Cancel order
+                    </ConfirmSubmit>
+                  </ActionForm>
+                ) : null}
               </div>
             </Panel>
           ) : null}
-          {live && can(actor, "orders:cancel") ? (
-            <Panel title="Cancel order" description={money && Number(money.paid) > 0 ? "Money has been received, so only a manager or the owner can cancel. Void the payment afterwards if it is refunded." : "Reserved stock is released immediately."}>
-              <ActionForm action={cancelOrderAction}>
+
+          {can(actor, "orders:record_payment") && o.status !== "cancelled" ? (
+            <Panel title="Payment" description="Customers pay offline: on delivery, by bank transfer, or at the showroom. Record it here once the money has been received.">
+              {o.isPaid ? <p className="mb-3 text-sm text-text-muted">Marked as paid {when(o.paidAt)}.</p> : null}
+              <ActionForm action={setPaidAction} className="space-y-0">
                 <input type="hidden" name="id" value={o.id} />
-                <FField name="reason" label="Reason" required />
-                <ConfirmSubmit title="Cancel this order?" description="The order is cancelled for good and any reserved stock is released. This is recorded in the audit log." confirmLabel="Cancel order">
-                  Cancel order
-                </ConfirmSubmit>
+                {o.isPaid ? null : <input type="hidden" name="paid" value="true" />}
+                <SubmitButton variant={o.isPaid ? "secondary" : "primary"}>{o.isPaid ? "Mark as not paid" : "Mark as paid"}</SubmitButton>
               </ActionForm>
             </Panel>
           ) : null}
+
+          <Panel title="History">
+            <ul className="space-y-1.5 text-sm">
+              <li>Placed {when(o.createdAt)}</li>
+              {o.confirmedAt ? <li>Confirmed {when(o.confirmedAt)}</li> : null}
+              {o.deliveredAt ? <li>Delivered {when(o.deliveredAt)}</li> : null}
+              {o.cancelledAt ? <li>Cancelled {when(o.cancelledAt)}</li> : null}
+            </ul>
+          </Panel>
         </div>
       </div>
     </>

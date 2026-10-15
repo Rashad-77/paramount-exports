@@ -14,9 +14,18 @@ const dbUrl = admin ? (() => { const u = new URL(admin); u.pathname = "/e2e_furn
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  // The tests share one small database and a laptop CPU: fewer at once is steadier than the default of half the cores.
+  workers: process.env.CI ? 2 : 4,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  // The first request to each page compiles nothing (production build) but the database round trips are slow on a laptop: leave room.
+  timeout: 60_000,
   reporter: [["list"]],
+  // The account tests switch the accounts setting on and off for the whole site, so they run on their own, after everything else.
+  projects: [
+    { name: "site", testIgnore: /accounts\.spec\.ts/ },
+    { name: "accounts", testMatch: /accounts\.spec\.ts/, dependencies: ["site"] },
+  ],
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
@@ -30,8 +39,9 @@ export default defineConfig({
     // Deliberately no Supabase variables: sign-in must fail safe when auth is not configured.
     env: {
       NODE_ENV: "production",
+      ...(process.env.NEXT_DIST_DIR ? { NEXT_DIST_DIR: process.env.NEXT_DIST_DIR } : {}),
       ...(dbUrl
-        ? { DATABASE_URL: dbUrl, STORAGE_DRIVER: "local", ALLOW_LOCAL_STORAGE: "e2e-only", LOCAL_STORAGE_DIR: ".e2e-storage", IP_HASH_SALT: "e2e-salt-e2e-salt-e2e-salt-12345", CRON_SECRET: "e2e-cron-secret-e2e-cron-secret" }
+        ? { DATABASE_URL: dbUrl, STORAGE_DRIVER: "local", ALLOW_LOCAL_STORAGE: "e2e-only", LOCAL_STORAGE_DIR: ".e2e-storage", IP_HASH_SALT: "e2e-salt-e2e-salt-e2e-salt-12345", ALLOW_LOCAL_CUSTOMER_AUTH: "e2e-only", CRON_SECRET: "e2e-cron-secret-e2e-cron-secret" }
         : {}),
     },
   },

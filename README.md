@@ -1,30 +1,46 @@
-# Furniture Platform — website + CRM + ERP-lite
+# Paramount Export Industries: website and online orders
 
-One Next.js application (deployed on **Vercel**) and one PostgreSQL database (**Supabase**) for a wood-furniture
-business: an enquiry-led public website, an internal CRM/sales area, and ERP-lite inventory, workshop, purchasing,
-delivery and operational finance. See `docs/` for the plan, architecture, data model, permission matrix and acceptance tests.
+One Next.js application (deployed on **Vercel**) and one PostgreSQL database (**Supabase**) for a wood-furniture business:
+a public website where customers browse, **order online without paying online**, or send an enquiry, and a small staff area
+for handling those orders.
 
-> **Status: Steps 0–7 complete — feature-complete for the brief, awaiting a rehearsal deployment.** Built so far: design system, the full public website
-> (home, catalogue, product pages, custom-furniture request, about, gallery, contact, privacy/terms), the enquiry → CRM lead
-> pipeline with uploads and spam protection, staff sign-in, role/permission model, and staff screens for enquiries,
-> products, categories, gallery and settings; plus customers (with duplicate warnings), enquiry pipeline, activity history,
-> follow-ups, quotations with revisions and a print/PDF view, a sales dashboard, a stock ledger with reservations and transfers,
-> ready-made and custom orders (including quotation conversion), and payments, then workshop jobs (board, stage history, materials used, issues, cost estimate), suppliers, purchase orders
-> with partial goods receipts, and supplier invoice/payment tracking. Then deliveries (scheduling, status, proof, completing the order), expenses (void-only), after-sales cases, role dashboards and
-> operational reports with CSV export. User management, sign-in throttling, a security review, operations (backup/restore) and limitations documents complete the hand-over. **Read `docs/KNOWN_LIMITATIONS.md` first**: Supabase, Storage, Vercel and GitHub CI have not been exercised against real services — see `docs/PROJECT_PLAN.md`. Business name, photos and contact details are **placeholders** until supplied.
+> **Status:** the CRM and ERP modules have been removed and replaced with online orders (see `docs/PROJECT_PLAN.md`).
+> Read `docs/KNOWN_LIMITATIONS.md` first: Supabase, Storage, Vercel and GitHub CI have not been exercised against real services.
+
+## What it does
+
+**For customers (public website)**
+
+- Browse the collection, product pages with photographs, options and prices.
+- **Add pieces to an order, check out, and get an order number.** There is **no online payment**: the customer chooses delivery
+  or showroom collection, and how they plan to pay (on delivery, bank transfer, or at the showroom). Staff confirm the order.
+- **Optional customer accounts** (off until the owner turns them on in Settings): order history, quotation requests, saved details and
+  address, a basket that follows them between devices, password change and account deletion. Guests can always order and track an order
+  with its number and phone number. See "Customer accounts" below.
+- Contact page (contacts, address, map, enquiry form), custom-furniture request form, gallery (video hero, filters, viewer), About, legal pages.
+
+**For staff (`/app`, two roles: Owner and Staff)**
+
+- **Dashboard:** new and open orders, messages to answer, 30-day totals, orders per day.
+- **Orders:** list with status tabs and search; each order shows the customer, items, delivery or pickup, how they plan to pay.
+  Staff confirm, move it to *in progress* and *delivered* (or cancel with a reason), agree the **delivery charge** (the total updates),
+  add a staff note, and **record payment** once the money arrives offline. Every change is audited.
+- **Messages:** contact-form messages, product enquiries and custom-furniture requests (with pictures), marked handled when answered.
+- **Customers:** built from orders (grouped by phone number), with order history.
+- **Products and categories, gallery, website page wording, users, settings** (business details, opening hours, bank details for transfers).
 
 ## Documentation
 
 | Doc | What it is |
 |---|---|
-| `docs/PROJECT_PLAN.md` | scope, decisions, step plan |
+| `docs/PROJECT_PLAN.md` | what the system is, what changed, decisions |
 | `docs/ARCHITECTURE.md` · `docs/DATA_MODEL.md` | how it is built and what is stored |
 | `docs/ROLE_PERMISSIONS.md` | who can do what (generated from code) |
-| `docs/ACCEPTANCE_TESTS.md` | the acceptance flows and the automated test behind each |
-| `docs/DEMO_DEPLOYMENT.md` | running a password-less sample-data demo on Vercel alone (no Supabase) |
+| `docs/ACCEPTANCE_TESTS.md` | the flows that must work, and the automated test behind each |
+| `docs/DEMO_DEPLOYMENT.md` | a password-less sample-data demo on Vercel alone (no Supabase) |
 | `docs/OPERATIONS.md` | setup, releasing, backup and restore, troubleshooting |
-| `docs/SECURITY_REVIEW.md` | what was checked, what was not |
-| `docs/KNOWN_LIMITATIONS.md` | unverified areas, assumptions to confirm, out of scope, next phases |
+| `docs/SECURITY_REVIEW.md` · `docs/KNOWN_LIMITATIONS.md` | what was checked, what was not |
+| `docs/DESIGN_NOTES.md` | the visual system |
 
 ## Requirements
 
@@ -38,11 +54,11 @@ cp .env.example .env.local        # fill in the Supabase values (see comments in
 pnpm db:migrate                   # applies ./drizzle migrations (uses DATABASE_DIRECT_URL)
 pnpm storage:setup                # creates the two Supabase Storage buckets with size/type limits
 OWNER_PASSWORD='a long passphrase' pnpm create-owner --email you@example.com --name "Your Name"
-# later, for staff:  OWNER_PASSWORD='one-off password' pnpm create-user --email sam@example.com --name Sam --role sales,finance
+# later, for staff:  OWNER_PASSWORD='one-off password' pnpm create-user --email sam@example.com --name Sam --role staff
 pnpm dev                          # http://localhost:3000  (staff sign-in at /login)
 ```
 
-Without any environment variables the **public site still runs** (with placeholder content); `/app` redirects to `/login`.
+Without any environment variables the **public site still runs** (with placeholder content, and without ordering, which needs the database).
 
 ## Everyday commands
 
@@ -51,37 +67,70 @@ Without any environment variables the **public site still runs** (with placehold
 | `pnpm dev` / `pnpm build` / `pnpm start` | Run / build / serve the app |
 | `pnpm lint` · `pnpm typecheck` | ESLint · `tsc --noEmit` (strict) |
 | `pnpm test` | Unit tests + database integration tests (integration tests need `TEST_ADMIN_DATABASE_URL`, otherwise they are **skipped**) |
-| `pnpm test:e2e` | Playwright smoke + accessibility tests against the production build (`pnpm build` first) |
+| `pnpm test:e2e` | Playwright browser tests against the production build (`pnpm build` first): ordering, enquiries, access control, accessibility |
 | `pnpm db:generate` | Generate a SQL migration from schema changes (`pnpm drizzle-kit generate --custom --name x` for hand-written SQL) |
 | `pnpm db:migrate` | Apply migrations |
-| `pnpm db:seed` | **Sample** data for local development (everything labelled `[Sample]`). Needs `DEMO_MODE=true` and a localhost `DATABASE_URL`; refuses otherwise |
+| `pnpm db:seed` | **Sample** data for local development (everything labelled `[Sample]`: products, a gallery project, messages, orders). Needs `DEMO_MODE=true` and a localhost `DATABASE_URL`; refuses otherwise |
 | `pnpm docs:permissions` | Regenerate the permission table in `docs/ROLE_PERMISSIONS.md` from code |
-| `pnpm tsx scripts/screenshots.ts <dir>` | Screenshot pages at desktop + phone sizes for visual review |
 
-### Running the integration tests
+### Running the tests
 
 They need a **throwaway** Postgres superuser connection (each run creates and drops its own database). Never use Supabase here.
 
 ```bash
-docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16
+docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16     # or any local PostgreSQL 16
 export TEST_ADMIN_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres
 pnpm test
+pnpm build && pnpm test:e2e
 ```
 
-### Reviewing the staff screens without Supabase
+To build for the browser tests while `pnpm dev` is running, give the build its own folder: set `NEXT_DIST_DIR=.next-e2e` for both `pnpm build` and `pnpm test:e2e` (PowerShell: `$env:NEXT_DIST_DIR=".next-e2e"`). Without it, both use `.next`, which a running dev server holds open.
 
-With a **local** Postgres: `DATABASE_URL=postgres://… DEMO_MODE=true STORAGE_DRIVER=local pnpm dev`, run `pnpm db:migrate && pnpm db:seed`, then open
-`/dev/demo-role?role=owner|manager|sales|workshop|finance` to sign in as a sample user with that role (`DEMO_ROLE=owner pnpm tsx scripts/screenshots.ts <dir>`
-captures screens; `scripts/console-check.ts` reports browser console errors). This identity exists **only** under `next dev`, never on Vercel or in a
-production build, and only against a localhost database (unit-tested). The Postgres auth stub it needs is created by the test helpers, or by hand: `create schema auth; create table auth.users(id uuid primary key, email text);`.
+`pnpm build` pre-renders some pages, so when you run the browser tests locally build with `DATABASE_URL` pointing at the
+throwaway `e2e_furniture` database (or with no `.env.local`), otherwise the built pages carry your development data.
+
+### Trying the staff screens locally (no Supabase)
+
+With a **local** Postgres and `.env.local` containing
+
+```
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres
+DEMO_MODE=true
+STORAGE_DRIVER=local
+IP_HASH_SALT=local-salt-local-salt-1234
+```
+
+run `pnpm db:migrate && pnpm db:seed && pnpm dev`, then open `/dev/demo-role?role=owner` (or `staff`) to sign in as a sample user.
+This identity exists **only** under `next dev`, never on Vercel or in a production build, and only against a localhost database
+(unit-tested). The sign-in stub the database needs: `create schema auth; create table auth.users(id uuid primary key, email text);`.
+
+> **Project in OneDrive?** OneDrive rewrites files in `.next`, which can make `pnpm dev` recompile in a loop and the pages flicker.
+> Keep the project outside OneDrive (for example `C:\dev\paramount`).
+
+### Customer accounts
+
+Customers are **not staff**: an account never grants access to `/app` (that needs a staff profile and a role).
+
+- **Off by default.** Settings, "Customer accounts", has: turn accounts on, allow new sign-ups, require an account to order, keep the basket on the
+  account. It **cannot be switched on** until a sign-in service is connected, so the site never offers a sign-in that cannot work.
+- **Sign-in service:** the same Supabase project as staff sign-in (email and password). In that project: allow email sign-up, set up the
+  confirmation and password-reset emails, and add `<site address>/account/confirm` to the allowed redirect URLs. To also delete the
+  sign-in identity when a customer deletes their account, set `SUPABASE_SERVICE_ROLE_KEY` (otherwise only the account data is removed).
+- **Not yet verified against a real Supabase project.** The real path is written but could only be tested here with a built-in stand-in
+  (the browser tests set `ALLOW_LOCAL_CUSTOMER_AUTH=e2e-only`; `pnpm dev` with `DEMO_MODE=true` uses it too). Neither exists on Vercel.
+  Test sign-up, confirmation, sign-in and reset once against the real project before switching accounts on.
+- **Privacy:** a customer sees only orders linked to their account (filtered in the database query by the verified session). Orders are linked only
+  when placed while signed in, or when the customer adds one with its number and the phone number it was placed with (same proof and rate limits
+  as the public tracking page). Orders are never linked automatically by phone number.
 
 ## Deploying to Vercel
 
 1. Import the repository in Vercel (framework preset: Next.js; `vercel.json` sets pnpm install/build).
 2. Add every variable from `.env.example` (Production and Preview separately). Use the Supabase **transaction pooler**
-   string for `DATABASE_URL`. `SUPABASE_SERVICE_ROLE_KEY` is server-only — never expose it to the browser.
+   string for `DATABASE_URL`. `SUPABASE_SERVICE_ROLE_KEY` is server-only: never expose it to the browser.
 3. Point **Preview** deployments at a separate Supabase project; never share production data with previews.
-4. Run `pnpm db:migrate` against production explicitly (migrations are not run on every deploy).
+4. Run `pnpm db:migrate` against production explicitly (migrations are not run on every deploy). **Migration `0015` is destructive:**
+   it drops the old CRM/ERP tables and their data (see `docs/PROJECT_PLAN.md`). Take a backup first.
 5. Create the first Owner with `pnpm create-owner` from a trusted machine.
 6. Choose the Vercel function region closest to the Supabase region to keep database latency low.
 
@@ -89,17 +138,9 @@ production build, and only against a localhost database (unit-tested). The Postg
 
 - **Authorization is server-side.** Every service function starts with `requirePermission(actor, "resource:action")`.
   Hiding UI is cosmetic. The matrix lives in `src/lib/auth/permissions.ts`.
-- **Every new table must enable RLS** (deny-all) in its migration — a test fails otherwise. The app reaches Postgres directly
-  through the service layer; Supabase's public API must expose nothing.
-- **Money and quantities are decimals** (`src/lib/money.ts`, `numeric` columns). Never use JS floats for business maths.
-- **Ledgers are append-only** (audit log now; stock movements in Step 4). Correct with new rows, never edits.
-- **No dead UI.** Navigation only lists built pages (`available` flag in `src/lib/nav.ts`).
+- **Prices come from the database, never the browser.** The basket holds ids and quantities; `placeOrder` reads names and prices
+  and copies them onto the order, so later catalogue edits never change an order.
+- **Every new table must enable RLS** (deny-all) in its migration (`SELECT enforce_rls();`): a test fails otherwise.
+- **Money is decimal** (`src/lib/money.ts`, `numeric` columns). Never use JS floats for business maths.
+- **The audit log is append-only.** Correct with new rows, never edits.
 - **No invented content.** Names, photos, prices and contact details are placeholders until the client supplies them.
-
-## Known limitations (Step 1)
-
-- The Supabase sign-in flow, `create-owner` and Supabase Storage (signed uploads, `info`, public URLs) are written but have **not yet been exercised
-  against a real Supabase project** (none is available in the build environment). Everything else (permissions, DB layer, upload
-  verification, route protection) is tested against real Postgres and the local storage driver.
-- CI workflow (`.github/workflows/ci.yml`) is written but has not run on GitHub yet.
-- Currency (LKR) and timezone (Asia/Colombo) are unconfirmed assumptions.

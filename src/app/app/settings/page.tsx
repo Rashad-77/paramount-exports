@@ -2,18 +2,18 @@ import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from 
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
+import { customerAuthMode } from "@/lib/auth/customer";
 import { requireActor } from "@/lib/auth/session";
 import { getSettingsForAdmin } from "@/server/settings";
-import { listAssignableStaff } from "@/server/leads";
-import { updateBusinessAction, updateCrmAction, updateProductionAction, updateSalesAction } from "./actions";
+import { updateAccountsAction, updateBusinessAction } from "./actions";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business, crm, sales, production } = await getSettingsForAdmin(actor);
+  const { business, accounts } = await getSettingsForAdmin(actor);
+  const authMode = customerAuthMode();
   const canManage = can(actor, "settings:manage");
-  const staff = canManage ? await listAssignableStaff(actor) : [];
   const timezones = Intl.supportedValuesOf("timeZone");
 
   return (
@@ -27,11 +27,15 @@ export default async function SettingsPage() {
                 <FField name="name" label="Business name" defaultValue={business.name} required />
                 <FField name="tagline" label="Short description" defaultValue={business.tagline ?? ""} hint="Shown under the name and in search results." />
                 <FField name="phone" label="Telephone" type="tel" defaultValue={business.phone ?? ""} />
+                <FField name="phoneAlt" label="Second telephone" type="tel" defaultValue={business.phoneAlt ?? ""} />
                 <FField name="whatsapp" label="WhatsApp number" type="tel" defaultValue={business.whatsapp ?? ""} hint="Visitors can open a chat from the website." />
                 <FField name="email" label="Email" type="email" defaultValue={business.email ?? ""} />
                 <FField name="mapUrl" label="Map link" defaultValue={business.mapUrl ?? ""} hint="Only shown once an address is also entered." />
+                <FField name="notifyEmail" label="Email for new orders" type="email" defaultValue={business.notifyEmail ?? ""} hint="The website emails this address when an order, quotation request or message arrives. Leave blank to use the business email." />
+                <FField name="tiktok" label="TikTok link" defaultValue={business.tiktok ?? ""} hint="The full web address of your TikTok page. Shown in the website footer." />
                 <FTextArea name="address" label="Showroom address" rows={3} defaultValue={business.address ?? ""} />
                 <FTextArea name="openingHours" label="Opening hours" rows={3} defaultValue={business.openingHours ?? ""} hint="One line per day or range, e.g. Mon–Sat 9:00–18:00." />
+                <FTextArea name="bankDetails" label="Bank details for transfers" rows={3} defaultValue={business.bankDetails ?? ""} hint="Shown to customers who choose to pay by bank transfer: account name, number and bank." />
                 <FField name="currency" label="Currency code" defaultValue={business.currency} required hint="Assumed LKR — confirm with the owner." />
                 <FSelect name="timezone" label="Timezone" defaultValue={business.timezone} options={timezones.map((z) => ({ value: z, label: z }))} required hint="Assumed Asia/Colombo — confirm." />
                 <FField name="phoneCountryCode" label="Phone country code" defaultValue={business.phoneCountryCode} required hint="Used to build WhatsApp links from numbers starting with 0." />
@@ -42,7 +46,7 @@ export default async function SettingsPage() {
             <>
               <Alert tone="info">Only the owner can change business details.</Alert>
               <dl className="mt-4 grid gap-3 text-sm md:grid-cols-2">
-                {Object.entries({ Name: business.name, Telephone: business.phone, WhatsApp: business.whatsapp, Email: business.email, Address: business.address, Hours: business.openingHours, Currency: business.currency, Timezone: business.timezone }).map(([k, v]) => (
+                {Object.entries({ Name: business.name, Telephone: business.phone, WhatsApp: business.whatsapp, Email: business.email, Address: business.address, Hours: business.openingHours, "Bank details": business.bankDetails, Currency: business.currency, Timezone: business.timezone }).map(([k, v]) => (
                   <div key={k}>
                     <dt className="text-text-muted">{k}</dt>
                     <dd className="whitespace-pre-line font-medium">{v ?? "—"}</dd>
@@ -52,34 +56,35 @@ export default async function SettingsPage() {
             </>
           )}
         </Panel>
-
-        {canManage ? (
-          <Panel title="Discount limit for Sales staff" description="Sales staff can discount a quotation line up to this percentage of its value. Anything higher needs a Manager or the Owner. Starts at 0 until you set it.">
-            <ActionForm action={updateSalesAction}>
-              <FField name="maxDiscountPercent" label="Maximum discount (%)" inputMode="decimal" defaultValue={sales.maxDiscountPercent} required className="max-w-xs" />
-              <SubmitButton>Save discount limit</SubmitButton>
+        <Panel
+          title="Customer accounts"
+          description="Let customers create an account to see their orders and quotation requests, save their details and keep their basket between devices. Guests can always track an order with its number and phone number."
+        >
+          {authMode === "off" ? (
+            <Alert tone="warning" title="Sign-in service not connected">
+              Accounts cannot be turned on until Supabase sign-in is connected to this website (the same service staff sign in with). Until then the website shows no sign-in for customers.
+            </Alert>
+          ) : authMode === "local" ? (
+            <Alert tone="info" title="Development sign-in">
+              This copy of the site uses a built-in test sign-in. The live website uses Supabase.
+            </Alert>
+          ) : (
+            <Alert tone="success" title="Sign-in service connected">
+              In your Supabase project, check that email sign-up is allowed and that the confirmation and password-reset emails are set up, and add this website&apos;s address to the allowed redirect URLs.
+            </Alert>
+          )}
+          {canManage ? (
+            <ActionForm action={updateAccountsAction} className="mt-5">
+              <FCheckbox name="enabled" label="Turn on customer accounts" hint="Shows Sign in in the website header and the account pages." defaultChecked={accounts.enabled} />
+              <FCheckbox name="allowSignUp" label="Let new customers create an account" hint="Turn off to let only existing accounts sign in." defaultChecked={accounts.allowSignUp} />
+              <FCheckbox name="requiredForCheckout" label="Require an account to place an order" hint="Guests are sent to sign in or create an account at checkout. Leave off to keep guest checkout." defaultChecked={accounts.requiredForCheckout} />
+              <FCheckbox name="saveCart" label="Keep a signed-in customer's basket on their account" hint="So it is still there on another phone or computer." defaultChecked={accounts.saveCart} />
+              <SubmitButton>Save account options</SubmitButton>
             </ActionForm>
-          </Panel>
-        ) : null}
-
-        {canManage ? (
-          <Panel title="Workshop" description="Optional workflows. Both start switched off; the workshop works without them.">
-            <ActionForm action={updateProductionAction}>
-              <FCheckbox name="createsFinishedStock" label="Add finished custom pieces to stock" hint="When a job reaches “Ready for delivery” the finished piece is added to the workshop stock, and taken out again when the order is delivered. Applies to jobs created from now on." defaultChecked={production.createsFinishedStock} />
-              <FCheckbox name="trackLabour" label="Record labour cost on jobs" hint="Adds a labour panel for managers and finance. Direct labour only — payroll is not part of this system." defaultChecked={production.trackLabour} />
-              <SubmitButton>Save workshop settings</SubmitButton>
-            </ActionForm>
-          </Panel>
-        ) : null}
-
-        {canManage ? (
-          <Panel title="Website enquiries" description="Who new website enquiries are assigned to automatically.">
-            <ActionForm action={updateCrmAction}>
-              <FSelect name="defaultAssigneeId" label="Default assignee" defaultValue={crm.defaultAssigneeId ?? ""} placeholder="Leave unassigned" options={staff.map((s) => ({ value: s.id, label: s.name }))} />
-              <SubmitButton>Save</SubmitButton>
-            </ActionForm>
-          </Panel>
-        ) : null}
+          ) : (
+            <p className="mt-4 text-sm text-text-muted">Only the owner can change these options. Accounts are currently {accounts.enabled ? "on" : "off"}.</p>
+          )}
+        </Panel>
       </div>
     </>
   );

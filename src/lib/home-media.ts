@@ -10,3 +10,10 @@ export const HERO_VIDEO: { desktop: string | null; mobile: string | null; poster
   mobile: null,
   poster: null,
 };
+
+/** Gallery page hero video. Same rules as above: leave null until the footage is supplied. */
+export const GALLERY_VIDEO: { desktop: string | null; mobile: string | null; poster: string | null } = {
+  desktop: null,
+  mobile: null,
+  poster: null,
+};

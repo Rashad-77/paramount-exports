@@ -1,100 +1,51 @@
 # Role & Permission Matrix
 
-Least-privilege starting point. Users may hold several roles; effective permissions are the **union**
-("all" beats "own"). Legend: **✓** all records · **own** only records assigned to the user · **—** no access.
+There are two roles. **Owner** can do everything. **Staff** runs the day-to-day work: orders, messages, customers, the catalogue,
+the gallery and the website page wording. Staff cannot manage users, change business settings or read the audit log.
+Users may hold both roles; effective permissions are the **union**.
+Legend: **✓** allowed · **—** no access.
 
 The matrix below is **generated from `src/lib/auth/permissions.ts`** (run `pnpm docs:permissions` after changing it).
 A unit test fails if this table and the code disagree, so review changes to the code like changes to this document.
 
 <!-- PERMISSION_MATRIX:START (generated from src/lib/auth/permissions.ts — do not edit by hand) -->
-| Permission | Owner | Manager | Sales | Workshop | Finance |
-|---|:-:|:-:|:-:|:-:|:-:|
-| `users:manage` | ✓ | — | — | — | — |
-| `settings:manage` | ✓ | — | — | — | — |
-| `settings:view` | ✓ | ✓ | — | — | — |
-| `website:manage` | ✓ | ✓ | — | — | — |
-| `audit:view` | ✓ | ✓ | — | — | — |
-| `customers:view` | ✓ | ✓ | ✓ | — | ✓ |
-| `customers:write` | ✓ | ✓ | ✓ | — | — |
-| `leads:view` | ✓ | ✓ | ✓ | — | — |
-| `leads:write` | ✓ | ✓ | ✓ | — | — |
-| `leads:assign` | ✓ | ✓ | ✓ | — | — |
-| `followups:manage` | ✓ | ✓ | ✓ | — | — |
-| `quotations:view` | ✓ | ✓ | ✓ | — | ✓ |
-| `quotations:write` | ✓ | ✓ | ✓ | — | — |
-| `quotations:send` | ✓ | ✓ | ✓ | — | — |
-| `quotations:convert` | ✓ | ✓ | ✓ | — | — |
-| `quotations:discount_override` | ✓ | ✓ | — | — | — |
-| `orders:view` | ✓ | ✓ | ✓ | — | ✓ |
-| `orders:write` | ✓ | ✓ | ✓ | — | — |
-| `orders:confirm` | ✓ | ✓ | ✓ | — | — |
-| `orders:cancel` | ✓ | ✓ | ✓ | — | — |
-| `orders:cancel_paid` | ✓ | ✓ | — | — | — |
-| `payments:view` | ✓ | ✓ | own | — | ✓ |
-| `payments:record` | ✓ | ✓ | ✓ | — | ✓ |
-| `payments:void` | ✓ | ✓ | — | — | ✓ |
-| `products:view` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `products:write` | ✓ | ✓ | — | — | — |
-| `inventory:view` | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `inventory:view_materials` | ✓ | ✓ | — | ✓ | ✓ |
-| `inventory:adjust` | ✓ | ✓ | — | — | — |
-| `inventory:transfer` | ✓ | ✓ | ✓ | ✓ | — |
-| `production:view` | ✓ | ✓ | — | own | — |
-| `production:view_status` | ✓ | ✓ | ✓ | — | — |
-| `production:write` | ✓ | ✓ | — | — | — |
-| `production:update_stage` | ✓ | ✓ | — | own | — |
-| `production:record_materials` | ✓ | ✓ | — | own | — |
-| `production:view_costs` | ✓ | ✓ | — | — | ✓ |
-| `suppliers:view` | ✓ | ✓ | — | ✓ | ✓ |
-| `suppliers:write` | ✓ | ✓ | — | — | — |
-| `purchasing:view` | ✓ | ✓ | — | ✓ | ✓ |
-| `purchasing:write` | ✓ | ✓ | — | — | — |
-| `purchasing:receive` | ✓ | ✓ | — | ✓ | — |
-| `purchasing:record_payment` | ✓ | ✓ | — | — | ✓ |
-| `deliveries:view` | ✓ | ✓ | ✓ | own | ✓ |
-| `deliveries:write` | ✓ | ✓ | ✓ | — | — |
-| `deliveries:update_status` | ✓ | ✓ | ✓ | own | — |
-| `aftersales:view` | ✓ | ✓ | ✓ | ✓ | — |
-| `aftersales:manage` | ✓ | ✓ | ✓ | — | — |
-| `expenses:view` | ✓ | ✓ | — | — | ✓ |
-| `expenses:write` | ✓ | ✓ | — | — | ✓ |
-| `expenses:void` | ✓ | ✓ | — | — | ✓ |
-| `expenses:manage_categories` | ✓ | ✓ | — | — | — |
-| `reports:sales` | ✓ | ✓ | own | — | ✓ |
-| `reports:financial` | ✓ | ✓ | — | — | ✓ |
-| `reports:operations` | ✓ | ✓ | — | own | — |
-| `files:view_customer_private` | ✓ | ✓ | ✓ | own | — |
-| `files:view_finance` | ✓ | ✓ | — | — | ✓ |
-| `dashboard:owner` | ✓ | ✓ | — | — | — |
-| `dashboard:sales` | ✓ | ✓ | ✓ | — | — |
-| `dashboard:workshop` | ✓ | ✓ | — | ✓ | — |
-| `dashboard:finance` | ✓ | ✓ | — | — | ✓ |
+| Permission | Owner | Staff |
+|---|:-:|:-:|
+| `users:manage` | ✓ | — |
+| `settings:manage` | ✓ | — |
+| `settings:view` | ✓ | ✓ |
+| `website:manage` | ✓ | ✓ |
+| `audit:view` | ✓ | — |
+| `orders:view` | ✓ | ✓ |
+| `orders:update` | ✓ | ✓ |
+| `orders:cancel` | ✓ | ✓ |
+| `orders:record_payment` | ✓ | ✓ |
+| `messages:view` | ✓ | ✓ |
+| `messages:handle` | ✓ | ✓ |
+| `customers:view` | ✓ | ✓ |
+| `products:view` | ✓ | ✓ |
+| `products:write` | ✓ | ✓ |
+| `files:view_customer_private` | ✓ | ✓ |
+| `dashboard:view` | ✓ | ✓ |
 <!-- PERMISSION_MATRIX:END -->
 
 ## Rules the matrix cannot express (enforced in services, tested per module)
 
-- **Workshop never sees** customer phone/email/address, prices, payments, financial reports or margin. A workshop job view
-  shows job number, product, specifications, dimensions, reference images, target date and stages. Delivery contact details
-  are shown only on deliveries assigned to the user.
-- **Finance does not get** customer-uploaded reference files or workshop private files unless they also hold another role
-  (`files:view_customer_private` excludes Finance by design).
-- **"own"** is enforced in the SQL query (`assigned_to = actor.id`), not only in the UI. Sales `payments:view` "own" means
-  payments on orders the user created; `reports:sales` "own" means the user's own orders.
-- **Discount limit**: Sales may discount up to `site_settings.sales_max_discount_percent` (default `0` until the owner sets it);
-  anything above needs `quotations:discount_override` (Manager/Owner).
-- **Cancelling after a payment exists** needs `orders:cancel_paid` (Manager/Owner); Sales can cancel unpaid orders.
-- **Payments are never deleted.** A void creates a linked reversal record with reason and actor (audited).
-- **Public (unauthenticated) visitors** may only: read published catalogue/gallery/settings, submit enquiry forms, and upload to
-  the enquiry quarantine area. Nothing else.
+- **Public (signed-out) visitors** may only: read published catalogue, gallery and settings, **place an order**, send enquiry or contact
+  forms, and upload pictures to the enquiry quarantine area. Nothing else. They never see another person's order.
 - **Inactive profiles** have no permissions even with a valid session.
-- **Always written to `audit_logs`**: user/role changes, settings changes, inventory adjustments, payment voids, price/discount
-  overrides, cancelling a confirmed order, quotation status overrides, archival/deletion, and private-file access by non-owners.
+- **Retired roles** (`manager`, `sales`, `workshop`, `finance`) still exist in the database enum but are ignored by the app; a person who
+  held only those has no access until given Owner or Staff.
+- **Orders are never deleted.** An order is cancelled with a reason, and delivered and cancelled orders are final.
+- **"Paid" is set by staff only**, never by the website.
+- **There is always at least one active owner**: the last one cannot be demoted or deactivated.
+- **Always written to `audit_logs`**: placing an order, every status change, delivery-charge changes, marking paid or unpaid, message
+  handling, user and role changes, settings changes, and private-file access by non-owners.
 
 ## Test requirements
 
-1. Matrix equality: this document ⇔ `permissions.ts` (unit test, runs in CI).
-2. Owner holds every permission; inactive and role-less actors hold none.
-3. Explicit "must never" assertions (e.g. Workshop has no payment/financial permission; Finance has no customer private files).
-4. Every service entry point calls `requirePermission` first and is covered by a per-role test (added with each module).
-5. Scoped access: a workshop user cannot read or update another worker's job (query-level test, Step 5).
-6. DB-level: the `anon` and `authenticated` Postgres roles hold no privileges on any `public` table (integration test, in place).
+1. Matrix equality: this document and `permissions.ts` (unit test, runs in CI).
+2. The Owner holds every permission; inactive and role-less actors hold none.
+3. Explicit "must never" assertions: only the Owner manages users, settings and the audit log.
+4. Every staff service function calls `requirePermission` first and is covered by a refusal test (`orders.db`, `catalogue.db`, `users.db`).
+5. DB-level: the `anon` and `authenticated` Postgres roles hold no privileges on any `public` table (`foundation.db`).

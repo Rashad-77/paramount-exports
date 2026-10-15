@@ -3,7 +3,7 @@
  * Create a staff account (there is no public sign-up). Without --role it creates an Owner — use that for the first account.
  *
  *   OWNER_PASSWORD='a long passphrase' pnpm create-owner --email owner@example.com --name "Full Name"
- *   OWNER_PASSWORD='a long passphrase' pnpm create-user  --email sam@example.com --name "Sam" --role sales,finance
+ *   OWNER_PASSWORD='a long passphrase' pnpm create-user  --email sam@example.com --name "Sam" --role staff
  *
  * (The password variable keeps its name for both; give each new person a one-off password and ask them to change it.)
  *

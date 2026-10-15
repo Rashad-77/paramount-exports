@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource-variable/urbanist";
+@import "@fontsource-variable/epilogue";
 @import "@fontsource-variable/inter";
 @import "../styles/tokens.css";
 @import "../styles/wood.css";
@@ -107,8 +108,8 @@
   /* Headings: the same family as the text, heavier and tighter. */
   .font-display {
     font-family: var(--font-serif);
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: 400;
+    letter-spacing: -0.035em;
     font-variant-numeric: lining-nums;
   }
   .tabular {
@@ -117,6 +118,7 @@
 
   /* Staff area: working screens, not a showroom. Plain sans type, flat surfaces, no ornament or entrance motion. */
   .app-ui .font-display {
+    font-family: var(--font-sans);
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -141,22 +143,15 @@
     box-shadow: none;
   }
 
-  /* Small tracked label above a heading, with a short green rule */
+  /* Small tracked copper label above a heading */
   .eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 0.875rem;
     font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.18em;
+    font-weight: 700;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-  .eyebrow::before {
-    content: "";
-    width: 1.5rem;
-    height: 1px;
-    background: var(--color-brand);
+    color: #9a5330;
   }
 
   /* Vertical rhythm for public sections */
@@ -195,7 +190,15 @@
   /* Image frame: slow, subtle zoom on hover (never on touch-only devices) */
   .zoom-frame {
     overflow: hidden;
-    background: var(--color-linen);
+    isolation: isolate;
+    background: #e4e4e2;
+  }
+  /* Rounded photograph frames, as on the product cards and the project grid */
+  .round-xl {
+    border-radius: 1.5rem;
+  }
+  .round-lg {
+    border-radius: 1.25rem;
   }
   .zoom-frame > * {
     transition: transform var(--duration-slow) var(--ease-out);
@@ -275,6 +278,21 @@
     transform: scale(1.06);
     transition: opacity 1200ms var(--ease-out) var(--d, 0ms), transform 1600ms var(--ease-out) var(--d, 0ms);
   }
+  /* "wipe": the content is uncovered from top to bottom (clip-path on its first child, so the watched wrapper keeps its box and is
+     still detected), with no movement or fade */
+  .js [data-reveal="wipe"] {
+    opacity: 1;
+    transform: none;
+  }
+  .js [data-reveal="wipe"] > * {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1100ms var(--ease-out) var(--d, 0ms);
+    will-change: clip-path;
+  }
+  .js [data-reveal="wipe"].in > * {
+    clip-path: inset(0 0 0 0);
+    will-change: auto;
+  }
   /* "rule": a hairline that draws from left to right via its background (the box keeps its size) */
   .rule-line {
     background: linear-gradient(rgb(31 138 91 / 0.55), rgb(31 138 91 / 0.55)) no-repeat 0 0 / 100% 100%;
@@ -297,6 +315,11 @@
     .js [data-reveal] {
       opacity: 1 !important;
       transform: none !important;
+      clip-path: none !important;
+      transition: none !important;
+    }
+    .js [data-reveal="wipe"] > * {
+      clip-path: none !important;
       transition: none !important;
     }
   }
@@ -416,21 +439,12 @@
     background-color: #e4e4e2;
   }
 
-  /* Public page background: white fading to a light green, with a faint wood grain over the body only. */
+  /* Public page background: warm cream. Sections alternate cream, white and deep bark brown for rhythm. */
   .page-body {
+    display: flow-root;
     position: relative;
     isolation: isolate;
-    background: linear-gradient(180deg, #ffffff 0%, #ffffff 60%, var(--color-mint) 100%);
-  }
-  .page-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background-image: var(--grain-fine);
-    background-size: 420px 520px;
-    opacity: 0.05;
+    background: var(--color-cream);
   }
 }
 
