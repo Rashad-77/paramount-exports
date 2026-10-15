@@ -73,23 +73,23 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
 
       <aside aria-labelledby="summary-title" className="border border-border bg-surface p-6 lg:sticky lg:top-28">
         <h2 id="summary-title" className="font-display text-[1.5rem] leading-tight text-brand">
-          Your order
+          Order summary
         </h2>
-        <dl className="mt-5 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-text-muted">Items</dt>
-            <dd>{formatMoney(subtotal, currency)}</dd>
+        <dl className="mt-5 space-y-3 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-text-muted">Subtotal</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-text-muted">Delivery</dt>
-            <dd>Agreed with you</dd>
+            <dd>To be confirmed</dd>
           </div>
-          <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
-            <dt>Total so far</dt>
-            <dd>{formatMoney(subtotal, currency)}</dd>
+          <div className="flex justify-between gap-4 border-t border-border pt-4 text-base font-semibold">
+            <dt>Total</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-sm text-text-muted">We call to confirm your order and the delivery charge, and you pay on delivery, by bank transfer or at the showroom.</p>
+        <p className="mt-5 text-[0.8125rem] leading-relaxed text-text-muted">We call to confirm your order and the delivery charge, and you pay on delivery, by bank transfer or at the showroom.</p>
         <ButtonLink href="/checkout" size="cta" className="mt-6 w-full justify-center">
           Continue to checkout
         </ButtonLink>

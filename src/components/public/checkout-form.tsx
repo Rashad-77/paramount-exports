@@ -95,7 +95,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-16 lg:items-start">
-      <ActionForm action={placeOrderAction} className="space-y-9">
+      <ActionForm action={placeOrderAction} className="space-y-9!">
         {turnstileSiteKey ? <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" /> : null}
         <PrefillFromAccount />
         <input type="hidden" name="formToken" value={token} />
@@ -168,34 +168,42 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
 
       <aside aria-labelledby="checkout-summary" className="border border-border bg-surface p-6 sm:p-8 lg:sticky lg:top-28">
         <h2 id="checkout-summary" className="font-display text-[1.5rem] leading-tight text-brand">
-          Your order
+          Order summary
         </h2>
         <ul className="mt-6 divide-y divide-border text-sm">
           {items.map((i) => (
-            <li key={i.variantId} className="flex justify-between gap-3 py-4 first:pt-0">
-              <span>
-                <span className="font-medium">{i.productName}</span>
-                {i.variantLabel ? <span className="text-text-muted"> · {i.variantLabel}</span> : null}
-                <span className="block text-text-muted">Quantity {i.quantity}</span>
+            <li key={i.variantId} className="flex justify-between gap-4 py-4 first:pt-0">
+              <span className="min-w-0">
+                <span className="block font-medium">{i.productName}</span>
+                {i.variantLabel ? <span className="block text-text-muted">{i.variantLabel}</span> : null}
+                <span className="mt-1 block text-text-muted">
+                  {i.quantity} × {formatMoney(i.price, currency)}
+                </span>
               </span>
-              <span className="shrink-0 font-medium">{formatMoney(dec(i.price).times(i.quantity), currency)}</span>
+              <span className="shrink-0 font-medium tabular-nums">{formatMoney(dec(i.price).times(i.quantity), currency)}</span>
             </li>
           ))}
         </ul>
-        <dl className="mt-2 space-y-3 border-t border-border pt-5 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-text-muted">Delivery</dt>
-            <dd>{fulfilment === "pickup" ? "None" : "Agreed with you"}</dd>
+        <dl className="space-y-3 border-t border-border pt-5 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-text-muted">Subtotal</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
-          <div className="flex justify-between text-base font-semibold">
-            <dt>Total so far</dt>
-            <dd>{formatMoney(subtotal, currency)}</dd>
+          <div className="flex justify-between gap-4">
+            <dt className="text-text-muted">Delivery</dt>
+            <dd>{fulfilment === "pickup" ? "Free (collection)" : "To be confirmed"}</dd>
+          </div>
+          <div className="flex justify-between gap-4 border-t border-border pt-4 text-base font-semibold">
+            <dt>Total</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-6 text-sm text-text-muted">Nothing is charged now.</p>
-        <p className="mt-2 text-sm">
+        <p className="mt-5 text-[0.8125rem] leading-relaxed text-text-muted">
+          {fulfilment === "pickup" ? "No payment is taken on this website." : "Excludes the delivery charge, which we confirm with you before you pay. No payment is taken on this website."}
+        </p>
+        <p className="mt-4 text-sm">
           <Link href="/cart" className="underline">
-            Change your order
+            Edit cart
           </Link>
         </p>
       </aside>
