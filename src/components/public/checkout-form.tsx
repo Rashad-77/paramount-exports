@@ -163,34 +163,40 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
 
       <aside aria-labelledby="checkout-summary" className="border border-border bg-surface p-6 lg:sticky lg:top-28">
         <h2 id="checkout-summary" className="font-display text-[1.5rem] leading-tight text-brand">
-          Your order
+          Order summary
         </h2>
-        <ul className="mt-4 divide-y divide-border text-sm">
+        <ul className="mt-5 divide-y divide-border text-sm">
           {items.map((i) => (
-            <li key={i.variantId} className="flex justify-between gap-3 py-3 first:pt-0">
-              <span>
-                <span className="font-medium">{i.productName}</span>
-                {i.variantLabel ? <span className="text-text-muted"> · {i.variantLabel}</span> : null}
-                <span className="block text-text-muted">Quantity {i.quantity}</span>
+            <li key={i.variantId} className="flex justify-between gap-4 py-3.5 first:pt-0">
+              <span className="min-w-0">
+                <span className="block font-medium">{i.productName}</span>
+                {i.variantLabel ? <span className="block text-text-muted">{i.variantLabel}</span> : null}
+                <span className="mt-0.5 block text-text-muted">
+                  Qty {i.quantity} × {formatMoney(i.price, currency)}
+                </span>
               </span>
-              <span className="shrink-0 font-medium">{formatMoney(dec(i.price).times(i.quantity), currency)}</span>
+              <span className="shrink-0 font-medium tabular-nums">{formatMoney(dec(i.price).times(i.quantity), currency)}</span>
             </li>
           ))}
         </ul>
-        <dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-text-muted">Delivery</dt>
-            <dd>{fulfilment === "pickup" ? "None" : "Agreed with you"}</dd>
+        <dl className="mt-1 space-y-2.5 border-t border-border pt-4 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-text-muted">Subtotal</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
-          <div className="flex justify-between text-base font-semibold">
-            <dt>Total so far</dt>
-            <dd>{formatMoney(subtotal, currency)}</dd>
+          <div className="flex justify-between gap-4">
+            <dt className="text-text-muted">Delivery</dt>
+            <dd>{fulfilment === "pickup" ? "Collection, no charge" : "Confirmed after your order"}</dd>
+          </div>
+          <div className="flex justify-between gap-4 border-t border-border pt-3.5 text-base font-semibold">
+            <dt>{fulfilment === "pickup" ? "Total" : "Total (excl. delivery)"}</dt>
+            <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-sm text-text-muted">Nothing is charged now.</p>
+        <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-muted">Pay on delivery, by bank transfer or at the showroom. No payment is taken online.</p>
         <p className="mt-3 text-sm">
           <Link href="/cart" className="underline">
-            Change your order
+            Edit cart
           </Link>
         </p>
       </aside>

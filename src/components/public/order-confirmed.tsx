@@ -63,7 +63,7 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
 
       {snap && snap.items.length > 0 ? (
         <div className="mt-8 border border-border bg-surface p-5 text-left">
-          <h2 className="font-display text-[1.25rem] leading-tight text-brand">Your order</h2>
+          <h2 className="font-display text-[1.25rem] leading-tight text-brand">Order summary</h2>
           <ul className="mt-3 divide-y divide-border text-sm">
             {snap.items.map((i, n) => (
               <li key={n} className="flex justify-between gap-3 py-2.5">
@@ -76,10 +76,10 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
             ))}
           </ul>
           <p className="mt-3 flex justify-between border-t border-border pt-3 font-semibold">
-            <span>Total so far</span>
-            <span>{formatMoney(snap.subtotal, snap.currency)}</span>
+            <span>Total (excl. delivery)</span>
+            <span className="tabular-nums">{formatMoney(snap.subtotal, snap.currency)}</span>
           </p>
-          <p className="mt-1 text-xs text-text-muted">The delivery charge, if any, is added when we confirm.</p>
+          <p className="mt-1 text-xs text-text-muted">Any delivery charge is confirmed with you and added when we confirm the order.</p>
         </div>
       ) : null}
 

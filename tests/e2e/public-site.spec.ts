@@ -316,8 +316,8 @@ test.describe("ordering (no online payment)", () => {
     await page.getByRole("link", { name: /view your cart/i }).click();
     await expect(page).toHaveURL(/\/cart$/);
     await expect(page.getByText("Sample Priced Stool").first()).toBeVisible();
-    await page.getByRole("link", { name: /continue to checkout/i }).click();
-    await expect(page.getByText(/nothing is charged/i).first()).toBeVisible();
+    await page.getByRole("link", { name: /proceed to checkout/i }).click();
+    await expect(page.getByText(/no payment is taken online|nothing is charged/i).first()).toBeVisible();
     // there is no card or payment form anywhere
     await expect(page.locator('input[autocomplete^="cc-"], iframe[src*="stripe"], iframe[src*="paypal"]')).toHaveCount(0);
 

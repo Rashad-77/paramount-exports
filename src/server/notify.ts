@@ -97,7 +97,7 @@ export function notifyNewOrder(orderId: string): void {
         ``,
         ...lines,
         ``,
-        `Total so far: ${formatMoney(o.total, o.currency)} (delivery charge to be agreed)`,
+        `Total (excl. delivery): ${formatMoney(o.total, o.currency)}. The delivery charge is still to be agreed.`,
         o.customerNote ? `\nNote from the customer: ${o.customerNote}` : null,
         ``,
         `Please call the customer to confirm. Open the order: ${staffLink(`/app/orders/${o.id}`)}`,
