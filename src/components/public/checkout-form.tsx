@@ -111,7 +111,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
           <legend className="font-display text-[1.5rem] leading-tight text-brand">Your details</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
-            <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="We call or message you on this number to confirm." />
+            <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="We confirm your order by phone." />
             <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} className="sm:col-span-2" />
           </div>
         </fieldset>
