@@ -1,4 +1,4 @@
-import { OrderTag, PaidTag } from "@/components/app/tags";
+import { OrderTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ListSearch } from "@/components/app/list-search";
 import { FilterTabs } from "@/components/app/filter-tabs";
@@ -16,13 +16,9 @@ import {
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatAmount } from "@/lib/money";
-import {
-  FULFILMENT_LABEL,
-  PAYMENT_LABEL,
-  type OrderStatus,
-} from "@/lib/schemas/orders";
+import { type OrderStatus } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDate, formatDateTime } from "@/lib/time";
+import { formatDateTime } from "@/lib/time";
 import { countOrdersByStatus, listOrders } from "@/server/orders";
 
 export const metadata = { title: "Orders" };
@@ -130,11 +126,7 @@ export default async function OrdersPage({
                   <TH>Customer</TH>
                   <TH className="hidden md:table-cell">Order content</TH>
                   <TH className="text-right">Qty</TH>
-                  <TH className="hidden md:table-cell">Status</TH>
-                  <TH className="hidden lg:table-cell">Payment</TH>
-                  <TH className="hidden lg:table-cell">
-                    Delivery or collection
-                  </TH>
+
                   <TH className="text-right">Total ({business.currency})</TH>
                   <TH className="hidden xl:table-cell">Placed</TH>
                 </tr>
@@ -156,7 +148,7 @@ export default async function OrdersPage({
                     <TD>
                       <div className="font-medium">{r.customerName}</div>
                       <div className="text-text-muted">{r.phone}</div>
-                      <div className="mt-1 md:hidden">
+                      <div className="mt-1">
                         <OrderTag status={r.status} />
                       </div>
                     </TD>
@@ -170,29 +162,7 @@ export default async function OrdersPage({
                       )}
                     </TD>
                     <TD numeric>{r.itemCount}</TD>
-                    <TD className="hidden md:table-cell">
-                      <OrderTag status={r.status} />
-                    </TD>
-                    <TD className="hidden lg:table-cell">
-                      {r.status === "cancelled" ? (
-                        <span className="text-text-muted">—</span>
-                      ) : r.isPaid ? (
-                        <PaidTag paid />
-                      ) : (
-                        <PaidTag paid={false} />
-                      )}
-                      <div className="mt-1 text-text-muted">
-                        {PAYMENT_LABEL[r.paymentMethod]}
-                      </div>
-                    </TD>
-                    <TD className="hidden lg:table-cell">
-                      <div>{FULFILMENT_LABEL[r.fulfilment]}</div>
-                      {r.scheduledFor ? (
-                        <div className="text-text-muted">
-                          {formatDate(r.scheduledFor, "UTC")}
-                        </div>
-                      ) : null}
-                    </TD>
+
                     <TD numeric>{formatAmount(r.total)}</TD>
                     <TD className="hidden whitespace-nowrap xl:table-cell">
                       {formatDateTime(r.createdAt, business.timezone)}
