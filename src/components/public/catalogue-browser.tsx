@@ -46,12 +46,15 @@ export function CatalogueBrowser({
   initial,
   initialResult,
   currency,
+  wishlist = false,
 }: {
   categories: CascadeGroup[];
   materials: string[];
   initial: CatalogueFilters;
   initialResult: CatalogueResult;
   currency: string;
+  /** Show the save-to-wishlist heart on each card (accounts are on). */
+  wishlist?: boolean;
 }) {
   const [f, setF] = useState<CatalogueFilters>(initial);
   /** The text in the search box right now; `f.q` follows it after a short pause. */
@@ -190,7 +193,7 @@ export function CatalogueBrowser({
             <ul className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
               {result.items.map((p, i) => (
                 <li key={p.id}>
-                  <ProductCard product={p} currency={currency} priority={i < 4} />
+                  <ProductCard product={p} currency={currency} priority={i < 4} wishlist={wishlist} />
                 </li>
               ))}
             </ul>

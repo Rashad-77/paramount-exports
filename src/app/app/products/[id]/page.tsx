@@ -60,10 +60,11 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
                   <ActionForm action={updateVariantAction} className="space-y-3">
                     <input type="hidden" name="variantId" value={v.id} />
                     <input type="hidden" name="productId" value={product.id} />
-                    <div className="grid gap-4 md:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-5">
                       <FField name="label" label="Option name" defaultValue={v.label} required />
                       <FField name="sku" label="SKU" defaultValue={v.sku} required />
-                      <FField name="listPrice" label={`Price (${business.currency})`} inputMode="decimal" defaultValue={v.listPrice ?? ""} />
+                      <FField name="listPrice" label={`Price now (${business.currency})`} inputMode="decimal" defaultValue={v.listPrice ?? ""} />
+                      <FField name="comparePrice" label="Original price" inputMode="decimal" defaultValue={v.comparePrice ?? ""} hint="For a sale: the higher price it was." />
                       <div className="flex items-end"><FCheckbox name="isActive" label="Active" defaultChecked={v.isActive} /></div>
                     </div>
                     <SubmitButton>Save option</SubmitButton>
@@ -79,10 +80,11 @@ export default async function ProductAdminPage({ params }: { params: Promise<{ i
             <ActionForm action={addVariantAction} className="mt-6 border-t border-border pt-6">
               <h3 className="text-sm font-semibold">Add an option</h3>
               <input type="hidden" name="productId" value={product.id} />
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-5">
                 <FField name="label" label="Option name" required placeholder="e.g. 200 cm, dark finish" />
                 <FField name="sku" label="SKU" required />
-                <FField name="listPrice" label={`Price (${business.currency})`} inputMode="decimal" />
+                <FField name="listPrice" label={`Price now (${business.currency})`} inputMode="decimal" />
+                <FField name="comparePrice" label="Original price" inputMode="decimal" hint="For a sale: the higher price it was." />
                 <div className="flex items-end"><FCheckbox name="isActive" label="Active" defaultChecked /></div>
               </div>
               <SubmitButton>Add option</SubmitButton>

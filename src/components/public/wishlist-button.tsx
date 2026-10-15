@@ -11,15 +11,25 @@ import { useAccount } from "./use-account";
  * Save a product to the wishlist. On a product page ("heart") a visitor is taken to sign in, and a signed-in customer saves or
  * un-saves with one press. On the wishlist page ("remove") the same press takes the product off the list.
  */
-export function WishlistButton({ productId, slug, enabled = true, initiallySaved = false, variant = "heart" }: { productId: string; slug?: string; enabled?: boolean; initiallySaved?: boolean; variant?: "heart" | "remove" }) {
-  const me = useAccount(variant === "heart" ? enabled : false);
+export function WishlistButton({ productId, slug, enabled = true, initiallySaved = false, variant = "heart", size = "card" }: { productId: string; slug?: string; enabled?: boolean; initiallySaved?: boolean; variant?: "heart" | "remove" | "icon"; size?: "card" | "photo" }) {
+  const me = useAccount(variant !== "remove" ? enabled : false);
   const [answer, setAnswer] = useState<boolean | null>(null);
   const saved = answer ?? (me ? me.wishlist.includes(productId) : initiallySaved);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const router = useRouter();
 
-  if (variant === "heart" && !enabled) return null;
+  if (variant !== "remove" && !enabled) return null;
+  const round = variant === "icon";
+  const roundClass = "wish" + (size === "photo" ? " wish-photo" : "");
+
+  if (round && me === null) {
+    return (
+      <Link href={`/account/sign-in?next=${encodeURIComponent(`/products/${slug ?? ""}`)}`} className={roundClass} aria-label="Sign in to save this product to your wishlist">
+        <Heart aria-hidden="true" strokeWidth={1.4} />
+      </Link>
+    );
+  }
 
   if (variant === "heart" && me === null) {
     return (
@@ -41,6 +51,14 @@ export function WishlistButton({ productId, slug, enabled = true, initiallySaved
       setAnswer(r.saved);
       if (variant === "remove") router.refresh();
     });
+
+  if (round) {
+    return (
+      <button type="button" className={roundClass} aria-pressed={saved} aria-label={saved ? "Remove from your wishlist" : "Save to your wishlist"} disabled={pending || me === undefined} onClick={press}>
+        <Heart aria-hidden="true" strokeWidth={1.4} />
+      </button>
+    );
+  }
 
   return (
     <div>

@@ -14,6 +14,8 @@ export interface BuyOption {
   sku: string;
   /** Only options with a public price can be ordered. */
   price: string | null;
+  /** The price before a sale, when there is one. */
+  compare?: string | null;
 }
 
 /** Choose an option and a quantity, then add it to the order basket. Nothing is charged: payment happens offline. */
@@ -63,7 +65,10 @@ export function AddToCart({ productName, productSlug, image, options, currency }
         </fieldset>
       ) : null}
 
-      <p className="mt-5 text-2xl font-semibold text-brand">{option ? formatMoney(option.price!, currency) : null}</p>
+      <p className="mt-5 text-2xl font-semibold text-brand">
+        {option?.compare ? <del className="price-was">{formatMoney(option.compare, currency)}</del> : null}
+        {option ? option.compare ? <ins className="price-now">{formatMoney(option.price!, currency)}</ins> : formatMoney(option.price!, currency) : null}
+      </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-4">
         <div className="inline-flex items-center border border-border-strong" role="group" aria-label="Quantity">

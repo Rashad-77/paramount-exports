@@ -73,11 +73,17 @@ export const productVariants = pgTable(
     sku: text("sku").notNull().unique(),
     label: text("label").notNull().default("Standard"),
     listPrice: numeric("list_price", { precision: 14, scale: 2 }),
+    /** The price before a sale. When it is higher than the price above, the option is shown as on sale. */
+    comparePrice: numeric("compare_price", { precision: 14, scale: 2 }),
     isActive: boolean("is_active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
   },
-  (t) => [index("product_variants_product_idx").on(t.productId), check("product_variants_price_nonneg", sql`${t.listPrice} IS NULL OR ${t.listPrice} >= 0`)],
+  (t) => [
+    index("product_variants_product_idx").on(t.productId),
+    check("product_variants_price_nonneg", sql`${t.listPrice} IS NULL OR ${t.listPrice} >= 0`),
+    check("product_variants_compare_price_higher", sql`${t.comparePrice} IS NULL OR (${t.listPrice} IS NOT NULL AND ${t.comparePrice} > ${t.listPrice})`),
+  ],
 );
 
 export const productImages = pgTable(

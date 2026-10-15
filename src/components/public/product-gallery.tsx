@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { SiteImage } from "./site-image";
 import { ImagePlaceholder } from "./image-placeholder";
 import { cn } from "@/lib/cn";
 
-export function ProductGallery({ images, name }: { images: Array<{ id: string; url: string; alt: string }>; name: string }) {
+export function ProductGallery({ images, name, heart, saleLabel }: { images: Array<{ id: string; url: string; alt: string }>; name: string; heart?: ReactNode; saleLabel?: string }) {
   const [active, setActive] = useState(0);
-  if (images.length === 0) return <ImagePlaceholder label={`${name} — product photographs to be added`} className="aspect-[4/5] w-full" />;
+  if (images.length === 0)
+    return (
+      <div>
+        {saleLabel ? <p className="sale-tag">{saleLabel}</p> : null}
+        <div className="relative">
+          <ImagePlaceholder label={`${name} — product photographs to be added`} className="aspect-[4/5] w-full" />
+          {heart}
+        </div>
+      </div>
+    );
   const current = images[active]!;
   return (
     <div>
+      {saleLabel ? <p className="sale-tag">{saleLabel}</p> : null}
       <div className="relative aspect-[4/5] overflow-hidden bg-linen">
         <SiteImage src={current.url} alt={current.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+        {heart}
       </div>
       {images.length > 1 ? (
         <ul className="mt-3 grid grid-cols-5 gap-2" aria-label="Product photographs">

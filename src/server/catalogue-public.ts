@@ -31,6 +31,8 @@ export interface PublicCard {
   imageUrl: string | null;
   imageAlt: string | null;
   fromPrice: string | null;
+  /** The price before the sale, when the lowest-priced option is on sale. */
+  fromCompare: string | null;
   availability: string | null;
 }
 
@@ -53,13 +55,15 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     firstImages(ids),
     ids.length
       ? getDb()
-          .select({ productId: productVariants.productId, min: sql<string | null>`min(${productVariants.listPrice})` })
+          .select({ productId: productVariants.productId, price: productVariants.listPrice, compare: productVariants.comparePrice })
           .from(productVariants)
-          .where(and(inArray(productVariants.productId, ids), eq(productVariants.isActive, true)))
-          .groupBy(productVariants.productId)
+          .where(and(inArray(productVariants.productId, ids), eq(productVariants.isActive, true), sql`${productVariants.listPrice} IS NOT NULL`))
+          .orderBy(asc(productVariants.listPrice))
       : Promise.resolve([]),
   ]);
-  const priceBy = new Map(prices.map((p) => [p.productId, p.min]));
+  // The cheapest option is what a card shows; rows arrive cheapest first.
+  const priceBy = new Map<string, { price: string; compare: string | null }>();
+  for (const p of prices) if (!priceBy.has(p.productId) && p.price) priceBy.set(p.productId, { price: p.price, compare: p.compare });
   return rows.map((r) => ({
     id: r.id,
     slug: r.slug,
@@ -70,7 +74,8 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     dimensions: r.dimensions,
     imageUrl: images.get(r.id)?.url ?? null,
     imageAlt: images.get(r.id)?.alt ?? null,
-    fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!) : null,
+    fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!.price) : null,
+    fromCompare: r.showPrice && priceBy.get(r.id)?.compare ? moneyString(priceBy.get(r.id)!.compare!) : null,
     availability: r.showAvailability && r.availability ? AVAILABILITY_LABEL[r.availability] : null,
   }));
 }
@@ -247,7 +252,7 @@ async function getPublicProductImpl(slugValue: string) {
     seoDescription: p.seoDescription,
     availability: p.showAvailability && p.availability ? AVAILABILITY_LABEL[p.availability] : null,
     images: images.map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
-    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null })),
+    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, compare: p.showPrice && v.listPrice && v.comparePrice ? moneyString(v.comparePrice) : null })),
     updatedAt: p.updatedAt,
   };
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { CatalogueBrowser } from "@/components/public/catalogue-browser";
 import { PageIntro } from "@/components/public/prose";
-import { getBusinessSettings } from "@/lib/settings";
+import { customerAuthMode } from "@/lib/auth/customer";
+import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { parseSort } from "@/lib/catalogue-sort";
 import { toGroups } from "@/lib/category-tree";
 import { listPublicCategories, listPublicMaterials, listPublicProducts } from "@/server/catalogue-public";
@@ -47,6 +48,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       />
       <div className="bg-white pt-10 pb-16">
         <CatalogueBrowser
+          wishlist={(await getAccountSettings()).enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}
           materials={woods}
           initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}

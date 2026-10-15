@@ -9,6 +9,7 @@ import { ProductGallery } from "@/components/public/product-gallery";
 import { StatusBadge } from "@/components/ui/status";
 import { publicEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
+import { percentOff } from "@/lib/sale";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct } from "@/server/catalogue-public";
 
@@ -49,6 +50,12 @@ export default async function ProductPage({ params }: Props) {
     ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0] } } : {}),
   };
 
+  // A sale: the best discount among the options that are on sale.
+  const bestOff = p.variants.reduce<number | null>((best, v) => {
+    const off = percentOff(v.price, v.compare);
+    return off && (!best || off > best) ? off : best;
+  }, null);
+
   const details: Array<[string, string]> = [
     ["Wood / material", p.material ?? ""],
     ["Finish", p.finish ?? ""],
@@ -57,6 +64,8 @@ export default async function ProductPage({ params }: Props) {
   ];
 
   return (
+    <>
+      {bestOff ? <p className="sale-bar">Sale · save up to {bestOff}%</p> : null}
     <div className="container-page py-8 md:py-14">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <nav aria-label="Breadcrumb" className="mb-6 text-sm text-text-muted">
@@ -77,7 +86,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-10">
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <ProductGallery images={p.images} name={p.name} />
+          <ProductGallery images={p.images} name={p.name} saleLabel={bestOff ? `Sale · ${bestOff}% off` : undefined} heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined} />
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{p.categoryName}</p>
@@ -106,7 +115,13 @@ export default async function ProductPage({ params }: Props) {
                     <li key={v.id}>
                       {p.variants.length > 1 ? `${v.label} · ` : ""}
                       <span className="tabular">{v.sku}</span>
-                      {v.price ? ` · ${formatMoney(v.price, business.currency)}` : ""}
+                      {v.price ? (
+                        <>
+                          {" · "}
+                          {v.compare ? <del className="price-was">{formatMoney(v.compare, business.currency)}</del> : null}
+                          {v.compare ? <ins className="price-now">{formatMoney(v.price, business.currency)}</ins> : formatMoney(v.price, business.currency)}
+                        </>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -119,14 +134,8 @@ export default async function ProductPage({ params }: Props) {
             productSlug={p.slug}
             image={p.images[0]?.url ?? null}
             currency={business.currency}
-            options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price }))}
+            options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare }))}
           />
-
-          {accountsOn ? (
-            <div className="mt-4">
-              <WishlistButton productId={p.id} slug={p.slug} />
-            </div>
-          ) : null}
 
           <section id="enquire" aria-labelledby="enquire-title" className="mt-7 scroll-mt-6 border border-border bg-surface p-6">
             <h2 id="enquire-title" className="font-display text-[1.5rem] leading-tight text-walnut">
@@ -144,5 +153,6 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }

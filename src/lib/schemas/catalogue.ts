@@ -66,11 +66,17 @@ export type ProductInput = z.output<typeof productSchema>;
 export const productUpdateSchema = productBase.omit({ sku: true, listPrice: true }).superRefine(availabilityRule);
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
-export const variantSchema = z.object({
-  sku: z.string({ error: "SKU is required." }).trim().min(1, "SKU is required.").max(60).regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dots, hyphens and underscores only."),
-  label: reqText("Option name", 80),
-  listPrice: optMoney("Price"),
-  isActive: checkbox,
+export const variantSchema = z
+  .object({
+    sku: z.string({ error: "SKU is required." }).trim().min(1, "SKU is required.").max(60).regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dots, hyphens and underscores only."),
+    label: reqText("Option name", 80),
+    listPrice: optMoney("Price"),
+    comparePrice: optMoney("Original price"),
+    isActive: checkbox,
+  })
+  .superRefine((v, ctx) => {
+  if (v.comparePrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter the sale price too, or clear the original price." });
+  else if (v.comparePrice && v.listPrice && Number(v.comparePrice) <= Number(v.listPrice)) ctx.addIssue({ code: "custom", path: ["comparePrice"], message: "The original price must be higher than the price now." });
 });
 export type VariantInput = z.output<typeof variantSchema>;
 

@@ -2540,3 +2540,153 @@ a.acct-row {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* ── Wishlist heart, sale strip and sale prices ───────────────────────────────────────────────────────────────────────
+   The heart is a small white circle on the corner of a card or photo: soft pink to start, strong pink once saved.
+   A sale shows as a yellow strip flush across the bottom of the photo, the old price struck through and faded,
+   and the new price in red. On a product page there is also a full-width yellow bar under the header. */
+.wish {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  cursor: pointer;
+  appearance: none;
+  transform: none;
+  transition: box-shadow 200ms var(--ease-out);
+}
+.wish svg {
+  width: 15px;
+  height: 15px;
+  fill: #ffc4d9;
+  stroke: #1c1916;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.wish[aria-pressed="true"] svg {
+  fill: #ff2d8f;
+}
+.wish:focus-visible {
+  outline: 2px solid #1c1916;
+  outline-offset: 2px;
+}
+/* A bigger tap area than the circle itself */
+.wish::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+@media (hover: hover) {
+  .wish:hover {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.28);
+  }
+}
+.wish:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+/* On the main photograph of a product page */
+.wish-photo {
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  width: 40px;
+  height: 40px;
+}
+.wish-photo svg {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 47.99rem) {
+  .wish-photo {
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+  }
+  .wish-photo svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+/* The sale strip across the bottom of a card's photograph */
+.sale-badge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  height: 28px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  background: #ffd400;
+  color: #1c1916;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+@media (max-width: 47.99rem) {
+  .sale-badge {
+    height: 2.1em;
+    padding: 0 0.7em;
+    font-size: clamp(9.5px, calc(6.5px + 0.8vw), 12.5px);
+    letter-spacing: 0.06em;
+  }
+}
+/* A product page: the full-width bar under the header, and the strip above the photograph */
+.sale-bar {
+  box-sizing: border-box;
+  width: 100%;
+  margin: calc(var(--head-h) + 1px) 0 0; /* sits directly under the fixed header */
+  padding: 0.8rem 1rem;
+  background: #ffd400;
+  color: #1c1916;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.sale-tag {
+  box-sizing: border-box;
+  margin: 0 0 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 3px;
+  background: #ffd400;
+  color: #1c1916;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+/* Prices: the old one struck through and faded, the new one in red */
+.price-was {
+  margin-right: 0.45em;
+  font-weight: 400;
+  opacity: 0.55;
+}
+.price-now {
+  background: none;
+  color: #d32f2f;
+  text-decoration: none;
+}
