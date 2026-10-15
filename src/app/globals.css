@@ -628,12 +628,10 @@ body:has(.app-ui) {
 }
 
 /* Tabs and tables scroll sideways when they must, without a visible scrollbar. */
-.app-tabs,
-.app-ui [role="region"][tabindex="0"] {
+.app-tabs {
   scrollbar-width: none;
 }
-.app-tabs::-webkit-scrollbar,
-.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar {
+.app-tabs::-webkit-scrollbar {
   display: none;
 }
 
@@ -737,4 +735,21 @@ html:has(.app-ui) {
 .app-ui [role="region"][tabindex="0"] td[class*="max-w-"] {
   white-space: normal;
   min-width: 12rem;
+}
+
+/* A slim sideways scrollbar under a table that is wider than the screen, so it is clear the table can be scrolled. */
+.app-ui [role="region"][tabindex="0"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #fff;
+}
+.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar {
+  height: 6px;
+}
+.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+}
+.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar-track {
+  background: #fff;
 }
