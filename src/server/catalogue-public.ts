@@ -1,3 +1,4 @@
+import { outer } from "@/lib/db/outer";
 import "server-only";
 import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
@@ -105,7 +106,7 @@ async function duringBuildSafe<T>(label: string, fallback: T, read: () => Promis
 }
 
 /** The lowest price a visitor can see for a piece: nothing when the price is not shown, so those pieces sort last either way. */
-const shownPrice = sql`(CASE WHEN ${products.showPrice} THEN (SELECT min(${productVariants.listPrice}) FROM ${productVariants} WHERE ${productVariants.productId} = ${products.id} AND ${productVariants.isActive}) END)`;
+const shownPrice = sql`(CASE WHEN ${products.showPrice} THEN (SELECT min(${productVariants.listPrice}) FROM ${productVariants} WHERE ${productVariants.productId} = ${outer(products.id)} AND ${productVariants.isActive}) END)`;
 
 function orderFor(sort: CatalogueSort | undefined): SQL[] {
   if (sort === "name") return [asc(products.name)];

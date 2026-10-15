@@ -775,3 +775,9 @@ html:has(.app-ui) {
 .app-ui [role="region"][tabindex="0"] td .whitespace-pre-line {
   min-width: 0;
 }
+
+/* A thin line between the groups of the menu */
+.app-nav-group + .app-nav-group {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}

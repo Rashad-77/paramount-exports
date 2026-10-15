@@ -9,9 +9,9 @@ export function AppNav({ groups, previewPath }: { groups: VisibleGroup[]; previe
   const livePath = usePathname();
   const pathname = previewPath ?? livePath;
   return (
-    <nav aria-label="Main" className="space-y-4">
+    <nav aria-label="Main" className="space-y-3">
       {groups.map((g) => (
-        <div key={g.label}>
+        <div key={g.label} className="app-nav-group">
           <p className="px-3 text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-text-muted">{g.label}</p>
           <ul className="mt-1 space-y-px">
             {g.modules.map((m) => {

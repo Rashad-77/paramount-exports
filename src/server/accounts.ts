@@ -1,3 +1,4 @@
+import { outer } from "@/lib/db/outer";
 import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
@@ -38,7 +39,7 @@ export async function listAccountOrders(accountId: string, limit = 50): Promise<
       createdAt: orders.createdAt,
       currency: orders.currency,
       total: orders.total,
-      itemCount: sql<number>`coalesce((select sum(${orderItems.quantity}) from ${orderItems} where ${orderItems.orderId} = ${orders.id}), 0)::int`,
+      itemCount: sql<number>`coalesce((select sum(${orderItems.quantity}) from ${orderItems} where ${orderItems.orderId} = ${outer(orders.id)}), 0)::int`,
     })
     .from(orders)
     .where(eq(orders.accountId, accountId))
