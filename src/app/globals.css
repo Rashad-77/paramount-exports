@@ -555,3 +555,15 @@ a.dash-figure:hover {
 .app-search {
   padding: 0;
 }
+.dash-figure {
+  min-width: 0;
+}
+.dash-value {
+  font-size: clamp(1.2rem, 4.6vw, 1.5rem);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 39.99rem) {
+  .dash-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
