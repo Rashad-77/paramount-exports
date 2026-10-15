@@ -47,7 +47,7 @@ export function FilterTabs({ label, tabs }: { label: string; tabs: FilterTab[] }
       {compact && current ? (
         <div className="app-tabs-select">
           <GlassSelect
-            variant="field"
+            variant="bar"
             label={label}
             value={current.href}
             options={tabs.map((t) => ({ value: t.href, label: t.count !== undefined ? `${t.label} (${t.count})` : t.label }))}

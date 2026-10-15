@@ -653,7 +653,7 @@ body:has(.app-ui) {
   pointer-events: none;
 }
 .app-tabs-select {
-  width: min(100%, 18rem);
+  display: inline-block;
 }
 
 /* Staff area: smaller type and spacing throughout (a 14px base; the public site's larger-screen steps do not apply here). */
@@ -661,37 +661,6 @@ html:has(.app-ui) {
   font-size: 87.5%;
 }
 
-/* The site's own dropdown, in plain white inside the staff area: a square box, and a list of the same width with a thin border. */
-.app-ui .gs-field .gs-button,
-.app-ui .gs-field[data-open] .gs-button {
-  background-color: #fff;
-  background-image: var(--chev);
-  background-repeat: no-repeat;
-  background-position: right 0.85rem center;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  font-size: 0.875rem;
-}
-.app-ui .gs-field[data-open] .gs-button {
-  border-color: #111827;
-}
-.app-ui .gs-panel {
-  background: #fff;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 1px solid #111827;
-  border-top: 0;
-  box-shadow: 0 14px 28px -16px rgb(17 24 39 / 0.35);
-}
-.app-ui .gs-field .gs-opt {
-  font-size: 0.8125rem;
-  color: #374151;
-}
-.app-ui .gs-opt[data-active],
-.app-ui .gs-opt[aria-selected="true"] {
-  background: #f3f4f6;
-  color: #111827;
-}
 
 /* Staff area: smaller form text and boxes, on phones too. */
 .app-ui :is(input, select, textarea),
