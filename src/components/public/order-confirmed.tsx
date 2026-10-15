@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { dropSnapshot, useCart, useLastOrder } from "@/lib/cart";
 import { dec, formatMoney } from "@/lib/money";
+import { orderNumber } from "@/lib/schemas/tracking";
 import { FULFILMENT_LABEL, PAYMENT_LABEL, type Fulfilment, type PaymentMethod } from "@/lib/order-constants";
 
 /** Shown after an order is placed. The basket is emptied here, once the page has loaded. */
@@ -25,7 +26,7 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
       <h1 className="font-display mt-5 text-display text-brand">Thank you. We have your order.</h1>
       {reference ? (
         <p className="mt-3 text-lg">
-          Your order number is <strong className="tabular-nums">{reference}</strong>
+          Your order number is <strong className="tabular-nums">{orderNumber(reference)}</strong>
         </p>
       ) : null}
       <p className="mx-auto mt-4 max-w-lg text-text-muted">

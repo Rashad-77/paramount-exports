@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import type { Fulfilment, OrderStatus, PaymentMethod } from "@/lib/order-constants";
-import { reqPhone } from "@/lib/validation";
 
 /** "ORD-000123", "ord 123" and "123" all mean the same order. Anything else is not an order number. */
 export function normaliseOrderRef(raw: string): string | null {
@@ -9,15 +8,17 @@ export function normaliseOrderRef(raw: string): string | null {
   return m ? `ORD-${m[1]!.padStart(6, "0")}` : null;
 }
 
-/** The public "track my order" form: the order number and the phone number given when ordering. */
+/** How a customer sees an order number: digits only, "ORD-000123" shown as "000123". Staff pages keep the full reference. */
+export const orderNumber = (reference: string) => reference.replace(/^ORD-/i, "");
+
+/** The public "track my order" form: the order number. */
 export const trackSchema = z.object({
   reference: z
     .string({ error: "Enter your order number." })
     .trim()
     .min(1, "Enter your order number.")
-    .refine((v) => normaliseOrderRef(v) !== null, "Enter your order number, like ORD-000123.")
+    .refine((v) => normaliseOrderRef(v) !== null, "Enter your order number, like 000123.")
     .transform((v) => normaliseOrderRef(v)!),
-  phone: reqPhone,
   [HONEYPOT_FIELD]: z.string().optional(),
 });
 export type TrackInput = z.output<typeof trackSchema>;

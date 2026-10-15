@@ -12,6 +12,7 @@ import {
 import { OrderStatusPill } from "@/components/public/account-ui";
 import { SiteImage } from "@/components/public/site-image";
 import { Alert } from "@/components/ui/status";
+import { orderNumber } from "@/lib/schemas/tracking";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { dec, formatMoney } from "@/lib/money";
 import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
@@ -61,8 +62,8 @@ function Result({ timezone }: { timezone: string }) {
   if (!o) {
     return (
       <Alert tone="danger" className="mt-8">
-        We could not find an order with that number and phone number. Please
-        check them and try again, or contact us.
+        We could not find an order with that number. Please check it and try
+        again, or contact us.
       </Alert>
     );
   }
@@ -70,7 +71,7 @@ function Result({ timezone }: { timezone: string }) {
   return <OrderView o={o} timezone={timezone} />;
 }
 
-/** One order as its own customer sees it. Used by the number-and-phone lookup and by the signed-in account pages. */
+/** One order as its own customer sees it. Used by the order-number lookup and by the signed-in account pages. */
 export function OrderView({
   o,
   timezone,
@@ -106,7 +107,7 @@ export function OrderView({
         <div className="ot-head">
           <div>
             <p className="ot-kicker">Order</p>
-            <p className="ot-ref">{o.reference}</p>
+            <p className="ot-ref">{orderNumber(o.reference)}</p>
             <p className="ot-sub">Placed {when(o.placedAt)}</p>
           </div>
           <OrderStatusPill status={o.status} />
@@ -242,7 +243,7 @@ export function OrderView({
   );
 }
 
-/** "Where is my order?" for visitors: the order number and the phone number used when ordering. No account is needed. */
+/** "Where is my order?" for visitors: the order number. No account is needed. */
 export function TrackOrder({
   initialReference,
   timezone,
@@ -268,33 +269,26 @@ export function TrackOrder({
         </label>
       </div>
       <div className="soft-card space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5">
           <FField
             name="reference"
             label="Order number"
-            placeholder="ORD-000123"
+            placeholder="000123"
+            inputMode="numeric"
             defaultValue={initialReference}
             autoComplete="off"
             autoCapitalize="characters"
             spellCheck={false}
             maxLength={30}
             required
-            hint="It is on your confirmation page."
-          />
-          <FField
-            name="phone"
-            label="Phone number"
-            type="tel"
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={40}
-            required
-            hint="The number you gave when you ordered."
+            hint="Your order number can be found on the order confirmation page shown after you place your order."
           />
         </div>
-        <SubmitButton size="cta" pendingLabel="Looking…">
-          Track order
-        </SubmitButton>
+        <div className="flex justify-center">
+          <SubmitButton size="cta" pendingLabel="Looking…">
+            Track order
+          </SubmitButton>
+        </div>
       </div>
       <Result timezone={timezone} />
     </ActionForm>

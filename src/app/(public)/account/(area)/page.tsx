@@ -6,6 +6,7 @@ import { Empty, Feed, OrderStatusPill, QuoteStatusPill, SectionHead } from "@/co
 import { requireCustomer } from "@/lib/auth/customer";
 import { one, type SP } from "@/lib/list-params";
 import { formatMoney } from "@/lib/money";
+import { orderNumber } from "@/lib/schemas/tracking";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { accountDashboard } from "@/server/accounts";
@@ -88,7 +89,7 @@ export default async function AccountDashboardPage({ searchParams }: { searchPar
               <li key={o.reference}>
                 <Link href={`/account/orders/${o.reference}`} className="acct-row">
                   <span>
-                    <strong>{o.reference}</strong>
+                    <strong>{orderNumber(o.reference)}</strong>
                     <small>
                       {formatDate(o.placedAt, business.timezone)} · {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
                     </small>

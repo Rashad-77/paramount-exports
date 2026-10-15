@@ -1,6 +1,5 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
-import { phoneKey } from "@/lib/contact";
 import { getDb } from "@/lib/db/client";
 import { orderItems, orders } from "@/lib/db/schema";
 import { notFound, rateLimited } from "@/lib/errors";
@@ -10,16 +9,15 @@ import type { TrackedOrder, TrackInput } from "@/lib/schemas/tracking";
 
 export const TRACK_LIMITS = {
   perIp: { limit: 15, windowSeconds: 600 },
-  /** Guessing a phone number for one order number is slow: only a few tries an hour per order. */
+  /** Guessing order numbers is slow: only a few tries an hour per order. */
   perOrder: { limit: 8, windowSeconds: 3600 },
 } as const;
 
-/** The same answer for "no such order" and "wrong phone number", so the form cannot be used to find out which orders exist. */
 const NOT_FOUND =
-  "We could not find an order with that number and phone number. Please check them and try again, or contact us.";
+  "We could not find an order with that number. Please check it and try again, or contact us.";
 
 /**
- * A customer looks up their own order with its number and the phone number they gave when ordering (no account needed).
+ * A customer looks up their own order with its number (no account needed).
  * Callers must have passed the honeypot check already.
  */
 export async function trackOrder(
@@ -52,13 +50,12 @@ export async function trackOrder(
     .from(orders)
     .where(eq(orders.reference, input.reference))
     .limit(1);
-  if (!order || order.phoneKey !== phoneKey(input.phone))
-    throw notFound(NOT_FOUND);
+  if (!order) throw notFound(NOT_FOUND);
 
   return toTrackedOrder(order);
 }
 
-/** The small view of an order that its own customer may see. Shared by the number-and-phone lookup and the signed-in account pages. */
+/** The small view of an order that its own customer may see. Shared by the order-number lookup and the signed-in account pages. */
 export async function toTrackedOrder(
   order: typeof orders.$inferSelect,
 ): Promise<TrackedOrder> {

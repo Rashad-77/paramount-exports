@@ -5,6 +5,7 @@ import { Empty, OrderStatusPill, SectionHead } from "@/components/public/account
 import { ButtonLink } from "@/components/ui/button";
 import { requireCustomer } from "@/lib/auth/customer";
 import { formatMoney } from "@/lib/money";
+import { orderNumber } from "@/lib/schemas/tracking";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/time";
 import { listAccountOrders } from "@/server/accounts";
@@ -34,7 +35,7 @@ export default async function AccountOrdersPage() {
               <li key={o.reference}>
                 <Link href={`/account/orders/${o.reference}`} className="acct-row">
                   <span>
-                    <strong>{o.reference}</strong>
+                    <strong>{orderNumber(o.reference)}</strong>
                     <small>
                       Placed {formatDate(o.placedAt, business.timezone)} · {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
                     </small>

@@ -240,7 +240,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
       const { id, reference } = await place({ name: "Kamal Silva", phone: "0771119001", address: "99 Secret Lane, Kandy" }, [[stoolVariant, 2]]);
       const seen = await track(reference.toLowerCase(), "+94 77 111 9001", "198.51.100.10");
       expect(seen).toMatchObject({ reference, status: "new", firstName: "Kamal", fulfilment: "delivery", paymentMethod: "on_delivery", isPaid: false, subtotal: "30001.00", total: "30001.00" });
-      expect(seen.items).toEqual([{ name: "Stool", label: null, quantity: 2, lineTotal: "30001.00" }]);
+      expect(seen.items).toEqual([{ name: "Stool", label: null, quantity: 2, lineTotal: "30001.00", imageUrl: null, imageAlt: "Stool" }]);
       // no address, phone, email or staff notes ever leave the server
       const text = JSON.stringify(seen);
       expect(text).not.toMatch(/Secret Lane|771119001|staffNote|customerNote|email/i);
@@ -255,13 +255,9 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
       expect(JSON.stringify(later)).not.toMatch(/internal remark/);
     });
 
-    it("gives the same answer for a wrong phone number and an unknown order", async () => {
-      const { reference } = await place({ phone: "0771119002" }, [[stoolVariant, 1]]);
-      const wrongPhone = await track(reference, "0771119999", "198.51.100.20").catch((e) => e);
+    it("says so plainly for an unknown order", async () => {
       const unknown = await track("ORD-999999", "0771119002", "198.51.100.21").catch((e) => e);
-      expect(wrongPhone).toMatchObject({ code: "NOT_FOUND" });
       expect(unknown).toMatchObject({ code: "NOT_FOUND" });
-      expect(wrongPhone.message).toBe(unknown.message);
     });
 
     it("understands the order number however it is typed", () => {
