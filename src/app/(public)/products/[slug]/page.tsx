@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/public/add-to-cart";
+import { WishlistButton } from "@/components/public/wishlist-button";
+import { customerAuthMode } from "@/lib/auth/customer";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductGallery } from "@/components/public/product-gallery";
 import { StatusBadge } from "@/components/ui/status";
 import { publicEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
-import { getBusinessSettings } from "@/lib/settings";
+import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct } from "@/server/catalogue-public";
 
 export const revalidate = 300;
@@ -28,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const [p, business] = await Promise.all([getPublicProduct(slug), getBusinessSettings()]);
+  const [p, business, accounts] = await Promise.all([getPublicProduct(slug), getBusinessSettings(), getAccountSettings()]);
+  const accountsOn = accounts.enabled && customerAuthMode() !== "off";
   if (!p) notFound();
 
   const site = publicEnv().NEXT_PUBLIC_SITE_URL;
@@ -118,6 +121,12 @@ export default async function ProductPage({ params }: Props) {
             currency={business.currency}
             options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price }))}
           />
+
+          {accountsOn ? (
+            <div className="mt-4">
+              <WishlistButton productId={p.id} slug={p.slug} />
+            </div>
+          ) : null}
 
           <section id="enquire" aria-labelledby="enquire-title" className="mt-7 scroll-mt-6 border border-border bg-surface p-6">
             <h2 id="enquire-title" className="font-display text-[1.5rem] leading-tight text-walnut">

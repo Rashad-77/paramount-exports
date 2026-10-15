@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { activeCustomer } from "@/lib/auth/customer";
+import { wishlistIds } from "@/server/accounts";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,8 @@ export async function GET() {
   try {
     const c = await activeCustomer();
     if (!c) return NextResponse.json({ customer: null }, { headers });
-    return NextResponse.json({ customer: { name: c.fullName, email: c.email, phone: c.phone, address: c.address } }, { headers });
+    const wishlist = await wishlistIds(c.id).catch(() => [] as string[]);
+    return NextResponse.json({ customer: { name: c.fullName, email: c.email, phone: c.phone, address: c.address, wishlist } }, { headers });
   } catch {
     return NextResponse.json({ customer: null }, { headers });
   }

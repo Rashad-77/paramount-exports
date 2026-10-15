@@ -104,3 +104,17 @@ export const savedCartItemSchema = z.object({
 });
 export const savedCartSchema = z.array(savedCartItemSchema).max(MAX_LINES);
 export type SavedCartItem = z.infer<typeof savedCartItemSchema>;
+
+/** A saved delivery address. */
+export const addressSchema = z.object({
+  id: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.uuid().optional()),
+  label: reqText("Address name", 40),
+  recipient: reqText("Name of the person receiving it", 120),
+  phone: optPhone,
+  address: reqText("Address", 400).refine((v) => v.length >= 8, "Please give the full address, with the town."),
+  isDefault: checkbox,
+});
+
+export const addressIdSchema = z.object({ id: z.uuid({ error: "Choose a valid address." }) });
+
+export const wishlistToggleSchema = z.object({ productId: z.uuid({ error: "Choose a valid product." }) });

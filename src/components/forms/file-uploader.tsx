@@ -104,7 +104,7 @@ export function FileUploader({
   return (
     <div ref={root} className="flex flex-col gap-1.5">
       <label htmlFor={inputId} className="text-sm font-medium">
-        {label} <span className="font-normal text-text-muted">(optional)</span>
+        {label}
       </label>
       <input
         id={inputId}

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, date, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { productVariants, products } from "./catalogue";
 import { customerAccounts } from "./accounts";
 import { profiles } from "./foundation";
@@ -107,11 +107,23 @@ export const messages = pgTable(
     payload: jsonb("payload"),
     /** The signed-in customer who sent it, when there was one. */
     accountId: uuid("account_id").references(() => customerAccounts.id, { onDelete: "set null" }),
+    /** Made-to-measure requests are quotations: requested, then quoted by staff, then accepted or declined by the customer. */
+    quoteStatus: text("quote_status"),
+    quotedAmount: money("quoted_amount"),
+    quoteNote: text("quote_note"),
+    quoteValidUntil: date("quote_valid_until"),
+    quotedAt: timestamp("quoted_at", { withTimezone: true }),
+    respondedAt: timestamp("responded_at", { withTimezone: true }),
+    declineReason: text("decline_reason"),
+    /** The confirmed order made from an accepted quotation. */
+    orderId: uuid("order_id").references((): AnyPgColumn => orders.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("messages_handled_idx").on(t.isHandled, t.createdAt),
     index("messages_account_idx").on(t.accountId, t.createdAt),
     check("messages_kind_known", sql`${t.kind} IN ('general', 'product_enquiry', 'custom')`),
+    check("messages_quote_status_known", sql`${t.quoteStatus} IS NULL OR ${t.quoteStatus} IN ('requested', 'quoted', 'accepted', 'declined', 'cancelled')`),
+    check("messages_quote_amount_nonneg", sql`${t.quotedAmount} IS NULL OR ${t.quotedAmount} >= 0`),
   ],
 );

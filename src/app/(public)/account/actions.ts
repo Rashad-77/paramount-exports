@@ -18,9 +18,10 @@ import { getDb } from "@/lib/db/client";
 import { rateLimited, unauthenticated, validation } from "@/lib/errors";
 import { checkFormToken, HONEYPOT_FIELD } from "@/lib/form-guard";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
-import { claimOrderSchema, deleteAccountSchema, forgotSchema, passwordChangeSchema, profileSchema, resetSchema, savedCartSchema, signInSchema, signUpSchema, type SavedCartItem } from "@/lib/schemas/accounts";
+import { quotationResponseSchema } from "@/lib/schemas/quotations";
+import { addressIdSchema, addressSchema, claimOrderSchema, deleteAccountSchema, forgotSchema, passwordChangeSchema, profileSchema, resetSchema, savedCartSchema, signInSchema, signUpSchema, type SavedCartItem } from "@/lib/schemas/accounts";
 import { getAccountSettings } from "@/lib/settings";
-import { claimOrder, getSavedCart, saveCart, updateProfile } from "@/server/accounts";
+import { claimOrder, deleteAddress, getSavedCart, respondToQuotation, saveAddress, saveCart, setDefaultAddress, toggleWishlist, updateProfile } from "@/server/accounts";
 import { z } from "zod";
 
 /** Only paths inside this website: never a full address (prevents being sent to another site after signing in). */
@@ -207,4 +208,77 @@ export async function saveCartAction(items: unknown): Promise<{ ok: boolean }> {
   if (!parsed.success) return { ok: false };
   await saveCart(customer.id, parsed.data);
   return { ok: true };
+}
+
+/** The customer accepts or declines the price on one of their own quotations. */
+export async function respondQuotationAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(
+    fd,
+    quotationResponseSchema,
+    async (input) => {
+      const customer = await signedIn();
+      await respondToQuotation(customer.id, input.reference, input.decision, input.reason);
+      revalidatePath("/account", "layout");
+      return { message: input.decision === "accept" ? "Thank you. You have accepted the quotation, and we will contact you to confirm your order." : "You have declined the quotation. If you change your mind, just contact us." };
+    },
+    { public: true },
+  );
+}
+
+export async function saveAddressAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(
+    fd,
+    addressSchema,
+    async (input) => {
+      const customer = await signedIn();
+      await saveAddress(customer.id, input);
+      revalidatePath("/account", "layout");
+      return { redirectTo: "/account/addresses?notice=saved" };
+    },
+    { public: true },
+  );
+}
+
+export async function defaultAddressAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(
+    fd,
+    addressIdSchema,
+    async (input) => {
+      const customer = await signedIn();
+      await setDefaultAddress(customer.id, input.id);
+      revalidatePath("/account", "layout");
+      return { message: "That is now your default delivery address." };
+    },
+    { public: true },
+  );
+}
+
+export async function deleteAddressAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(
+    fd,
+    addressIdSchema,
+    async (input) => {
+      const customer = await signedIn();
+      await deleteAddress(customer.id, input.id);
+      revalidatePath("/account", "layout");
+      return { redirectTo: "/account/addresses?notice=deleted" };
+    },
+    { public: true },
+  );
+}
+
+/** Save or remove a product from the wishlist. For the heart button, which needs a plain answer, not a form message. */
+export async function toggleWishlistAction(productId: string): Promise<{ saved: boolean } | { error: string }> {
+  try {
+    const settings = await getAccountSettings();
+    const customer = await activeCustomer();
+    if (!settings.enabled || !customer) return { error: "Please sign in to save products." };
+    if (!/^[0-9a-f-]{36}$/i.test(productId)) return { error: "That product could not be saved." };
+    await throttle("account-wishlist", customer.id, 120, 3600, "You are saving products very quickly. Please wait a moment.");
+    const saved = await toggleWishlist(customer.id, productId);
+    revalidatePath("/account/wishlist");
+    return { saved };
+  } catch (e) {
+    return { error: e instanceof Error && e.message ? e.message : "That could not be saved. Please try again." };
+  }
 }

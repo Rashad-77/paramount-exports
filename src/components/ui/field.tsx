@@ -18,7 +18,7 @@ interface FieldShellProps {
   hint?: string;
   error?: string;
   required?: boolean;
-  /** Set false for search/filter controls, where "(optional)" is just noise. */
+  /** Kept so existing calls still compile; fields no longer say "(optional)". A required field is marked with an asterisk. */
   showOptional?: boolean;
   className?: string;
 }
@@ -37,7 +37,6 @@ function Shell({
   hint,
   error,
   required,
-  showOptional = true,
   className,
   children,
 }: FieldShellProps & { id: string; hintId: string; errorId: string; children: ReactNode }) {
@@ -50,8 +49,6 @@ function Shell({
             {" "}
             *
           </span>
-        ) : showOptional ? (
-          <span className="font-normal text-text-muted"> (optional)</span>
         ) : null}
       </label>
       {children}

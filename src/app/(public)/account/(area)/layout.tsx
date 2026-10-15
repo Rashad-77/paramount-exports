@@ -14,10 +14,12 @@ export default async function AccountAreaLayout({ children }: { children: ReactN
   const first = customer.fullName.trim().split(/\s+/)[0] ?? "";
   return (
     <>
-      <PageIntro plain eyebrow="Your account" title={first ? `Hello, ${first}` : "Your account"} lead="Your orders, your quotation requests and your saved details, in one place." />
+      <PageIntro plain eyebrow="Your account" title={first ? `Hello, ${first}` : "Your account"} lead="Your quotations, your orders and your saved details, in one place." />
       <div className="container-page py-[var(--section-space)]">
-        <AccountNav />
-        <div className="pt-10">{children}</div>
+        <div className="acct-shell">
+          <AccountNav />
+          <div className="acct-main">{children}</div>
+        </div>
       </div>
     </>
   );

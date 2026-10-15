@@ -212,12 +212,13 @@ test.describe("customer accounts", () => {
     await expect(page).toHaveURL(/\/account$/);
     const ref = await orderStool(page, { name: "To Be Deleted", phone: phone() });
 
-    await page.goto("/account/settings");
-    await page.getByLabel(/^Your name/).fill("Renamed Customer");
-    await page.getByRole("button", { name: /save my details/i }).click();
+    await page.goto("/account/profile");
+    await page.getByLabel(/^Full name/).fill("Renamed Customer");
+    await page.getByRole("button", { name: /save changes/i }).click();
     await expect(page.getByText(/your details are saved/i)).toBeVisible();
     await expect.poll(async () => (await sql`SELECT full_name FROM customer_accounts WHERE email_lower = ${email.toLowerCase()}`)[0]?.full_name).toBe("Renamed Customer");
 
+    await page.goto("/account/security");
     await page.getByLabel(/^Current password/).fill("wrong password!");
     await page.getByLabel(/^New password/).fill("another long password");
     await page.getByLabel(/^Type it again/).fill("another long password");
@@ -280,7 +281,7 @@ test.describe("customer accounts", () => {
     expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);
     await signUp(page);
     await expect(page).toHaveURL(/\/account$/);
-    for (const path of ["/account", "/account/orders", "/account/quotations", "/account/settings"]) {
+    for (const path of ["/account", "/account/quotations", "/account/orders", "/account/wishlist", "/account/profile", "/account/addresses", "/account/security"]) {
       await page.goto(path);
       await expect(page.getByRole("navigation", { name: "Your account" })).toBeVisible();
       expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);

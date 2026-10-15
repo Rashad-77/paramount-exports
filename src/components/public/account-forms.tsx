@@ -1,19 +1,25 @@
 "use client";
 
+import { Heart, LayoutDashboard, LogOut, MapPin, Package, ShieldCheck, User, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   changePasswordAction,
   claimOrderAction,
+  defaultAddressAction,
   deleteAccountAction,
+  deleteAddressAction,
   forgotPasswordAction,
   resetPasswordAction,
+  respondQuotationAction,
+  saveAddressAction,
   signInAction,
   signOutAction,
   signUpAction,
   updateProfileAction,
 } from "@/app/(public)/account/actions";
 import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ConfirmSubmit } from "@/components/forms/confirm-submit";
 import { useFormToken } from "@/components/forms/use-form-token";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { PASSWORD_MAX, PASSWORD_MIN } from "@/lib/schemas/accounts";
@@ -90,19 +96,20 @@ export function ResetForm() {
   );
 }
 
-export function ProfileForm({ fullName, email, phone, address }: { fullName: string; email: string; phone: string | null; address: string | null }) {
+export function ProfileForm({ fullName, email, phone }: { fullName: string; email: string; phone: string | null }) {
   return (
     <ActionForm action={updateProfileAction}>
       <div className="grid gap-5 sm:grid-cols-2">
-        <FField name="fullName" label="Your name" autoComplete="name" maxLength={120} defaultValue={fullName} required />
+        <FField name="fullName" label="Full name" autoComplete="name" maxLength={120} defaultValue={fullName} required />
         <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} defaultValue={phone ?? ""} hint="Offered automatically when you place an order." />
       </div>
-      <div>
-        <p className="text-sm font-medium">Email</p>
-        <p className="mt-1.5 text-sm text-text-muted">{email}</p>
-      </div>
-      <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} autoComplete="street-address" defaultValue={address ?? ""} hint="Offered automatically when you choose delivery." />
-      <SubmitButton>Save my details</SubmitButton>
+      <dl className="acct-details">
+        <div>
+          <dt>Email address</dt>
+          <dd>{email}</dd>
+        </div>
+      </dl>
+      <SubmitButton size="cta">Save changes</SubmitButton>
     </ActionForm>
   );
 }
@@ -144,35 +151,105 @@ export function ClaimOrderForm() {
 }
 
 const TABS = [
-  { href: "/account", label: "Overview" },
-  { href: "/account/orders", label: "Orders" },
-  { href: "/account/quotations", label: "Quotations" },
-  { href: "/account/settings", label: "Settings" },
+  { href: "/account", label: "Dashboard", Icon: LayoutDashboard },
+  { href: "/account/quotations", label: "My Quotations", Icon: FileText },
+  { href: "/account/orders", label: "My Orders", Icon: Package },
+  { href: "/account/wishlist", label: "Wishlist", Icon: Heart },
+  { href: "/account/profile", label: "My Profile", Icon: User },
+  { href: "/account/addresses", label: "My Addresses", Icon: MapPin },
+  { href: "/account/security", label: "Password & Security", Icon: ShieldCheck },
 ];
 
 export function AccountNav() {
   const path = usePathname();
   const current = TABS.filter((t) => (t.href === "/account" ? path === "/account" : path.startsWith(t.href))).at(-1)?.href;
   return (
-    <nav aria-label="Your account" className="flex flex-wrap items-center gap-x-1 gap-y-2 border-b border-border">
-      {TABS.map((t) => (
-        <Link
-          key={t.href}
-          href={t.href}
-          aria-current={t.href === current ? "page" : undefined}
-          className={
-            "-mb-px border-b-2 px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.16em] transition-colors " +
-            (t.href === current ? "border-brand text-brand" : "border-transparent text-text-muted hover:text-text")
-          }
-        >
-          {t.label}
+    <nav aria-label="Your account" className="acct-nav">
+      {TABS.map(({ href, label, Icon }) => (
+        <Link key={href} href={href} aria-current={href === current ? "page" : undefined}>
+          <Icon aria-hidden="true" strokeWidth={1.5} />
+          {label}
         </Link>
       ))}
-      <form action={signOutAction} className="ml-auto">
-        <button type="submit" className="px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-text-muted hover:text-text">
-          Sign out
+      <form action={signOutAction} className="acct-signout">
+        <button type="submit">
+          <LogOut aria-hidden="true" strokeWidth={1.5} />
+          Log out
         </button>
       </form>
     </nav>
+  );
+}
+
+/** Accept or decline the price on a quotation. Declining asks for an optional reason; both are final, so each asks first. */
+export function QuotationResponse({ reference, amount }: { reference: string; amount: string }) {
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <ActionForm action={respondQuotationAction}>
+        <input type="hidden" name="reference" value={reference} />
+        <input type="hidden" name="decision" value="accept" />
+        <p className="acct-lead">Happy with the price? Accept it and we will contact you to confirm your order.</p>
+        <ConfirmSubmit variant="primary" title="Accept this quotation?" description={`You are accepting the price of ${amount}. We will then contact you to confirm your order.`} confirmLabel="Accept quotation" destructive={false}>
+          Accept quotation
+        </ConfirmSubmit>
+      </ActionForm>
+      <ActionForm action={respondQuotationAction}>
+        <input type="hidden" name="reference" value={reference} />
+        <input type="hidden" name="decision" value="decline" />
+        <FTextArea name="reason" label="Why are you declining?" rows={2} maxLength={500} hint="This helps us, but you do not have to say." />
+        <ConfirmSubmit variant="secondary" title="Decline this quotation?" description="This closes the quotation. You can always send us a new request." confirmLabel="Decline quotation" destructive>
+          Decline quotation
+        </ConfirmSubmit>
+      </ActionForm>
+    </div>
+  );
+}
+
+/** Add or edit a saved address. */
+export function AddressForm({ address, cancelHref }: { address?: { id: string; label: string; recipient: string; phone: string | null; address: string; isDefault: boolean }; cancelHref?: string }) {
+  return (
+    <ActionForm key={address?.id ?? "new"} action={saveAddressAction}>
+      {address ? <input type="hidden" name="id" value={address.id} /> : null}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <FField name="label" label="Address name" placeholder="e.g. Home, Office" maxLength={40} defaultValue={address?.label} required />
+        <FField name="recipient" label="Name of the person receiving it" autoComplete="name" maxLength={120} defaultValue={address?.recipient} required />
+      </div>
+      <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} defaultValue={address?.phone ?? ""} hint="So the driver can reach whoever is receiving it." />
+      <FTextArea name="address" label="Full address" rows={4} maxLength={400} autoComplete="street-address" defaultValue={address?.address} hint="House number, street, town and any landmark." required />
+      <FCheckbox name="isDefault" label="Use this as my default delivery address" defaultChecked={address?.isDefault} />
+      <div className="flex flex-wrap items-center gap-4">
+        <SubmitButton size="cta">{address ? "Save changes" : "Save address"}</SubmitButton>
+        {cancelHref ? (
+          <Link href={cancelHref} className="acct-link">
+            Cancel
+          </Link>
+        ) : null}
+      </div>
+    </ActionForm>
+  );
+}
+
+/** Make an address the default, or delete it. */
+export function AddressActions({ id, isDefault, label }: { id: string; isDefault: boolean; label: string }) {
+  return (
+    <div className="acct-actions">
+      <Link href={`/account/addresses?edit=${id}`} className="acct-link">
+        Edit
+      </Link>
+      {isDefault ? null : (
+        <ActionForm action={defaultAddressAction} className="space-y-0">
+          <input type="hidden" name="id" value={id} />
+          <button type="submit" className="acct-link">
+            Make default
+          </button>
+        </ActionForm>
+      )}
+      <ActionForm action={deleteAddressAction} className="space-y-0">
+        <input type="hidden" name="id" value={id} />
+        <ConfirmSubmit variant="ghost" title="Delete this address?" description={`“${label}” will be removed from your account.`} confirmLabel="Delete address" destructive>
+          Delete
+        </ConfirmSubmit>
+      </ActionForm>
+    </div>
   );
 }

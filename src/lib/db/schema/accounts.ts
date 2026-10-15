@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
-import { check, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, index, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { products } from "./catalogue";
 
 /**
  * Customer accounts (optional: guests can still order). `id` equals the sign-in identity's id (Supabase `auth.users.id`).
@@ -33,3 +34,58 @@ export const customerCarts = pgTable("customer_carts", {
   items: jsonb("items").notNull().default(sql`'[]'::jsonb`),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Products a customer has saved to come back to. */
+export const customerWishlist = pgTable(
+  "customer_wishlist",
+  {
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => customerAccounts.id, { onDelete: "cascade" }),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.productId] })],
+);
+
+/** Delivery addresses a customer has saved. At most one is the default (offered first at checkout). */
+export const customerAddresses = pgTable(
+  "customer_addresses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => customerAccounts.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    recipient: text("recipient").notNull(),
+    phone: text("phone"),
+    address: text("address").notNull(),
+    isDefault: boolean("is_default").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("customer_addresses_account_idx").on(t.accountId),
+    uniqueIndex("customer_addresses_one_default").on(t.accountId).where(sql`${t.isDefault}`),
+    check("customer_addresses_not_blank", sql`length(btrim(${t.address})) > 0 AND length(btrim(${t.label})) > 0`),
+  ],
+);
+
+/** Things the customer should hear about: a quotation was priced, an order moved on. Shown on the dashboard. */
+export const customerUpdates = pgTable(
+  "customer_updates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => customerAccounts.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    title: text("title").notNull(),
+    body: text("body"),
+    link: text("link"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("customer_updates_account_idx").on(t.accountId, t.createdAt)],
+);

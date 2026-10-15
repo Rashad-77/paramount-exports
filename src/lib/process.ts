@@ -28,18 +28,11 @@ export const PROCESS: ProcessStep[] = [
     photo: "Boards being measured and cut",
   },
   {
-    title: "Joinery",
-    summary: "Joints cut to fit, then dry-fitted before any glue.",
+    title: "Joinery and assembly",
+    summary: "Joints cut to fit, dry-fitted, then glued and clamped square.",
     details:
-      "The parts are shaped and fitted together with joints cut to fit. The joints are what keep a table steady and a chair square for years. Every piece is dry-fitted before glue goes on, so any adjustment is made while it is still easy.",
-    photo: "A joint being cut and fitted",
-  },
-  {
-    title: "Assembly",
-    summary: "Glued, clamped and checked square, flat and steady.",
-    details:
-      "The piece is glued, clamped and checked until it is square, flat and level. Hardware such as hinges, runners and fixings is fitted at this stage, and the finished frame is stood up and tested for steadiness before it moves on.",
-    photo: "A piece being assembled and clamped",
+      "The parts are shaped and fitted together with joints cut to fit, because the joints are what keep a table steady and a chair square for years. Every piece is dry-fitted before any glue goes on, so adjustments are made while they are still easy. It is then glued and clamped, and checked until it is square, flat and level. Hinges, runners and other fittings are added at this stage, and the finished frame is stood up and tested for steadiness before it moves on.",
+    photo: "A piece being fitted, glued and clamped",
   },
   {
     title: "Sanding",

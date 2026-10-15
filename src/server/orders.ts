@@ -10,6 +10,8 @@ import { hitRateLimit } from "@/lib/rate-limit";
 import { getBusinessSettings } from "@/lib/settings";
 import type { CheckoutInput, OrderStatus } from "@/lib/schemas/orders";
 import { recordAudit } from "./audit";
+import { recordUpdate } from "./account-updates";
+import { emailCustomer } from "./notify";
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -190,8 +192,18 @@ const NEXT: Record<OrderStatus, OrderStatus[]> = {
 
 export const allowedNextStatuses = (status: OrderStatus): OrderStatus[] => NEXT[status];
 
+const STATUS_NOTE: Record<OrderStatus, string> = {
+  new: "has been received",
+  confirmed: "is confirmed",
+  in_progress: "is now being made",
+  delivered: "has been delivered. Thank you for ordering with us",
+  cancelled: "has been cancelled",
+};
+
 export async function setOrderStatus(actor: Actor, id: string, status: OrderStatus, reason?: string): Promise<void> {
   requirePermission(actor, status === "cancelled" ? "orders:cancel" : "orders:update");
+  const business = await getBusinessSettings();
+  let heardBy: { email: string | null; reference: string; name: string } | null = null;
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
@@ -208,7 +220,14 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
       })
       .where(eq(orders.id, id));
     await recordAudit(tx, actor, { action: `order.${status}`, entityType: "order", entityId: id, before: { status: o.status }, after: { status }, reason });
+    // Tell the customer: a note on their dashboard when they have an account, and an email when we have an address.
+    await recordUpdate(tx, o.accountId, { kind: "order", title: `Order ${o.reference} ${STATUS_NOTE[status]}`, body: status === "cancelled" && reason ? reason : undefined, link: `/account/orders/${o.reference}` });
+    heardBy = { email: o.email, reference: o.reference, name: o.customerName };
   });
+  if (heardBy) {
+    const h = heardBy as { email: string | null; reference: string; name: string };
+    emailCustomer(h.email, `Your order ${h.reference} ${STATUS_NOTE[status]} - ${business.name}`, [`Hello ${h.name},`, ``, `Your order ${h.reference} ${STATUS_NOTE[status]}.`, status === "cancelled" && reason ? `Reason: ${reason}` : null, ``, `You can follow it any time on our website with your order number and phone number.`, ``, business.name].filter((l): l is string => l !== null).join("\n"));
+  }
 }
 
 export async function updateOrderDetails(actor: Actor, id: string, input: { deliveryCharge: string; staffNote?: string }): Promise<void> {

@@ -155,9 +155,9 @@ export default async function HomePage() {
                 <Link href={r.href} className="prow group">
                   <ImagePlaceholder label={`${r.name} — photograph`} className="absolute inset-0" compact />
                   <span className="container-page relative flex items-center justify-between gap-4">
-                    <span>
+                    <span className="min-w-0">
                       <span className="font-display block text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">{r.name}</span>
-                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 text-[0.6875rem] font-semibold uppercase leading-snug tracking-[0.16em] text-text/70">{r.lines.length > 0 ? r.lines.map((l) => <span key={l}>{l}</span>) : r.all || r.note}</span>
+                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 text-[0.625rem] font-semibold uppercase leading-snug tracking-[0.1em] text-text/70 sm:text-[0.6875rem] sm:tracking-[0.16em]">{r.lines.length > 0 ? r.lines.map((l) => <span key={l}>{l}</span>) : r.all || r.note}</span>
                     </span>
                     <ArrowRight aria-hidden="true" className="size-5 shrink-0 text-text transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={1.5} />
                   </span>

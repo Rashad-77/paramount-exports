@@ -148,6 +148,13 @@
       "when": 1792252000000,
       "tag": "0020_sample_products_into_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792338400000,
+      "tag": "0021_customer_account_features",
+      "breakpoints": true
     }
   ]
 }

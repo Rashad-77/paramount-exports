@@ -2,12 +2,16 @@ import "server-only";
 import { and, count, desc, eq, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
-import { getDb, withTx } from "@/lib/db/client";
-import { messages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
-import { notFound, rateLimited, validation } from "@/lib/errors";
+import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
+import { customerAccounts, messages, orderItems, orders, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
+import { formatMoney, moneyString } from "@/lib/money";
+import { getBusinessSettings } from "@/lib/settings";
 import { hitRateLimit } from "@/lib/rate-limit";
 import type { EnquiryInput } from "@/lib/schemas/enquiry";
 import { recordAudit } from "./audit";
+import { recordUpdate } from "./account-updates";
+import { emailCustomer } from "./notify";
 import { linkUploads, verifyUploads } from "./files";
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -80,6 +84,7 @@ export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | nul
         productId,
         variantId,
         payload,
+        quoteStatus: input.kind === "custom" ? "requested" : null,
         accountId: ctx.accountId ?? null,
       })
       .returning({ id: messages.id, reference: messages.reference });
@@ -143,7 +148,9 @@ export async function getMessage(actor: Actor, id: string) {
     .select({ id: uploadedFiles.id, name: uploadedFiles.originalName, size: uploadedFiles.sizeBytes })
     .from(uploadedFiles)
     .where(and(eq(uploadedFiles.entityType, "message"), eq(uploadedFiles.entityId, id), eq(uploadedFiles.status, "linked")));
-  return { message: m, product: product ?? null, files };
+  const [order] = m.orderId ? await db.select({ id: orders.id, reference: orders.reference }).from(orders).where(eq(orders.id, m.orderId)).limit(1) : [];
+  const [account] = m.accountId ? await db.select({ address: customerAccounts.address }).from(customerAccounts).where(eq(customerAccounts.id, m.accountId)).limit(1) : [];
+  return { message: m, product: product ?? null, files, order: order ?? null, accountAddress: account?.address ?? null };
 }
 
 export async function setMessageHandled(actor: Actor, id: string, handled: boolean): Promise<void> {
@@ -157,4 +164,125 @@ export async function setMessageHandled(actor: Actor, id: string, handled: boole
       .where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: handled ? "message.handled" : "message.reopened", entityType: "message", entityId: id, before: { isHandled: m.isHandled }, after: { isHandled: handled } });
   });
+}
+
+/* ───────────────────────────── quotations (made-to-measure requests) ───────────────────────────── */
+
+const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
+
+/** The customer to tell: their account if they have one, else the email on the request. */
+async function quoteAudience(tx: DbOrTx, m: typeof messages.$inferSelect): Promise<{ accountId: string | null; email: string | null }> {
+  if (!m.accountId) return { accountId: null, email: m.email };
+  const [a] = await tx.select({ email: customerAccounts.email }).from(customerAccounts).where(eq(customerAccounts.id, m.accountId)).limit(1);
+  return { accountId: a ? m.accountId : null, email: a?.email ?? m.email };
+}
+
+/** Staff put a price on a request. It can be sent again (a new price) until the customer accepts it. */
+export async function sendQuote(actor: Actor, id: string, input: { amount: string; validUntil?: string; note?: string }): Promise<void> {
+  requirePermission(actor, "messages:handle");
+  const business = await getBusinessSettings();
+  let notify: { email: string | null; subject: string; text: string } | null = null;
+  await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That request could not be found.");
+    if (m.kind !== "custom") throw invalidState("Only made-to-measure requests can be quoted.");
+    if (m.quoteStatus === "accepted" || m.quoteStatus === "cancelled") throw invalidState(`A quotation that is ${m.quoteStatus} cannot be priced again.`);
+    const amount = moneyString(input.amount);
+    await tx
+      .update(messages)
+      .set({ quoteStatus: "quoted", quotedAmount: amount, quoteValidUntil: input.validUntil ?? null, quoteNote: input.note ?? null, quotedAt: new Date(), respondedAt: null, declineReason: null, isHandled: true, handledAt: new Date(), handledBy: actor.id })
+      .where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: "quotation.priced", entityType: "message", entityId: id, before: { status: m.quoteStatus, amount: m.quotedAmount }, after: { status: "quoted", amount } });
+    const who = await quoteAudience(tx, m);
+    const price = formatMoney(amount, business.currency);
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Your quotation ${m.reference} is ready`, body: `Our price is ${price}. Please read it and accept or decline.`, link: `/account/quotations/${m.reference}` });
+    notify = {
+      email: who.email,
+      subject: `Your quotation ${m.reference} is ready - ${business.name}`,
+      text: [
+        `Hello ${m.name},`,
+        ``,
+        `Thank you for your quotation request. Our price is ${price}.`,
+        input.validUntil ? `This price is valid until ${input.validUntil}.` : null,
+        input.note ? `\n${input.note}` : null,
+        ``,
+        who.accountId ? `To accept or decline, sign in here: ${siteUrl()}/account/quotations/${m.reference}` : `To accept, please call us on ${business.phone ?? "the number on our website"} and quote ${m.reference}.`,
+        ``,
+        business.name,
+      ]
+        .filter((l): l is string => l !== null)
+        .join("\n"),
+    };
+  });
+  if (notify) emailCustomer((notify as { email: string | null }).email, (notify as { subject: string }).subject, (notify as { text: string }).text);
+}
+
+/** Staff close a request without pricing it, or withdraw a price that was not answered. */
+export async function closeQuotation(actor: Actor, id: string, reason?: string): Promise<void> {
+  requirePermission(actor, "messages:handle");
+  await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That request could not be found.");
+    if (m.kind !== "custom") throw invalidState("Only made-to-measure requests can be closed this way.");
+    if (m.quoteStatus === "accepted" || m.quoteStatus === "cancelled" || m.quoteStatus === "declined") throw invalidState(`A quotation that is ${m.quoteStatus} cannot be closed.`);
+    await tx.update(messages).set({ quoteStatus: "cancelled", declineReason: reason ?? null, respondedAt: new Date(), isHandled: true, handledAt: new Date(), handledBy: actor.id }).where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: "quotation.closed", entityType: "message", entityId: id, before: { status: m.quoteStatus }, after: { status: "cancelled" }, reason });
+    const who = await quoteAudience(tx, m);
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Quotation ${m.reference} has been closed`, body: reason ?? "Please contact us if you would like to talk about it.", link: `/account/quotations/${m.reference}` });
+  });
+}
+
+/** An accepted quotation becomes a confirmed order with one line: the made-to-measure piece, at the agreed price. */
+export async function createOrderFromQuotation(actor: Actor, id: string, input: { fulfilment: "delivery" | "pickup"; address?: string; paymentMethod: "on_delivery" | "bank_transfer" | "at_showroom" }): Promise<{ id: string; reference: string }> {
+  requirePermission(actor, "messages:handle");
+  requirePermission(actor, "orders:update");
+  const business = await getBusinessSettings();
+  let notify: { email: string | null; subject: string; text: string } | null = null;
+  const created = await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That request could not be found.");
+    if (m.kind !== "custom") throw invalidState("Only made-to-measure requests can become an order this way.");
+    if (m.orderId) throw invalidState("An order has already been made from this quotation.");
+    if (m.quoteStatus !== "accepted" || !m.quotedAmount) throw invalidState("The customer has not accepted a price yet.");
+    const payload = (m.payload ?? {}) as { furnitureType?: string | null };
+    const name = `Made to measure: ${payload.furnitureType ?? "custom piece"} (${m.reference})`;
+    const [{ ref }] = (await tx.execute(sql`SELECT next_reference('order') AS ref`)) as unknown as [{ ref: string }];
+    const amount = moneyString(m.quotedAmount);
+    const [order] = await tx
+      .insert(orders)
+      .values({
+        reference: ref,
+        status: "confirmed",
+        confirmedAt: new Date(),
+        customerName: m.name,
+        phone: m.phone,
+        phoneKey: m.phoneKey,
+        email: m.email,
+        emailLower: m.email ? m.email.toLowerCase() : null,
+        fulfilment: input.fulfilment,
+        address: input.fulfilment === "delivery" ? (input.address ?? null) : null,
+        paymentMethod: input.paymentMethod,
+        currency: business.currency,
+        subtotal: amount,
+        deliveryCharge: "0.00",
+        total: amount,
+        customerNote: m.quoteNote ? `From quotation ${m.reference}. ${m.quoteNote}` : `From quotation ${m.reference}.`,
+        accountId: m.accountId,
+        handledBy: actor.id,
+      })
+      .returning({ id: orders.id, reference: orders.reference });
+    await tx.insert(orderItems).values({ orderId: order!.id, position: 1, productName: name, unitPrice: amount, quantity: 1, lineTotal: amount });
+    await tx.update(messages).set({ orderId: order!.id, isHandled: true, handledAt: new Date(), handledBy: actor.id }).where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: "quotation.order_created", entityType: "message", entityId: id, after: { orderId: order!.id, reference: order!.reference } });
+    const who = await quoteAudience(tx, m);
+    await recordUpdate(tx, who.accountId, { kind: "order", title: `Your order ${order!.reference} is confirmed`, body: `Made from quotation ${m.reference}.`, link: `/account/orders/${order!.reference}` });
+    notify = {
+      email: who.email,
+      subject: `Your order ${order!.reference} is confirmed - ${business.name}`,
+      text: [`Hello ${m.name},`, ``, `Thank you for accepting quotation ${m.reference}. Your order ${order!.reference} is now confirmed, for ${formatMoney(amount, business.currency)}.`, ``, `We will be in touch about delivery or collection.`, ``, business.name].join("\n"),
+    };
+    return { id: order!.id, reference: order!.reference };
+  });
+  if (notify) emailCustomer((notify as { email: string | null }).email, (notify as { subject: string }).subject, (notify as { text: string }).text);
+  return created;
 }

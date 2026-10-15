@@ -36,6 +36,44 @@ function later(work: () => Promise<void>): void {
   }
 }
 
+/** An email to a customer about their own order or quotation. Same rules as above: never blocks, silently skipped when mail is not set up. */
+export function emailCustomer(to: string | null | undefined, subject: string, text: string): void {
+  if (!to) return;
+  later(async () => {
+    const env = serverEnv();
+    if (!env.RESEND_API_KEY || !env.MAIL_FROM) return;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) console.error(`[notify] the mail service refused a customer email (${res.status})`);
+  });
+}
+
+/** Tells the owner a customer has answered a quotation. */
+export function notifyQuotationAnswered(messageId: string): void {
+  later(async () => {
+    const [m] = await getDb().select().from(messages).where(eq(messages.id, messageId)).limit(1);
+    if (!m) return;
+    const accepted = m.quoteStatus === "accepted";
+    await sendToOwner(
+      `Quotation ${m.reference} ${accepted ? "accepted" : "declined"} - ${m.name}`,
+      [
+        `${m.name} has ${accepted ? "ACCEPTED" : "declined"} quotation ${m.reference}.`,
+        m.quotedAmount ? `Quoted price: ${m.quotedAmount}` : null,
+        !accepted && m.declineReason ? `Reason: ${m.declineReason}` : null,
+        `Phone: ${m.phone}`,
+        ``,
+        accepted ? `Open it and create the confirmed order: ${staffLink(`/app/messages/${m.id}`)}` : `Open it: ${staffLink(`/app/messages/${m.id}`)}`,
+      ]
+        .filter((l): l is string => l !== null)
+        .join("\n"),
+    );
+  });
+}
+
 const staffLink = (path: string) => `${publicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}${path}`;
 
 export function notifyNewOrder(orderId: string): void {

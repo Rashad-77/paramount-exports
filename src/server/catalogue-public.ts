@@ -164,6 +164,19 @@ async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
   return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
 }
 
+/** Cards for these products, in the order given, skipping any that are no longer on sale. */
+export async function listPublicProductsByIds(ids: string[]): Promise<PublicCard[]> {
+  if (!hasDatabase() || ids.length === 0) return [];
+  const rows = await getDb()
+    .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
+    .from(products)
+    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+    .where(and(visible, inArray(products.id, ids)));
+  const cards = await toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return cards.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+}
+
 async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()

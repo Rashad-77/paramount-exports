@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { ActionForm, SubmitButton } from "@/components/forms/action-form";
+import Link from "next/link";
+import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
@@ -9,7 +10,12 @@ import { MESSAGE_KIND_LABEL } from "@/lib/order-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { getMessage } from "@/server/messages";
-import { setHandledAction } from "../actions";
+import { formatMoney } from "@/lib/money";
+import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
+import { isQuoteStatus } from "@/lib/quotation-ui";
+import { closeQuotationAction, createOrderFromQuotationAction, sendQuoteAction, setHandledAction } from "../actions";
+
+const STAFF_QUOTE_LABEL: Record<string, string> = { requested: "Waiting for a price", quoted: "Price sent, waiting for the customer", accepted: "Accepted by the customer", declined: "Declined by the customer", cancelled: "Closed" };
 
 export const metadata = { title: "Message" };
 
@@ -26,7 +32,9 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
     throw e;
   }
   const business = await getBusinessSettings();
-  const { message: m, product, files } = data;
+  const { message: m, product, files, order, accountAddress } = data;
+  const quote = isQuoteStatus(m.quoteStatus) ? m.quoteStatus : null;
+  const canQuote = can(actor, "messages:handle");
   const details = m.payload && typeof m.payload === "object" ? Object.entries(m.payload as Record<string, unknown>).filter(([, v]) => v) : [];
 
   return (
@@ -52,6 +60,62 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
                   </div>
                 ))}
               </dl>
+            </Panel>
+          ) : null}
+          {m.kind === "custom" && quote ? (
+            <Panel title="Quotation" description={STAFF_QUOTE_LABEL[quote]}>
+              {m.quotedAmount ? (
+                <p className="mb-5 text-sm">
+                  Price sent: <span className="font-semibold">{formatMoney(m.quotedAmount, business.currency)}</span>
+                  {m.quoteValidUntil ? <span className="text-text-muted"> · valid until {m.quoteValidUntil}</span> : null}
+                  {m.quoteNote ? <span className="mt-1 block whitespace-pre-line text-text-muted">{m.quoteNote}</span> : null}
+                </p>
+              ) : null}
+              {quote === "declined" && m.declineReason ? <p className="mb-5 text-sm text-text-muted">Their reason: {m.declineReason}</p> : null}
+
+              {canQuote && (quote === "requested" || quote === "quoted" || quote === "declined") ? (
+                <ActionForm action={sendQuoteAction}>
+                  <input type="hidden" name="id" value={m.id} />
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <FField name="amount" label={`Price (${business.currency})`} inputMode="decimal" placeholder="e.g. 185000" required defaultValue={m.quotedAmount ?? ""} />
+                    <FField name="validUntil" label="Price valid until" type="date" defaultValue={m.quoteValidUntil ?? ""} />
+                  </div>
+                  <FTextArea name="note" label="Note to the customer" rows={3} maxLength={1500} defaultValue={m.quoteNote ?? ""} hint="What the price includes, how long it will take, and so on." />
+                  <SubmitButton pendingLabel="Sending…">{quote === "requested" ? "Send price to customer" : "Send a new price"}</SubmitButton>
+                </ActionForm>
+              ) : null}
+
+              {canQuote && quote === "accepted" && !order ? (
+                <ActionForm action={createOrderFromQuotationAction}>
+                  <input type="hidden" name="id" value={m.id} />
+                  <p className="text-sm text-text-muted">The customer accepted this price. Confirm the order with them, then make it here.</p>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <FSelect name="fulfilment" label="Delivery or collection" defaultValue="delivery" options={Object.entries(FULFILMENT_LABEL).map(([value, label]) => ({ value, label }))} required />
+                    <FSelect name="paymentMethod" label="Payment" defaultValue="on_delivery" options={Object.entries(PAYMENT_LABEL).map(([value, label]) => ({ value, label }))} required />
+                  </div>
+                  <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} defaultValue={accountAddress ?? ""} hint="Leave blank for collection." />
+                  <SubmitButton pendingLabel="Making the order…">Create confirmed order</SubmitButton>
+                </ActionForm>
+              ) : null}
+
+              {order ? (
+                <p className="text-sm">
+                  Order made from this quotation:{" "}
+                  <Link href={`/app/orders/${order.id}`} className="font-medium underline">
+                    {order.reference}
+                  </Link>
+                </p>
+              ) : null}
+
+              {canQuote && (quote === "requested" || quote === "quoted") ? (
+                <ActionForm action={closeQuotationAction} className="mt-6 border-t border-border pt-5">
+                  <input type="hidden" name="id" value={m.id} />
+                  <FField name="reason" label="Reason for closing (shown to the customer)" maxLength={500} />
+                  <SubmitButton variant="secondary" pendingLabel="Closing…">
+                    Close this quotation
+                  </SubmitButton>
+                </ActionForm>
+              ) : null}
             </Panel>
           ) : null}
           {files.length > 0 ? (
