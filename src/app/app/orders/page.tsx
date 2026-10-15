@@ -1,9 +1,9 @@
+import { OrderTag, PaidTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ListSearch } from "@/components/app/list-search";
 import { FilterTabs } from "@/components/app/filter-tabs";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
-import { StatusBadge } from "@/components/ui/status";
 import {
   Pagination,
   Table,
@@ -16,11 +16,9 @@ import {
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatMoney } from "@/lib/money";
-import { ORDER_STATUS_TONE } from "@/lib/order-ui";
 import {
   FULFILMENT_LABEL,
   PAYMENT_LABEL,
-  STATUS_LABEL,
   type OrderStatus,
 } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
@@ -161,9 +159,7 @@ export default async function OrdersPage({
                       <div className="font-medium">{r.customerName}</div>
                       <div className="text-text-muted">{r.phone}</div>
                       <div className="mt-1 md:hidden">
-                        <StatusBadge tone={ORDER_STATUS_TONE[r.status]}>
-                          {STATUS_LABEL[r.status]}
-                        </StatusBadge>
+                        <OrderTag status={r.status} />
                       </div>
                     </TD>
                     <TD className="hidden max-w-[16rem] md:table-cell">
@@ -177,17 +173,15 @@ export default async function OrdersPage({
                     </TD>
                     <TD numeric>{r.itemCount}</TD>
                     <TD className="hidden md:table-cell">
-                      <StatusBadge tone={ORDER_STATUS_TONE[r.status]}>
-                        {STATUS_LABEL[r.status]}
-                      </StatusBadge>
+                      <OrderTag status={r.status} />
                     </TD>
                     <TD className="hidden lg:table-cell">
                       {r.status === "cancelled" ? (
                         <span className="text-text-muted">—</span>
                       ) : r.isPaid ? (
-                        <StatusBadge tone="success">Paid</StatusBadge>
+                        <PaidTag paid />
                       ) : (
-                        <StatusBadge tone="warning">Not paid</StatusBadge>
+                        <PaidTag paid={false} />
                       )}
                       <div className="mt-1 text-text-muted">
                         {PAYMENT_LABEL[r.paymentMethod]}

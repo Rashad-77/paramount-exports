@@ -1,16 +1,11 @@
+import { OrderTag, QuoteTag, EnquiryTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
-import { StatusBadge } from "@/components/ui/status";
 import { requireActor } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/money";
-import { ORDER_STATUS_TONE } from "@/lib/order-ui";
-import {
-  STAFF_QUOTE_LABEL,
-  STAFF_QUOTE_TONE,
-  isQuoteStatus,
-} from "@/lib/quotation-ui";
+import { isQuoteStatus } from "@/lib/quotation-ui";
 import { STATUS_LABEL } from "@/lib/schemas/orders";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
@@ -159,9 +154,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <StatusBadge tone={ORDER_STATUS_TONE[o.status]}>
-                        {STATUS_LABEL[o.status]}
-                      </StatusBadge>
+                      <OrderTag status={o.status} />
                       <span className="text-sm font-medium">
                         {formatMoney(o.total, o.currency)}
                       </span>
@@ -206,9 +199,7 @@ export default async function DashboardPage() {
                           {m.name}
                         </p>
                       </div>
-                      <StatusBadge tone={STAFF_QUOTE_TONE[st]}>
-                        {STAFF_QUOTE_LABEL[st]}
-                      </StatusBadge>
+                      <QuoteTag status={st} />
                     </li>
                   );
                 })}
@@ -313,11 +304,11 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     {m.isHandled ? (
-                      <StatusBadge tone="success">Responded</StatusBadge>
+                      <EnquiryTag state="responded" />
                     ) : m.inProgress ? (
-                      <StatusBadge tone="warning">In progress</StatusBadge>
+                      <EnquiryTag state="in_progress" />
                     ) : (
-                      <StatusBadge tone="info">New</StatusBadge>
+                      <EnquiryTag state="new" />
                     )}
                   </li>
                 ))}

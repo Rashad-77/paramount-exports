@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import {
+  ActionForm,
+  FCheckbox,
+  FField,
+  FSelect,
+  FTextArea,
+  SubmitButton,
+} from "@/components/forms/action-form";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
@@ -9,16 +16,26 @@ import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { one, type SP } from "@/lib/list-params";
 import { listCategories } from "@/server/catalogue";
-import { archiveCategoryAction, createCategoryAction, updateCategoryAction } from "./actions";
+import {
+  archiveCategoryAction,
+  createCategoryAction,
+  updateCategoryAction,
+} from "./actions";
 
 export const metadata = { title: "Products" };
 
-export default async function CategoriesPage({ searchParams }: { searchParams: Promise<SP> }) {
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
   const actor = await requireActor();
   const editId = one((await searchParams).edit);
   const flat = await listCategories(actor);
   const rows = treeOrder(flat);
-  const groups = flat.filter((g) => !g.parentId && !g.archivedAt && g.id !== editId);
+  const groups = flat.filter(
+    (g) => !g.parentId && !g.archivedAt && g.id !== editId,
+  );
   const canWrite = can(actor, "products:write");
   const editing = editId ? rows.find((r) => r.id === editId) : undefined;
 
@@ -28,7 +45,10 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
       <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
         {rows.length === 0 ? (
           <Panel>
-            <p className="text-sm text-text-muted">No categories yet. Add the first one to start building the catalogue.</p>
+            <p className="text-sm text-text-muted">
+              No categories yet. Add the first one to start building the
+              catalogue.
+            </p>
           </Panel>
         ) : (
           <TableWrap label="Categories">
@@ -45,20 +65,56 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
               <tbody>
                 {rows.map((c) => (
                   <TR key={c.id}>
-                    <TD className={c.depth ? "pl-8" : "font-medium"}>{c.depth ? `› ${c.name}` : c.name}</TD>
+                    <TD className={c.depth ? "pl-8" : "font-medium"}>
+                      {c.depth ? `› ${c.name}` : c.name}
+                    </TD>
                     <TD className="text-text-muted">/{c.slug}</TD>
                     <TD numeric>{c.productCount}</TD>
-                    <TD>{c.archivedAt ? <StatusBadge>Archived</StatusBadge> : c.isActive ? <StatusBadge tone="success">Visible</StatusBadge> : <StatusBadge tone="warning">Hidden</StatusBadge>}</TD>
+                    <TD>
+                      {c.archivedAt ? (
+                        <StatusBadge>Archived</StatusBadge>
+                      ) : c.isActive ? (
+                        <StatusBadge tone="success">Visible</StatusBadge>
+                      ) : (
+                        <StatusBadge tone="warning">Hidden</StatusBadge>
+                      )}
+                    </TD>
                     {canWrite ? (
                       <TD>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Link href={`/app/categories?edit=${c.id}`} className="underline">
+                          <Link
+                            href={`/app/categories?edit=${c.id}`}
+                            className="underline"
+                          >
                             Edit
                           </Link>
-                          <ActionForm action={archiveCategoryAction} className="space-y-0">
+                          <ActionForm
+                            action={archiveCategoryAction}
+                            className="space-y-0"
+                          >
                             <input type="hidden" name="id" value={c.id} />
-                            <input type="hidden" name="archive" value={c.archivedAt ? "false" : "true"} />
-                            <ConfirmSubmit variant="ghost" title={c.archivedAt ? "Restore category?" : "Archive category?"} description={c.archivedAt ? "It will be available again." : "It is hidden from the website. You can restore it later."} confirmLabel={c.archivedAt ? "Restore" : "Archive"} destructive={!c.archivedAt}>
+                            <input
+                              type="hidden"
+                              name="archive"
+                              value={c.archivedAt ? "false" : "true"}
+                            />
+                            <ConfirmSubmit
+                              variant="ghost"
+                              title={
+                                c.archivedAt
+                                  ? "Restore category?"
+                                  : "Archive category?"
+                              }
+                              description={
+                                c.archivedAt
+                                  ? "It will be available again."
+                                  : "It is hidden from the website. You can restore it later."
+                              }
+                              confirmLabel={
+                                c.archivedAt ? "Restore" : "Archive"
+                              }
+                              destructive={!c.archivedAt}
+                            >
                               {c.archivedAt ? "Restore" : "Archive"}
                             </ConfirmSubmit>
                           </ActionForm>
@@ -74,10 +130,25 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
 
         {canWrite ? (
           <Panel title={editing ? `Edit “${editing.name}”` : "New category"}>
-            <ActionForm key={editing?.id ?? "new"} action={editing ? updateCategoryAction : createCategoryAction}>
-              {editing ? <input type="hidden" name="id" value={editing.id} /> : null}
-              <FField name="name" label="Name" required defaultValue={editing?.name} />
-              <FField name="slug" label="Web address name" defaultValue={editing?.slug} hint="Lowercase letters and hyphens. Leave blank to create it from the name." />
+            <ActionForm
+              key={editing?.id ?? "new"}
+              action={editing ? updateCategoryAction : createCategoryAction}
+            >
+              {editing ? (
+                <input type="hidden" name="id" value={editing.id} />
+              ) : null}
+              <FField
+                name="name"
+                label="Name"
+                required
+                defaultValue={editing?.name}
+              />
+              <FField
+                name="slug"
+                label="Web address name"
+                defaultValue={editing?.slug}
+                hint="Lowercase letters and hyphens. Leave blank to create it from the name."
+              />
               <FSelect
                 name="parentId"
                 label="Group"
@@ -86,13 +157,34 @@ export default async function CategoriesPage({ searchParams }: { searchParams: P
                 options={groups.map((g) => ({ value: g.id, label: g.name }))}
                 hint="Choose a group to file this under it, e.g. Tables under Furniture."
               />
-              <FTextArea name="description" label="Description" rows={3} defaultValue={editing?.description ?? ""} />
-              <FField name="sortOrder" label="Display order" type="number" min={0} defaultValue={String(editing?.sortOrder ?? 0)} hint="Lower numbers come first." />
-              <FCheckbox name="isActive" label="Visible on the website" defaultChecked={editing?.isActive ?? true} />
+              <FTextArea
+                name="description"
+                label="Description"
+                rows={3}
+                defaultValue={editing?.description ?? ""}
+              />
+              <FField
+                name="sortOrder"
+                label="Display order"
+                type="number"
+                min={0}
+                defaultValue={String(editing?.sortOrder ?? 0)}
+                hint="Lower numbers come first."
+              />
+              <FCheckbox
+                name="isActive"
+                label="Visible on the website"
+                defaultChecked={editing?.isActive ?? true}
+              />
               <div className="flex gap-2">
-                <SubmitButton>{editing ? "Save changes" : "Add category"}</SubmitButton>
+                <SubmitButton>
+                  {editing ? "Save changes" : "Add category"}
+                </SubmitButton>
                 {editing ? (
-                  <Link href="/app/categories" className="inline-flex min-h-10 items-center px-3 underline">
+                  <Link
+                    href="/app/categories"
+                    className="inline-flex min-h-10 items-center px-3 underline"
+                  >
                     Cancel
                   </Link>
                 ) : null}

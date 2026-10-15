@@ -690,3 +690,32 @@ html:has(.app-ui) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
+
+/* Status tags: a soft tinted box with a coloured icon. */
+.tag {
+  --c: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0.6rem;
+  background: color-mix(in srgb, var(--c) 13%, #fff);
+  color: #111827;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.tag svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+  color: var(--c);
+}
+.tag-blue { --c: #2f7fd1; }
+.tag-teal { --c: #14916b; }
+.tag-amber { --c: #b4690e; }
+.tag-purple { --c: #6f66d6; }
+.tag-orange { --c: #d4521f; }
+.tag-green { --c: #4f8a1a; }
+.tag-red { --c: #d03c3b; }
+.tag-grey { --c: #6b7280; }

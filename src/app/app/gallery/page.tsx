@@ -14,9 +14,16 @@ export default async function GalleryAdminPage() {
   const rows = await listGalleryAdmin(actor);
   return (
     <>
-      <ModuleHeader href="/app/gallery" actions={<ButtonLink href="/app/gallery/new">Add project</ButtonLink>} />
+      <ModuleHeader
+        href="/app/gallery"
+        actions={<ButtonLink href="/app/gallery/new">Add project</ButtonLink>}
+      />
       {rows.length === 0 ? (
-        <EmptyState title="No projects yet" description="Add a completed project with photographs to show off your work." action={<ButtonLink href="/app/gallery/new">Add project</ButtonLink>} />
+        <EmptyState
+          title="No projects yet"
+          description="Add a completed project with photographs to show off your work."
+          action={<ButtonLink href="/app/gallery/new">Add project</ButtonLink>}
+        />
       ) : (
         <TableWrap label="Gallery projects">
           <Table>
@@ -31,12 +38,23 @@ export default async function GalleryAdminPage() {
               {rows.map((r) => (
                 <TR key={r.id}>
                   <TD>
-                    <Link className="font-medium text-walnut underline" href={`/app/gallery/${r.id}`}>
+                    <Link
+                      className="font-medium text-walnut underline"
+                      href={`/app/gallery/${r.id}`}
+                    >
                       {r.title}
                     </Link>
                   </TD>
                   <TD numeric>{r.imageCount}</TD>
-                  <TD>{r.archivedAt ? <StatusBadge>Archived</StatusBadge> : r.isPublished ? <StatusBadge tone="success">Published</StatusBadge> : <StatusBadge tone="warning">Draft</StatusBadge>}</TD>
+                  <TD>
+                    {r.archivedAt ? (
+                      <StatusBadge>Archived</StatusBadge>
+                    ) : r.isPublished ? (
+                      <StatusBadge tone="success">Published</StatusBadge>
+                    ) : (
+                      <StatusBadge tone="warning">Draft</StatusBadge>
+                    )}
+                  </TD>
                 </TR>
               ))}
             </tbody>

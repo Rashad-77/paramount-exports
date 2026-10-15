@@ -14,14 +14,26 @@ export default async function NewProductPage() {
   const cats = (await listCategories(actor)).filter((c) => !c.archivedAt);
   return (
     <>
-      <PageHeader title="Add product" description="You can add photographs and more options after saving." />
+      <PageHeader
+        title="Add product"
+        description="You can add photographs and more options after saving."
+      />
       <Panel>
         {cats.length === 0 ? (
           <p className="text-sm">
-            Create a category first on the <a className="underline" href="/app/categories">Categories</a> page.
+            Create a category first on the{" "}
+            <a className="underline" href="/app/categories">
+              Categories
+            </a>{" "}
+            page.
           </p>
         ) : (
-          <ProductForm action={createProductAction} categories={cats} creating submitLabel="Create product" />
+          <ProductForm
+            action={createProductAction}
+            categories={cats}
+            creating
+            submitLabel="Create product"
+          />
         )}
       </Panel>
     </>

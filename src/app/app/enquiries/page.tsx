@@ -1,9 +1,9 @@
+import { EnquiryTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ListSearch } from "@/components/app/list-search";
 import { FilterTabs } from "@/components/app/filter-tabs";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
-import { StatusBadge } from "@/components/ui/status";
 import {
   Pagination,
   Table,
@@ -95,11 +95,11 @@ export default async function EnquiriesPage({
               <tbody>
                 {result.rows.map((r) => {
                   const badge = r.isHandled ? (
-                    <StatusBadge tone="success">Responded</StatusBadge>
+                    <EnquiryTag state="responded" />
                   ) : r.inProgress ? (
-                    <StatusBadge tone="warning">In progress</StatusBadge>
+                    <EnquiryTag state="in_progress" />
                   ) : (
-                    <StatusBadge tone="info">New</StatusBadge>
+                    <EnquiryTag state="new" />
                   );
                   return (
                     <TR key={r.id}>

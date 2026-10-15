@@ -1,9 +1,9 @@
+import { QuoteTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ListSearch } from "@/components/app/list-search";
 import { FilterTabs } from "@/components/app/filter-tabs";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
-import { StatusBadge } from "@/components/ui/status";
 import {
   Pagination,
   Table,
@@ -16,12 +16,7 @@ import {
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatMoney } from "@/lib/money";
-import {
-  QUOTE_STATUSES,
-  STAFF_QUOTE_LABEL,
-  STAFF_QUOTE_TONE,
-  isQuoteStatus,
-} from "@/lib/quotation-ui";
+import { QUOTE_STATUSES, isQuoteStatus } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listQuotations } from "@/server/messages";
@@ -128,15 +123,11 @@ export default async function QuotationsPage({
                         <div className="font-medium">{r.name}</div>
                         <div className="text-text-muted">{r.phone}</div>
                         <div className="mt-1 md:hidden">
-                          <StatusBadge tone={STAFF_QUOTE_TONE[st]}>
-                            {STAFF_QUOTE_LABEL[st]}
-                          </StatusBadge>
+                          <QuoteTag status={st} />
                         </div>
                       </TD>
                       <TD className="hidden md:table-cell">
-                        <StatusBadge tone={STAFF_QUOTE_TONE[st]}>
-                          {STAFF_QUOTE_LABEL[st]}
-                        </StatusBadge>
+                        <QuoteTag status={st} />
                       </TD>
                       <TD numeric className="hidden lg:table-cell">
                         {r.quotedAmount ? (
