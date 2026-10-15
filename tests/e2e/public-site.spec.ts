@@ -179,6 +179,7 @@ test.describe("enquiries", () => {
   test("a product enquiry reaches the staff inbox with the product attached", async ({ page }) => {
     const p = phone();
     await page.goto("/products/sample-oak-table");
+    await page.getByRole("button", { name: /enquire about this piece|ask a question/i }).click();
     await page.getByLabel(/^Your name/).fill("Test Visitor");
     await page.getByLabel(/^Phone number/).fill(p);
     await page.getByLabel(/^Email/).fill("visitor@example.com");
@@ -378,7 +379,7 @@ test.describe("ordering (no online payment)", () => {
   test("the product with no public price cannot be ordered, only enquired about", async ({ page }) => {
     await page.goto("/products/sample-oak-table");
     await expect(page.getByRole("button", { name: /add to cart/i })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: /enquire about this piece/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /enquire about this piece/i })).toBeVisible();
   });
 
   test("an empty basket explains itself, and checkout refuses an incomplete form", async ({ page }) => {

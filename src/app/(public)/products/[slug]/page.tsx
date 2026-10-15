@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AskDisclosure } from "@/components/public/ask-disclosure";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductCard } from "@/components/public/product-card";
 import { ProductGallery } from "@/components/public/product-gallery";
@@ -239,11 +240,7 @@ export default async function ProductPage({ params }: Props) {
           <ProductTabs tabs={tabs} />
         </div>
 
-        <section id="enquire" aria-labelledby="enquire-title" className="mt-14 scroll-mt-6 border border-border bg-surface p-6 md:p-8">
-          <h2 id="enquire-title" className="font-display text-[1.5rem] leading-tight text-walnut">
-            {prices.length ? "Ask about this piece" : "Enquire about this piece"}
-          </h2>
-          <p className="mt-1 mb-5 text-sm text-text-muted">Have a question? Tell us how to reach you and we will get back to you about {p.name}.</p>
+        <AskDisclosure title="Have a question about this piece?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
           <div className="max-w-2xl">
             <EnquiryForm
               kind="product_enquiry"
@@ -253,7 +250,7 @@ export default async function ProductPage({ params }: Props) {
               submitLabel="Send enquiry"
             />
           </div>
-        </section>
+        </AskDisclosure>
 
         {related.length ? (
           <section aria-labelledby="related-title" className="mt-16 md:mt-24">
