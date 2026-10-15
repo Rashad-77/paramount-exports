@@ -1,0 +1,63 @@
+# Design notes: the "quiet gallery" direction
+
+What the visual system is, why, and where it lives. Tokens: `src/styles/tokens.css`. Global rules and helpers: `src/app/globals.css`.
+
+## Principles (and the research behind them)
+
+A web search on what makes a site feel premium (summaries only; most sources are agency and design-blog opinion, not measured studies) converged on the same few points, which this system follows:
+
+1. **Restraint beats decoration.** Premium comes from what is left out: a limited palette, one sparing accent, motion only on key interactions. → warm paper + deep walnut, a single muted brass accent used only for hairlines and small marks.
+2. **Consistent spacing and a small set of type sizes.** Consistency across the whole system, not one trick (a serif font or more whitespace alone does not make a site feel expensive). → one fluid section rhythm (`--section-space`), a short type scale, uppercase tracked labels for secondary hierarchy.
+3. **Editorial serif for headlines, a clean sans for body.** The common pattern on high-end furniture sites. → Cormorant Garamond (display) + Instrument Sans (text, forms, tables).
+4. **Photography leads; whitespace paces the page like a showroom walk.** Dense grids undercut the feel. → large image frames, generous gaps, slow image zoom on hover.
+5. **Layered, low-opacity, background-tinted shadows** rather than one heavy black shadow. → `--shadow-sm/md/lg`, used rarely (menus and dialogs); hairline borders do most of the work.
+6. **`text-wrap: balance` for headings** so lines break evenly (supported in current Chrome, Edge, Firefox, Safari; harmless where not). Already applied to all headings.
+
+Sources consulted (search results): [why some websites feel expensive](https://www.iiad.edu.in/the-circle/why-some-websites-just-feel-expensive/), [KIJO luxury web design principles](https://kijo.london/blog/luxury-website-design), [Tobias Ahlin on layered shadows](https://tobiasahlin.com/blog/layered-smooth-box-shadows/), [Josh Comeau on designing shadows](https://www.joshwcomeau.com/css/designing-shadows), [Chrome on text-wrap: balance](https://developer.chrome.com/docs/css-ui/css-text-wrap-balance), [Exhibea on luxury furniture sites](https://exhibea.com/blogs/shopify-plus-blog/luxury-furniture-website-design). The full articles could not be fetched from the build environment, so only their search summaries were used.
+
+## Decisions
+
+| Area | Decision |
+|---|---|
+| Corners | **Square everywhere** (all radius tokens are 0; form controls reset to 0). Hierarchy comes from hairlines and spacing |
+| Buttons | Square, hairline; hover inverts fill and outline over 300 ms; 1 px press. Public calls to action use the `cta` size (small uppercase, tracked). `light` variant for dark bands |
+| Type | Cormorant Garamond for display, scaled up with `font-size-adjust` to match the sans x-height, forced to **lining figures** (its default old-style numerals misread in prices); Instrument Sans for text and data (supports tabular numerals) |
+| Colour | Paper `#f8f5ef`, walnut `#3a2c23`, charcoal text, brass `#9a7440` (decoration only). Computed contrast is listed in `tokens.css`; brass and stone never carry text |
+| Motion | `--ease-out` slow-in/long-out; 150/300/700 ms; hero text rises once; links draw their underline; everything off under `prefers-reduced-motion` |
+| Links | `link-draw` (always underlined, thickens on hover) for inline links; `link-draw-hover` (line appears on hover/focus) for card titles and navigation |
+| Staff area | Same tokens, denser: serif page titles, tracked uppercase panel and column headings, hairline panels, brass edge marks the current page |
+
+## Second pass: bolder (after review feedback: "boring, stale, stock")
+
+The first pass was correct but too quiet, and flat beige boxes where photographs will go made it look like a template. Changes:
+
+| Area | What |
+|---|---|
+| Texture | `src/styles/wood.css`: generative timber (stretched SVG noise, four variants) in place of empty photo boxes, pure CSS, no image files. Captioned "Photograph to be supplied" so it never poses as a real photo. Dark sections use a grain + brass-glow background |
+| Hero | Full dark hero: headline rises **word by word** out of a mask, slow drifting brass glow, floating framed panel with an offset brass outline, marquee of real category names |
+| Scroll motion | `Reveal` (IntersectionObserver, no library): fade-up, slide-in, zoom-settle; hairline that draws itself between process steps. Elements only start hidden when scripting is available (`<html class="js">`); verified visible with scripting off and with reduced motion |
+| Containers | Hairline "bento" grid of three ways in (cells light up dark on hover), full-bleed category tiles (staggered, slow zoom, arrow box slides in), product cards as raised mounted prints that lift on hover, offset frames behind images, raised form card beside a dark process panel |
+| Header / footer | Frosted sticky header; dark textured footer with a large watermark wordmark |
+| Inner pages | Dark textured page headers with the same entrance animation |
+| Staff area | Dark textured sidebar with a brass current-page mark; panels get a walnut top rule and a soft shadow; dashboard figures in the serif at large size; content eases in block by block; split-screen sign-in |
+
+Performance notes: animations use only `transform` and `opacity` (plus background-size on one hairline); no animation library; wood is CSS-generated and cached by the browser.
+
+## Not done
+
+Real photography and the final brand typeface/colours are still placeholders: when the owner supplies a logo, palette or font, change the tokens and nothing else. No dark mode.
+
+## Third pass: neutral, editorial, order-ready
+
+Later changes that supersede parts of the tables above:
+
+| Area | What |
+|---|---|
+| Images | Every photo placeholder is plain flat grey (`#e4e4e2`), with no wood colour or texture, including the sample images made by the seed script |
+| Header | Charcoal-brown bar, small uppercase tracked links, a light-green line draws in under the hovered or current page, outlined "Enquire" button, a basket icon with a count |
+| Homepage | "Featured pieces" and "Recent projects" are endless carousels (black arrows centred on the photographs, no scrollbar); the closing band is white to mint with a green glow and contact links |
+| Gallery | Video hero like the homepage, then one filterable masonry (Showroom, Workshop, Projects) with a full-screen viewer (native `<dialog>`) |
+| Contact | Contact cards, then the map with a dropping, pulsing pin, then the enquiry form, then the showroom strip; staggered, restrained motion |
+| About | Two frosted-glass cards (visit, or custom piece) on a mint and sand gradient; workshop mosaic shared with the gallery code |
+| Ordering | Product page "Order this piece" panel, basket page, checkout (delivery or pickup, how you plan to pay) and a confirmation page, all in the same plain style |
+| Motion | `Reveal` gained a `wipe` variant; every animation switches off under `prefers-reduced-motion` |

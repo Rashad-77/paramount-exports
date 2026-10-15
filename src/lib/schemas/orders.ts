@@ -1,0 +1,82 @@
+import { z } from "zod";
+import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
+import { checkbox, enumOf, optEmail, optText, reqPhone, reqText } from "@/lib/validation";
+
+export * from "@/lib/order-constants";
+import { MAX_LINES, MAX_QTY, FULFILMENT, ORDER_STATUSES, PAYMENT_METHODS } from "@/lib/order-constants";
+
+/** The cart as it travels from the browser: only ids and quantities. Prices are always read from the database. */
+export const cartLinesSchema = z
+  .array(z.object({ variantId: z.uuid(), quantity: z.number().int().min(1).max(MAX_QTY) }))
+  .min(1, "Your order is empty.")
+  .max(MAX_LINES, `An order can have at most ${MAX_LINES} different items.`);
+export type CartLines = z.infer<typeof cartLinesSchema>;
+
+const cartField = z.string().transform((raw, ctx) => {
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    ctx.addIssue({ code: "custom", message: "Your order could not be read. Please reload the page." });
+    return z.NEVER;
+  }
+  const parsed = cartLinesSchema.safeParse(value);
+  if (!parsed.success) {
+    ctx.addIssue({ code: "custom", message: parsed.error.issues[0]?.message ?? "Your order is empty." });
+    return z.NEVER;
+  }
+  return parsed.data;
+});
+
+/** The public checkout form. There is no payment step: the customer chooses how they intend to pay and staff confirm the order. */
+export const checkoutSchema = z
+  .object({
+    name: reqText("Your name", 120),
+    phone: reqPhone,
+    email: optEmail,
+    fulfilment: enumOf(FULFILMENT, "delivery option"),
+    address: optText("Delivery address", 400),
+    paymentMethod: enumOf(PAYMENT_METHODS, "payment option"),
+    note: optText("Note", 1000),
+    cart: cartField,
+    consent: checkbox,
+    // Anti-spam fields (not stored)
+    [HONEYPOT_FIELD]: z.string().optional(),
+    formToken: z.string().optional(),
+    "cf-turnstile-response": z.string().optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.consent) ctx.addIssue({ code: "custom", path: ["consent"], message: "Please agree to be contacted about this order." });
+    if (v.fulfilment === "delivery" && !v.address) ctx.addIssue({ code: "custom", path: ["address"], message: "Enter the address we should deliver to." });
+    if (v.fulfilment === "pickup" && v.paymentMethod === "on_delivery") {
+      ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose bank transfer or pay at the showroom for a showroom pickup." });
+    }
+    if (v.fulfilment === "delivery" && v.paymentMethod === "at_showroom") {
+      ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose pay on delivery or bank transfer for a delivery." });
+    }
+  });
+export type CheckoutInput = z.output<typeof checkoutSchema>;
+
+/** Staff: move an order to its next status, or cancel it with a reason. */
+export const orderStatusSchema = z
+  .object({
+    id: z.uuid(),
+    status: enumOf(ORDER_STATUSES, "status"),
+    reason: optText("Reason", 400),
+  })
+  .superRefine((v, ctx) => {
+    if (v.status === "cancelled" && !v.reason) ctx.addIssue({ code: "custom", path: ["reason"], message: "Say why the order is being cancelled." });
+  });
+
+/** Staff: the delivery charge agreed with the customer, the paid flag, and an internal note. */
+export const orderDetailsSchema = z.object({
+  id: z.uuid(),
+  deliveryCharge: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? "0" : v),
+    z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, "Enter an amount like 1500 or 1500.50."),
+  ),
+  staffNote: optText("Note", 1000),
+});
+
+export const orderPaidSchema = z.object({ id: z.uuid(), paid: checkbox });
+export const messageHandledSchema = z.object({ id: z.uuid(), handled: checkbox });

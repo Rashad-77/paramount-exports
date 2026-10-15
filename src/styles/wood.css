@@ -1,0 +1,14 @@
+/*
+ * Generative wood grain. Pure CSS + inline SVG noise, no image files. It is used on the public page body only (a faint fixed
+ * texture, and the footer), never inside image frames and never in the staff area.
+ */
+:root {
+  /* Long straight fibres (very low horizontal frequency) with broad tonal bands, soft highlights and fine pores */
+  --grain-b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.0007%200.03%27%20numOctaves%3D%275%27%20seed%3D%2711%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.13%200%200%200%200%200.065%200%200%200%200%200.03%200%200%200%202.0%20-0.7%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+  --grain-fine: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27900%27%20height%3D%271100%27%3E%3Cfilter%20id%3D%27f%27%20x%3D%270%27%20y%3D%270%27%20width%3D%27100%25%27%20height%3D%27100%25%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.003%200.45%27%20numOctaves%3D%273%27%20seed%3D%275%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200.14%200%200%200%200%200.08%200%200%200%200%200.045%200%200%200%200.9%20-0.3%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23f%29%27%2F%3E%3C%2Fsvg%3E");
+}
+.wood-dark-bg {
+  background-image: var(--grain-b);
+  background-size: 100% 100%;
+  background-blend-mode: soft-light;
+}

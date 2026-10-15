@@ -1,0 +1,463 @@
+@import "tailwindcss";
+@import "@fontsource-variable/urbanist";
+@import "@fontsource-variable/epilogue";
+@import "@fontsource-variable/inter";
+@import "../styles/tokens.css";
+@import "../styles/wood.css";
+@import "../styles/public.css";
+
+/*
+ * Staff area: no theme. Plain white, neutral greys and an information-first typeface. Everything below the .app-ui wrapper reads
+ * these values instead of the public site's brown and green.
+ */
+.app-ui {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-sans);
+  --color-ivory: #ffffff;
+  --color-surface: #ffffff;
+  --color-paper-deep: #f7f7f8;
+  --color-linen: #f1f2f4;
+  --color-linen-dark: #d9dce1;
+  --color-walnut: #111827;
+  --color-walnut-dark: #030712;
+  --color-brand: #111827;
+  --color-brand-dark: #030712;
+  --color-mint: #f1f2f4;
+  --color-mint-deep: #e5e7eb;
+  --color-brass: #6b7280;
+  --color-brass-text: #374151;
+  --color-stone: #6b7280;
+  --color-text: #111827;
+  --color-text-muted: #4b5563;
+  --color-border: #e5e7eb;
+  --color-border-strong: #9ca3af;
+  --color-focus: #111827;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  font-feature-settings: "cv11", "ss01";
+}
+
+@layer base {
+  html {
+    background: var(--color-ivory);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-optical-sizing: auto;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    min-height: 100dvh;
+    background: var(--color-ivory);
+    isolation: isolate;
+    line-height: 1.65;
+    letter-spacing: 0.002em;
+  }
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+  }
+
+  /* One consistent, always-visible keyboard focus treatment */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand) 28%, white);
+    color: var(--color-charcoal);
+  }
+
+  /* Square, quiet form controls everywhere (also removes iOS's rounded defaults) */
+  :where(input, select, textarea, button) {
+    border-radius: 0;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--color-walnut);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  /* Headings: the same family as the text, heavier and tighter. */
+  .font-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    font-variant-numeric: lining-nums;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Staff area: working screens, not a showroom. Plain sans type, flat surfaces, no ornament or entrance motion. */
+  .app-ui .font-display {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .app-ui .glass {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  /* Denser form controls on desktop; phones keep the full 44px touch target. */
+  @media (min-width: 48rem) {
+    /* !important: these must beat the component utilities, which sit in a later cascade layer */
+    .app-ui :is(input, select, textarea) {
+      font-size: 0.875rem !important;
+    }
+    .app-ui .min-h-11 {
+      min-height: 2.25rem !important;
+    }
+  }
+  .app-ui .card-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Small tracked copper label above a heading */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #9a5330;
+  }
+
+  /* Vertical rhythm for public sections */
+  .section-y {
+    padding-block: var(--section-space);
+  }
+
+  /* Link with an underline that draws in. Static underline remains for forced-colors/print. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 0.15em;
+    transition: background-size var(--duration-base) var(--ease-out);
+  }
+  .link-draw:hover {
+    background-size: 100% 2px;
+  }
+
+  /* Same, but the line only appears on hover/focus — for card titles and navigation, where the layout already signals a link. */
+  .link-draw-hover {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 0.15em;
+    transition: background-size var(--duration-base) var(--ease-out);
+  }
+  .link-draw-hover:hover,
+  .link-draw-hover:focus-visible,
+  :where(.group:hover, a:hover) .link-draw-hover {
+    background-size: 100% 1px;
+  }
+
+  /* Image frame: slow, subtle zoom on hover (never on touch-only devices) */
+  .zoom-frame {
+    overflow: hidden;
+    isolation: isolate;
+    background: #e4e4e2;
+  }
+  /* Rounded photograph frames, as on the product cards and the project grid */
+  .round-xl {
+    border-radius: 1.5rem;
+  }
+  .round-lg {
+    border-radius: 1.25rem;
+  }
+  .zoom-frame > * {
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .zoom-frame:hover > *,
+    a:hover .zoom-frame > * {
+      transform: scale(1.035);
+    }
+  }
+
+  /* One gentle entrance for the hero copy */
+  .rise-in {
+    animation: rise-in 900ms var(--ease-out) both;
+  }
+  .rise-in-2 {
+    animation-delay: 120ms;
+  }
+  .rise-in-3 {
+    animation-delay: 240ms;
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -4rem;
+    z-index: 100;
+    background: var(--color-walnut);
+    color: var(--color-ivory);
+    padding: 0.625rem 1rem;
+  }
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+  .sr-only-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+
+/* ───────────────────────── Motion, containers and texture ───────────────────────── */
+@layer components {
+  /* Scroll reveal. Elements are only hidden once JS has marked <html class="js">, and the Reveal component shows them again,
+     so nothing is ever stuck invisible without scripting. All variants collapse to "visible" under reduced motion. */
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 32px, 0);
+    transition: opacity 1000ms var(--ease-out) var(--d, 0ms), transform 1100ms var(--ease-out) var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  .js [data-reveal="fade"] {
+    transform: none;
+  }
+  .js [data-reveal="left"] {
+    transform: translate3d(-40px, 0, 0);
+  }
+  .js [data-reveal="right"] {
+    transform: translate3d(40px, 0, 0);
+  }
+  /* "zoom": fades in while settling from slightly enlarged (keeps its layout box, so scroll detection stays reliable) */
+  .js [data-reveal="zoom"] {
+    transform: scale(1.06);
+    transition: opacity 1200ms var(--ease-out) var(--d, 0ms), transform 1600ms var(--ease-out) var(--d, 0ms);
+  }
+  /* "wipe": the content is uncovered from top to bottom (clip-path on its first child, so the watched wrapper keeps its box and is
+     still detected), with no movement or fade */
+  .js [data-reveal="wipe"] {
+    opacity: 1;
+    transform: none;
+  }
+  .js [data-reveal="wipe"] > * {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1100ms var(--ease-out) var(--d, 0ms);
+    will-change: clip-path;
+  }
+  .js [data-reveal="wipe"].in > * {
+    clip-path: inset(0 0 0 0);
+    will-change: auto;
+  }
+  /* "rule": a hairline that draws from left to right via its background (the box keeps its size) */
+  .rule-line {
+    background: linear-gradient(rgb(31 138 91 / 0.55), rgb(31 138 91 / 0.55)) no-repeat 0 0 / 100% 100%;
+  }
+  .js .rule-line[data-reveal] {
+    opacity: 1;
+    transform: none;
+    background-size: 0 100%;
+    transition: background-size 1600ms var(--ease-out) var(--d, 0ms);
+  }
+  .js .rule-line[data-reveal].in {
+    background-size: 100% 100%;
+  }
+  .js [data-reveal].in {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      clip-path: none !important;
+      transition: none !important;
+    }
+    .js [data-reveal="wipe"] > * {
+      clip-path: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Raised container: lifts on hover with a layered shadow.
+     The invisible strip below keeps the card hovered while it rises, so the pointer on its bottom edge never causes flicker. */
+  .card-lift {
+    position: relative;
+    transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
+  }
+  .card-lift::after {
+    content: "";
+    position: absolute;
+    inset: 100% 0 auto 0;
+    height: 8px;
+  }
+  @media (hover: hover) {
+    .card-lift:hover {
+      transform: translate3d(0, -6px, 0);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-brand);
+    }
+  }
+
+  /* Staff area: content eases in, one block after another */
+  .page-in > * {
+    animation: page-in 700ms var(--ease-out) both;
+  }
+  .page-in > *:nth-child(2) {
+    animation-delay: 70ms;
+  }
+  .page-in > *:nth-child(3) {
+    animation-delay: 140ms;
+  }
+  .page-in > *:nth-child(4) {
+    animation-delay: 210ms;
+  }
+  .page-in > *:nth-child(n + 5) {
+    animation-delay: 280ms;
+  }
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-in > * {
+      animation: none;
+    }
+  }
+
+  /* Chart motion: lines draw in, bars and rings grow, areas fade up. All of it is off under reduced motion. */
+  .chart-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: chart-draw 1100ms var(--ease-out) 100ms forwards;
+  }
+  @keyframes chart-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .chart-fade {
+    animation: chart-fade 700ms var(--ease-out) 150ms both;
+  }
+  @keyframes chart-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .chart-grow {
+    animation: chart-grow 900ms var(--ease-out) both;
+  }
+  @keyframes chart-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .chart-sweep {
+    animation: chart-sweep 1000ms var(--ease-out) both;
+  }
+  @keyframes chart-sweep {
+    from {
+      stroke-dasharray: 0 1000;
+    }
+  }
+  /* Staff cards rise in one after another */
+  .dash-in > * {
+    animation: dash-in 600ms var(--ease-out) both;
+  }
+  .dash-in > *:nth-child(2) { animation-delay: 60ms; }
+  .dash-in > *:nth-child(3) { animation-delay: 120ms; }
+  .dash-in > *:nth-child(4) { animation-delay: 180ms; }
+  .dash-in > *:nth-child(n + 5) { animation-delay: 240ms; }
+  @keyframes dash-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-draw {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+    .chart-fade,
+    .chart-grow,
+    .chart-sweep,
+    .dash-in > * {
+      animation: none;
+    }
+  }
+
+  /* Image frame stand-in: a flat grey block until a real photograph is supplied. */
+  .image-placeholder {
+    background-color: #e4e4e2;
+  }
+
+  /* Public page background: warm cream. Sections alternate cream, white and deep bark brown for rhythm. */
+  .page-body {
+    display: flow-root;
+    position: relative;
+    isolation: isolate;
+    background: var(--color-cream);
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

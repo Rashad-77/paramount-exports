@@ -1,0 +1,115 @@
+/*
+ * Design tokens — single source for colour, type, spacing rhythm, borders, radii, shadows, focus and motion.
+ *
+ * Direction: "quiet gallery". Warm paper, deep walnut ink, a single brass accent used only for hairlines and small
+ * details. Square corners throughout. Hierarchy comes from scale, spacing and thin rules rather than boxes and colour.
+ * Research notes behind these choices (consistent spacing scale, small set of type sizes, restraint, layered low-opacity
+ * shadows tinted to the background, motion only on key interactions) are summarised in docs/DESIGN_NOTES.md.
+ *
+ * Contrast (computed): charcoal on paper 15.8:1 · walnut on paper 12.3:1 · text-muted on paper 6.4:1 (5.6:1 on linen) ·
+ * brass-text on paper 6.8:1 · paper on walnut 12.3:1 · paper on olive 5.9:1.
+ * `stone` (4.2:1) and `brass` (3.9:1) clear the 3:1 needed for borders and icons but NOT for text, so they are never used for text.
+ */
+@theme {
+  /* Surfaces and ink */
+  --color-ivory: #fefcf9;
+  --color-paper-deep: #f7f4ee;
+  --color-linen: #e8e3dc;
+  --color-linen-dark: #dbcfb9;
+  --color-walnut: #331c11;
+  --color-walnut-dark: #200f07;
+  --color-charcoal: #1c1916;
+  --color-stone: #8a7f74;
+  --color-olive: #53634d;
+  --color-olive-dark: #44523f;
+  /* Brand: a deep saddle brown. Mint is the light green used for soft backgrounds and the page gradient. */
+  --color-brand: #331c11;
+  --color-brand-dark: #200f07;
+  --color-mint: #efe9df;
+  --color-mint-deep: #dbcfb9;
+  --color-surface: #fefcf9;
+  /* Rhythm for the public site: warm cream, a deeper cream for contrast, and bark brown for the dark sections */
+  --color-cream: #f7f4ee;
+  --color-cream-deep: #e8e3dc;
+  --color-bark: #200f07;
+  --color-bark-2: #331c11;
+  /* The warm accents from the design reference */
+  --color-timber: #825535;
+  --color-oak: #c5aa86;
+  --color-beige: #dbcfb9;
+  --color-copper: #b06239;
+
+  /* Accent: a muted brass. Decorative (rules, hover lines, small marks); use brass-text for any text. */
+  --color-brass: #825535;
+  --color-brass-text: #6b4529;
+
+  /* Semantic */
+  --color-text: #1c1916;
+  --color-text-muted: #6a5f56;
+  --color-border: #dbd6cd;
+  --color-border-strong: #8a7f74;
+  --color-danger: #8f2d26;
+  --color-danger-bg: #f6e4e1;
+  --color-warning: #7a4f0e;
+  --color-warning-bg: #f4e8d0;
+  --color-success: #44523f;
+  --color-success-bg: #e3e9df;
+  --color-info: #3b4a57;
+  --color-info-bg: #e2e8ed;
+  --color-focus: #331c11;
+
+  /* Type: an editorial serif for display, a precise grotesque for everything else */
+  --font-sans: "Epilogue Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Urbanist Variable", "Epilogue Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 3.75rem;
+  /* Fluid display sizes for the public site (use with font-display) */
+  --text-headline: clamp(1.9rem, 1.3rem + 1.7vw, 2.75rem);
+  --text-headline--line-height: 1.08;
+  --text-headline--letter-spacing: -0.03em;
+  --text-display: clamp(2.4rem, 1.4rem + 3.4vw, 4.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+
+  /* Radii: none. Square edges are part of the identity. */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+
+  /* Shadows: layered, low-opacity, tinted to the paper (never pure black). Used rarely — hairlines do most of the work. */
+  --shadow-sm: 0 1px 1px rgb(58 44 35 / 0.04), 0 2px 4px rgb(58 44 35 / 0.04);
+  --shadow-md: 0 1px 2px rgb(58 44 35 / 0.04), 0 4px 8px rgb(58 44 35 / 0.05), 0 12px 24px rgb(58 44 35 / 0.06);
+  --shadow-lg: 0 2px 4px rgb(58 44 35 / 0.04), 0 8px 16px rgb(58 44 35 / 0.05), 0 24px 48px rgb(58 44 35 / 0.08);
+
+  /* Motion: slow-in, long-out. Short for controls, long for imagery. Disabled under prefers-reduced-motion. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 700ms;
+}
+
+:root {
+  /* Layout rules */
+  --content-width: 72rem; /* public site max width */
+  --reading-width: 40rem;
+  --gutter: 1.25rem;
+  --header-height: 3.75rem;
+  --touch-target: 2.75rem; /* 44px minimum for workshop/phone use */
+  /* Vertical rhythm for public sections */
+  --section-space: clamp(4rem, 2.5rem + 6vw, 8rem);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --gutter: 2.5rem;
+  }
+}
