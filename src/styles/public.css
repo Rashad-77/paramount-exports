@@ -3638,3 +3638,19 @@ a.acct-row {
   height: 0.8125rem;
   margin-top: 0.2rem;
 }
+
+/* Footer icons sit level with the first line of their text, whatever the line count. */
+.foot .foot-list a,
+.foot .foot-list .plain {
+  align-items: flex-start;
+  line-height: 1.35;
+}
+.foot .foot-list svg {
+  margin-top: calc((1.35em - 0.8125rem) / 2);
+}
+@media (pointer: coarse) {
+  .foot .foot-list a {
+    min-height: 0;
+    padding-block: 0.4rem;
+  }
+}
