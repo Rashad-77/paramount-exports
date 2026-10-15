@@ -3756,3 +3756,16 @@ a.acct-row {
   width: 3rem;
   height: 3rem;
 }
+
+/* Type grows with the screen: phones and tablets keep the 16px base (the readable minimum); large desktops step up so text keeps its
+   proportion to the wider page. Everything sized in rem follows. Headlines have their own fluid sizes (see tokens.css). */
+@media (min-width: 80rem) {
+  html {
+    font-size: 106.25%;
+  }
+}
+@media (min-width: 120rem) {
+  html {
+    font-size: 112.5%;
+  }
+}

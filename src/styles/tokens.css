@@ -72,10 +72,10 @@
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
   /* Fluid display sizes for the public site (use with font-display) */
-  --text-headline: clamp(1.9rem, 1.3rem + 1.7vw, 2.75rem);
+  --text-headline: clamp(1.625rem, 1.2rem + 1.9vw, 2.75rem);
   --text-headline--line-height: 1.08;
   --text-headline--letter-spacing: -0.03em;
-  --text-display: clamp(2.4rem, 1.4rem + 3.4vw, 4.25rem);
+  --text-display: clamp(2rem, 1.2rem + 3.6vw, 4.25rem);
   --text-display--line-height: 1.02;
   --text-display--letter-spacing: -0.035em;
 
