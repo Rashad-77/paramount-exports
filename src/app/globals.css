@@ -719,3 +719,22 @@ html:has(.app-ui) {
 .tag-green { --c: #4f8a1a; }
 .tag-red { --c: #d03c3b; }
 .tag-grey { --c: #6b7280; }
+
+/* Tables keep a sensible width and scroll sideways (swipe, trackpad or shift + wheel) when the screen is narrower, instead of squeezing the columns. */
+.app-ui [role="region"][tabindex="0"] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.app-ui [role="region"][tabindex="0"] > table {
+  min-width: 46rem;
+}
+.app-ui [role="region"][tabindex="0"] td,
+.app-ui [role="region"][tabindex="0"] th {
+  white-space: nowrap;
+}
+.app-ui [role="region"][tabindex="0"] td .whitespace-pre-line,
+.app-ui [role="region"][tabindex="0"] td.max-w-xs,
+.app-ui [role="region"][tabindex="0"] td[class*="max-w-"] {
+  white-space: normal;
+  min-width: 12rem;
+}
