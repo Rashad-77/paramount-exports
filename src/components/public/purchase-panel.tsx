@@ -9,7 +9,6 @@ import { useCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 import { MAX_QTY } from "@/lib/order-constants";
 import { quoteHref, type QuoteDetails } from "@/lib/quote-link";
-import { percentOff } from "@/lib/sale";
 
 export interface PanelOption {
   id: string;
@@ -55,7 +54,6 @@ export function PurchasePanel({
 
   const canBuy = mode !== "quote" && Boolean(option?.price);
   const canQuote = mode !== "direct" || !canBuy;
-  const off = percentOff(option?.price, option?.compare);
 
   const bump = (n: number) => {
     setAdded(false);
@@ -77,7 +75,6 @@ export function PurchasePanel({
           <p>
             {option.compare ? <del className="price-was">{formatMoney(option.compare, currency)}</del> : null}
             {option.compare ? <ins className="price-now">{formatMoney(option.price, currency)}</ins> : <span>{formatMoney(option.price, currency)}</span>}
-            {off ? <span className="pp-off">{off}% off</span> : null}
           </p>
         ) : (
           <p>
