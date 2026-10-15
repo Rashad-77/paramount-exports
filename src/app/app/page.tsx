@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status";
@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { ORDER_STATUS_TONE } from "@/lib/order-ui";
 import { STAFF_QUOTE_LABEL, STAFF_QUOTE_TONE, isQuoteStatus } from "@/lib/quotation-ui";
 import { STATUS_LABEL } from "@/lib/schemas/orders";
-import { getBusinessSettings, isPlaceholderBusiness } from "@/lib/settings";
+import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { getDashboard } from "@/server/orders";
 
@@ -46,13 +46,6 @@ export default async function DashboardPage() {
   const actor = await requireActor();
   const [business, d] = await Promise.all([getBusinessSettings(), getDashboard(actor)]);
   const maxDay = Math.max(1, ...d.daily.map((x) => x.orders));
-  const setup = [
-    { label: "Business name", done: !isPlaceholderBusiness(business), hint: "Shown across the website." },
-    { label: "Showroom address and opening hours", done: Boolean(business.address && business.openingHours), hint: "Shown on the Contact page." },
-    { label: "Telephone or WhatsApp number", done: Boolean(business.phone || business.whatsapp), hint: "Customers call or message you from the website." },
-    { label: "Bank details for transfers", done: Boolean(business.bankDetails), hint: "Shown to customers who choose to pay by bank transfer." },
-  ];
-  const missing = setup.filter((s) => !s.done);
   const today = new Intl.DateTimeFormat("en-GB", { dateStyle: "full", timeZone: business.timezone }).format(new Date());
 
   return (
@@ -182,24 +175,6 @@ export default async function DashboardPage() {
           </div>
         </Panel>
 
-        {missing.length > 0 ? (
-          <Panel title="Set up your website" description={`${missing.length} of ${setup.length} still to do.`}>
-            <ul className="space-y-3 text-sm">
-              {setup.map((s) => (
-                <li key={s.label} className="flex gap-2.5">
-                  {s.done ? <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success" /> : <Circle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-text-muted" />}
-                  <span>
-                    <span className={s.done ? "text-text-muted line-through" : "font-medium"}>{s.label}</span>
-                    {s.done ? null : <span className="block text-text-muted">{s.hint}</span>}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4">
-              <More href="/app/settings">Open settings</More>
-            </div>
-          </Panel>
-        ) : null}
       </div>
     </>
   );
