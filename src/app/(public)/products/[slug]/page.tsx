@@ -34,15 +34,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** The first sentence of a longer text, or its first 180 characters when there is no early full stop. */
-function openingOf(text: string | null): string | null {
-  const t = (text ?? "").replace(/\s+/g, " ").trim();
-  if (!t) return null;
-  const sentence = /^.{1,180}?[.!?](?=\s|$)/.exec(t)?.[0];
-  if (sentence) return sentence;
-  return t.length <= 180 ? t : `${t.slice(0, 180).replace(/\s+\S*$/, "")}…`;
-}
-
 const List = ({ items }: { items: string[] }) => (
   <ul className="pdp-list">
     {items.map((t) => (
@@ -80,7 +71,9 @@ export default async function ProductPage({ params }: Props) {
   }, null);
 
   // The line under the name: the short description, or else the opening of the detailed one.
-  const lead = p.shortDescription ?? openingOf(p.description);
+  // The text under the name: the short description, or else the whole item description (which then is not repeated in the tab).
+  const lead = p.shortDescription ?? p.description;
+  const descriptionInTab = p.shortDescription ? p.description : null;
 
   const quote = { productId: p.id, name: p.name, wood: p.material, finish: p.finish, size: p.dimensions };
 
@@ -98,13 +91,13 @@ export default async function ProductPage({ params }: Props) {
   const customs = CUSTOMIZATIONS.filter((c) => p.customization.includes(c));
 
   const tabs: ProductTab[] = [];
-  if (p.description || p.features.length || p.uses.length) {
+  if (descriptionInTab || p.features.length || p.uses.length) {
     tabs.push({
       id: "description",
       label: "Description",
       content: (
         <div className="pdp-prose">
-          {p.description ? <p className="whitespace-pre-line">{p.description}</p> : null}
+          {descriptionInTab ? <p className="whitespace-pre-line">{descriptionInTab}</p> : null}
           {p.features.length ? (
             <>
               <h3>Features</h3>
@@ -217,7 +210,7 @@ export default async function ProductPage({ params }: Props) {
                 <StatusBadge tone="neutral">{p.availability}</StatusBadge>
               </p>
             ) : null}
-            {lead ? <p className="mt-5 max-w-prose text-base leading-relaxed text-text-muted">{lead}</p> : null}
+            {lead ? <p className="mt-5 max-w-prose whitespace-pre-line text-base leading-relaxed text-text-muted">{lead}</p> : null}
 
             <PurchasePanel
               productName={p.name}
