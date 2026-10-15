@@ -3363,3 +3363,69 @@ a.acct-row {
   height: 1.5rem;
   background-size: 0.95rem;
 }
+
+/* ── Product page type: quieter and more refined. Sentence case, a little smaller, no wide letter spacing ─────────────── */
+.pdp-page .pp-options legend,
+.pdp-page .pp-qty > span,
+.pdp-page .pp-code,
+.pdp-page .pp-lead span,
+.pdp-page .ptabs-list button,
+.pdp-page .pdp-specs dt,
+.pdp-page .pdp-prose h3,
+.pdp-page .sale-tag {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.pdp-page .pp-code,
+.pdp-page .pp-lead span,
+.pdp-page .pdp-specs dt {
+  font-weight: 400;
+}
+.pdp-page .pdp-prose h3 {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: #331c11;
+}
+.pdp-page .ptabs-list button {
+  font-size: 0.9375rem;
+  padding: 0 1.1rem;
+}
+.pdp-page .pp-actions .btn-solid,
+.pdp-page .pp-actions a,
+.pdp-page .pp-actions button,
+.pdp-page .ask-btn {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.pdp-page .pp-options label,
+.pdp-page .pp-lead,
+.pdp-page .pdp-specs dd {
+  font-size: 0.9375rem;
+}
+.pdp-page .pp-price p:first-child {
+  font-size: clamp(1.5rem, 3.4vw, 1.875rem);
+}
+.pdp-page .pdp-category {
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.pdp-page .pdp-lead {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.pdp-page .pdp-prose,
+.pdp-page .pdp-list li {
+  font-size: 0.9375rem;
+}
+.pdp-page .pp-actions button,
+.pdp-page .ask-btn,
+.pdp-page .ptabs-list button,
+.pdp-page .pp-options label {
+  font-family: inherit;
+}

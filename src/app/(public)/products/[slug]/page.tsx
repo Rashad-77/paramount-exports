@@ -203,14 +203,14 @@ export default async function ProductPage({ params }: Props) {
             />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{p.categoryName}</p>
+            <p className="pdp-category text-text-muted">{p.categoryName}</p>
             <h1 className="font-display mt-3 text-headline text-walnut">{p.name}</h1>
             {p.availability ? (
               <p className="mt-4">
                 <StatusBadge tone="neutral">{p.availability}</StatusBadge>
               </p>
             ) : null}
-            {lead ? <p className="mt-5 max-w-prose whitespace-pre-line text-base leading-relaxed text-text-muted">{lead}</p> : null}
+            {lead ? <p className="pdp-lead mt-5 max-w-prose whitespace-pre-line text-text-muted">{lead}</p> : null}
 
             <PurchasePanel
               productName={p.name}
