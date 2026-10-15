@@ -2692,3 +2692,238 @@ a.acct-row {
   color: #d32f2f;
   text-decoration: none;
 }
+
+/* ── Order tracking: a progress bar across the top, the details underneath ───────────────────────────────────────────── */
+.ot {
+  display: grid;
+  gap: 1rem;
+}
+.ot-hello {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: #331c11;
+  margin-bottom: 0.25rem;
+}
+.ot-card {
+  border: 1px solid rgb(28 25 22 / 0.12);
+  border-radius: 3px;
+  background: #fff;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.ot-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+.ot-kicker {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.ot-ref {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  line-height: 1.15;
+  color: #1c1916;
+}
+.ot-sub {
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+/* The four steps: dots joined by a line, labels underneath */
+.ot-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ot-bar li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: center;
+}
+.ot-bar li::before {
+  content: "";
+  position: absolute;
+  top: 0.7rem;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgb(28 25 22 / 0.16);
+}
+.ot-bar li:first-child::before {
+  display: none;
+}
+.ot-bar li[data-state="done"]::before,
+.ot-bar li[data-state="now"]::before {
+  background: #331c11;
+}
+.ot-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid rgb(28 25 22 / 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: #fff;
+}
+.ot-bar li[data-state="done"] .ot-dot {
+  border-color: #331c11;
+  background: #331c11;
+}
+.ot-bar li[data-state="now"] .ot-dot {
+  border-color: #331c11;
+  background: #331c11;
+  box-shadow: 0 0 0 4px rgb(51 28 17 / 0.15);
+}
+.ot-step {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: rgb(28 25 22 / 0.62);
+}
+.ot-bar li[data-state="done"] .ot-step,
+.ot-bar li[data-state="now"] .ot-step {
+  color: #1c1916;
+}
+.ot-when {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.ot-note {
+  max-width: 40rem;
+  margin: 1.5rem auto 0;
+  text-align: center;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+@media (max-width: 30rem) {
+  .ot-step {
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+  }
+  .ot-when {
+    font-size: 0.6875rem;
+  }
+}
+/* The three facts under the bar */
+.ot-facts {
+  display: grid;
+  gap: 1.1rem 2rem;
+  margin: 1.75rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
+@media (min-width: 40rem) {
+  .ot-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.ot-facts dt,
+.ot-sum dt {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.ot-facts dd {
+  margin-top: 0.3rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #1c1916;
+}
+.ot-total {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+.ot-muted {
+  color: var(--color-text-muted);
+}
+/* The items and the sum */
+.ot-h {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: #331c11;
+}
+.ot-items {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ot-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+  font-size: 0.9375rem;
+}
+.ot-items li:first-child {
+  border-top: 0;
+}
+.ot-name {
+  font-weight: 600;
+}
+.ot-qty {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+}
+.ot-money {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.ot-sum {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
+.ot-sum > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9375rem;
+}
+.ot-sum dd {
+  font-variant-numeric: tabular-nums;
+}
+.ot-sum-total {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+  font-weight: 600;
+}
+.ot-sum-total dt {
+  font-size: 0.75rem;
+  color: #1c1916;
+}
+.ot-help {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+.ot-help a {
+  color: #1c1916;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

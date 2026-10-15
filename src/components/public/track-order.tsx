@@ -4,12 +4,13 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 import { trackOrderAction } from "@/app/(public)/track-actions";
 import { ActionForm, FField, SubmitButton, useFormState } from "@/components/forms/action-form";
+import { OrderStatusPill } from "@/components/public/account-ui";
 import { Alert } from "@/components/ui/status";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { dec, formatMoney } from "@/lib/money";
 import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
 import type { TrackedOrder } from "@/lib/schemas/tracking";
-import { formatDateTime } from "@/lib/time";
+import { formatDate, formatDateTime } from "@/lib/time";
 
 /** The steps a customer sees, in order. "Being prepared" has no time of its own: staff only stamp the other three. */
 function stepsFor(o: TrackedOrder) {
@@ -18,7 +19,7 @@ function stepsFor(o: TrackedOrder) {
     { key: "new", label: "Order received", at: o.placedAt, note: "We have your order. We will call or message you to confirm it." },
     {
       key: "confirmed",
-      label: "Order confirmed",
+      label: "Confirmed",
       at: o.confirmedAt,
       note: delivery ? "Your order is confirmed. We will arrange the delivery charge and the day with you." : "Your order is confirmed. We will tell you when it is ready to collect.",
     },
@@ -49,91 +50,104 @@ export function OrderView({ o, timezone, phone }: { o: TrackedOrder; timezone: s
   const steps = stepsFor(o);
   const at = o.status === "cancelled" ? -1 : ORDER.indexOf(o.status);
   const awaitingCharge = o.fulfilment === "delivery" && dec(o.deliveryCharge).isZero() && at < 1;
+  const current = steps[Math.max(0, at)]!;
 
   return (
-    <section aria-labelledby="track-result" className="mt-10 space-y-6" aria-live="polite">
-      <div>
-        <p className="eyebrow">Order {o.reference}</p>
-        <h2 id="track-result" className="font-display mt-3 text-[1.9rem] leading-tight text-text">
-          {o.firstName ? `Hello ${o.firstName}, here is your order.` : "Here is your order."}
-        </h2>
-        <p className="mt-2 text-[0.8125rem] text-text-muted">Placed {when(o.placedAt)}</p>
+    <section aria-labelledby="track-result" className="ot mt-10" aria-live="polite">
+      <h2 id="track-result" className="font-display ot-hello">
+        {o.firstName ? `Hello ${o.firstName}, here is your order.` : "Here is your order."}
+      </h2>
+
+      <div className="ot-card">
+        <div className="ot-head">
+          <div>
+            <p className="ot-kicker">Order</p>
+            <p className="ot-ref">{o.reference}</p>
+            <p className="ot-sub">Placed {when(o.placedAt)}</p>
+          </div>
+          <OrderStatusPill status={o.status} />
+        </div>
+
+        {o.status === "cancelled" ? (
+          <Alert tone="danger" title="This order was cancelled">
+            {o.cancelledAt ? `Cancelled ${when(o.cancelledAt)}. ` : null}If you have a question about it, please contact us and quote {o.reference}.
+          </Alert>
+        ) : (
+          <>
+            <ol className="ot-bar" aria-label="Where your order is">
+              {steps.map((st, i) => {
+                const state = i < at ? "done" : i === at ? "now" : "next";
+                return (
+                  <li key={st.key} data-state={state} aria-current={state === "now" ? "step" : undefined}>
+                    <span className="ot-dot" aria-hidden="true">
+                      {state === "done" || (state === "now" && o.status === "delivered") ? <Check className="size-3" strokeWidth={3} /> : null}
+                    </span>
+                    <span className="ot-step">
+                      {st.label}
+                      {state === "now" ? <span className="sr-only"> (current step)</span> : null}
+                    </span>
+                    {st.at && i <= at ? <span className="ot-when">{formatDate(st.at, timezone)}</span> : null}
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="ot-note">{current.note}</p>
+          </>
+        )}
+
+        <dl className="ot-facts">
+          <div>
+            <dt>Delivery or collection</dt>
+            <dd>{FULFILMENT_LABEL[o.fulfilment]}</dd>
+          </div>
+          <div>
+            <dt>Payment</dt>
+            <dd>
+              {PAYMENT_LABEL[o.paymentMethod]}
+              <span className="ot-muted"> · {o.isPaid ? "received, thank you" : "not yet received"}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Total</dt>
+            <dd className="ot-total">{formatMoney(o.total, o.currency)}</dd>
+          </div>
+        </dl>
       </div>
 
-      {o.status === "cancelled" ? (
-        <Alert tone="danger" title="This order was cancelled">
-          {o.cancelledAt ? `Cancelled ${when(o.cancelledAt)}. ` : null}If you have a question about it, please contact us and quote {o.reference}.
-        </Alert>
-      ) : (
-        <ol className="track-steps soft-card">
-          {steps.map((s, i) => {
-            const state = i < at ? "done" : i === at ? "now" : "next";
-            return (
-              <li key={s.key} data-state={state} aria-current={state === "now" ? "step" : undefined}>
-                <span className="track-dot" aria-hidden="true">
-                  {state === "done" || (state === "now" && o.status === "delivered") ? <Check className="size-3.5" strokeWidth={2.5} /> : null}
-                </span>
-                <div>
-                  <p className="track-label">
-                    {s.label}
-                    {state === "now" ? <span className="sr-only"> (current step)</span> : null}
-                  </p>
-                  {s.at ? <p className="track-when">{when(s.at)}</p> : null}
-                  {state === "now" ? <p className="track-note">{s.note}</p> : null}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-
-      <div className="soft-card">
-        <h3 className="font-display text-[1.2rem] leading-tight text-text">What you ordered</h3>
-        <ul className="mt-4 divide-y divide-border text-[0.875rem]">
+      <div className="ot-card">
+        <h3 className="ot-h">Order summary</h3>
+        <ul className="ot-items">
           {o.items.map((i, n) => (
-            <li key={n} className="flex justify-between gap-4 py-3">
+            <li key={n}>
               <span>
-                {i.quantity} × {i.name}
-                {i.label ? <span className="text-text-muted"> · {i.label}</span> : null}
+                <span className="ot-name">{i.name}</span>
+                {i.label ? <span className="ot-muted"> · {i.label}</span> : null}
+                <span className="ot-muted ot-qty">Qty {i.quantity}</span>
               </span>
-              <span className="shrink-0">{formatMoney(i.lineTotal, o.currency)}</span>
+              <span className="ot-money">{formatMoney(i.lineTotal, o.currency)}</span>
             </li>
           ))}
         </ul>
-        <dl className="mt-3 space-y-1.5 border-t border-border pt-3 text-[0.875rem]">
-          <div className="flex justify-between gap-4">
-            <dt className="text-text-muted">Items</dt>
+        <dl className="ot-sum">
+          <div>
+            <dt>Subtotal</dt>
             <dd>{formatMoney(o.subtotal, o.currency)}</dd>
           </div>
           {o.fulfilment === "delivery" ? (
-            <div className="flex justify-between gap-4">
-              <dt className="text-text-muted">Delivery</dt>
-              <dd>{awaitingCharge ? "Agreed when we confirm" : formatMoney(o.deliveryCharge, o.currency)}</dd>
+            <div>
+              <dt>Delivery</dt>
+              <dd>{awaitingCharge ? "Confirmed after your order" : formatMoney(o.deliveryCharge, o.currency)}</dd>
             </div>
           ) : null}
-          <div className="flex justify-between gap-4 pt-1 font-semibold">
-            <dt>Total</dt>
+          <div className="ot-sum-total">
+            <dt>{o.fulfilment === "delivery" && awaitingCharge ? "Total (excl. delivery)" : "Total"}</dt>
             <dd>{formatMoney(o.total, o.currency)}</dd>
           </div>
         </dl>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="soft-card">
-          <p className="eyebrow">How</p>
-          <p className="mt-3 text-[0.9375rem] text-text">{FULFILMENT_LABEL[o.fulfilment]}</p>
-        </div>
-        <div className="soft-card">
-          <p className="eyebrow">Payment</p>
-          <p className="mt-3 text-[0.9375rem] text-text">
-            {PAYMENT_LABEL[o.paymentMethod]}
-            <span className="text-text-muted"> · {o.isPaid ? "received, thank you" : "not yet received"}</span>
-          </p>
-        </div>
-      </div>
-
-      <p className="text-[0.875rem] text-text-muted">
-        Need to change something? {phone ? <a href={`tel:${phone.replace(/\s+/g, "")}`} className="text-text underline">Call us on {phone}</a> : <Link href="/contact" className="text-text underline">Contact us</Link>} and quote {o.reference}.
+      <p className="ot-help">
+        Need to change something? {phone ? <a href={`tel:${phone.replace(/\s+/g, "")}`}>Call us on {phone}</a> : <Link href="/contact">Contact us</Link>} and quote {o.reference}.
       </p>
     </section>
   );
