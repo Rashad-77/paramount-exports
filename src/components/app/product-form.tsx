@@ -64,7 +64,7 @@ export function ProductForm({
         ) : null}
       </div>
       <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="One or two sentences shown under the name." />
-      <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} />
+      <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} hint="The long text, shown under the Description bar on the product page." />
 
       <fieldset className="space-y-4 border border-border p-4">
         <legend className="px-1 text-sm font-medium">Specifications, features and care</legend>
