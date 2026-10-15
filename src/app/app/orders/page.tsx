@@ -72,11 +72,10 @@ export default async function OrdersPage({
           ? { status: view as OrderStatus }
           : {};
 
-  const [business, counts, result, unpaid] = await Promise.all([
+  const [business, counts, result] = await Promise.all([
     getBusinessSettings(),
     countOrdersByStatus(actor),
     listOrders(actor, { ...filter, q, page, pageSize: PAGE_SIZE }),
-    listOrders(actor, { payment: "unpaid", page: 1, pageSize: 1 }),
   ]);
   const href = (over: Record<string, string | undefined>) =>
     buildHref("/app/orders", { view, q, ...over });
@@ -96,7 +95,6 @@ export default async function OrdersPage({
           tab(undefined, "All", counts.all),
           tab("new", "New", counts.new),
           tab("confirmed", "Confirmed", counts.confirmed),
-          tab("unpaid", "Awaiting payment", unpaid.total),
           tab("in_progress", "In production", counts.in_progress),
           tab("ready", "Ready", counts.ready + counts.out_for_delivery),
           tab("delivered", "Completed", counts.delivered),
