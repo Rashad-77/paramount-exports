@@ -65,7 +65,8 @@ export function ProductGallery({
                 aria-pressed={i === active}
                 className={cn(
                   "relative block aspect-square w-full cursor-pointer overflow-hidden border",
-                  img ? "bg-linen" : "border-dashed bg-linen/60",
+                  img ? "bg-linen" : "bg-linen/60",
+                  !img && i !== active && "border-dashed",
                   i === active
                     ? "border-walnut border-2"
                     : "border-border hover:border-walnut",
