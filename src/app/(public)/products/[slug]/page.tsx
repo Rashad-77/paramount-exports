@@ -249,7 +249,7 @@ export default async function ProductPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="mt-14 md:mt-20">
+        <div className="mt-4 md:mt-20">
           <ProductTabs tabs={tabs} />
         </div>
 

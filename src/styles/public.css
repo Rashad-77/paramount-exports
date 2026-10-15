@@ -3654,3 +3654,11 @@ a.acct-row {
     padding-block: 0.4rem;
   }
 }
+
+/* Phones: the line under the buttons takes less room. */
+@media (max-width: 47.99rem) {
+  .pp-status {
+    min-height: 1.25rem;
+    margin-top: 0.5rem;
+  }
+}
