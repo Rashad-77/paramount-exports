@@ -273,7 +273,7 @@ export function TrackOrder({
           <FField
             name="reference"
             label="Order number"
-            placeholder="000123"
+            placeholder="482719364"
             inputMode="numeric"
             defaultValue={initialReference}
             autoComplete="off"

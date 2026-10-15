@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createTestDb, hasTestDb, type TestDb } from "../helpers/db";
+import { luhnValid } from "@/lib/schemas/tracking";
 
 describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
   let t: TestDb;
@@ -85,7 +86,10 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
       }),
     );
     expect(new Set(refs).size).toBe(60);
-    for (const ref of refs) expect(ref).toMatch(/^ORD-\d{6}$/);
+    for (const ref of refs) {
+      expect(ref).toMatch(/^[1-9]\d{8}$/);
+      expect(luhnValid(ref)).toBe(true);
+    }
     const [m] = await t.sql`SELECT next_reference('message') AS ref`;
     expect(m!.ref).toMatch(/^MSG-\d{6}$/);
   });

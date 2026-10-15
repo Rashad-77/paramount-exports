@@ -342,8 +342,8 @@ test.describe("ordering (no online payment)", () => {
 
     // the customer can follow the order: the order number is all that is needed
     await page.getByRole("link", { name: /track this order/i }).click();
-    await expect(page).toHaveURL(/\/track\?ref=ORD-\d{6}/);
-    await expect(page.getByLabel(/^Order number/)).toHaveValue(/^ORD-\d{6}$/);
+    await expect(page).toHaveURL(/\/track\?ref=\d{9}/);
+    await expect(page.getByLabel(/^Order number/)).toHaveValue(/^\d{9}$/);
     await page.getByRole("button", { name: /track order/i }).click();
     await expect(page.getByRole("heading", { name: /hello order, here is your order/i })).toBeVisible();
     await expect(page.getByText("Order received")).toBeVisible();

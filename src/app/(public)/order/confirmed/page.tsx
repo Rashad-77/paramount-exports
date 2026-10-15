@@ -16,7 +16,7 @@ export default async function OrderConfirmedPage({ searchParams }: { searchParam
   return (
     <div className="container-page py-[var(--section-space)]">
       <OrderConfirmed
-        reference={ref && /^ORD-\d{6}$/.test(ref) ? ref : null}
+        reference={ref && /^(ORD-\d{6}|[1-9]\d{8})$/.test(ref) ? ref : null}
         payment={pay && (PAYMENT_METHODS as readonly string[]).includes(pay) ? (pay as PaymentMethod) : null}
         fulfilment={how && (FULFILMENT as readonly string[]).includes(how) ? (how as Fulfilment) : null}
         bankDetails={business.bankDetails}

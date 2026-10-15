@@ -68,7 +68,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
 
   it("places an order priced from the database, with a reference, nothing paid and no delivery charge yet", async () => {
     const { id, reference } = await place({}, [[tableVariant, 2], [stoolVariant, 3]]);
-    expect(reference).toMatch(/^ORD-\d{6}$/);
+    expect(reference).toMatch(/^[1-9]\d{8}$/);
     const { order, items } = await getOrder(staff, id);
     expect(order).toMatchObject({ status: "new", isPaid: false, fulfilment: "delivery", paymentMethod: "on_delivery", subtotal: "245001.50", deliveryCharge: "0.00", total: "245001.50", phoneKey: "771110001" });
     expect(items.map((i) => [i.productName, i.quantity, i.unitPrice, i.lineTotal])).toEqual([
@@ -262,6 +262,9 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
 
     it("understands the order number however it is typed", () => {
       for (const v of ["ORD-000123", "ord-123", "ORD 123", "123", " 000123 "]) expect(trackSchema.parse({ reference: v, phone: "0771119003" }).reference).toBe("ORD-000123");
+      expect(trackSchema.parse({ reference: " 482 719 364 " }).reference).toBe("482719364");
+      // a mistyped number (wrong check digit) is refused before any lookup
+      expect(trackSchema.safeParse({ reference: "482719365" }).success).toBe(false);
       for (const v of ["", "abc", "ORD-1234567", "12-34"]) expect(trackSchema.safeParse({ reference: v, phone: "0771119003" }).success).toBe(false);
     });
 
