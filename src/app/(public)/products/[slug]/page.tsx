@@ -230,7 +230,7 @@ export default async function ProductPage({ params }: Props) {
           <ProductTabs tabs={tabs} />
         </div>
 
-        <AskDisclosure title="Have a question about this piece?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
+        <AskDisclosure title="Have a question?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
           <EnquiryForm
             kind="product_enquiry"
             wide
