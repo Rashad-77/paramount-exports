@@ -138,6 +138,9 @@ export default async function ProductPage({ params }: Props) {
           <div>
             <h3>Delivery</h3>
             <p>We deliver to your address. The delivery charge is agreed with you when we confirm your order.</p>
+            <p>
+              <strong className="font-medium text-text">Estimated delivery:</strong> 3 to 7 working days after your order is confirmed.
+            </p>
           </div>
         </li>
         <li>
