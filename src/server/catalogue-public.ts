@@ -169,6 +169,36 @@ async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
   return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
 }
 
+/**
+ * More to look at on a product page: other products in the same category first, then products from the same group
+ * (the categories beside it), so the row is rarely empty.
+ */
+export async function listRelatedProducts(productId: string, categoryId: string, limit = 4): Promise<PublicCard[]> {
+  if (!hasDatabase()) return [];
+  const db = getDb();
+  const [cat] = await db.select({ parentId: productCategories.parentId }).from(productCategories).where(eq(productCategories.id, categoryId)).limit(1);
+  const same = await db
+    .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
+    .from(products)
+    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+    .where(and(visible, eq(products.categoryId, categoryId), sql`${products.id} <> ${productId}`))
+    .orderBy(desc(products.isFeatured), desc(products.updatedAt))
+    .limit(limit);
+  let rows = same;
+  if (rows.length < limit && cat?.parentId) {
+    const have = rows.map((r) => r.p.id);
+    const near = await db
+      .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
+      .from(products)
+      .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+      .where(and(visible, eq(productCategories.parentId, cat.parentId), sql`${products.id} <> ${productId}`, have.length ? sql`${products.id} NOT IN (${sql.join(have.map((h) => sql`${h}`), sql`, `)})` : sql`true`))
+      .orderBy(desc(products.isFeatured), desc(products.updatedAt))
+      .limit(limit - rows.length);
+    rows = [...rows, ...near];
+  }
+  return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
+}
+
 /** Cards for these products, in the order given, skipping any that are no longer on sale. */
 export async function listPublicProductsByIds(ids: string[]): Promise<PublicCard[]> {
   if (!hasDatabase() || ids.length === 0) return [];
@@ -213,6 +243,20 @@ export async function listPublicMaterials(): Promise<string[]> {
   return rows.map((r) => r.material!).filter(Boolean);
 }
 
+/** One item per non-empty line. */
+const toLines = (v: string | null): string[] =>
+  (v ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean);
+
+/** "Label: value" lines. A line without a colon is kept as a value on its own. */
+const toPairs = (v: string | null): Array<{ label: string; value: string }> =>
+  toLines(v).map((l) => {
+    const i = l.indexOf(":");
+    return i > 0 ? { label: l.slice(0, i).trim(), value: l.slice(i + 1).trim() } : { label: "", value: l };
+  });
+
 async function getPublicProductImpl(slugValue: string) {
   if (!hasDatabase()) return null;
   const db = getDb();
@@ -246,6 +290,18 @@ async function getPublicProductImpl(slugValue: string) {
     finish: p.finish,
     dimensions: p.dimensions,
     kind: p.kind,
+    categoryId: p.categoryId,
+    shortDescription: p.shortDescription,
+    features: toLines(p.features),
+    uses: toLines(p.uses),
+    woodTreatment: p.woodTreatment === "treated" ? "Treated" : p.woodTreatment === "untreated" ? "Untreated" : null,
+    colour: p.colour,
+    otherSpecs: toPairs(p.otherSpecs),
+    leadTime: p.leadTime,
+    careInstructions: p.careInstructions,
+    customization: p.customization,
+    purchaseMode: p.purchaseMode as "direct" | "quote" | "both",
+    priceShown: p.showPrice,
     categoryName: row.categoryName,
     categorySlug: row.categorySlug,
     seoTitle: p.seoTitle,

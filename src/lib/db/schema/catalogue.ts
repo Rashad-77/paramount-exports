@@ -42,6 +42,24 @@ export const products = pgTable(
     finish: text("finish"),
     /** Free-text dimensions as shown to customers, e.g. "W 180 × D 90 × H 75 cm". */
     dimensions: text("dimensions"),
+    /** One or two sentences under the name. */
+    shortDescription: text("short_description"),
+    /** One feature per line. */
+    features: text("features"),
+    /** One use per line. */
+    uses: text("uses"),
+    /** "treated" or "untreated"; empty when it does not apply (a finished piece, say). */
+    woodTreatment: text("wood_treatment"),
+    colour: text("colour"),
+    /** Anything else worth listing, one "Label: value" per line. */
+    otherSpecs: text("other_specs"),
+    /** e.g. "2 to 3 weeks". Shown when given. */
+    leadTime: text("lead_time"),
+    careInstructions: text("care_instructions"),
+    /** What can be tailored: any of "dimensions", "wood", "finish", "requirements". Empty means nothing is offered. */
+    customization: text("customization").array().notNull().default(sql`'{}'::text[]`),
+    /** How it is sold: "direct" (add to cart), "quote" (request a quotation), or "both". */
+    purchaseMode: text("purchase_mode").notNull().default("direct"),
     isPublished: boolean("is_published").notNull().default(false),
     /** Shown in the homepage "featured" section. */
     isFeatured: boolean("is_featured").notNull().default(false),
@@ -59,6 +77,8 @@ export const products = pgTable(
   (t) => [
     index("products_category_idx").on(t.categoryId),
     index("products_published_idx").on(t.isPublished),
+    check("products_wood_treatment_known", sql`${t.woodTreatment} IS NULL OR ${t.woodTreatment} IN ('treated', 'untreated')`),
+    check("products_purchase_mode_known", sql`${t.purchaseMode} IN ('direct', 'quote', 'both')`),
     check("products_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
   ],
 );

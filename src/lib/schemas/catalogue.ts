@@ -4,6 +4,20 @@ import { validation } from "@/lib/errors";
 import { checkbox, enumOf, idList, optEnum, optMoney, optText, optUuid, reqText, reqUuid, slug } from "@/lib/validation";
 
 export const PRODUCT_KINDS = ["stocked", "made_to_order"] as const;
+export const PURCHASE_MODES = ["direct", "quote", "both"] as const;
+export const PURCHASE_MODE_LABEL: Record<(typeof PURCHASE_MODES)[number], string> = {
+  direct: "Buy now: add to cart",
+  quote: "Quotation only: request a quote",
+  both: "Both: add to cart or request a quote",
+};
+export const WOOD_TREATMENTS = ["treated", "untreated"] as const;
+export const CUSTOMIZATIONS = ["dimensions", "wood", "finish", "requirements"] as const;
+export const CUSTOMIZATION_LABEL: Record<(typeof CUSTOMIZATIONS)[number], string> = {
+  dimensions: "Custom dimensions",
+  wood: "Choice of wood",
+  finish: "Choice of finish and colour",
+  requirements: "Additional requirements",
+};
 export const AVAILABILITY = ["in_stock", "made_to_order", "on_request", "sold"] as const;
 export const AVAILABILITY_LABEL: Record<(typeof AVAILABILITY)[number], string> = {
   in_stock: "In stock",
@@ -34,6 +48,16 @@ const productBase = z.object({
   material: optText("Wood / material", 120),
   finish: optText("Finish", 120),
   dimensions: optText("Dimensions", 200),
+  shortDescription: optText("Short description", 300),
+  features: optText("Features", 2000),
+  uses: optText("Uses", 1500),
+  woodTreatment: optEnum(WOOD_TREATMENTS, "wood treatment"),
+  colour: optText("Colour", 120),
+  otherSpecs: optText("Other specifications", 1500),
+  leadTime: optText("Lead time", 160),
+  careInstructions: optText("Care instructions", 2000),
+  customization: z.preprocess((v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(CUSTOMIZATIONS)).max(4)),
+  purchaseMode: enumOf(PURCHASE_MODES, "way of selling"),
   sku: z
     .string({ error: "SKU is required." })
     .trim()

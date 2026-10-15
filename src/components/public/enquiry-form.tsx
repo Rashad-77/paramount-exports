@@ -1,11 +1,12 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
+import { QuotePrefill } from "@/components/public/quote-prefill";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 
 export interface VariantOption {
@@ -55,6 +56,11 @@ export function EnquiryForm({
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="formToken" value={token} />
       {productId ? <input type="hidden" name="productId" value={productId} /> : null}
+      {kind === "custom" ? (
+        <Suspense fallback={null}>
+          <QuotePrefill />
+        </Suspense>
+      ) : null}
 
       {/* Honeypot: visually hidden and skipped by keyboard and screen readers; humans never fill it. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">

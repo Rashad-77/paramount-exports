@@ -1,7 +1,7 @@
 import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { treeLabel, treeOrder } from "@/lib/category-tree";
 import type { ActionState } from "@/lib/action-state";
-import { AVAILABILITY, AVAILABILITY_LABEL, PRODUCT_KINDS } from "@/lib/schemas/catalogue";
+import { AVAILABILITY, AVAILABILITY_LABEL, CUSTOMIZATIONS, CUSTOMIZATION_LABEL, PRODUCT_KINDS, PURCHASE_MODES, PURCHASE_MODE_LABEL, WOOD_TREATMENTS } from "@/lib/schemas/catalogue";
 
 export interface ProductFormValues {
   id?: string;
@@ -13,6 +13,16 @@ export interface ProductFormValues {
   material?: string | null;
   finish?: string | null;
   dimensions?: string | null;
+  shortDescription?: string | null;
+  features?: string | null;
+  uses?: string | null;
+  woodTreatment?: string | null;
+  colour?: string | null;
+  otherSpecs?: string | null;
+  leadTime?: string | null;
+  careInstructions?: string | null;
+  customization?: string[];
+  purchaseMode?: string;
   isPublished?: boolean;
   isFeatured?: boolean;
   showAvailability?: boolean;
@@ -53,7 +63,43 @@ export function ProductForm({
           </>
         ) : null}
       </div>
-      <FTextArea name="description" label="Description" rows={5} defaultValue={values.description ?? ""} />
+      <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="One or two sentences shown under the name." />
+      <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} />
+
+      <fieldset className="space-y-4 border border-border p-4">
+        <legend className="px-1 text-sm font-medium">Specifications, features and care</legend>
+        <p className="text-sm text-text-muted">Fill in only what applies. Anything left empty is not shown on the product page.</p>
+        <div className="grid gap-5 md:grid-cols-2">
+          <FSelect name="woodTreatment" label="Wood treatment" defaultValue={values.woodTreatment ?? ""} placeholder="Not applicable" options={WOOD_TREATMENTS.map((t) => ({ value: t, label: t === "treated" ? "Treated" : "Untreated" }))} />
+          <FField name="colour" label="Colour" defaultValue={values.colour ?? ""} />
+        </div>
+        <FTextArea name="otherSpecs" label="Other specifications" rows={3} maxLength={1500} defaultValue={values.otherSpecs ?? ""} hint="One per line, as “Label: value”, for example “Weight: 18 kg”." />
+        <div className="grid gap-5 md:grid-cols-2">
+          <FTextArea name="features" label="Features" rows={4} maxLength={2000} defaultValue={values.features ?? ""} hint="One per line." />
+          <FTextArea name="uses" label="Uses" rows={4} maxLength={1500} defaultValue={values.uses ?? ""} hint="One per line." />
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          <FField name="leadTime" label="Lead time" defaultValue={values.leadTime ?? ""} placeholder="e.g. 2 to 3 weeks" />
+          <FTextArea name="careInstructions" label="Care instructions" rows={3} maxLength={2000} defaultValue={values.careInstructions ?? ""} />
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-4 border border-border p-4">
+        <legend className="px-1 text-sm font-medium">How it is sold</legend>
+        <FSelect name="purchaseMode" label="Buying options on the page" required defaultValue={values.purchaseMode ?? "direct"} options={PURCHASE_MODES.map((m) => ({ value: m, label: PURCHASE_MODE_LABEL[m] }))} hint="Add to cart only appears for pieces with a public price. A piece with no price always offers a quotation." />
+        <div>
+          <p className="text-sm font-medium">What the customer can customize</p>
+          <p className="mb-2 text-sm text-text-muted">Tick only what you offer for this piece. Nothing ticked hides the customization section.</p>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {CUSTOMIZATIONS.map((c) => (
+              <label key={c} className="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="customization" value={c} defaultChecked={values.customization?.includes(c)} className="size-4 accent-[var(--color-walnut)]" />
+                {CUSTOMIZATION_LABEL[c]}
+              </label>
+            ))}
+          </div>
+        </div>
+      </fieldset>
 
       <fieldset className="space-y-3 border border-border p-4">
         <legend className="px-1 text-sm font-medium">Website</legend>

@@ -59,7 +59,7 @@ async function signUp(page: Page, o: { name?: string; email?: string; phone?: st
 
 async function orderStool(page: Page, fillGuest?: { name: string; phone: string }) {
   await page.goto("/products/sample-priced-stool");
-  await page.getByRole("button", { name: /add to order/i }).click();
+  await page.getByRole("button", { name: /add to cart/i }).click();
   await expect(page.getByRole("link", { name: /^your cart, 1 item/i })).toBeVisible();
   await page.goto("/checkout");
   if (fillGuest) {
@@ -100,7 +100,7 @@ test.describe("customer accounts", () => {
 
     // the checkout form is pre-filled from the account
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await expect(page.getByLabel(/^Your name/)).toHaveValue(name);
     await expect(page.getByLabel(/^Phone number/)).toHaveValue(p);
@@ -241,7 +241,7 @@ test.describe("customer accounts", () => {
   test("when the owner requires accounts, guests are asked to sign in before ordering", async ({ page }) => {
     await setAccounts({ ...ON, requiredForCheckout: true });
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await expect(page.getByRole("heading", { name: /sign in to place your order/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /place order/i })).toHaveCount(0);
@@ -259,7 +259,7 @@ test.describe("customer accounts", () => {
     const email = await signUp(page);
     await expect(page).toHaveURL(/\/account$/);
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await expect.poll(async () => (await sql`SELECT jsonb_array_length(c.items) AS n FROM customer_carts c JOIN customer_accounts a ON a.id = c.account_id WHERE a.email_lower = ${email.toLowerCase()}`)[0]?.n, { timeout: 15_000 }).toBe(1);
 
     const second = await freshContext(browser);

@@ -311,7 +311,7 @@ test.describe("ordering (no online payment)", () => {
   test("a visitor adds a piece, checks out without paying, and gets an order number; the basket empties", async ({ page }) => {
     const p = phone();
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await expect(page.getByRole("link", { name: /^your cart, 1 item/i })).toBeVisible();
     await page.getByRole("link", { name: /view your cart/i }).click();
     await expect(page).toHaveURL(/\/cart$/);
@@ -357,7 +357,7 @@ test.describe("ordering (no online payment)", () => {
   test("a price tampered with in the browser is ignored: the order is priced from the database", async ({ page }) => {
     const p = phone();
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await page.evaluate(() => {
       const items = JSON.parse(localStorage.getItem("paramount-order-basket-v1")!);
       items[0].price = "1.00";
@@ -377,7 +377,7 @@ test.describe("ordering (no online payment)", () => {
 
   test("the product with no public price cannot be ordered, only enquired about", async ({ page }) => {
     await page.goto("/products/sample-oak-table");
-    await expect(page.getByRole("button", { name: /add to order/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /add to cart/i })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: /enquire about this piece/i })).toBeVisible();
   });
 
@@ -385,7 +385,7 @@ test.describe("ordering (no online payment)", () => {
     await page.goto("/cart");
     await expect(page.getByText(/your cart is empty/i).first()).toBeVisible();
     await page.goto("/products/sample-priced-stool");
-    await page.getByRole("button", { name: /add to order/i }).click();
+    await page.getByRole("button", { name: /add to cart/i }).click();
     await page.goto("/checkout");
     await page.getByRole("button", { name: /place order/i }).click();
     await expect(page.getByText("Your name is required.")).toBeVisible();
