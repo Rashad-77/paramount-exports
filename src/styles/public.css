@@ -3429,3 +3429,58 @@ a.acct-row {
 .pdp-page .pp-options label {
   font-family: inherit;
 }
+
+/* Delivery and collection tab: an icon beside each point, the showroom set out properly */
+.pdp-info {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pdp-info li {
+  display: flex;
+  gap: 1rem;
+}
+.pdp-info svg {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.1rem;
+  color: #331c11;
+}
+.pdp-info h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: #331c11;
+}
+.pdp-info p {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+.pdp-info address {
+  margin-top: 0.9rem;
+  font-style: normal;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: #1c1916;
+}
+.pdp-info address span,
+.pdp-hours span {
+  display: block;
+}
+.pdp-hours {
+  margin-top: 0.75rem;
+}
+.pdp-directions {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1c1916;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

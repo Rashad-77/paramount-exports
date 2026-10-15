@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Store, Truck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AskDisclosure } from "@/components/public/ask-disclosure";
@@ -33,14 +34,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: { title: p.seoTitle ?? p.name, description, type: "website", images: p.images[0] ? [{ url: p.images[0].url, alt: p.images[0].alt }] : undefined },
   };
 }
-
-/** A multi-line address on one line: lines joined with commas, without doubling the ones already at the end of a line. */
-const oneLine = (address: string) =>
-  address
-    .split(/\r?\n/)
-    .map((l) => l.trim().replace(/[,\s]+$/, ""))
-    .filter(Boolean)
-    .join(", ");
 
 const List = ({ items }: { items: string[] }) => (
   <ul className="pdp-list">
@@ -154,29 +147,51 @@ export default async function ProductPage({ params }: Props) {
       ),
     });
   }
+  const addressLines = (business.address ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim().replace(/[,\s]+$/, ""))
+    .filter(Boolean);
+  const hours = (business.openingHours ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   tabs.push({
     id: "delivery",
-    label: "Delivery and care",
+    label: "Delivery and collection",
     content: (
-      <div className="pdp-prose">
-        <h3>Delivery or collection</h3>
-        <p>
-          We deliver to your address, and the delivery charge is agreed with you when we confirm your order. You can also collect your order from our showroom
-          {business.address ? ` at ${oneLine(business.address)}` : ""}.
-        </p>
-        {p.leadTime ? (
-          <>
-            <h3>Estimated lead time</h3>
-            <p>{p.leadTime}</p>
-          </>
-        ) : null}
-        {p.careInstructions ? (
-          <>
-            <h3>Care instructions</h3>
-            <p className="whitespace-pre-line">{p.careInstructions}</p>
-          </>
-        ) : null}
-      </div>
+      <ul className="pdp-info">
+        <li>
+          <Truck aria-hidden="true" strokeWidth={1.5} />
+          <div>
+            <h3>Delivery</h3>
+            <p>We deliver to your address. The delivery charge is agreed with you when we confirm your order.</p>
+          </div>
+        </li>
+        <li>
+          <Store aria-hidden="true" strokeWidth={1.5} />
+          <div>
+            <h3>Collect from the showroom</h3>
+            <p>Collection is free. We will tell you when your order is ready.</p>
+            {addressLines.length ? (
+              <address>
+                {addressLines.map((l) => (
+                  <span key={l}>{l}</span>
+                ))}
+              </address>
+            ) : null}
+            {hours.length ? (
+              <p className="pdp-hours">
+                {hours.map((l) => (
+                  <span key={l}>{l}</span>
+                ))}
+              </p>
+            ) : null}
+            {business.mapUrl ? (
+              <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pdp-directions">
+                Get directions
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            ) : null}
+          </div>
+        </li>
+      </ul>
     ),
   });
 
