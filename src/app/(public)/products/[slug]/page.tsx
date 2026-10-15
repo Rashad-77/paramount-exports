@@ -197,7 +197,6 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="pdp-page">
-      {bestOff ? <p className="sale-bar">Sale · save up to {bestOff}%</p> : null}
       <div className="container-page py-8 md:py-14">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <nav aria-label="Breadcrumb" className="mb-6 text-sm text-text-muted">
