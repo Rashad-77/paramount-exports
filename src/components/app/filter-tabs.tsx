@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState } from "react";
+import { GlassSelect } from "@/components/public/glass-select";
 
 export interface FilterTab {
   label: string;
@@ -44,14 +45,15 @@ export function FilterTabs({ label, tabs }: { label: string; tabs: FilterTab[] }
         ))}
       </nav>
       {compact && current ? (
-        <select aria-label={label} className="app-tabs-select" value={current.href} onChange={(e) => router.push(e.target.value)}>
-          {tabs.map((t) => (
-            <option key={t.label} value={t.href}>
-              {t.label}
-              {t.count !== undefined ? ` (${t.count})` : ""}
-            </option>
-          ))}
-        </select>
+        <div className="app-tabs-select">
+          <GlassSelect
+            variant="field"
+            label={label}
+            value={current.href}
+            options={tabs.map((t) => ({ value: t.href, label: t.count !== undefined ? `${t.label} (${t.count})` : t.label }))}
+            onChange={(href) => router.push(href)}
+          />
+        </div>
       ) : null}
     </div>
   );
