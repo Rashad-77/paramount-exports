@@ -3531,3 +3531,22 @@ a.acct-row {
     padding-bottom: 1.5rem;
   }
 }
+
+/* Specifications: smaller type, label and value on one tight line. */
+.pdp-page .pdp-specs > div {
+  grid-template-columns: minmax(0, 9rem) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.pdp-page .pdp-specs dt,
+.pdp-page .pdp-specs dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+@media (min-width: 40rem) {
+  .pdp-page .pdp-specs > div {
+    grid-template-columns: 12rem minmax(0, 1fr);
+  }
+}
