@@ -32,6 +32,7 @@ export default async function SettingsPage() {
                 <FField name="email" label="Email" type="email" defaultValue={business.email ?? ""} />
                 <FField name="mapUrl" label="Map link" defaultValue={business.mapUrl ?? ""} hint="Only shown once an address is also entered." />
                 <FField name="notifyEmail" label="Email for new orders" type="email" defaultValue={business.notifyEmail ?? ""} hint="The website emails this address when an order, quotation request or message arrives. Leave blank to use the business email." />
+                <FField name="facebook" label="Facebook link" defaultValue={business.facebook ?? ""} hint="The full web address of your Facebook page. Shown in the website footer." />
                 <FField name="tiktok" label="TikTok link" defaultValue={business.tiktok ?? ""} hint="The full web address of your TikTok page. Shown in the website footer." />
                 <FTextArea name="address" label="Showroom address" rows={3} defaultValue={business.address ?? ""} />
                 <FTextArea name="openingHours" label="Opening hours" rows={3} defaultValue={business.openingHours ?? ""} hint="One line per day or range, e.g. Mon–Sat 9:00–18:00." />

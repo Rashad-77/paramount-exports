@@ -1,4 +1,4 @@
-import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Facebook, Info, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { BusinessSettings } from "@/lib/settings";
@@ -135,6 +135,14 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                   <a href={`mailto:${business.email}`}>
                     <Mail aria-hidden="true" className="size-4" strokeWidth={1.5} />
                     {business.email}
+                  </a>
+                </li>
+              ) : null}
+              {business.facebook ? (
+                <li>
+                  <a href={business.facebook} target="_blank" rel="noopener noreferrer">
+                    <Facebook aria-hidden="true" className="size-4" strokeWidth={1.5} />
+                    Facebook<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 </li>
               ) : null}

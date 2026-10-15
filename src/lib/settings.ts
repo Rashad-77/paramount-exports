@@ -26,6 +26,8 @@ export const businessSchema = z.object({
   notifyEmail: z.string().trim().email().nullable(),
   /** Link to the business TikTok page. */
   tiktok: z.string().url().nullable(),
+  /** Link to the business Facebook page. */
+  facebook: z.string().url().nullable(),
   openingHours: z.string().trim().max(600).nullable(),
   /** Shown to customers who choose to pay by bank transfer: account name, number, bank. */
   bankDetails: z.string().trim().max(600).nullable(),
@@ -53,7 +55,8 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   address: "Nalanda Ellawala Industrial Zone - Stage 2,\nParadise,\nKuruwita,\n70500,\nSri Lanka",
   mapUrl: "https://www.google.com/maps/place/Paramount+Export+Industries/@6.7602757,80.3677279,17z/data=!4m6!3m5!1s0x3ae3bdd69af2fd0f:0x1505184f2a72a5f7!8m2!3d6.7602757!4d80.3677279",
   notifyEmail: null,
-  tiktok: null,
+  tiktok: "https://www.tiktok.com/@paramountexportindustrie",
+  facebook: "https://facebook.com/paramount.export",
   openingHours: "Monday to Saturday: 8:00 am – 5:00 pm\nSunday: Closed",
   bankDetails: null,
   currency: "LKR", // assumption — to be confirmed with the owner
