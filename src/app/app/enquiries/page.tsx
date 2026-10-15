@@ -117,7 +117,6 @@ export default async function EnquiriesPage({
                       <TD>
                         <div className="font-medium">{r.name}</div>
                         <div className="text-text-muted">{r.phone}</div>
-                        <div className="mt-1 md:hidden">{badge}</div>
                       </TD>
                       <TD>{MESSAGE_KIND_LABEL[r.kind] ?? r.kind}</TD>
                       <TD>{badge}</TD>

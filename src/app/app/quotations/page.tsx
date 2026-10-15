@@ -120,9 +120,6 @@ export default async function QuotationsPage({
                       <TD>
                         <div className="font-medium">{r.name}</div>
                         <div className="text-text-muted">{r.phone}</div>
-                        <div className="mt-1 md:hidden">
-                          <QuoteTag status={st} />
-                        </div>
                       </TD>
                       <TD>
                         <QuoteTag status={st} />
