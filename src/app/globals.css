@@ -636,3 +636,28 @@ body:has(.app-ui) {
 .app-ui [role="region"][tabindex="0"]::-webkit-scrollbar {
   display: none;
 }
+
+/* Filter tabs: one row while it fits, a single dropdown when it does not. */
+.app-tabs-wrap {
+  position: relative;
+}
+.app-tabs {
+  margin-bottom: 0;
+  overflow: hidden;
+}
+.app-tabs[data-compact] {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.app-tabs-select {
+  min-height: 2.5rem;
+  min-width: min(100%, 16rem);
+  padding: 0 2rem 0 0.9rem;
+  border: 1px solid #9ca3af;
+  background-color: #fff;
+  font-size: 0.875rem;
+  color: #111827;
+}
