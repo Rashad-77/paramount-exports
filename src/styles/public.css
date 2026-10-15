@@ -3466,7 +3466,7 @@ a.acct-row {
 /* Product cards: no outline; a soft outward shadow around the text part only (sides and bottom, never the top edge). */
 .pcard-body {
   box-shadow:
-    0 7px 9px -7px rgb(0 0 0 / 0.2),
-    7px 0 9px -7px rgb(0 0 0 / 0.14),
-    -7px 0 9px -7px rgb(0 0 0 / 0.14);
+    0 5px 8px -6px rgb(0 0 0 / 0.09),
+    5px 0 8px -6px rgb(0 0 0 / 0.06),
+    -5px 0 8px -6px rgb(0 0 0 / 0.06);
 }
