@@ -91,9 +91,6 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               <li>
                 <Link href="/help#payment">Delivery and payment</Link>
               </li>
-              <li>
-                <Link href="/contact">Contact us</Link>
-              </li>
             </ul>
           </nav>
           <div>
