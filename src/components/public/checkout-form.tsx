@@ -94,8 +94,8 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
   if (requireAccount && me === undefined) return <p className="py-16 text-center text-text-muted">One moment…</p>;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-start">
-      <ActionForm action={placeOrderAction}>
+    <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-16 lg:items-start">
+      <ActionForm action={placeOrderAction} className="space-y-9">
         {turnstileSiteKey ? <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" /> : null}
         <PrefillFromAccount />
         <input type="hidden" name="formToken" value={token} />
@@ -108,7 +108,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
         </div>
 
         <fieldset className="space-y-5">
-          <legend className="font-display text-[1.5rem] leading-tight text-brand">Your details</legend>
+          <legend className="font-display mb-6 text-[1.5rem] leading-tight text-brand">Your details</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
             <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="We call or message you on this number to confirm." />
@@ -116,8 +116,9 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
           </div>
         </fieldset>
 
+        <hr className="border-border" />
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[1.5rem] leading-tight text-brand">How would you like it?</legend>
+          <legend className="font-display mb-6 text-[1.5rem] leading-tight text-brand">How would you like it?</legend>
           {(["delivery", "pickup"] as const).map((f) => (
             <Choice
               key={f}
@@ -132,9 +133,10 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
           {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
         </fieldset>
 
+        <hr className="border-border" />
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[1.5rem] leading-tight text-brand">How will you pay?</legend>
-          <p className="text-sm text-text-muted">There is no payment on this website. Choose how you plan to pay and we will confirm with you.</p>
+          <legend className="font-display mb-3 text-[1.5rem] leading-tight text-brand">How will you pay?</legend>
+          <p className="pb-2 text-sm text-text-muted">There is no payment on this website. Choose how you plan to pay and we will confirm with you.</p>
           {PAYMENTS_FOR[fulfilment].map((p) => (
             <Choice key={p} name="paymentMethod" value={p} checked={payment === p} onChange={() => setPayment(p)} title={PAYMENT_LABEL[p]} help={PAYMENT_HELP[p]} />
           ))}
@@ -153,21 +155,24 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
           ) : null}
         </fieldset>
 
-        <FTextArea name="note" label="Anything we should know?" rows={3} maxLength={1000} hint="For example the best time to call, or access to your building." />
-        {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
-        <FCheckbox name="consent" label="I agree to be contacted about this order." hint="We use your details only for this order. See the Privacy notice." />
-        <SubmitButton size="cta" pendingLabel="Placing your order…">
-          Place order
-        </SubmitButton>
+                <hr className="border-border" />
+        <div className="space-y-6">
+          <FTextArea name="note" label="Anything we should know?" rows={3} maxLength={1000} hint="For example the best time to call, or access to your building." />
+          {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
+          <FCheckbox name="consent" label="I agree to be contacted about this order." hint="We use your details only for this order. See the Privacy notice." />
+          <SubmitButton size="cta" pendingLabel="Placing your order…">
+            Place order
+          </SubmitButton>
+        </div>
       </ActionForm>
 
-      <aside aria-labelledby="checkout-summary" className="border border-border bg-surface p-6 lg:sticky lg:top-28">
+      <aside aria-labelledby="checkout-summary" className="border border-border bg-surface p-6 sm:p-8 lg:sticky lg:top-28">
         <h2 id="checkout-summary" className="font-display text-[1.5rem] leading-tight text-brand">
           Your order
         </h2>
-        <ul className="mt-4 divide-y divide-border text-sm">
+        <ul className="mt-6 divide-y divide-border text-sm">
           {items.map((i) => (
-            <li key={i.variantId} className="flex justify-between gap-3 py-3 first:pt-0">
+            <li key={i.variantId} className="flex justify-between gap-3 py-4 first:pt-0">
               <span>
                 <span className="font-medium">{i.productName}</span>
                 {i.variantLabel ? <span className="text-text-muted"> · {i.variantLabel}</span> : null}
@@ -177,7 +182,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
             </li>
           ))}
         </ul>
-        <dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+        <dl className="mt-2 space-y-3 border-t border-border pt-5 text-sm">
           <div className="flex justify-between">
             <dt className="text-text-muted">Delivery</dt>
             <dd>{fulfilment === "pickup" ? "None" : "Agreed with you"}</dd>
@@ -187,8 +192,8 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
             <dd>{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-sm text-text-muted">Nothing is charged now.</p>
-        <p className="mt-3 text-sm">
+        <p className="mt-6 text-sm text-text-muted">Nothing is charged now.</p>
+        <p className="mt-2 text-sm">
           <Link href="/cart" className="underline">
             Change your order
           </Link>
