@@ -3462,3 +3462,11 @@ a.acct-row {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+/* Product cards: no outline; a soft inward shadow on the text part only (sides and bottom, never the top edge). */
+.pcard-body {
+  box-shadow:
+    inset 0 -7px 9px -7px rgb(0 0 0 / 0.16),
+    inset 7px 0 9px -7px rgb(0 0 0 / 0.12),
+    inset -7px 0 9px -7px rgb(0 0 0 / 0.12);
+}

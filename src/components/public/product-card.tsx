@@ -11,7 +11,7 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
   const off = percentOff(product.fromPrice, product.fromCompare);
   const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
-    <article className="group pcard relative h-full border border-black">
+    <article className="group pcard relative h-full">
       <Link href={`/products/${product.slug}`} className="block">
         <div className="zoom-frame relative aspect-[4/5]">
           {product.imageUrl ? (
@@ -28,7 +28,7 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
           )}
           {off ? <span className="sale-badge">Sale · {off}% off</span> : null}
         </div>
-        <div className="px-4 pb-5 pt-4">
+        <div className="pcard-body px-4 pb-5 pt-4">
           <h3 className="font-display text-[1.2rem] leading-snug text-text">
             <span>{product.name}</span>
           </h3>
