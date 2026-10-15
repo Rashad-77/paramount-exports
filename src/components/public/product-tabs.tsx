@@ -53,8 +53,21 @@ export function ProductTabs({ tabs }: { tabs: ProductTab[] }) {
         ))}
       </div>
       {tabs.map((t) => (
-        <div key={t.id} role="tabpanel" id={`${base}-panel-${t.id}`} aria-labelledby={`${base}-tab-${t.id}`} hidden={t.id !== active} className="ptabs-panel" tabIndex={0}>
-          {t.content}
+        <div key={t.id} className="ptabs-item" data-open={t.id === active ? "" : undefined}>
+          {/* Phones: the tabs become bars that open one at a time. */}
+          <button
+            type="button"
+            className="ptabs-bar"
+            aria-expanded={t.id === active}
+            aria-controls={`${base}-panel-${t.id}`}
+            onClick={() => setActive(t.id === active ? "" : t.id)}
+          >
+            {t.label}
+            <span aria-hidden="true" className="ptabs-icon" />
+          </button>
+          <div role="tabpanel" id={`${base}-panel-${t.id}`} aria-labelledby={`${base}-tab-${t.id}`} hidden={t.id !== active} className="ptabs-panel" tabIndex={0}>
+            {t.content}
+          </div>
         </div>
       ))}
     </div>

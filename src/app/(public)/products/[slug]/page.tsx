@@ -72,9 +72,8 @@ export default async function ProductPage({ params }: Props) {
   }, null);
 
   // The line under the name: the short description, or else the opening of the detailed one.
-  // The text under the name: the short description, or else the whole item description (which then is not repeated in the tab).
+  // The text under the name: the short description, or else the whole item description.
   const lead = p.shortDescription ?? p.description;
-  const descriptionInTab = p.shortDescription ? p.description : null;
 
   const quote = { productId: p.id, name: p.name, wood: p.material, finish: p.finish, size: p.dimensions };
 
@@ -92,29 +91,6 @@ export default async function ProductPage({ params }: Props) {
   const customs = CUSTOMIZATIONS.filter((c) => p.customization.includes(c));
 
   const tabs: ProductTab[] = [];
-  if (descriptionInTab || p.features.length || p.uses.length) {
-    tabs.push({
-      id: "description",
-      label: "Description",
-      content: (
-        <div className="pdp-prose">
-          {descriptionInTab ? <p className="whitespace-pre-line">{descriptionInTab}</p> : null}
-          {p.features.length ? (
-            <>
-              <h3>Features</h3>
-              <List items={p.features} />
-            </>
-          ) : null}
-          {p.uses.length ? (
-            <>
-              <h3>Uses</h3>
-              <List items={p.uses} />
-            </>
-          ) : null}
-        </div>
-      ),
-    });
-  }
   if (specs.length) {
     tabs.push({
       id: "specifications",

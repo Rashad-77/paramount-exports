@@ -3470,3 +3470,64 @@ a.acct-row {
     5px 0 8px -6px rgb(0 0 0 / 0.06),
     -5px 0 8px -6px rgb(0 0 0 / 0.06);
 }
+
+/* Product tabs: bars on phones (one open at a time), tabs from tablet width up. */
+.ptabs-bar {
+  display: none;
+}
+@media (max-width: 47.99rem) {
+  .ptabs-list {
+    display: none;
+  }
+  .ptabs-bar {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3.25rem;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.9375rem;
+    text-align: left;
+    cursor: pointer;
+    transform: none;
+    box-shadow: none;
+  }
+  .ptabs-item:first-of-type .ptabs-bar {
+    border-top: 1px solid var(--color-border);
+  }
+  .ptabs-bar[aria-expanded="true"] {
+    font-weight: 500;
+  }
+  .ptabs-icon {
+    position: relative;
+    width: 0.875rem;
+    height: 0.875rem;
+    flex: none;
+  }
+  .ptabs-icon::before,
+  .ptabs-icon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 200ms var(--ease-out);
+  }
+  .ptabs-icon::after {
+    transform: rotate(90deg);
+  }
+  .ptabs-bar[aria-expanded="true"] .ptabs-icon::after {
+    transform: rotate(0deg);
+  }
+  .ptabs-panel {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+}
