@@ -34,6 +34,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** A multi-line address on one line: lines joined with commas, without doubling the ones already at the end of a line. */
+const oneLine = (address: string) =>
+  address
+    .split(/\r?\n/)
+    .map((l) => l.trim().replace(/[,\s]+$/, ""))
+    .filter(Boolean)
+    .join(", ");
+
 const List = ({ items }: { items: string[] }) => (
   <ul className="pdp-list">
     {items.map((t) => (
@@ -154,7 +162,7 @@ export default async function ProductPage({ params }: Props) {
         <h3>Delivery or collection</h3>
         <p>
           We deliver to your address, and the delivery charge is agreed with you when we confirm your order. You can also collect your order from our showroom
-          {business.address ? ` at ${business.address.replace(/\s*\n\s*/g, ", ")}` : ""}.
+          {business.address ? ` at ${oneLine(business.address)}` : ""}.
         </p>
         {p.leadTime ? (
           <>
