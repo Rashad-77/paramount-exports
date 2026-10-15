@@ -242,10 +242,6 @@ export default async function ProductPage({ params }: Props) {
               currency={business.currency}
               mode={p.purchaseMode}
               leadTime={p.leadTime}
-              deliveryNotes={[
-                "Delivered to your address. The delivery charge is agreed with you when we confirm your order.",
-                business.address ? "Or collect it free from our showroom." : "Or collect it free from the showroom.",
-              ]}
               quote={quote}
               options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare }))}
             />

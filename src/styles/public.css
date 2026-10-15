@@ -3240,28 +3240,6 @@ a.acct-row {
   color: var(--color-walnut);
 }
 /* Delivery and collection, just under the buttons */
-.pp-delivery {
-  display: grid;
-  gap: 0.6rem;
-  margin: 1.25rem 0 0;
-  padding: 1.1rem 0 0;
-  border-top: 1px solid rgb(28 25 22 / 0.1);
-  list-style: none;
-}
-.pp-delivery li {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--color-text-muted);
-}
-.pp-delivery svg {
-  flex: none;
-  width: 1.1rem;
-  height: 1.1rem;
-  margin-top: 0.15rem;
-  color: #331c11;
-}
 
 /* "Have a question about this piece?": a quiet line with a button; the form opens underneath */
 .ask {
