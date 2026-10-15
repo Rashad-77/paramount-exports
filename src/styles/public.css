@@ -3662,3 +3662,10 @@ a.acct-row {
     margin-top: 0.5rem;
   }
 }
+
+/* The sale strip across the top of a product page: slimmer. */
+.pdp-page .sale-bar {
+  padding: 0.45rem 1rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
