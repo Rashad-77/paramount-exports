@@ -585,3 +585,11 @@ body:has(.app-ui) {
   text-decoration: none;
   font-weight: 600;
 }
+
+/* The sidebar scrolls when it must, but shows no scrollbar. */
+.app-scroll {
+  scrollbar-width: none;
+}
+.app-scroll::-webkit-scrollbar {
+  display: none;
+}
