@@ -121,6 +121,9 @@ async function main() {
   await setOrderStatus(owner, inProgress.id, "in_progress");
   await setOrderPaid(owner, inProgress.id, true);
   await setOrderStatus(owner, delivered.id, "confirmed");
+  await setOrderStatus(owner, delivered.id, "in_progress");
+  await setOrderStatus(owner, delivered.id, "ready");
+  await setOrderStatus(owner, delivered.id, "out_for_delivery");
   await updateOrderDetails(owner, delivered.id, { deliveryCharge: "4500" });
   await setOrderStatus(owner, delivered.id, "delivered");
   await setOrderPaid(owner, delivered.id, true);
