@@ -53,6 +53,8 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null;
       published: products.isPublished,
       archivedAt: products.archivedAt,
       showPrice: products.showPrice,
+      kind: products.kind,
+      stock: productVariants.stockQuantity,
     })
     .from(productVariants)
     .innerJoin(products, eq(products.id, productVariants.productId))
@@ -63,6 +65,9 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null;
     const r = byId.get(variantId);
     const ok = r && r.variantActive && r.published && !r.archivedAt && r.showPrice && r.price !== null;
     if (!ok) throw validation("One of the items in your order is no longer available. Please review your order and try again.");
+    if (r.kind === "stocked" && r.stock !== null && quantity > r.stock) {
+      throw validation(r.stock === 0 ? `${r.name} has just sold out. Please remove it from your cart.` : `Only ${r.stock} of ${r.name} ${r.stock === 1 ? "is" : "are"} left. Please lower the quantity.`);
+    }
     const unit = dec(r.price!);
     return { position: i + 1, productId: r.productId, variantId, productName: r.name, variantLabel: r.label === "Standard" ? null : r.label, sku: r.sku, unit, quantity, line: unit.times(quantity) };
   });
@@ -93,6 +98,13 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null;
         accountId: ctx.accountId ?? null,
       })
       .returning({ id: orders.id, reference: orders.reference });
+    // Take the stock inside the same transaction; the guard in the WHERE stops two buyers taking the last piece.
+    for (const l of lines) {
+      const r = byId.get(l.variantId)!;
+      if (r.kind !== "stocked" || r.stock === null) continue;
+      const taken = await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} - ${l.quantity}` }).where(and(eq(productVariants.id, l.variantId), sql`${productVariants.stockQuantity} >= ${l.quantity}`)).returning({ id: productVariants.id });
+      if (taken.length === 0) throw validation(`Sorry, ${l.productName} was just bought by someone else. Please review your cart.`);
+    }
     await tx.insert(orderItems).values(
       lines.map((l) => ({
         orderId: order!.id,
@@ -242,6 +254,14 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
         ...(status === "cancelled" ? { cancelledAt: now, cancelReason: reason ?? "Cancelled" } : {}),
       })
       .where(eq(orders.id, id));
+    if (status === "cancelled") {
+      // A cancelled order puts its counted pieces back on the shelf.
+      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
+      for (const it of items) {
+        if (!it.variantId) continue;
+        await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} + ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NOT NULL`));
+      }
+    }
     await recordAudit(tx, actor, { action: `order.${status}`, entityType: "order", entityId: id, before: { status: o.status }, after: { status }, reason });
     // Tell the customer: a note on their dashboard when they have an account, and an email when we have an address.
     await recordUpdate(tx, o.accountId, { kind: "order", title: `Order ${o.reference} ${STATUS_NOTE[status]}`, body: status === "cancelled" && reason ? reason : undefined, link: `/account/orders/${o.reference}` });

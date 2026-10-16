@@ -95,6 +95,7 @@ export const variantSchema = z
     label: reqText("Option name", 80),
     listPrice: optMoney("Price"),
     comparePrice: optMoney("Original price"),
+    stockQuantity: z.preprocess((v) => (v === "" || v === null || v === undefined ? undefined : v), z.coerce.number({ error: "Enter a whole number." }).int("Enter a whole number.").min(0, "Stock cannot be negative.").max(1000000).optional()),
     isActive: checkbox,
   })
   .superRefine((v, ctx) => {

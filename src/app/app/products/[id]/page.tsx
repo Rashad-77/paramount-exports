@@ -119,7 +119,7 @@ export default async function ProductAdminPage({
                         name="productId"
                         value={product.id}
                       />
-                      <div className="grid gap-4 md:grid-cols-5">
+                      <div className="grid gap-4 md:grid-cols-6">
                         <FField
                           name="label"
                           label="Option name"
@@ -145,6 +145,13 @@ export default async function ProductAdminPage({
                           defaultValue={v.comparePrice ?? ""}
                           hint="For a sale: the higher price it was."
                         />
+                        <FField
+                          name="stockQuantity"
+                          label="In stock"
+                          inputMode="numeric"
+                          defaultValue={v.stockQuantity ?? ""}
+                          hint="Leave empty if you do not count this."
+                        />
                         <div className="flex items-end">
                           <FCheckbox
                             name="isActive"
@@ -162,6 +169,7 @@ export default async function ProductAdminPage({
                     {v.listPrice
                       ? `· ${formatMoney(v.listPrice, business.currency)}`
                       : ""}{" "}
+                    {v.stockQuantity !== null ? `· ${v.stockQuantity} in stock ` : ""}
                     {!v.isActive ? <StatusBadge>Inactive</StatusBadge> : null}
                   </p>
                 )}
@@ -175,7 +183,7 @@ export default async function ProductAdminPage({
             >
               <h3 className="text-sm font-semibold">Add an option</h3>
               <input type="hidden" name="productId" value={product.id} />
-              <div className="grid gap-4 md:grid-cols-5">
+              <div className="grid gap-4 md:grid-cols-6">
                 <FField
                   name="label"
                   label="Option name"
@@ -193,6 +201,12 @@ export default async function ProductAdminPage({
                   label="Original price"
                   inputMode="decimal"
                   hint="For a sale: the higher price it was."
+                />
+                <FField
+                  name="stockQuantity"
+                  label="In stock"
+                  inputMode="numeric"
+                  hint="Leave empty if you do not count this."
                 />
                 <div className="flex items-end">
                   <FCheckbox name="isActive" label="Active" defaultChecked />

@@ -312,7 +312,7 @@ export async function addVariant(actor: Actor, productId: string, input: Variant
       const [{ m } = { m: 0 }] = await tx.select({ m: sql<number>`coalesce(max(${productVariants.sortOrder}), 0)::int` }).from(productVariants).where(eq(productVariants.productId, productId));
       const [v] = await tx
         .insert(productVariants)
-        .values({ productId, sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, isActive: input.isActive, sortOrder: m + 1 })
+        .values({ productId, sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive, sortOrder: m + 1 })
         .returning({ id: productVariants.id });
       await recordAudit(tx, actor, { action: "variant.created", entityType: "product_variant", entityId: v!.id, after: { productId, sku: input.sku, label: input.label } });
     });
@@ -328,13 +328,13 @@ export async function updateVariant(actor: Actor, variantId: string, input: Vari
     await withTx(async (tx) => {
       const [before] = await tx.select().from(productVariants).where(eq(productVariants.id, variantId)).for("update");
       if (!before) throw notFound("That product option could not be found.");
-      await tx.update(productVariants).set({ sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, isActive: input.isActive }).where(eq(productVariants.id, variantId));
+      await tx.update(productVariants).set({ sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive }).where(eq(productVariants.id, variantId));
       await recordAudit(tx, actor, {
         action: "variant.updated",
         entityType: "product_variant",
         entityId: variantId,
-        before: { sku: before.sku, label: before.label, listPrice: before.listPrice, comparePrice: before.comparePrice, isActive: before.isActive },
-        after: { sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, isActive: input.isActive },
+        before: { sku: before.sku, label: before.label, listPrice: before.listPrice, comparePrice: before.comparePrice, stockQuantity: before.stockQuantity, isActive: before.isActive },
+        after: { sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive },
       });
     });
   } catch (e) {

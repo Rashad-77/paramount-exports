@@ -242,8 +242,9 @@ export default async function ProductPage({ params }: Props) {
               image={p.images[0]?.url ?? null}
               currency={business.currency}
               mode={p.purchaseMode}
+              madeToOrder={p.kind === "made_to_order"}
               quote={quote}
-              options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare }))}
+              options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare, stock: v.stock }))}
             />
           </div>
         </div>

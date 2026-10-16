@@ -4758,3 +4758,32 @@ span.cat-pagebtn {
 .pcard .pcard-body p.pcard-price .price-was {
   margin-right: 0;
 }
+
+/* Stock line on the product page: a dot and a short sentence. Green when there is plenty, red when only a few are left or it has sold out. */
+.pp-stock {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+}
+.pp-stock .pp-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-radius: 50%;
+  background: #3b8a3e;
+}
+.pp-stock[data-state="low"],
+.pp-stock[data-state="out"] {
+  color: #c0392b;
+  font-weight: 500;
+}
+.pp-stock[data-state="low"] .pp-dot,
+.pp-stock[data-state="out"] .pp-dot {
+  background: #c0392b;
+}
+.pp-stock[data-state="made_to_order"] .pp-dot {
+  background: #8a847d;
+}

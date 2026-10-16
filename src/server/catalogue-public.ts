@@ -314,7 +314,7 @@ async function getPublicProductImpl(slugValue: string) {
     seoDescription: p.seoDescription,
     availability: p.showAvailability && p.availability ? AVAILABILITY_LABEL[p.availability] : null,
     images: images.map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
-    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, compare: p.showPrice && v.listPrice && v.comparePrice ? moneyString(v.comparePrice) : null })),
+    variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, compare: p.showPrice && v.listPrice && v.comparePrice ? moneyString(v.comparePrice) : null, stock: v.stockQuantity })),
     updatedAt: p.updatedAt,
   };
 }

@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
 import { MAX_QTY } from "@/lib/order-constants";
 import { quoteHref, type QuoteDetails } from "@/lib/quote-link";
+import { stockState } from "@/lib/stock";
 
 export interface PanelOption {
   id: string;
@@ -18,6 +19,8 @@ export interface PanelOption {
   price: string | null;
   /** The price before a sale, when there is one. */
   compare?: string | null;
+  /** How many are in stock; null when the business does not count this option. */
+  stock?: number | null;
 }
 
 /**
@@ -32,6 +35,7 @@ export function PurchasePanel({
   options,
   currency,
   mode,
+  madeToOrder = false,
   quote,
 }: {
   productName: string;
@@ -40,6 +44,7 @@ export function PurchasePanel({
   options: PanelOption[];
   currency: string;
   mode: "direct" | "quote" | "both";
+  madeToOrder?: boolean;
   quote: QuoteDetails;
 }) {
   const orderable = options.filter((o) => o.price);
@@ -50,12 +55,16 @@ export function PurchasePanel({
   const router = useRouter();
   const option = options.find((o) => o.id === optionId) ?? options[0];
 
-  const canBuy = mode !== "quote" && Boolean(option?.price);
-  const canQuote = mode !== "direct" || !canBuy;
+  const stock = stockState(madeToOrder, option?.stock);
+  const soldOut = stock.state === "out";
+  // A counted option cannot be ordered past what is on the shelf; made to order pieces are asked about, not added to the cart.
+  const maxQty = stock.state === "in" || stock.state === "low" ? Math.min(MAX_QTY, stock.left) : MAX_QTY;
+  const canBuy = mode !== "quote" && Boolean(option?.price) && !madeToOrder && !soldOut;
+  const canQuote = madeToOrder || (!soldOut && (mode !== "direct" || !canBuy));
 
   const bump = (n: number) => {
     setAdded(false);
-    setQuantity((q) => Math.max(1, Math.min(MAX_QTY, q + n)));
+    setQuantity((q) => Math.max(1, Math.min(maxQty, q + n)));
   };
   const addToCart = () => {
     if (!option?.price) return;
@@ -81,6 +90,16 @@ export function PurchasePanel({
         )}
       </div>
 
+      {stock.state !== "untracked" ? (
+        <p className="pp-stock" data-state={stock.state} role="status">
+          <span aria-hidden="true" className="pp-dot" />
+          {stock.state === "in" ? `In stock · ${stock.left} available` : null}
+          {stock.state === "low" ? `Only ${stock.left} left, order soon` : null}
+          {stock.state === "out" ? "Sold out" : null}
+          {stock.state === "made_to_order" ? "Made to order" : null}
+        </p>
+      ) : null}
+
       {options.length > 1 ? (
         <fieldset className="pp-options">
           <legend>Option</legend>
@@ -94,6 +113,7 @@ export function PurchasePanel({
                   checked={o.id === optionId}
                   onChange={() => {
                     setOptionId(o.id);
+                    setQuantity(1);
                     setAdded(false);
                   }}
                   className="sr-only"
@@ -115,7 +135,7 @@ export function PurchasePanel({
               <Minus aria-hidden="true" className="size-4" />
             </button>
             <output aria-live="polite">{quantity}</output>
-            <button type="button" onClick={() => bump(1)} disabled={quantity >= MAX_QTY} aria-label="One more">
+            <button type="button" onClick={() => bump(1)} disabled={quantity >= maxQty} aria-label="One more">
               <Plus aria-hidden="true" className="size-4" />
             </button>
           </div>
@@ -150,10 +170,15 @@ export function PurchasePanel({
             </Button>
           </>
         ) : null}
+        {soldOut ? (
+          <Button type="button" size="cta" variant="secondary" disabled>
+            Sold out
+          </Button>
+        ) : null}
         {canQuote ? (
           <ButtonLink href={quoteHref(quote, option?.label)} size="cta" variant={canBuy ? "secondary" : "primary"}>
             <FileText aria-hidden="true" className="size-4" />
-            Request a quote
+            {madeToOrder ? "Request quotation" : "Request a quote"}
           </ButtonLink>
         ) : null}
       </div>
