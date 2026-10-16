@@ -21,11 +21,11 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const checkEmail = one(sp.notice) === "check-email";
   return (
     <>
-      <PageIntro plain eyebrow="Your account" title="Sign in" lead="See your orders and quotations, and keep your details ready for next time. You can still order without an account." />
+      <PageIntro plain eyebrow="Your account" title="Sign in" lead="See your orders, and keep your details ready for next time. You can still order without an account." />
       <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-2 lg:gap-16">
         <section aria-labelledby="signin-title" className="soft-card space-y-5">
           <h2 id="signin-title" className="font-display text-[1.5rem] leading-tight text-brand">
-            I have an account
+            Sign in
           </h2>
           {checkEmail ? (
             <Alert tone="success" title="Check your email">

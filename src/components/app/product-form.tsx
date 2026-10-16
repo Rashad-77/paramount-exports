@@ -19,7 +19,6 @@ export interface ProductFormValues {
   woodTreatment?: string | null;
   colour?: string | null;
   otherSpecs?: string | null;
-  leadTime?: string | null;
   careInstructions?: string | null;
   customization?: string[];
   purchaseMode?: string;
@@ -79,7 +78,6 @@ export function ProductForm({
           <FTextArea name="uses" label="Uses" rows={4} maxLength={1500} defaultValue={values.uses ?? ""} hint="One per line." />
         </div>
         <div className="grid gap-5 md:grid-cols-2">
-          <FField name="leadTime" label="Lead time" defaultValue={values.leadTime ?? ""} placeholder="e.g. 2 to 3 weeks" />
           <FTextArea name="careInstructions" label="Care instructions" rows={3} maxLength={2000} defaultValue={values.careInstructions ?? ""} />
         </div>
       </fieldset>

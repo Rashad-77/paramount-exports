@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { toggleWishlistAction } from "@/app/(public)/account/actions";
 import { useAccount } from "./use-account";
 
@@ -11,12 +12,13 @@ import { useAccount } from "./use-account";
  * Save a product to the wishlist. On a product page ("heart") a visitor is taken to sign in, and a signed-in customer saves or
  * un-saves with one press. On the wishlist page ("remove") the same press takes the product off the list.
  */
-export function WishlistButton({ productId, slug, enabled = true, initiallySaved = false, variant = "heart", size = "card" }: { productId: string; slug?: string; enabled?: boolean; initiallySaved?: boolean; variant?: "heart" | "remove" | "icon"; size?: "card" | "photo" }) {
+export function WishlistButton({ productId, slug, enabled = true, initiallySaved = false, variant = "heart", size = "card", refreshOnChange = false, confirmRemove = false }: { productId: string; slug?: string; enabled?: boolean; initiallySaved?: boolean; variant?: "heart" | "remove" | "icon"; size?: "card" | "photo"; refreshOnChange?: boolean; confirmRemove?: boolean }) {
   const me = useAccount(variant !== "remove" ? enabled : false);
   const [answer, setAnswer] = useState<boolean | null>(null);
   const saved = answer ?? (me ? me.wishlist.includes(productId) : initiallySaved);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const [asking, setAsking] = useState(false);
   const router = useRouter();
 
   if (variant !== "remove" && !enabled) return null;
@@ -49,14 +51,31 @@ export function WishlistButton({ productId, slug, enabled = true, initiallySaved
         return;
       }
       setAnswer(r.saved);
-      if (variant === "remove") router.refresh();
+      if (variant === "remove" || refreshOnChange) router.refresh();
     });
 
   if (round) {
     return (
-      <button type="button" className={roundClass} aria-pressed={saved} aria-label={saved ? "Remove from your wishlist" : "Save to your wishlist"} disabled={pending || me === undefined} onClick={press}>
-        <Heart aria-hidden="true" strokeWidth={1.4} />
-      </button>
+      <>
+        <button type="button" className={roundClass} aria-pressed={saved} aria-label={saved ? "Remove from your wishlist" : "Save to your wishlist"} disabled={pending || me === undefined} onClick={() => (confirmRemove && saved ? setAsking(true) : press())}>
+          <Heart aria-hidden="true" strokeWidth={1.4} />
+        </button>
+        {confirmRemove ? (
+          <ConfirmDialog
+            open={asking}
+            onClose={() => setAsking(false)}
+            title="Remove from your wishlist?"
+            description="This product will be taken off your wishlist. You can save it again from its page."
+            confirmLabel="Remove"
+            destructive
+            pending={pending}
+            onConfirm={() => {
+              setAsking(false);
+              press();
+            }}
+          />
+        ) : null}
+      </>
     );
   }
 

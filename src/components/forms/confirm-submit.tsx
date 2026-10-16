@@ -16,6 +16,7 @@ export function ConfirmSubmit({
   confirmLabel,
   destructive = true,
   variant = "secondary",
+  size,
 }: {
   children: ReactNode;
   title: string;
@@ -23,13 +24,14 @@ export function ConfirmSubmit({
   confirmLabel: string;
   destructive?: boolean;
   variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "cta";
 }) {
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLSpanElement>(null);
   const { pending } = useFormState();
   return (
     <span ref={anchor}>
-      <Button variant={variant} onClick={() => setOpen(true)} disabled={pending}>
+      <Button variant={variant} size={size} onClick={() => setOpen(true)} disabled={pending}>
         {children}
       </Button>
       <ConfirmDialog

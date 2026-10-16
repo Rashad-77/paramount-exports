@@ -33,7 +33,6 @@ export function PurchasePanel({
   currency,
   mode,
   quote,
-  leadTime,
 }: {
   productName: string;
   productSlug: string;
@@ -42,7 +41,6 @@ export function PurchasePanel({
   currency: string;
   mode: "direct" | "quote" | "both";
   quote: QuoteDetails;
-  leadTime: string | null;
 }) {
   const orderable = options.filter((o) => o.price);
   const [optionId, setOptionId] = useState(options[0]?.id ?? "");
@@ -81,9 +79,6 @@ export function PurchasePanel({
             <span>Price on request</span>
           </p>
         )}
-        <p className="pp-code">
-          Product code <span>{option?.sku}</span>
-        </p>
       </div>
 
       {options.length > 1 ? (
@@ -111,11 +106,6 @@ export function PurchasePanel({
         </fieldset>
       ) : null}
 
-      {leadTime ? (
-        <p className="pp-lead">
-          <span>Lead time</span> {leadTime}
-        </p>
-      ) : null}
 
       {canBuy ? (
         <div className="pp-qty">

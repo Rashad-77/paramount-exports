@@ -19,6 +19,7 @@ import { rateLimited, unauthenticated, validation } from "@/lib/errors";
 import { checkFormToken, HONEYPOT_FIELD } from "@/lib/form-guard";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { quotationResponseSchema } from "@/lib/schemas/quotations";
+import { joinAddress } from "@/lib/address-lines";
 import { addressIdSchema, addressSchema, claimOrderSchema, deleteAccountSchema, forgotSchema, passwordChangeSchema, profileSchema, resetSchema, savedCartSchema, signInSchema, signUpSchema, type SavedCartItem } from "@/lib/schemas/accounts";
 import { getAccountSettings } from "@/lib/settings";
 import { claimOrder, deleteAddress, getSavedCart, respondToQuotation, saveAddress, saveCart, setDefaultAddress, toggleWishlist, updateProfile } from "@/server/accounts";
@@ -231,9 +232,16 @@ export async function saveAddressAction(_p: ActionState, fd: FormData): Promise<
     addressSchema,
     async (input) => {
       const customer = await signedIn();
-      await saveAddress(customer.id, input);
+      await saveAddress(customer.id, {
+        id: input.id,
+        label: input.city,
+        recipient: customer.fullName,
+        phone: customer.phone ?? undefined,
+        address: joinAddress({ line1: input.line1, line2: input.line2 ?? "", line3: input.line3 ?? "", city: input.city, postalCode: input.postalCode }),
+        isDefault: false,
+      });
       revalidatePath("/account", "layout");
-      return { redirectTo: "/account/addresses?notice=saved" };
+      return { redirectTo: "/account/profile?notice=saved" };
     },
     { public: true },
   );
@@ -261,7 +269,7 @@ export async function deleteAddressAction(_p: ActionState, fd: FormData): Promis
       const customer = await signedIn();
       await deleteAddress(customer.id, input.id);
       revalidatePath("/account", "layout");
-      return { redirectTo: "/account/addresses?notice=deleted" };
+      return { redirectTo: "/account/profile?notice=deleted" };
     },
     { public: true },
   );

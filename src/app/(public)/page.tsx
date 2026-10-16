@@ -39,12 +39,12 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 /** Eyebrow, light display headline and optional intro: the head of every section. */
 function Head({ id, eyebrow, title, intro, dark = false, center = false }: { id: string; eyebrow: string; title: ReactNode; intro?: string; dark?: boolean; center?: boolean }) {
   return (
-    <Reveal variant={center ? "up" : "left"} className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+    <Reveal variant="up" className={center ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
       <p className={"eyebrow " + (dark ? "eyebrow-light" : "")}>{eyebrow}</p>
       <h2 id={id} className={"font-display mt-4 text-headline " + (dark ? "text-white" : "text-text")}>
         {title}
       </h2>
-      {intro ? <p className={"mt-4 max-w-xl text-[0.8125rem] leading-relaxed sm:text-[0.9375rem] " + (dark ? "text-white/70" : "text-text-muted")}>{intro}</p> : null}
+      {intro ? <p className={"mt-4 max-w-xl fl-a leading-relaxed " + (dark ? "text-white/70" : "text-text-muted")}>{intro}</p> : null}
     </Reveal>
   );
 }
@@ -116,7 +116,7 @@ export default async function HomePage() {
         <div className="container-page">
           <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
             <Head id="why-title" eyebrow="Our approach" title={`Why Choose ${business.name}`} />
-            <Reveal variant="right" delay={STEP} className="years-mark shrink-0 md:text-right">
+            <Reveal variant="up" delay={STEP} className="years-mark shrink-0 md:text-right">
               <p className="font-display text-[clamp(3.5rem,2.4rem+4vw,5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
                 <CountUp to={20} suffix="+" />
               </p>
@@ -156,8 +156,8 @@ export default async function HomePage() {
                   <ImagePlaceholder label={`${r.name} — photograph`} className="absolute inset-0" compact />
                   <span className="container-page relative flex items-center justify-between gap-4">
                     <span className="min-w-0">
-                      <span className="font-display block text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">{r.name}</span>
-                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 text-[0.625rem] font-semibold uppercase leading-snug tracking-[0.1em] text-text/70 sm:text-[0.6875rem] sm:tracking-[0.16em]">{r.lines.length > 0 ? r.lines.map((l) => <span key={l}>{l}</span>) : r.all || r.note}</span>
+                      <span className="font-display block fl-b leading-tight text-text">{r.name}</span>
+                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 fl-g font-semibold uppercase leading-snug tracking-[0.1em] text-text/70 sm:tracking-[0.16em]">{r.lines.length > 0 ? r.lines.map((l) => <span key={l}>{l}</span>) : r.all || r.note}</span>
                     </span>
                     <ArrowRight aria-hidden="true" className="size-5 shrink-0 text-text transition-transform duration-300 group-hover:translate-x-1.5" strokeWidth={1.5} />
                   </span>
@@ -193,8 +193,8 @@ export default async function HomePage() {
                     <li key={st.title}>
                       <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                       <span className="flex-1">
-                        <span className="block text-[0.8125rem] text-white sm:text-[0.9375rem]">{st.title}</span>
-                        <span className="mt-1 block text-[0.6875rem] leading-snug text-white/65 sm:text-[0.8125rem] sm:leading-relaxed">{st.summary}</span>
+                        <span className="block fl-a text-white">{st.title}</span>
+                        <span className="mt-1 block fl-c leading-snug text-white/65 sm:leading-relaxed">{st.summary}</span>
                       </span>
                     </li>
                   ))}
@@ -211,7 +211,7 @@ export default async function HomePage() {
       {/* 5. Made for your space */}
       <section aria-labelledby="space-title" className="sec sec-white">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[0.9fr_1fr] lg:gap-20">
-          <Reveal variant="wipe">
+          <Reveal variant="up">
             <div className="zoom-frame mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
               <ImagePlaceholder label="A finished piece in place" className="size-full" compact />
             </div>
@@ -246,8 +246,8 @@ export default async function HomePage() {
         <div className="container-page">
           <Head id="projects-title" eyebrow="Our collection" title="Browse the collection" />
           <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
-            {products.map((p, i) => (
-              <Reveal as="li" key={p.id} variant="up" delay={(i % 3) * 70}>
+            {products.map((p) => (
+              <Reveal as="li" key={p.id} variant="up">
                 <ProductCard product={p} currency={business.currency} />
               </Reveal>
             ))}
@@ -269,8 +269,8 @@ export default async function HomePage() {
               <h2 id="about-title" className="font-display mt-4 text-headline text-text">
                 About {business.name}
               </h2>
-              <p className="mt-5 max-w-lg text-[0.8125rem] leading-relaxed text-text-muted sm:mt-6 sm:text-[0.9375rem]">{business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}</p>
-              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-text-muted sm:mt-4 sm:text-[0.9375rem]">Come to the showroom to see the timber and the joinery in person, or order from home and have it delivered. Whether the job is a single piece or a whole room, the aim is the same: sound material, careful work and a straightforward service.</p>
+              <p className="mt-5 max-w-lg fl-a leading-relaxed text-text-muted sm:mt-6">{business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}</p>
+              <p className="mt-3 max-w-lg fl-a leading-relaxed text-text-muted sm:mt-4">Come to the showroom to see the timber and the joinery in person, or order from home and have it delivered. Whether the job is a single piece or a whole room, the aim is the same: sound material, careful work and a straightforward service.</p>
               <Link href="/about" className="link-arrow mt-6 text-text">
                 Read our story <ArrowRight aria-hidden="true" className="size-3.5" />
               </Link>
@@ -342,8 +342,8 @@ export default async function HomePage() {
             <div className="grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8 md:grid-cols-[1.1fr_1fr]">
               <div>
                 <p className="eyebrow">Visit the showroom</p>
-                <h3 className="font-display mt-3 text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">Come and see it in person.</h3>
-                <ul className="mt-5 space-y-4 text-[0.75rem] sm:mt-6 sm:space-y-5 sm:text-[0.875rem]">
+                <h3 className="font-display mt-3 fl-b leading-tight text-text">Come and see it in person.</h3>
+                <ul className="mt-5 space-y-4 fl-d sm:mt-6 sm:space-y-5">
                   <li className="flex gap-4">
                     <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
                     <div>

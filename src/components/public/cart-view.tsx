@@ -46,7 +46,7 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
                   <Link href={`/products/${i.productSlug}`} className="font-semibold text-text hover:text-brand">
                     {i.productName}
                   </Link>
-                  <p className="text-sm text-text-muted">{[i.variantLabel, i.sku].filter(Boolean).join(" · ")}</p>
+                  <p className="text-sm text-text-muted">{i.variantLabel}</p>
                 </div>
                 <button type="button" onClick={() => remove(i.variantId)} aria-label={`Remove ${i.productName}`} className="grid size-9 shrink-0 place-items-center text-text-muted hover:text-text">
                   <X aria-hidden="true" className="size-5" strokeWidth={1.5} />

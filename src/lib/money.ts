@@ -100,10 +100,10 @@ export function outstandingBalance(
   return roundMoney(dec(orderTotal).minus(sum(payments)));
 }
 
-/** The number alone, grouped and with two decimals, for tables whose column heading already names the currency. */
+/** The number alone, grouped, with cents only when there are some (96,000, not 96,000.00), for tables whose column heading already names the currency. */
 export function formatAmount(value: DecimalInput, locale = "en-LK"): string {
   return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: MONEY_DP,
+    minimumFractionDigits: 0,
     maximumFractionDigits: MONEY_DP,
   }).format(roundMoney(value).toNumber());
 }
@@ -118,7 +118,7 @@ export function formatMoney(
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-    minimumFractionDigits: MONEY_DP,
+    minimumFractionDigits: 0,
     maximumFractionDigits: MONEY_DP,
   }).format(n.toNumber());
 }

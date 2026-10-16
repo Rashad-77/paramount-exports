@@ -16,7 +16,7 @@ import { publicFileUrl } from "./files";
  * (price / availability are hidden unless explicitly switched on per product).
  */
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 24;
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 const visible = and(eq(products.isPublished, true), isNull(products.archivedAt), eq(productCategories.isActive, true), isNull(productCategories.archivedAt));
@@ -35,6 +35,8 @@ export interface PublicCard {
   /** The price before the sale, when the lowest-priced option is on sale. */
   fromCompare: string | null;
   availability: string | null;
+  /** Added to the catalogue within the last month. */
+  isNew: boolean;
 }
 
 export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string }>> {
@@ -49,6 +51,9 @@ export async function firstImages(productIds: string[]): Promise<Map<string, { u
   for (const r of rows) if (!out.has(r.productId)) out.set(r.productId, { url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt });
   return out;
 }
+
+/** A product counts as new for this many days after it is added. */
+const NEW_FOR_DAYS = 30;
 
 async function toCards(rows: Array<typeof products.$inferSelect & { categoryName: string; categorySlug: string }>): Promise<PublicCard[]> {
   const ids = rows.map((r) => r.id);
@@ -78,6 +83,7 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!.price) : null,
     fromCompare: r.showPrice && priceBy.get(r.id)?.compare ? moneyString(priceBy.get(r.id)!.compare!) : null,
     availability: r.showAvailability && r.availability ? AVAILABILITY_LABEL[r.availability] : null,
+    isNew: Date.now() - r.createdAt.getTime() < NEW_FOR_DAYS * 86400000,
   }));
 }
 
@@ -298,7 +304,6 @@ async function getPublicProductImpl(slugValue: string) {
     woodTreatment: p.woodTreatment === "treated" ? "Treated" : p.woodTreatment === "untreated" ? "Untreated" : null,
     colour: p.colour,
     otherSpecs: toPairs(p.otherSpecs),
-    leadTime: p.leadTime,
     careInstructions: p.careInstructions,
     customization: p.customization,
     purchaseMode: p.purchaseMode as "direct" | "quote" | "both",

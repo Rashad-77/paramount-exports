@@ -168,8 +168,6 @@ export async function setMessageHandled(actor: Actor, id: string, handled: boole
 
 /* ───────────────────────────── quotations (made-to-measure requests) ───────────────────────────── */
 
-const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
-
 /** The customer to tell: their account if they have one, else the email on the request. */
 async function quoteAudience(tx: DbOrTx, m: typeof messages.$inferSelect): Promise<{ accountId: string | null; email: string | null }> {
   if (!m.accountId) return { accountId: null, email: m.email };
@@ -195,7 +193,7 @@ export async function sendQuote(actor: Actor, id: string, input: { amount: strin
     await recordAudit(tx, actor, { action: "quotation.priced", entityType: "message", entityId: id, before: { status: m.quoteStatus, amount: m.quotedAmount }, after: { status: "quoted", amount } });
     const who = await quoteAudience(tx, m);
     const price = formatMoney(amount, business.currency);
-    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Your quotation ${m.reference} is ready`, body: `Our price is ${price}. Please read it and accept or decline.`, link: `/account/quotations/${m.reference}` });
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Your quotation ${m.reference} is ready`, body: `Our price is ${price}. Please read it and accept or decline.` });
     notify = {
       email: who.email,
       subject: `Your quotation ${m.reference} is ready - ${business.name}`,
@@ -206,7 +204,7 @@ export async function sendQuote(actor: Actor, id: string, input: { amount: strin
         input.validUntil ? `This price is valid until ${input.validUntil}.` : null,
         input.note ? `\n${input.note}` : null,
         ``,
-        who.accountId ? `To accept or decline, sign in here: ${siteUrl()}/account/quotations/${m.reference}` : `To accept, please call us on ${business.phone ?? "the number on our website"} and quote ${m.reference}.`,
+        `To accept, please call us on ${business.phone ?? "the number on our website"} and quote ${m.reference}.`,
         ``,
         business.name,
       ]
@@ -228,7 +226,7 @@ export async function closeQuotation(actor: Actor, id: string, reason?: string):
     await tx.update(messages).set({ quoteStatus: "cancelled", declineReason: reason ?? null, respondedAt: new Date(), isHandled: true, handledAt: new Date(), handledBy: actor.id }).where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: "quotation.closed", entityType: "message", entityId: id, before: { status: m.quoteStatus }, after: { status: "cancelled" }, reason });
     const who = await quoteAudience(tx, m);
-    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Quotation ${m.reference} has been closed`, body: reason ?? "Please contact us if you would like to talk about it.", link: `/account/quotations/${m.reference}` });
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Quotation ${m.reference} has been closed`, body: reason ?? "Please contact us if you would like to talk about it." });
   });
 }
 

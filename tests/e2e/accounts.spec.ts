@@ -281,7 +281,7 @@ test.describe("customer accounts", () => {
     expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);
     await signUp(page);
     await expect(page).toHaveURL(/\/account$/);
-    for (const path of ["/account", "/account/quotations", "/account/orders", "/account/wishlist", "/account/profile", "/account/addresses", "/account/security"]) {
+    for (const path of ["/account", "/account/orders", "/account/wishlist", "/account/profile", "/account/addresses", "/account/security"]) {
       await page.goto(path);
       await expect(page.getByRole("navigation", { name: "Your account" })).toBeVisible();
       expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze()).violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""))).toEqual([]);

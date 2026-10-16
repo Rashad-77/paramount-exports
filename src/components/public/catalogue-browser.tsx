@@ -24,6 +24,18 @@ export interface CatalogueFilters {
 }
 
 /** The address that shows these filters; also what the page's own links use. */
+/** The page numbers to show: the first, the last and the ones beside the current page, with a gap mark between them. */
+function pageList(current: number, count: number): Array<number | "…"> {
+  const wanted = new Set([1, count, current - 1, current, current + 1]);
+  const nums = [...wanted].filter((n) => n >= 1 && n <= count).sort((a, b) => a - b);
+  const out: Array<number | "…"> = [];
+  nums.forEach((n, i) => {
+    if (i > 0 && n - nums[i - 1]! > 1) out.push("…");
+    out.push(n);
+  });
+  return out;
+}
+
 function hrefFor(f: CatalogueFilters): string {
   const u = new URLSearchParams();
   if (f.q) u.set("q", f.q);
@@ -63,6 +75,9 @@ export function CatalogueBrowser({
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const shown = useRef(JSON.stringify(initial));
+  /** The top of the catalogue (the count row, just above the products): where the page scrolls to after a page change. */
+  const top = useRef<HTMLDivElement>(null);
+  const scrollAfter = useRef(false);
 
   useEffect(() => {
     if (typed === f.q) return;
@@ -86,6 +101,10 @@ export function CatalogueBrowser({
         setResult(data);
         setFailed(false);
         setLoading(false);
+        if (scrollAfter.current) {
+          scrollAfter.current = false;
+          window.requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        }
         window.history.replaceState(null, "", hrefFor(f));
       })
       .catch((e: unknown) => {
@@ -163,7 +182,7 @@ export function CatalogueBrowser({
         </div>
       </div>
       <div className="container-page">
-        <div className="cat-meta">
+        <div ref={top} className="cat-meta scroll-mt-28">
           <p role="status" aria-live="polite" className="text-sm text-text-muted">
             {failed ? "The list could not be refreshed. Please try again." : result.total === 0 ? "No pieces to show" : `${result.total} ${result.total === 1 ? "piece" : "pieces"}`}
           </p>
@@ -190,7 +209,7 @@ export function CatalogueBrowser({
               )}
             </div>
           ) : (
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3 xl:grid-cols-4">
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-10 min-[34rem]:grid-cols-3 xl:grid-cols-4">
               {result.items.map((p, i) => (
                 <li key={p.id}>
                   <ProductCard product={p} currency={currency} priority={i < 4} wishlist={wishlist} />
@@ -200,42 +219,66 @@ export function CatalogueBrowser({
           )}
 
           {result.pageCount > 1 ? (
-            <nav aria-label="Pagination" className="mt-10 flex items-center justify-between gap-3 text-sm">
+            <nav aria-label="Pagination" className="cat-pager">
               {result.page > 1 ? (
                 <a
                   href={hrefFor({ ...f, page: result.page - 1 })}
                   rel="prev"
-                  className="cat-clear"
+                  className="cat-pagebtn"
                   onClick={(e) => {
                     e.preventDefault();
+                    scrollAfter.current = true;
                     set({ page: result.page - 1 });
                   }}
                 >
-                  Previous
+                  ‹ Prev
                 </a>
               ) : (
-                <span aria-disabled="true" className="text-text-muted opacity-60">
-                  Previous
+                <span aria-disabled="true" className="cat-pagebtn">
+                  ‹ Prev
                 </span>
               )}
-              <p className="text-text-muted">
-                Page {result.page} of {result.pageCount}
-              </p>
+              <ul className="cat-pages" aria-label="Pages">
+                {pageList(result.page, result.pageCount).map((n, i) =>
+                  n === "…" ? (
+                    <li key={`gap-${i}`} aria-hidden="true">
+                      …
+                    </li>
+                  ) : (
+                    <li key={n}>
+                      <a
+                        href={hrefFor({ ...f, page: n })}
+                        aria-current={n === result.page ? "page" : undefined}
+                        aria-label={`Page ${n}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (n === result.page) return;
+                          scrollAfter.current = true;
+                          set({ page: n });
+                        }}
+                      >
+                        {n}
+                      </a>
+                    </li>
+                  ),
+                )}
+              </ul>
               {result.page < result.pageCount ? (
                 <a
                   href={hrefFor({ ...f, page: result.page + 1 })}
                   rel="next"
-                  className="cat-clear"
+                  className="cat-pagebtn"
                   onClick={(e) => {
                     e.preventDefault();
+                    scrollAfter.current = true;
                     set({ page: result.page + 1 });
                   }}
                 >
-                  Next
+                  Next ›
                 </a>
               ) : (
-                <span aria-disabled="true" className="text-text-muted opacity-60">
-                  Next
+                <span aria-disabled="true" className="cat-pagebtn">
+                  Next ›
                 </span>
               )}
             </nav>

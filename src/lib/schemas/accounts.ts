@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { MAX_LINES, MAX_QTY } from "@/lib/order-constants";
-import { checkbox, optText, reqPhone, reqText } from "@/lib/validation";
+import { optText, reqPhone, reqText } from "@/lib/validation";
 import { normaliseOrderRef } from "./tracking";
 
 /** Passwords: long enough to resist guessing, short enough for the sign-in service (it ignores anything past 72 characters). */
@@ -30,7 +30,6 @@ export const signUpSchema = z
     phone: optPhone,
     password: newPassword,
     confirmPassword: z.string({ error: "Type the password again." }),
-    consent: checkbox,
     next: z.string().optional(),
     [HONEYPOT_FIELD]: z.string().optional(),
     formToken: z.string().optional(),
@@ -38,7 +37,6 @@ export const signUpSchema = z
   .superRefine((v, ctx) => {
     if (v.password !== v.confirmPassword) ctx.addIssue({ code: "custom", path: ["confirmPassword"], message: "The two passwords do not match." });
     if (v.password.toLowerCase() === v.email.toLowerCase()) ctx.addIssue({ code: "custom", path: ["password"], message: "Do not use your email address as your password." });
-    if (!v.consent) ctx.addIssue({ code: "custom", path: ["consent"], message: "Please agree so we can keep your details for your account." });
   });
 
 export const signInSchema = z.object({
@@ -108,11 +106,11 @@ export type SavedCartItem = z.infer<typeof savedCartItemSchema>;
 /** A saved delivery address. */
 export const addressSchema = z.object({
   id: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.uuid().optional()),
-  label: reqText("Address name", 40),
-  recipient: reqText("Name of the person receiving it", 120),
-  phone: optPhone,
-  address: reqText("Address", 400).refine((v) => v.length >= 8, "Please give the full address, with the town."),
-  isDefault: checkbox,
+  line1: reqText("Address line 1", 120),
+  line2: optText("Address line 2", 120),
+  line3: optText("Address line 3", 120),
+  city: reqText("City", 80),
+  postalCode: reqText("Postal code", 20),
 });
 
 export const addressIdSchema = z.object({ id: z.uuid({ error: "Choose a valid address." }) });

@@ -118,16 +118,6 @@ html:has(.page-body) {
       width: 1.9rem;
       height: 1.9rem;
     }
-    .phead .logo b,
-    .foot .brand b {
-      font-size: 0.9rem;
-      letter-spacing: 0.2em;
-    }
-    .phead .logo i,
-    .foot .brand i {
-      font-size: 0.56rem;
-      letter-spacing: 0.22em;
-    }
   }
   .phead nav {
     margin-left: auto;
@@ -229,7 +219,7 @@ html:has(.page-body) {
     }
     .phead nav a {
       padding: 0.95rem 0.5rem;
-      font-size: 0.85rem;
+      font-size: max(0.6875rem, 10.4px);
       border-width: 0 0 1px;
       border-color: rgb(28 25 22 / 0.1);
     }
@@ -2555,12 +2545,12 @@ a.acct-row {
    and the new price in red. On a product page there is also a full-width yellow bar under the header. */
 .wish {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 0.625rem;
+  right: 0.625rem;
   z-index: 3;
   display: flex;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   align-items: center;
   justify-content: center;
   margin: 0;
@@ -2575,8 +2565,8 @@ a.acct-row {
   transition: box-shadow 200ms var(--ease-out);
 }
 .wish svg {
-  width: 12px;
-  height: 12px;
+  width: 0.75rem;
+  height: 0.75rem;
   fill: #ffc4d9;
   stroke: #1c1916;
   stroke-width: 1.4;
@@ -2593,7 +2583,7 @@ a.acct-row {
 .wish::before {
   content: "";
   position: absolute;
-  inset: -9px;
+  inset: -0.5625rem;
 }
 @media (hover: hover) {
   .wish:hover {
@@ -2606,26 +2596,26 @@ a.acct-row {
 }
 /* On the main photograph of a product page */
 .wish-photo {
-  top: 12px;
-  right: 12px;
+  top: 0.75rem;
+  right: 0.75rem;
   z-index: 4;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
 }
 .wish-photo svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 @media (max-width: 47.99rem) {
   .wish-photo {
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
   }
   .wish-photo svg {
-    width: 13px;
-    height: 13px;
+    width: 0.8125rem;
+    height: 0.8125rem;
   }
 }
 /* The sale strip across the bottom of a card's photograph */
@@ -2636,14 +2626,14 @@ a.acct-row {
   bottom: 0;
   z-index: 3;
   display: flex;
-  height: 28px;
+  height: 1.75rem;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   padding: 0 10px;
   background: #ffd400;
   color: #1c1916;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
@@ -2654,7 +2644,7 @@ a.acct-row {
   .sale-badge {
     height: 2.1em;
     padding: 0 0.7em;
-    font-size: clamp(9.5px, calc(6.5px + 0.8vw), 12.5px);
+    font-size: 0.6875rem;
     letter-spacing: 0.06em;
   }
 }
@@ -3763,15 +3753,1008 @@ a.acct-row {
   height: 3rem;
 }
 
-/* Type grows with the screen: phones and tablets keep the 16px base (the readable minimum); large desktops step up so text keeps its
-   proportion to the wider page. Everything sized in rem follows. Headlines have their own fluid sizes (see tokens.css). */
-@media (min-width: 80rem) {
-  html {
-    font-size: 106.25%;
+/* Text size changes smoothly with the screen width, with no steps: 70% on a 375px phone, growing evenly to 93.75% (15px) at 1024px and wider.
+   Everything sized in rem follows it (the staff area sets its own). A tablet lands at about 80% (12.8px) at 640px. */
+html:not(:has(.app-ui)) {
+  font-size: clamp(70%, calc(70% + (100vw - 23.4375rem) * 0.005855), 93.75%);
+}
+
+
+
+/* No underline appears when something is hovered or highlighted, anywhere on the site (links that are always underlined stay as they are). */
+.foot a:hover {
+  text-decoration-color: transparent !important;
+}
+.pcard:hover h3 span,
+.link-draw-hover:hover,
+.link-draw-hover:focus-visible,
+:where(.group:hover, a:hover) .link-draw-hover,
+.ctasoft .reach a:hover {
+  background-size: 0 0 !important;
+}
+
+/* Account menu: buttons that wrap onto as many rows as they need (no sideways scrolling); on phones one dropdown instead; the side menu from large screens. */
+.acct-nav {
+  flex-wrap: wrap;
+  margin-inline: 0;
+  padding: 0;
+  overflow: visible;
+  gap: 0.375rem;
+}
+.acct-nav-select {
+  display: none;
+}
+@media (max-width: 39.99rem) {
+  .acct-nav {
+    display: none;
+  }
+  .acct-nav-select {
+    display: block;
   }
 }
-@media (min-width: 120rem) {
-  html {
-    font-size: 112.5%;
+@media (min-width: 64rem) {
+  .acct-nav {
+    flex-wrap: nowrap;
+    padding: 0.5rem;
+    gap: 0;
   }
+}
+
+/* Account menu from tablet width up: a plain vertical side menu, as in the staff area. */
+@media (min-width: 40rem) {
+  .acct-shell {
+    grid-template-columns: 12.5rem minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .acct-nav {
+    position: sticky;
+    top: 6rem;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .acct-nav a,
+  .acct-nav button {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 0;
+    border-left: 2px solid transparent;
+    background: transparent;
+    letter-spacing: 0.1em;
+  }
+  .acct-nav a[aria-current="page"] {
+    background: #f4f1ed;
+    border-left-color: #331c11;
+    color: #331c11;
+  }
+  .acct-signout {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgb(28 25 22 / 0.1);
+  }
+}
+@media (min-width: 64rem) {
+  .acct-shell {
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    gap: 3rem;
+  }
+}
+
+.acct-nav a,
+.acct-nav button {
+  font-size: 0.625rem;
+}
+
+/* Account figures: every tile the same height, with the number on the same line whatever the label length. */
+.acct-stats > * {
+  display: flex;
+}
+.acct-stats .acct-stat {
+  flex: 1;
+}
+.acct-stat-l {
+  min-height: 2.6em;
+}
+
+
+
+/* Account: a tighter, even rhythm. One gap between blocks, slim figures, plain empty states. */
+.acct-main {
+  gap: 1.25rem;
+}
+.acct-card {
+  padding: 1.25rem 1.5rem;
+}
+.acct-h {
+  margin-bottom: 0.9rem;
+}
+.acct-h h2,
+.acct-h h1 {
+  font-size: 1.15rem;
+}
+.acct-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (min-width: 40rem) {
+  .acct-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.acct-stat {
+  padding: 0.9rem 1rem;
+}
+.acct-stat-l {
+  min-height: 0;
+  letter-spacing: 0.1em;
+}
+.acct-stat-v {
+  margin-top: 0.4rem;
+  font-size: 1.6rem;
+}
+.acct-empty {
+  padding: 0;
+  text-align: left;
+  border: 0;
+}
+.acct-empty p {
+  margin-inline: 0;
+  max-width: 36rem;
+}
+.acct-empty .acct-actions {
+  justify-content: flex-start;
+}
+.acct-actions {
+  margin-top: 1rem;
+}
+.acct-address {
+  padding: 1.1rem 1.25rem;
+}
+
+.acct-sub {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
+.acct-sub-h {
+  margin-bottom: 0.9rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: #331c11;
+}
+
+/* Footer layout, one set of rules: brand across the top; two columns on phones and tablets; five on large screens. Every list has the same row gap, and icons line up with the first line of text. */
+.foot .foot-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 1.5rem;
+  padding-block: 2rem 1.5rem;
+}
+.foot .foot-grid > .foot-about {
+  grid-column: 1 / -1;
+}
+.foot .foot-grid > div:not(.foot-about) {
+  grid-column: auto;
+}
+@media (max-width: 39.99rem) {
+  .foot .foot-grid > div:not(.foot-about) {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 64rem) {
+  .foot .foot-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.4fr);
+    gap: 2.5rem;
+    padding-block: 3rem 2.25rem;
+  }
+  .foot .foot-grid > .foot-about {
+    grid-column: auto;
+  }
+}
+.foot .foot-tag {
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+.foot .foot-head {
+  margin: 0;
+}
+.foot .foot-list {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+  line-height: 1.45;
+}
+.foot .foot-list li {
+  margin: 0;
+}
+.foot .foot-list li > a,
+.foot .foot-list li.plain {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.foot .foot-list li > span {
+  display: grid;
+  gap: 0.55rem;
+}
+.foot .foot-list svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+}
+
+/* Footer sizes in rem, so it follows the same 0.7 / 0.8 / 1 steps as the rest of the site: 9.8px on phones, 11.2px on tablets, 14px on desktop. */
+.foot,
+.foot .foot-list a,
+.foot .foot-list li.plain,
+.foot .foot-tag {
+  font-size: 0.875rem;
+}
+.foot .brand b {
+  font-size: 1.05rem;
+}
+.foot .brand i {
+  font-size: 0.66rem;
+}
+.foot .foot-head,
+.foot .foot-bottom,
+.foot .foot-bottom a {
+  font-size: 0.6875rem;
+}
+
+/* Profile: one container, with the parts divided by thin lines. */
+.acct-stack {
+  padding: 0;
+}
+.acct-part {
+  padding: 1.5rem;
+}
+.acct-part + .acct-part {
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+}
+.acct-part-h {
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: #331c11;
+}
+.acct-details {
+  margin-bottom: 0.75rem;
+}
+
+/* Profile page */
+.acct-grid-one {
+  grid-template-columns: minmax(0, 1fr) !important;
+  margin-bottom: 1rem;
+}
+.acct-part-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 1rem;
+}
+.acct-part-top .acct-part-h {
+  margin-bottom: 0;
+}
+.acct-add summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  border: 1px solid rgb(28 25 22 / 0.3);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.acct-add summary::-webkit-details-marker {
+  display: none;
+}
+.acct-add[open] summary {
+  display: none;
+}
+.acct-add-body {
+  margin-top: 0.25rem;
+}
+
+/* Fields look the same when clicked: no darker border or ring. */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-border-strong);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Saved address card: four evenly spaced plain lines, the Default tag top right, Edit and Delete alike at bottom right. */
+.acct-address {
+  position: relative;
+  gap: 0;
+  padding: 1.1rem 1.25rem;
+}
+.acct-address > .st {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+}
+.acct-address address {
+  padding-right: 5rem;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.acct-address .acct-actions {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+  padding-top: 0;
+}
+.acct-address .acct-actions a,
+.acct-address .acct-actions button {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  line-height: 1.4 !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  color: #1c1916 !important;
+  cursor: pointer;
+}
+
+/* Saved addresses: "Address N" small above each card, a plain hairline card, buttons on one line. */
+.acct-addr-item {
+  display: grid;
+  gap: 0.35rem;
+}
+.acct-addr-no {
+  margin: 0;
+  text-align: right;
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(28 25 22 / 0.55);
+}
+.acct-address[data-default] {
+  border-color: rgb(28 25 22 / 0.14);
+  box-shadow: none;
+}
+.acct-address .acct-actions {
+  display: flex;
+  align-items: center;
+}
+.acct-address .acct-actions > *,
+.acct-address .acct-actions form {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* Status pills: the dot sits on the middle of the capital letters. */
+.st {
+  line-height: 1;
+}
+.st::before {
+  flex: none;
+  transform: translateY(-0.03rem);
+}
+
+/* Edit and Delete: the same box, font and baseline. */
+.acct-address .acct-actions a,
+.acct-address .acct-actions button {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 1.5rem !important;
+  font-family: inherit !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+.acct-address .acct-actions {
+  align-items: center !important;
+}
+.acct-address .acct-actions > * {
+  height: 1.5rem;
+  align-self: center;
+}
+.acct-address .acct-actions form button {
+  transform: translateY(0.04rem);
+}
+
+/* A card being edited: the form sits inside the same container; the heading and fields use the full width. */
+.acct-address[data-editing] {
+  gap: 0.25rem;
+}
+.acct-address[data-editing] .acct-sub-h {
+  margin-bottom: 0.9rem;
+}
+.acct-address[data-editing] .acct-actions {
+  margin-top: 0;
+}
+
+/* My orders: each order is a block: number and date on one line, then every item with its picture and quantity. */
+.acct-orders {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.acct-order {
+  border: 1px solid rgb(28 25 22 / 0.12);
+  background: #fff;
+}
+.acct-order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid rgb(28 25 22 / 0.1);
+}
+.acct-order-id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+}
+.acct-order-id span {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #1c1916;
+}
+.acct-order-id small {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.acct-order-items {
+  margin: 0;
+  padding: 0 1.1rem;
+  list-style: none;
+}
+.acct-order-items > li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
+}
+.acct-order-items > li + li {
+  border-top: 1px solid rgb(28 25 22 / 0.08);
+}
+.acct-order-pic {
+  position: relative;
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+  background: #e4e4e2;
+}
+.acct-order-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #1c1916;
+}
+.acct-order-name small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.acct-order-qty {
+  flex: none;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.acct-order-total {
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid rgb(28 25 22 / 0.1);
+  text-align: right;
+  font-size: 0.9375rem;
+}
+
+/* My orders as a table, with a line between every row and column. */
+.acct-actions-right {
+  justify-content: flex-end;
+  margin: 0 0 0.9rem;
+}
+.acct-table-wrap {
+  overflow-x: auto;
+}
+.acct-table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  border: 1px solid rgb(28 25 22 / 0.18);
+  font-size: 0.875rem;
+}
+.acct-table th,
+.acct-table td {
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgb(28 25 22 / 0.14);
+  text-align: left;
+  font-weight: 400;
+  vertical-align: middle;
+}
+.acct-table thead th {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(28 25 22 / 0.7);
+  background: #f7f5f2;
+}
+.acct-table .num {
+  width: 8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.acct-table .pic {
+  width: 4.25rem;
+  padding: 0.5rem 0.75rem;
+}
+.acct-table .acct-order-pic {
+  display: block;
+}
+.acct-table-order th {
+  background: #fbfaf8;
+}
+.acct-table-order a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+}
+.acct-table-order a span {
+  font-weight: 500;
+  color: #1c1916;
+}
+.acct-table-order a small {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.acct-table-total td {
+  font-weight: 500;
+}
+.acct-table tbody + tbody tr:first-child th {
+  border-top: 2px solid rgb(28 25 22 / 0.3);
+}
+
+.acct-table .num {
+  width: 5rem;
+  text-align: center;
+}
+.acct-table-total td {
+  display: table-cell;
+}
+.acct-table-total td > span {
+  display: inline-block;
+}
+.acct-table-total td > span:last-child {
+  float: right;
+}
+
+.acct-table .num.price {
+  width: 8rem;
+  text-align: right;
+}
+
+/* Phones: the orders table fits the screen: thin quantity column, smaller picture, tighter cells. */
+@media (max-width: 39.99rem) {
+  .acct-table {
+    min-width: 0;
+  }
+  .acct-table th,
+  .acct-table td {
+    padding: 0.5rem 0.5rem;
+  }
+  .acct-table .num {
+    width: 2.5rem;
+    padding-inline: 0.25rem;
+  }
+  .acct-table .num.price {
+    width: 5.25rem;
+  }
+  .acct-table .pic {
+    width: 3rem;
+    padding: 0.4rem;
+  }
+  .acct-table .acct-order-pic {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .acct-table thead th {
+    letter-spacing: 0.06em;
+  }
+}
+
+/* Phones: smaller type in the orders table and no pictures. */
+@media (max-width: 39.99rem) {
+  .acct-table {
+    font-size: 0.78rem;
+  }
+  .acct-table-order a small,
+  .acct-table-order a span,
+  .acct-table .acct-table-total td {
+    font-size: 0.78rem;
+  }
+  .acct-table thead th {
+    font-size: 0.62rem;
+  }
+  .acct-table .pic {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+  .acct-table .pic > * {
+    display: none;
+  }
+}
+
+/* "Sort by" above an account list */
+.acct-sort {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.acct-sort > span {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(28 25 22 / 0.65);
+}
+.acct-sort .gs {
+  min-width: 11rem;
+}
+.acct-sort > span {
+  white-space: nowrap;
+}
+.acct-sort .gs {
+  flex: none;
+  width: 10.5rem;
+  min-width: 0;
+}
+.acct-sort .gs {
+  width: 9.5rem;
+}
+.acct-sort .gs-button {
+  min-width: 0;
+  width: 100%;
+  padding-inline: 0.7rem 1.8rem;
+  letter-spacing: 0.08em;
+}
+
+/* Search box in the list tools row: takes the free space on the left; sort stays on the right. */
+.acct-sort {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.acct-search {
+  flex: 1 1 10rem;
+  min-width: 0;
+  max-width: 16rem;
+  margin-right: auto;
+  height: 2.25rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgb(28 25 22 / 0.2);
+  background: #fff;
+  font-size: 0.8125rem;
+}
+
+/* Search in the list tools row: the collection page style, sized to share the row with the sort box. */
+.acct-search-wrap {
+  flex: 1 1 10rem;
+  min-width: 0;
+  max-width: 16rem;
+  margin-right: auto;
+}
+.acct-search-wrap .acct-search {
+  width: 100%;
+  max-width: none;
+  height: 2.25rem;
+  border: 0;
+  padding-inline: 2.5rem 0.9rem;
+  font-size: 0.8125rem;
+}
+/* Order header: the number on the left, the date placed on the right. */
+.acct-table-order a {
+  justify-content: space-between;
+}
+
+/* Search box and sort box in the list tools row: smaller type. */
+.acct-search-wrap .acct-search,
+.acct-search-wrap .acct-search::placeholder,
+.acct-sort .gs-button {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+}
+
+/* Account side menu: less space beside it. */
+@media (min-width: 40rem) {
+  .acct-shell {
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  .acct-nav a,
+  .acct-nav button {
+    padding-inline: 0.5rem;
+    gap: 0.55rem;
+  }
+}
+@media (min-width: 64rem) {
+  .acct-shell {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Account side menu: shifted further left, into the page margin. */
+@media (min-width: 40rem) {
+  .acct-nav {
+    margin-left: -0.75rem;
+    width: calc(100% + 0.75rem);
+  }
+}
+
+/* Status as plain text in the account tables and lists. */
+.acct-status {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(28 25 22 / 0.78);
+}
+.acct-table .status {
+  width: 8.5rem;
+  text-align: left;
+}
+.acct-table .status .acct-status {
+  display: inline-block;
+}
+.acct-table-order .acct-table-ref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.9rem;
+}
+.acct-table-order .acct-table-ref span {
+  font-weight: 500;
+  color: #1c1916;
+}
+.acct-table-order .acct-table-ref small {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.acct-cell-note {
+  display: -webkit-box;
+  margin-top: 0.15rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+@media (max-width: 39.99rem) {
+  .acct-table .status {
+    width: 5.5rem;
+  }
+  .acct-status {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+  }
+  .acct-cell-note {
+    font-size: 0.72rem;
+  }
+}
+
+/* Dashboard figures: two tiles, so they share the row evenly at every width. */
+.acct-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Sale strip: sized in rem so it follows the phone / tablet / desktop steps like the rest of the text. */
+.sale-badge {
+  height: 2.4em;
+  padding: 0 0.8em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+/* A card's price line wraps instead of running past the card: old price, then the new one. */
+.pcard .pcard-body p:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  row-gap: 0.1rem;
+  min-width: 0;
+}
+.pcard .pcard-body p:last-child .price-was {
+  margin-right: 0;
+}
+
+/* Wishlist page: each card carries its own highlighted heart on the corner. */
+.acct-wish > li {
+  position: relative;
+}
+
+/* "New" label on a product photo: a small yellow tag, top left (the style from the reference site, sized in rem like the rest). */
+.new-badge {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.375rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 1.125rem;
+  padding: 0 0.375rem;
+  border-radius: 2px;
+  background: #ffd400;
+  color: #1c1916;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Heart and "New" tag share one corner spacing: both sit 0.375rem in, and the tag's 3px top margin (from the reference) centres it on the heart. */
+.new-badge {
+  margin-top: 0.1875rem;
+}
+.wish {
+  top: 0.375rem;
+  right: 0.375rem;
+}
+
+/* Catalogue page numbers: small plain squares, the current page filled dark. */
+/* The page picker: Prev, the page numbers and Next sit together in the middle with no boxes; the current page is underlined */
+.cat-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 2.5rem;
+}
+.cat-pagebtn,
+.cat-pages a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 2.25rem;
+  border-bottom: 2px solid transparent;
+  line-height: 1;
+  color: #1c1916;
+  text-decoration: none;
+}
+.cat-pagebtn {
+  padding: 0 0.875rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+span.cat-pagebtn {
+  color: var(--color-text-muted);
+  opacity: 0.45;
+}
+.cat-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cat-pages li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+.cat-pages a {
+  min-width: 1.875rem;
+  padding: 0 0.25rem;
+  font-size: 0.8125rem;
+}
+.cat-pages a[aria-current="page"] {
+  border-bottom-color: #331c11;
+  font-weight: 500;
+}
+@media (hover: hover) {
+  a.cat-pagebtn:hover,
+  .cat-pages a:not([aria-current="page"]):hover {
+    border-bottom-color: rgb(28 25 22 / 0.35);
+  }
+}
+
+/* ── Smooth type: every size below grows steadily from a 375px phone to a 1024px screen (no jumps at 480, 640, 768 or 1152px) ── */
+.fl-a { font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00289), 0.9375rem); }
+.fl-b { font-size: clamp(1.35rem, calc(1.35rem + (100vw - 375px) * 0.01271), 1.9rem); }
+.fl-c { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00289), 0.8125rem); }
+.fl-d { font-size: clamp(0.75rem, calc(0.75rem + (100vw - 375px) * 0.00289), 0.875rem); }
+.fl-e { font-size: clamp(1rem, calc(1rem + (100vw - 375px) * 0.00289), 1.125rem); }
+.fl-g { font-size: clamp(0.625rem, calc(0.625rem + (100vw - 375px) * 0.00144), 0.6875rem); }
+.fl-input { font-size: clamp(0.875rem, calc(1rem + (100vw - 375px) * -0.00289), 1rem); }
+.phead .logo b,
+.foot .brand b {
+  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00347), 1.05rem);
+  letter-spacing: clamp(0.2em, calc(0.2em + (100vw - 375px) * 0.0013), 0.26em);
+}
+.phead .logo i,
+.foot .brand i {
+  font-size: clamp(0.56rem, calc(0.56rem + (100vw - 375px) * 0.00231), 0.66rem);
+  letter-spacing: clamp(0.22em, calc(0.22em + (100vw - 375px) * 0.0012), 0.3em);
+}
+.gs-field .gs-button { font-size: clamp(0.875rem, calc(1rem + (100vw - 375px) * -0.00289), 1rem); }
+.page-body main form:not(.cat-bar) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.page-body main form:not(.cat-bar) textarea,
+.page-body main form:not(.cat-bar) .gs-field .gs-button { font-size: clamp(0.8125rem, calc(1rem + (100vw - 375px) * -0.00433), 1rem); }
+.acct-table { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00220), 0.875rem); }
+.acct-table-order a small { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00075), 0.8125rem); }
+.acct-table-order a span,
+.acct-table .acct-table-total td { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00220), 0.875rem); }
+.acct-table thead th { font-size: clamp(0.62rem, calc(0.62rem + (100vw - 375px) * 0.00156), 0.6875rem); }
+.acct-status { font-size: clamp(0.62rem, calc(0.62rem + (100vw - 375px) * 0.00156), 0.6875rem); }
+.acct-cell-note { font-size: clamp(0.72rem, calc(0.72rem + (100vw - 375px) * 0.00214), 0.8125rem); }
+.ptabs-bar { font-size: clamp(0.9375rem, calc(0.9375rem + (100vw - 375px) * 0.00144), 1rem); }
+
+/* Product card: the text part is built from the card's own width, so the photo and the text keep the same proportion at every screen size.
+   Centred: a small category label, the name, then the price. */
+.pcard {
+  container-type: inline-size;
+}
+.pcard .pcard-body {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 26cqw;
+  padding: 2.2cqw 4cqw;
+  text-align: center;
+}
+.pcard .pcard-body h3 {
+  margin-top: 0;
+  font-size: clamp(9.5px, 7.2cqw, 17px);
+  line-height: 1.25;
+}
+.pcard .pcard-body p.pcard-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  column-gap: 0.5rem;
+  row-gap: 0.1rem;
+  min-width: 0;
+  margin-top: 2.2cqw;
+  font-size: clamp(9px, 5.6cqw, 14px);
+  line-height: 1.4;
+}
+.pcard .pcard-body p.pcard-price .price-was {
+  margin-right: 0;
 }

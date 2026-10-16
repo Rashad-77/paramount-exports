@@ -50,6 +50,13 @@ export async function hitRateLimit(
   };
 }
 
+/** Gives back one hit (for example when the guarded work failed and the visitor may fairly try again). */
+export async function releaseRateLimit(db: DbOrTx, opts: { scope: string; value: string; windowSeconds: number; now?: Date }): Promise<void> {
+  const windowMs = opts.windowSeconds * 1000;
+  const windowStartMs = Math.floor((opts.now ?? new Date()).getTime() / windowMs) * windowMs;
+  await db.execute(sql`UPDATE rate_limits SET count = GREATEST(count - 1, 0) WHERE key_hash = ${hashKey(opts.scope, opts.value)} AND window_start = ${new Date(windowStartMs).toISOString()}::timestamptz`);
+}
+
 /** Housekeeping: remove windows older than `olderThanSeconds`. Called by the cron endpoint. */
 export async function purgeRateLimits(db: DbOrTx, olderThanSeconds = 24 * 3600): Promise<number> {
   const rows = await db.execute<{ n: number }>(

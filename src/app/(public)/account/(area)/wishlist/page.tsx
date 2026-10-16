@@ -30,7 +30,7 @@ export default async function AccountWishlistPage() {
           {items.map((p) => (
             <li key={p.id}>
               <ProductCard product={p} currency={business.currency} />
-              <WishlistButton productId={p.id} initiallySaved variant="remove" />
+              <WishlistButton productId={p.id} initiallySaved variant="icon" refreshOnChange confirmRemove />
             </li>
           ))}
         </ul>

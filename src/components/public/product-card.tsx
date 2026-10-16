@@ -9,7 +9,6 @@ import { WishlistButton } from "./wishlist-button";
 /** Photograph first, then the name, a line of detail, the price and a link: the way a showroom label sits beside a piece. */
 export function ProductCard({ product, currency, priority = false, wishlist = false }: { product: PublicCard; currency: string; priority?: boolean; wishlist?: boolean }) {
   const off = percentOff(product.fromPrice, product.fromCompare);
-  const meta = [product.categoryName, product.material, product.availability].filter(Boolean).join(" · ");
   return (
     <article className="group pcard relative h-full">
       <Link href={`/products/${product.slug}`} className="block">
@@ -26,14 +25,14 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
           ) : (
             <ImagePlaceholder label={product.name} className="absolute inset-0" />
           )}
+          {product.isNew ? <span className="new-badge">New</span> : null}
           {off ? <span className="sale-badge">Sale · {off}% off</span> : null}
         </div>
         <div className="pcard-body px-4 pb-5 pt-4">
-          <h3 className="font-display text-[1.2rem] leading-snug text-text">
+          <h3 className="font-display text-text">
             <span>{product.name}</span>
           </h3>
-          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{meta}</p>
-          <p className="mt-4 text-sm font-medium text-text">
+          <p className="pcard-price font-medium text-text">
             {product.fromPrice ? (
               off && product.fromCompare ? (
                 <>

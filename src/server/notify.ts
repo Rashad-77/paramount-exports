@@ -7,6 +7,32 @@ import { publicEnv, serverEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
 
+/** Sends one email through Resend, trying again (up to three times, with growing pauses) when the service is busy or briefly unreachable. */
+async function sendMail(to: string, subject: string, text: string, label: string): Promise<void> {
+  const env = serverEnv();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let status = 0;
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) return;
+      status = res.status;
+    } catch {
+      status = 0; // network trouble or a timeout: worth another try
+    }
+    const retryable = status === 0 || status === 429 || status >= 500;
+    if (!retryable || attempt === 3) {
+      console.error(`[notify] ${label} not sent (${status || "no reply"}) after ${attempt} ${attempt === 1 ? "try" : "tries"}`);
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 500 * 2 ** (attempt - 1) + Math.random() * 250));
+  }
+}
+
 /**
  * Tells the owner by email that something has arrived. It never gets in the customer's way: it runs after the reply has gone, and any
  * failure (no key set, the mail service down) is logged and forgotten. Orders and messages are always saved first.
@@ -17,13 +43,7 @@ async function sendToOwner(subject: string, text: string): Promise<void> {
   const business = await getBusinessSettings();
   const to = business.notifyEmail ?? business.email;
   if (!to) return;
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) console.error(`[notify] the mail service refused the email (${res.status})`);
+  await sendMail(to, subject, text, "an owner email");
 }
 
 /** Runs the work once the response is sent; where there is no request (tests, scripts) it simply runs. */
@@ -42,13 +62,7 @@ export function emailCustomer(to: string | null | undefined, subject: string, te
   later(async () => {
     const env = serverEnv();
     if (!env.RESEND_API_KEY || !env.MAIL_FROM) return;
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) console.error(`[notify] the mail service refused a customer email (${res.status})`);
+    await sendMail(to, subject, text, "a customer email");
   });
 }
 

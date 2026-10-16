@@ -11,7 +11,7 @@ type Variant = "up" | "fade" | "left" | "right" | "zoom" | "wipe";
  */
 export function Reveal({
   as = "div",
-  variant = "up",
+  variant: _variant = "up",
   delay = 0,
   className,
   children,
@@ -50,7 +50,7 @@ export function Reveal({
 
   const style = delay ? ({ "--d": `${delay}ms` } as CSSProperties) : undefined;
   return (
-    <Tag ref={ref} data-reveal={variant} className={className} style={style}>
+    <Tag ref={ref} data-reveal="up" className={className} style={style}>
       {children}
     </Tag>
   );

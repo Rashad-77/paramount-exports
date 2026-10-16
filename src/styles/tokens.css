@@ -12,8 +12,8 @@
  */
 @theme {
   /* Surfaces and ink */
-  --color-ivory: #fefcf9;
-  --color-paper-deep: #f7f4ee;
+  --color-ivory: #ffffff;
+  --color-paper-deep: #ffffff;
   --color-linen: #e8e3dc;
   --color-linen-dark: #dbcfb9;
   --color-walnut: #331c11;
@@ -27,9 +27,9 @@
   --color-brand-dark: #200f07;
   --color-mint: #efe9df;
   --color-mint-deep: #dbcfb9;
-  --color-surface: #fefcf9;
+  --color-surface: #ffffff;
   /* Rhythm for the public site: warm cream, a deeper cream for contrast, and bark brown for the dark sections */
-  --color-cream: #f7f4ee;
+  --color-cream: #ffffff;
   --color-cream-deep: #e8e3dc;
   --color-bark: #200f07;
   --color-bark-2: #331c11;

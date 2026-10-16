@@ -1,6 +1,6 @@
 import { outer } from "@/lib/db/outer";
 import "server-only";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { getDb, withTx } from "@/lib/db/client";
 import { customerAccounts, customerAddresses, customerCarts, customerWishlist, messages, orderItems, orders, products, uploadedFiles } from "@/lib/db/schema";
@@ -12,7 +12,7 @@ import { hitRateLimit } from "@/lib/rate-limit";
 import { savedCartSchema, type SavedCartItem } from "@/lib/schemas/accounts";
 import type { TrackedOrder } from "@/lib/schemas/tracking";
 import { recordAudit } from "./audit";
-import { listPublicProductsByIds } from "./catalogue-public";
+import { firstImages, listPublicProductsByIds } from "./catalogue-public";
 import { notifyQuotationAnswered } from "./notify";
 import { recordUpdate } from "./account-updates";
 import { toTrackedOrder } from "./tracking";
@@ -29,11 +29,13 @@ export interface AccountOrderRow {
   currency: string;
   total: string;
   itemCount: number;
+  items: Array<{ name: string; variant: string | null; quantity: number; unitPrice: string; imageUrl: string | null; imageAlt: string | null }>;
 }
 
 export async function listAccountOrders(accountId: string, limit = 50): Promise<AccountOrderRow[]> {
   const rows = await getDb()
     .select({
+      id: orders.id,
       reference: orders.reference,
       status: orders.status,
       createdAt: orders.createdAt,
@@ -45,7 +47,29 @@ export async function listAccountOrders(accountId: string, limit = 50): Promise<
     .where(eq(orders.accountId, accountId))
     .orderBy(desc(orders.createdAt))
     .limit(limit);
-  return rows.map((r) => ({ reference: r.reference, status: r.status, placedAt: r.createdAt.toISOString(), currency: r.currency, total: r.total, itemCount: Number(r.itemCount) }));
+  const ids = rows.map((r) => r.id);
+  const lines = ids.length
+    ? await getDb()
+        .select({ orderId: orderItems.orderId, productId: orderItems.productId, name: orderItems.productName, variant: orderItems.variantLabel, quantity: orderItems.quantity, unitPrice: orderItems.unitPrice })
+        .from(orderItems)
+        .where(inArray(orderItems.orderId, ids))
+        .orderBy(asc(orderItems.orderId), asc(orderItems.position))
+    : [];
+  const pics = await firstImages(lines.map((l) => l.productId).filter((v): v is string => Boolean(v)));
+  return rows.map((r) => ({
+    reference: r.reference,
+    status: r.status,
+    placedAt: r.createdAt.toISOString(),
+    currency: r.currency,
+    total: r.total,
+    itemCount: Number(r.itemCount),
+    items: lines
+      .filter((l) => l.orderId === r.id)
+      .map((l) => {
+        const pic = l.productId ? pics.get(l.productId) : undefined;
+        return { name: l.name, variant: l.variant, quantity: l.quantity, unitPrice: l.unitPrice, imageUrl: pic?.url ?? null, imageAlt: pic?.alt ?? null };
+      }),
+  }));
 }
 
 /** One of the customer's own orders, or "not found" for anything that is not theirs (the same answer, so nothing leaks). */
@@ -197,7 +221,6 @@ export async function respondToQuotation(accountId: string, reference: string, d
       kind: "quotation",
       title: accepted ? `You accepted quotation ${m.reference}` : `You declined quotation ${m.reference}`,
       body: accepted ? "We will contact you to confirm your order." : undefined,
-      link: `/account/quotations/${m.reference}`,
     });
     await recordAudit(tx, null, { action: accepted ? "quotation.accepted_by_customer" : "quotation.declined_by_customer", entityType: "message", entityId: m.id, after: { reference: m.reference } });
     return m.id;
@@ -205,27 +228,56 @@ export async function respondToQuotation(accountId: string, reference: string, d
   notifyQuotationAnswered(messageId);
 }
 
+/* ───────────────────────────── enquiries ───────────────────────────── */
+
+export interface AccountEnquiryRow {
+  reference: string;
+  subject: string;
+  message: string | null;
+  createdAt: string;
+  state: "new" | "in_progress" | "responded";
+}
+
+/** The customer's own questions to the showroom (not quotations), newest first, with where each one stands. */
+export async function listAccountEnquiries(accountId: string, limit = 50): Promise<AccountEnquiryRow[]> {
+  const rows = await getDb()
+    .select({ m: messages, productName: products.name })
+    .from(messages)
+    .leftJoin(products, eq(products.id, messages.productId))
+    .where(and(eq(messages.accountId, accountId), sql`${messages.kind} <> 'custom'`))
+    .orderBy(desc(messages.createdAt))
+    .limit(limit);
+  return rows.map(({ m, productName }) => ({
+    reference: m.reference,
+    subject: productName ? `About ${productName}` : "General question",
+    message: m.message,
+    createdAt: m.createdAt.toISOString(),
+    state: m.isHandled ? "responded" : m.inProgress ? "in_progress" : "new",
+  }));
+}
+
 /* ───────────────────────────── dashboard ───────────────────────────── */
 
 export interface AccountDashboard {
   quotations: AccountQuotationRow[];
   activeOrders: AccountOrderRow[];
-  counts: { orders: number; open: number; quotations: number; waitingForYou: number; wishlist: number };
+  counts: { orders: number; open: number; quotations: number; waitingForYou: number; wishlist: number; enquiries: number };
 }
 
 export async function accountDashboard(accountId: string): Promise<AccountDashboard> {
   const db = getDb();
-  const [quotations, allOrders, summary, wish] = await Promise.all([
+  const [quotations, allOrders, summary, wish, enq] = await Promise.all([
     listAccountQuotations(accountId, 20),
     listAccountOrders(accountId, 20),
     accountSummary(accountId),
     db.select({ n: sql<number>`count(*)::int` }).from(customerWishlist).where(eq(customerWishlist.accountId, accountId)),
+    db.select({ n: sql<number>`count(*)::int` }).from(messages).where(and(eq(messages.accountId, accountId), sql`${messages.kind} <> 'custom'`)),
   ]);
   const activeOrders = allOrders.filter((o) => o.status === "new" || o.status === "confirmed" || o.status === "in_progress").slice(0, 3);
   return {
     quotations: quotations.slice(0, 3),
     activeOrders,
-    counts: { ...summary, waitingForYou: quotations.filter((q) => q.status === "quoted").length, wishlist: Number(wish[0]?.n ?? 0) },
+    counts: { ...summary, waitingForYou: quotations.filter((q) => q.status === "quoted").length, wishlist: Number(wish[0]?.n ?? 0), enquiries: Number(enq[0]?.n ?? 0) },
   };
 }
 

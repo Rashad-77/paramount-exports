@@ -54,7 +54,6 @@ const productBase = z.object({
   woodTreatment: optEnum(WOOD_TREATMENTS, "wood treatment"),
   colour: optText("Colour", 120),
   otherSpecs: optText("Other specifications", 1500),
-  leadTime: optText("Lead time", 160),
   careInstructions: optText("Care instructions", 2000),
   customization: z.preprocess((v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(CUSTOMIZATIONS)).max(4)),
   purchaseMode: enumOf(PURCHASE_MODES, "way of selling"),

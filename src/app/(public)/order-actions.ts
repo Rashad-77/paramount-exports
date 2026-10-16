@@ -6,7 +6,8 @@ import { validation } from "@/lib/errors";
 import { activeCustomer } from "@/lib/auth/customer";
 import { getAccountSettings } from "@/lib/settings";
 import { checkFormToken, HONEYPOT_FIELD, verifyTurnstile } from "@/lib/form-guard";
-import { clientIp } from "@/lib/rate-limit";
+import { getDb } from "@/lib/db/client";
+import { clientIp, hitRateLimit, releaseRateLimit } from "@/lib/rate-limit";
 import { checkoutSchema } from "@/lib/schemas/orders";
 import { notifyNewOrder } from "@/server/notify";
 import { placeOrder } from "@/server/orders";
@@ -33,7 +34,31 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
       const customer = await activeCustomer();
       if (!customer && (await getAccountSettings()).requiredForCheckout) throw validation("Please sign in or create an account to place your order.");
 
-      const { id, reference } = await placeOrder(input, { ip, accountId: customer?.id ?? null });
+      // One form token places one order: a double click or a replayed request is refused. A failed attempt gives the token back.
+
+      const once = { scope: "order-token", value: input.formToken ?? "", windowSeconds: 24 * 3600 };
+
+      if (!(await hitRateLimit(getDb(), { ...once, limit: 1 })).allowed) {
+
+        throw validation("This order has already been sent. Please check your confirmation, or reload the page to start a new order.");
+
+      }
+
+      let placed;
+
+      try {
+
+        placed = await placeOrder(input, { ip, accountId: customer?.id ?? null });
+
+      } catch (e) {
+
+        await releaseRateLimit(getDb(), once).catch(() => undefined);
+
+        throw e;
+
+      }
+
+      const { id, reference } = placed;
       notifyNewOrder(id);
       return { redirectTo: `/order/confirmed?ref=${encodeURIComponent(reference)}&pay=${input.paymentMethod}&how=${input.fulfilment}` };
     },

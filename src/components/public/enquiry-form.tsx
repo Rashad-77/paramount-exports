@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { Suspense, useEffect, useState } from "react";
-import { ActionForm, FCheckbox, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
@@ -113,7 +113,6 @@ export function EnquiryForm({
       {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
 
       <div className={wide ? "flex flex-col gap-5 md:flex-row md:items-center md:justify-between" : "space-y-5"}>
-        <FCheckbox name="consent" label="I agree to be contacted about this enquiry." hint="We use your details only to reply to you. See the Privacy notice." />
         <SubmitButton size="cta" pendingLabel="Sending…" className={wide ? "shrink-0" : undefined}>
           {submitLabel}
         </SubmitButton>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { HONEYPOT_FIELD } from "@/lib/form-guard";
-import { checkbox, enumOf, idList, optDate, optEmail, optEnum, optText, optUuid, reqPhone, reqText } from "@/lib/validation";
+import { enumOf, idList, optDate, optEmail, optEnum, optText, optUuid, reqPhone, reqText } from "@/lib/validation";
 
 export const ENQUIRY_KINDS = ["general", "product_enquiry", "custom"] as const;
 export const CONTACT_METHODS = ["phone", "whatsapp", "email"] as const;
@@ -24,14 +24,12 @@ export const enquirySchema = z
     budgetRange: optText("Budget range", 80),
     targetDate: optDate,
     fileIds: idList(5),
-    consent: checkbox,
     // Anti-spam fields (not stored)
     [HONEYPOT_FIELD]: z.string().optional(),
     formToken: z.string().optional(),
     "cf-turnstile-response": z.string().optional(),
   })
   .superRefine((v, ctx) => {
-    if (!v.consent) ctx.addIssue({ code: "custom", path: ["consent"], message: "Please agree to be contacted about this enquiry." });
     if (v.kind === "general" && (v.message?.length ?? 0) < 10) {
       ctx.addIssue({ code: "custom", path: ["message"], message: "Please tell us a little about what you need (at least 10 characters)." });
     }
