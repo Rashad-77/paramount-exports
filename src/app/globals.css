@@ -88,12 +88,15 @@
     accent-color: var(--color-walnut);
   }
 
+  /* Reduced motion: the staff area drops all motion. The public site keeps only gentle fades (see the reveal rules below), no movement. */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    html {
+      scroll-behavior: auto !important;
+    }
+    html:has(.app-ui) *, html:has(.app-ui) *::before, html:has(.app-ui) *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
     }
   }
 }
@@ -311,16 +314,26 @@
     transform: none;
     will-change: auto;
   }
+  /* Reduced motion keeps a soft fade-in (no sliding, no wipes), so the page still feels alive without anything moving across the screen. */
   @media (prefers-reduced-motion: reduce) {
     .js [data-reveal] {
-      opacity: 1 !important;
       transform: none !important;
       clip-path: none !important;
-      transition: none !important;
+      transition: opacity 700ms var(--ease-out) var(--d, 0ms) !important;
     }
     .js [data-reveal="wipe"] > * {
       clip-path: none !important;
       transition: none !important;
+    }
+    .rise-in,
+    .rise-in-2,
+    .rise-in-3 {
+      animation-name: rise-fade !important;
+    }
+    @keyframes rise-fade {
+      from {
+        opacity: 0;
+      }
     }
   }
 
