@@ -14,7 +14,8 @@ import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 import { parseTestimonials } from "@/lib/testimonials";
-import { listPublicCategories } from "@/server/catalogue-public";
+import { ProductCard } from "@/components/public/product-card";
+import { listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -43,7 +44,7 @@ function Head({ id, eyebrow, title, intro, dark = false, center = false }: { id:
       <h2 id={id} className={"font-display mt-4 text-headline " + (dark ? "text-white" : "text-text")}>
         {title}
       </h2>
-      {intro ? <p className={"mt-4 max-w-xl text-[0.9375rem] leading-relaxed " + (dark ? "text-white/70" : "text-text-muted")}>{intro}</p> : null}
+      {intro ? <p className={"mt-4 max-w-xl text-[0.8125rem] leading-relaxed sm:text-[0.9375rem] " + (dark ? "text-white/70" : "text-text-muted")}>{intro}</p> : null}
     </Reveal>
   );
 }
@@ -67,10 +68,11 @@ const SERVICES = [
 const CARD_W = "w-[78%] shrink-0 snap-start sm:w-[47%] lg:w-[31%]";
 
 export default async function HomePage() {
-  const [business, pages, categories] = await Promise.all([
+  const [business, pages, categories, products] = await Promise.all([
     getBusinessSettings(),
     getPageContent(),
     safe(() => listPublicCategories(), []),
+    safe(async () => (await listPublicProducts({ page: 1 })).items.slice(0, PRODUCT_CARDS), []),
   ]);
   const reviews = parseTestimonials(pages.testimonials);
   // One band per group, with the categories under it as the note.
@@ -79,8 +81,6 @@ export default async function HomePage() {
     const kids = categories.filter((c) => c.parentId === g.id).map((c) => c.name);
     return { key: g.id, name: g.name, href: `/products?category=${g.slug}`, all: kids.join(" · "), lines: kids.length > 6 ? [kids.slice(0, 5).join(" · "), kids.slice(5).join(" · ")] : [], note: kids.length > 0 ? kids.slice(0, 4).join(" · ") + (kids.length > 4 ? " · …" : "") : g.count > 0 ? `${g.count} ${g.count === 1 ? "piece" : "pieces"}` : "Made to order" };
   });
-  // The collection cards: the first six groups of the catalogue.
-  const cards = rows.slice(0, PRODUCT_CARDS);
   const reach = [
     business.phone ? { icon: Phone, label: "Call us", value: business.phone, href: `tel:${business.phone.replace(/\s+/g, "")}` } : null,
     business.phoneAlt ? { icon: Phone, label: "Call us", value: business.phoneAlt, href: `tel:${business.phoneAlt.replace(/\s+/g, "")}` } : null,
@@ -193,8 +193,8 @@ export default async function HomePage() {
                     <li key={st.title}>
                       <span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                       <span className="flex-1">
-                        <span className="block text-[0.9375rem] text-white">{st.title}</span>
-                        <span className="mt-1 block text-[0.8125rem] leading-relaxed text-white/65">{st.summary}</span>
+                        <span className="block text-[0.8125rem] text-white sm:text-[0.9375rem]">{st.title}</span>
+                        <span className="mt-1 block text-[0.6875rem] leading-snug text-white/65 sm:text-[0.8125rem] sm:leading-relaxed">{st.summary}</span>
                       </span>
                     </li>
                   ))}
@@ -212,7 +212,7 @@ export default async function HomePage() {
       <section aria-labelledby="space-title" className="sec sec-white">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[0.9fr_1fr] lg:gap-20">
           <Reveal variant="wipe">
-            <div className="zoom-frame aspect-[4/5]">
+            <div className="zoom-frame mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
               <ImagePlaceholder label="A finished piece in place" className="size-full" compact />
             </div>
           </Reveal>
@@ -245,16 +245,10 @@ export default async function HomePage() {
       <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
           <Head id="projects-title" eyebrow="Our collection" title="Browse the collection" />
-          <ul className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-3">
-            {cards.map((c, i) => (
-              <Reveal as="li" key={c.key} variant="up" delay={(i % 3) * 70}>
-                <Link href={c.href} className="block h-full border border-black">
-                  <ImagePlaceholder label={`${c.name} — photograph`} className="aspect-[4/5] w-full" compact />
-                  <div className="px-4 pb-5 pt-4">
-                    <p className="font-display text-[1.2rem] leading-snug text-text">{c.name}</p>
-                    <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">{c.all || c.note}</p>
-                  </div>
-                </Link>
+          <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
+            {products.map((p, i) => (
+              <Reveal as="li" key={p.id} variant="up" delay={(i % 3) * 70}>
+                <ProductCard product={p} currency={business.currency} />
               </Reveal>
             ))}
           </ul>
@@ -275,8 +269,8 @@ export default async function HomePage() {
               <h2 id="about-title" className="font-display mt-4 text-headline text-text">
                 About {business.name}
               </h2>
-              <p className="mt-6 max-w-lg text-[0.9375rem] leading-relaxed text-text-muted">{business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}</p>
-              <p className="mt-4 max-w-lg text-[0.9375rem] leading-relaxed text-text-muted">Come to the showroom to see the timber and the joinery in person, or order from home and have it delivered. Whether the job is a single piece or a whole room, the aim is the same: sound material, careful work and a straightforward service.</p>
+              <p className="mt-5 max-w-lg text-[0.8125rem] leading-relaxed text-text-muted sm:mt-6 sm:text-[0.9375rem]">{business.tagline ?? "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}</p>
+              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-text-muted sm:mt-4 sm:text-[0.9375rem]">Come to the showroom to see the timber and the joinery in person, or order from home and have it delivered. Whether the job is a single piece or a whole room, the aim is the same: sound material, careful work and a straightforward service.</p>
               <Link href="/about" className="link-arrow mt-6 text-text">
                 Read our story <ArrowRight aria-hidden="true" className="size-3.5" />
               </Link>
@@ -348,8 +342,8 @@ export default async function HomePage() {
             <div className="grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8 md:grid-cols-[1.1fr_1fr]">
               <div>
                 <p className="eyebrow">Visit the showroom</p>
-                <h3 className="font-display mt-3 text-[1.75rem] leading-tight text-text sm:text-[1.9rem]">Come and see it in person.</h3>
-                <ul className="mt-6 space-y-5 text-[0.875rem]">
+                <h3 className="font-display mt-3 text-[1.35rem] leading-tight text-text sm:text-[1.9rem]">Come and see it in person.</h3>
+                <ul className="mt-5 space-y-4 text-[0.75rem] sm:mt-6 sm:space-y-5 sm:text-[0.875rem]">
                   <li className="flex gap-4">
                     <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
                     <div>
