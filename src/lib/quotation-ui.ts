@@ -3,35 +3,6 @@
 export const QUOTE_STATUSES = ["requested", "under_review", "quoted", "accepted", "declined", "cancelled"] as const;
 export type QuoteStatus = (typeof QUOTE_STATUSES)[number];
 
-/** What the customer reads. */
-export const QUOTE_STATUS_LABEL: Record<QuoteStatus, string> = {
-  requested: "Received",
-  under_review: "Being reviewed",
-  quoted: "Price ready",
-  accepted: "Accepted",
-  declined: "Declined",
-  cancelled: "Closed",
-};
-
-/** What each status means, in one line, for the customer. */
-export const QUOTE_STATUS_HELP: Record<QuoteStatus, string> = {
-  requested: "We have your request and are working out the price. We will contact you.",
-  under_review: "We are looking at your request and working out the price. We will contact you.",
-  quoted: "Our price is ready. Please read it and accept or decline.",
-  accepted: "You accepted this quotation. We will confirm your order with you.",
-  declined: "You declined this quotation.",
-  cancelled: "We have closed this request. Contact us if you would like to talk about it.",
-};
-
-export const QUOTE_TONE: Record<QuoteStatus, "info" | "success" | "warning" | "neutral"> = {
-  requested: "info",
-  under_review: "info",
-  quoted: "warning",
-  accepted: "success",
-  declined: "neutral",
-  cancelled: "neutral",
-};
-
 /** How the details of a made-to-measure request are named. */
 export const QUOTE_DETAIL_LABELS: Record<string, string> = {
   furnitureType: "What you would like made",
@@ -42,22 +13,14 @@ export const QUOTE_DETAIL_LABELS: Record<string, string> = {
   targetDate: "Wanted by",
 };
 
-/** What staff call each stage. */
+/** Staff see only two stages: New (nobody has answered yet) and Responded (everything after that). */
 export const STAFF_QUOTE_LABEL: Record<QuoteStatus, string> = {
-  requested: "New request",
-  under_review: "Under review",
-  quoted: "Quotation sent",
-  accepted: "Accepted",
-  declined: "Declined",
-  cancelled: "Closed",
-};
-export const STAFF_QUOTE_TONE: Record<QuoteStatus, "info" | "success" | "warning" | "neutral"> = {
-  requested: "info",
-  under_review: "warning",
-  quoted: "warning",
-  accepted: "success",
-  declined: "neutral",
-  cancelled: "neutral",
+  requested: "New",
+  under_review: "Responded",
+  quoted: "Responded",
+  accepted: "Responded",
+  declined: "Responded",
+  cancelled: "Responded",
 };
 
 export const isQuoteStatus = (v: unknown): v is QuoteStatus => typeof v === "string" && (QUOTE_STATUSES as readonly string[]).includes(v);

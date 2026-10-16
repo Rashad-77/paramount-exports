@@ -1,4 +1,4 @@
-import { Bell, CheckCheck, CircleCheck, CircleX, Eye, Hammer, Loader, Package, Send, Truck, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, CheckCheck, CircleCheck, CircleX, Hammer, Package, Truck, Wallet, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { OrderStatus } from "@/lib/order-constants";
 import { STATUS_LABEL } from "@/lib/order-constants";
@@ -47,32 +47,22 @@ export function PaidTag({ paid }: { paid: boolean }) {
   );
 }
 
-const QUOTE: Record<QuoteStatus, { color: TagColor; icon: LucideIcon }> = {
-  requested: { color: "blue", icon: Bell },
-  under_review: { color: "amber", icon: Eye },
-  quoted: { color: "purple", icon: Send },
-  accepted: { color: "green", icon: CheckCheck },
-  declined: { color: "grey", icon: CircleX },
-  cancelled: { color: "grey", icon: CircleX },
-};
-
 export function QuoteTag({ status }: { status: QuoteStatus }) {
-  const { color, icon } = QUOTE[status];
-  return (
-    <Tag color={color} icon={icon}>
+  return status === "requested" ? (
+    <Tag color="blue" icon={Bell}>
+      {STAFF_QUOTE_LABEL[status]}
+    </Tag>
+  ) : (
+    <Tag color="green" icon={CheckCheck}>
       {STAFF_QUOTE_LABEL[status]}
     </Tag>
   );
 }
 
-export function EnquiryTag({ state }: { state: "new" | "in_progress" | "responded" }) {
+export function EnquiryTag({ state }: { state: "new" | "responded" }) {
   return state === "responded" ? (
     <Tag color="green" icon={CheckCheck}>
       Responded
-    </Tag>
-  ) : state === "in_progress" ? (
-    <Tag color="amber" icon={Loader}>
-      In progress
     </Tag>
   ) : (
     <Tag color="blue" icon={Bell}>

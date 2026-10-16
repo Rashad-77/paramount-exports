@@ -85,8 +85,6 @@ export default async function MessagePage({
               <QuoteTag status={quote} />
             ) : m.isHandled ? (
               <EnquiryTag state="responded" />
-            ) : m.inProgress ? (
-              <EnquiryTag state="in_progress" />
             ) : (
               <EnquiryTag state="new" />
             )}
@@ -330,12 +328,7 @@ export default async function MessagePage({
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    ["new", "New", !m.isHandled && !m.inProgress],
-                    [
-                      "in_progress",
-                      "In progress",
-                      !m.isHandled && m.inProgress,
-                    ],
+                    ["new", "New", !m.isHandled],
                     ["responded", "Responded", m.isHandled],
                   ] as const
                 ).map(([state, label, current]) => (

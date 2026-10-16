@@ -16,7 +16,7 @@ import {
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatAmount } from "@/lib/money";
-import { QUOTE_STATUSES, isQuoteStatus } from "@/lib/quotation-ui";
+import { isQuoteStatus } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listQuotations } from "@/server/messages";
@@ -31,7 +31,7 @@ export default async function QuotationsPage({
 }) {
   const actor = await requireActor();
   const sp = await searchParams;
-  const status = oneOf(one(sp.status), QUOTE_STATUSES);
+  const status = oneOf(one(sp.status), ["requested", "responded"] as const);
   const q = one(sp.q)?.slice(0, 80);
   const page = pageOf(sp);
   const [business, result] = await Promise.all([
@@ -42,7 +42,7 @@ export default async function QuotationsPage({
   const href = (over: Record<string, string | undefined>) =>
     buildHref("/app/quotations", { status, q, ...over });
   const tab = (
-    key: (typeof QUOTE_STATUSES)[number] | undefined,
+    key: "requested" | "responded" | undefined,
     label: string,
     n: number,
   ) => ({
@@ -60,10 +60,7 @@ export default async function QuotationsPage({
         tabs={[
           tab(undefined, "All requests", counts.all),
           tab("requested", "New", counts.requested),
-          tab("under_review", "Under review", counts.under_review),
-          tab("quoted", "Quotations sent", counts.quoted),
-          tab("accepted", "Accepted", counts.accepted),
-          tab("declined", "Declined", counts.declined + counts.cancelled),
+          tab("responded", "Responded", counts.responded),
         ]}
       />
       <ListSearch

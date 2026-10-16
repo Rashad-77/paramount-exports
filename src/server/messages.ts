@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -287,19 +287,20 @@ export async function createOrderFromQuotation(actor: Actor, id: string, input: 
 
 /* ───────────────────────────── staff: quotation and enquiry lists ───────────────────────────── */
 
-export type QuoteFilter = "requested" | "under_review" | "quoted" | "accepted" | "declined" | "cancelled";
-export type EnquiryState = "new" | "in_progress" | "responded";
+/** Staff filter quotations two ways: New (not answered yet) and Responded (everything after that). */
+export type QuoteFilter = "requested" | "responded";
+export type EnquiryState = "new" | "responded";
 
 const isQuotation = eq(messages.kind, "custom");
 const isEnquiry = sql`${messages.kind} <> 'custom'`;
-const enquiryStateCond = (s: EnquiryState): SQL =>
-  s === "responded" ? eq(messages.isHandled, true) : s === "in_progress" ? and(eq(messages.isHandled, false), eq(messages.inProgress, true))! : and(eq(messages.isHandled, false), eq(messages.inProgress, false))!;
+const enquiryStateCond = (s: EnquiryState): SQL => (s === "responded" ? eq(messages.isHandled, true) : eq(messages.isHandled, false));
 
 /** Made-to-measure requests with their quotation status, newest first. */
 export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?: string; page: number; pageSize: number }) {
   requirePermission(actor, "messages:view");
   const where: SQL[] = [isQuotation];
-  if (f.status) where.push(eq(messages.quoteStatus, f.status));
+  if (f.status === "requested") where.push(eq(messages.quoteStatus, "requested"));
+  else if (f.status === "responded") where.push(ne(messages.quoteStatus, "requested"));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
     where.push(or(ilike(messages.reference, like), ilike(messages.name, like), ilike(messages.phone, like), ilike(messages.email, like), ilike(messages.message, like))!);
@@ -317,10 +318,11 @@ export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?
     db.select({ n: count() }).from(messages).where(cond),
     db.select({ status: messages.quoteStatus, n: count() }).from(messages).where(isQuotation).groupBy(messages.quoteStatus),
   ]);
-  const counts: Record<QuoteFilter | "all", number> = { all: 0, requested: 0, under_review: 0, quoted: 0, accepted: 0, declined: 0, cancelled: 0 };
+  const counts: Record<QuoteFilter | "all", number> = { all: 0, requested: 0, responded: 0 };
   for (const r of countRows) {
     counts.all += r.n;
-    if (r.status && r.status in counts) counts[r.status as QuoteFilter] = r.n;
+    if (r.status === "requested") counts.requested += r.n;
+    else counts.responded += r.n;
   }
   const total = totalRow?.n ?? 0;
   return { rows, counts, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
@@ -337,7 +339,7 @@ export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?:
   }
   const cond = and(...where);
   const db = getDb();
-  const [rows, [totalRow], [nNew], [nProg], [nDone]] = await Promise.all([
+  const [rows, [totalRow], [nNew], [nDone]] = await Promise.all([
     db
       .select({ id: messages.id, reference: messages.reference, kind: messages.kind, isHandled: messages.isHandled, inProgress: messages.inProgress, name: messages.name, phone: messages.phone, message: messages.message, createdAt: messages.createdAt })
       .from(messages)
@@ -347,15 +349,14 @@ export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?:
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: count() }).from(messages).where(cond),
     db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("new"))),
-    db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("in_progress"))),
     db.select({ n: count() }).from(messages).where(and(isEnquiry, enquiryStateCond("responded"))),
   ]);
-  const counts = { new: nNew?.n ?? 0, in_progress: nProg?.n ?? 0, responded: nDone?.n ?? 0, all: (nNew?.n ?? 0) + (nProg?.n ?? 0) + (nDone?.n ?? 0) };
+  const counts = { new: nNew?.n ?? 0, responded: nDone?.n ?? 0, all: (nNew?.n ?? 0) + (nDone?.n ?? 0) };
   const total = totalRow?.n ?? 0;
   return { rows, counts, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
 }
 
-/** Staff move an enquiry between new, in progress and responded. */
+/** Staff move an enquiry between new and responded. */
 export async function setEnquiryState(actor: Actor, id: string, state: EnquiryState): Promise<void> {
   requirePermission(actor, "messages:handle");
   await withTx(async (tx) => {
@@ -364,7 +365,7 @@ export async function setEnquiryState(actor: Actor, id: string, state: EnquirySt
     const responded = state === "responded";
     await tx
       .update(messages)
-      .set({ isHandled: responded, inProgress: state === "in_progress", handledAt: responded ? new Date() : null, handledBy: responded || state === "in_progress" ? actor.id : null })
+      .set({ isHandled: responded, inProgress: false, handledAt: responded ? new Date() : null, handledBy: responded ? actor.id : null })
       .where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: `message.${state}`, entityType: "message", entityId: id, before: { isHandled: m.isHandled, inProgress: m.inProgress }, after: { state } });
   });

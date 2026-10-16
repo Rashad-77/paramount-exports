@@ -22,7 +22,7 @@ import { listEnquiries } from "@/server/messages";
 
 export const metadata = { title: "Enquiries" };
 const PAGE_SIZE = 20;
-const STATES = ["new", "in_progress", "responded"] as const;
+const STATES = ["new", "responded"] as const;
 
 export default async function EnquiriesPage({
   searchParams,
@@ -60,7 +60,6 @@ export default async function EnquiriesPage({
         tabs={[
           tab(undefined, "All enquiries", counts.all),
           tab("new", "New", counts.new),
-          tab("in_progress", "In progress", counts.in_progress),
           tab("responded", "Responded", counts.responded),
         ]}
       />
@@ -96,8 +95,6 @@ export default async function EnquiriesPage({
                 {result.rows.map((r) => {
                   const badge = r.isHandled ? (
                     <EnquiryTag state="responded" />
-                  ) : r.inProgress ? (
-                    <EnquiryTag state="in_progress" />
                   ) : (
                     <EnquiryTag state="new" />
                   );

@@ -305,8 +305,6 @@ export default async function DashboardPage() {
                     </div>
                     {m.isHandled ? (
                       <EnquiryTag state="responded" />
-                    ) : m.inProgress ? (
-                      <EnquiryTag state="in_progress" />
                     ) : (
                       <EnquiryTag state="new" />
                     )}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { QUOTE_STATUS_LABEL, QUOTE_TONE, type QuoteStatus } from "@/lib/quotation-ui";
 import { STATUS_LABEL, type OrderStatus } from "@/lib/order-constants";
 import type { AccountUpdate } from "@/server/account-updates";
 
@@ -14,10 +13,8 @@ export function Pill({ tone, children }: { tone: "info" | "success" | "warning" 
 export function StatusText({ children }: { children: ReactNode }) {
   return <span className="acct-status">{children}</span>;
 }
-export const QuoteStatusText = ({ status }: { status: QuoteStatus }) => <StatusText>{QUOTE_STATUS_LABEL[status]}</StatusText>;
 export const OrderStatusText = ({ status }: { status: OrderStatus }) => <StatusText>{STATUS_LABEL[status]}</StatusText>;
 
-export const QuoteStatusPill = ({ status }: { status: QuoteStatus }) => <Pill tone={QUOTE_TONE[status]}>{QUOTE_STATUS_LABEL[status]}</Pill>;
 
 const ORDER_TONE: Record<OrderStatus, "info" | "success" | "warning" | "neutral"> = { new: "info", confirmed: "warning", in_progress: "warning", ready: "info", out_for_delivery: "warning", delivered: "success", cancelled: "neutral" };
 export const OrderStatusPill = ({ status }: { status: OrderStatus }) => <Pill tone={ORDER_TONE[status]}>{STATUS_LABEL[status]}</Pill>;

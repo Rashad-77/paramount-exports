@@ -86,18 +86,14 @@ export async function setEnquiryStateAction(
     fd,
     z.object({
       id: reqUuid("message"),
-      state: z.enum(["new", "in_progress", "responded"]),
+      state: z.enum(["new", "responded"]),
     }),
     async (input, { actor }) => {
       await setEnquiryState(actor!, input.id, input.state);
       refreshMessage(input.id);
       return {
         message:
-          input.state === "responded"
-            ? "Marked as responded."
-            : input.state === "in_progress"
-              ? "Marked as in progress."
-              : "Moved back to new.",
+          input.state === "responded" ? "Marked as responded." : "Moved back to new.",
       };
     },
   );

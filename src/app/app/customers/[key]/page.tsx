@@ -175,8 +175,6 @@ export default async function CustomerPage({
                     </span>
                     {m.isHandled ? (
                       <EnquiryTag state="responded" />
-                    ) : m.inProgress ? (
-                      <EnquiryTag state="in_progress" />
                     ) : (
                       <EnquiryTag state="new" />
                     )}

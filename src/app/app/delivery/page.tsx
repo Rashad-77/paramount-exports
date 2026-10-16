@@ -23,11 +23,6 @@ export const metadata = { title: "Delivery and collection" };
 const PAGE_SIZE = 20;
 
 const VIEWS = {
-  ready: {
-    label: "Ready for delivery",
-    fulfilment: "delivery" as Fulfilment,
-    statuses: ["ready"] as OrderStatus[],
-  },
   out: {
     label: "Out for delivery",
     fulfilment: "delivery" as Fulfilment,
@@ -70,7 +65,7 @@ export default async function DeliveryPage({
 }) {
   const actor = await requireActor();
   const sp = await searchParams;
-  const view: View = oneOf(one(sp.view), KEYS) ?? "ready";
+  const view: View = oneOf(one(sp.view), KEYS) ?? "out";
   const page = pageOf(sp);
   const v = VIEWS[view];
 
@@ -106,7 +101,7 @@ export default async function DeliveryPage({
           count: countOf[k],
           active: k === view,
           href: buildHref("/app/delivery", {
-            view: k === "ready" ? undefined : k,
+            view: k === "out" ? undefined : k,
           }),
         }))}
       />
@@ -199,7 +194,7 @@ export default async function DeliveryPage({
         pageCount={result.pageCount}
         hrefFor={(n) =>
           buildHref("/app/delivery", {
-            view: view === "ready" ? undefined : view,
+            view: view === "out" ? undefined : view,
             page: String(n),
           })
         }
