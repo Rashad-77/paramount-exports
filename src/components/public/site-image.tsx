@@ -5,5 +5,5 @@ import Image, { type ImageProps } from "next/image";
  * (relative /api/files/…) are served as-is.
  */
 export function SiteImage({ src, alt, ...props }: Omit<ImageProps, "src" | "alt"> & { src: string; alt: string }) {
-  return <Image src={src} alt={alt} unoptimized={src.startsWith("/")} {...props} />;
+  return <Image src={src} alt={alt} unoptimized={src.startsWith("/")} {...props} loading={props.priority ? "eager" : props.loading} />;
 }

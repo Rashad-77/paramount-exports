@@ -89,7 +89,7 @@ export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[
         {shown.map((item, i) => (
           <li key={item.id}>
             <button type="button" className="gal-tile" style={{ aspectRatio: item.ratio }} onClick={() => show(i)} aria-label={`View larger: ${item.caption}`}>
-              {item.src ? <SiteImage src={item.src} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" /> : null}
+              {item.src ? <SiteImage src={item.src} alt="" fill priority={i < 2} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" /> : null}
             </button>
           </li>
         ))}
