@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Plus, Search, X } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createSpecTypeAction, deleteSpecTypeAction, deleteSpecValueAction, renameSpecTypeAction, renameSpecValueAction, saveSpecValueAction } from "@/app/app/products/spec-actions";
 import { PanelSelect } from "@/components/app/panel-select";
@@ -215,20 +215,14 @@ export function SpecificationsEditor({
             {r.type === "list" ? <ListValues row={r} item={itemFor(r.key)} editOpen={editingRow === r.id} onEditClose={() => setEditingRow(null)} onRemember={(v) => rememberValue(r.key, v)} onRename={(from, to) => renameValue(r.key, from, to)} onDelete={(v) => deleteValue(r.key, v)} onChange={(vals) => patch(r.id, { values: vals })} /> : null}
             {r.type === "dims" ? <DimsValues row={r} onChange={(dims) => patch(r.id, { dims })} /> : null}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-start gap-0.5 sm:self-start">
             {r.type === "list" ? (
-              <button type="button" onClick={() => setEditingRow(r.id)} className="inline-flex h-7 items-center gap-1 border border-border-strong px-2 text-[0.6875rem] font-medium hover:bg-black/5">
-                <Pencil aria-hidden="true" className="size-3" />
-                Edit
+              <button type="button" onClick={() => setEditingRow(r.id)} aria-label={`Edit ${r.label.toLowerCase()}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-text">
+                <Pencil aria-hidden="true" className="size-3.5" />
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => remove(r.id)}
-              aria-label={`Remove ${r.label}`}
-              className="inline-flex size-7 items-center justify-center text-text-muted hover:bg-linen hover:text-danger"
-            >
-              <X aria-hidden="true" className="size-4" />
+            <button type="button" onClick={() => remove(r.id)} aria-label={`Remove ${r.label}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-danger">
+              <Trash2 aria-hidden="true" className="size-3.5" />
             </button>
           </div>
         </div>
@@ -309,8 +303,9 @@ function ListValues({
         onBlur={() => commit(text)}
       />
       {offered.length > 0 ? (
-        <ul className="mt-1.5 flex flex-wrap gap-1" aria-label={`Suggested ${row.label.toLowerCase()}`}>
-          {(typed ? offered : offered.slice(0, 8)).map((sg) => (
+        // Two rows of suggestions are shown; typing narrows them, and Edit lists every value.
+        <ul className="mt-1.5 flex max-h-[54px] flex-wrap gap-1 overflow-hidden" aria-label={`Suggested ${row.label.toLowerCase()}`}>
+          {offered.map((sg) => (
             <li key={sg}>
               <button type="button" onClick={() => commit(sg)} className="border border-dashed border-border-strong px-2 py-0.5 text-xs text-text-muted hover:bg-black/5">
                 + {sg}
@@ -403,12 +398,9 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
                   }}
                   onChange={(e) => patchRow(r.orig, { name: e.target.value })}
                 />
-                <span className="flex w-16 shrink-0 items-center justify-end gap-1">
-                  {r.on ? <Check aria-label="On this product" role="img" className="size-4 text-walnut" /> : null}
-                  <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.orig, { removed: true })} className="inline-flex size-9 items-center justify-center text-text-muted hover:text-danger">
-                    <X aria-hidden="true" className="size-4" />
-                  </button>
-                </span>
+                <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.orig, { removed: true })} className="inline-flex size-9 shrink-0 items-center justify-center text-text-muted hover:text-danger">
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </button>
               </li>
             ))}
         </ul>
@@ -692,7 +684,7 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
                 onChange={(e) => patchRow(r.key, { name: e.target.value })}
               />
               <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.key, { removed: true })} className="inline-flex size-9 shrink-0 items-center justify-center text-text-muted hover:text-danger">
-                <X aria-hidden="true" className="size-4" />
+                <Trash2 aria-hidden="true" className="size-4" />
               </button>
             </li>
           ))}
