@@ -29,7 +29,7 @@ export default async function CategoryPage({
         .map((g) => ({ id: g.id, name: g.name }));
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/categories", to: "categories" }}
         title={category.name}
         description={`/${category.slug}`}
         actions={category.archivedAt ? <StatusBadge>Archived</StatusBadge> : undefined}

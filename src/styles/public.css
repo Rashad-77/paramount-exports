@@ -1102,12 +1102,15 @@ html:has(.page-body) {
     position: relative;
     display: flex;
     align-items: center;
-    height: 9rem;
+    /* A band grows if it has many subcategories to list, so nothing is ever cut off */
+    min-height: 9rem;
+    padding-block: 1.5rem;
     border-bottom: 1px solid #fff;
   }
   @media (min-width: 40rem) {
     .prow {
-      height: 13rem;
+      min-height: 13rem;
+      padding-block: 2rem;
     }
   }
   .prow .image-placeholder {

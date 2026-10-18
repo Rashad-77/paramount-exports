@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { categorySchema } from "@/lib/schemas/catalogue";
+import { categoryCreateSchema, categorySchema } from "@/lib/schemas/catalogue";
+import { validation } from "@/lib/errors";
 import { reqUuid } from "@/lib/validation";
 import {
-  createCategory,
+  createCategoryWithSubs,
+  reorderMainCategories,
   deleteCategories,
-  setCategoriesArchived,
+  setCategoriesArchived, setCategoriesHidden,
   updateCategory,
 } from "@/server/catalogue";
 
@@ -23,10 +25,20 @@ export async function createCategoryAction(
   _p: ActionState,
   fd: FormData,
 ): Promise<ActionState> {
-  return runAction(fd, categorySchema, async (input, { actor }) => {
-    await createCategory(actor!, input);
+  return runAction(fd, categoryCreateSchema, async (input, { actor }) => {
+    const sub = input.kind === "sub";
+    if (sub && !input.parentId) throw validation("Choose the main category this subcategory goes under.", { parentId: ["Choose the main category this subcategory goes under."] });
+    const { id: _id, parentName } = await createCategoryWithSubs(actor!, { ...input, parentId: sub ? input.parentId : undefined }, sub ? [] : input.subs);
+    void _id;
     refresh();
-    return { redirectTo: "/app/categories" };
+    const subs = sub ? 0 : input.subs.length;
+    return {
+      message: sub
+        ? `Subcategory "${input.name}" added under ${parentName ?? "its main category"}.`
+        : subs > 0
+          ? `Main category "${input.name}" added with ${plural(subs, "subcategory", "subcategories")}.`
+          : `Main category "${input.name}" added.`,
+    };
   });
 }
 
@@ -52,6 +64,9 @@ const idsField = z.preprocess(
 );
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+/** "1 category", "3 subcategories" or "2 categories and 1 subcategory", whichever the change touched. */
+const what = (total: number, subs: number) =>
+  [total - subs > 0 ? plural(total - subs, "category", "categories") : "", subs > 0 ? plural(subs, "subcategory", "subcategories") : ""].filter(Boolean).join(" and ") || "0 categories";
 
 export async function archiveCategoriesAction(
   _p: ActionState,
@@ -59,12 +74,17 @@ export async function archiveCategoriesAction(
 ): Promise<ActionState> {
   return runAction(
     fd,
-    z.object({ ids: idsField, archive: z.enum(["true", "false"]) }),
+    z.object({ ids: idsField, mode: z.enum(["archive", "restore", "hide"]) }),
     async (input, { actor }) => {
-      const archive = input.archive === "true";
+      if (input.mode === "hide") {
+        const r = await setCategoriesHidden(actor!, input.ids);
+        refresh();
+        return { message: `${what(r.changed, r.subs)} hidden from the website.` };
+      }
+      const archive = input.mode === "archive";
       const r = await setCategoriesArchived(actor!, input.ids, archive);
       refresh();
-      const done = archive ? `${plural(r.changed, "category", "categories")} archived and hidden from the website.` : `${plural(r.changed, "category", "categories")} restored.`;
+      const done = archive ? `${what(r.changed, r.subs)} archived and hidden from the website.` : `${what(r.changed, r.subs)} restored.`;
       return { message: r.skipped.length ? `${done} Not archived because they still have products: ${r.skipped.join(", ")}. Move or archive those products first.` : done };
     },
   );
@@ -77,7 +97,18 @@ export async function deleteCategoriesAction(
   return runAction(fd, z.object({ ids: idsField }), async (input, { actor }) => {
     const r = await deleteCategories(actor!, input.ids);
     refresh();
-    const done = `${plural(r.deleted, "category", "categories")} deleted.`;
+    const done = `${what(r.deleted, r.subs)} deleted.`;
     return { message: r.kept.length ? `${done} Not deleted because they still have products or subcategories: ${r.kept.join(", ")}. Archive them instead, or move what is inside first.` : done };
+  });
+}
+
+export async function reorderCategoriesAction(
+  _p: ActionState,
+  fd: FormData,
+): Promise<ActionState> {
+  return runAction(fd, z.object({ ids: idsField }), async (input, { actor }) => {
+    const n = await reorderMainCategories(actor!, input.ids);
+    refresh();
+    return { message: `Display order saved for ${plural(n, "main category", "main categories")}.` };
   });
 }

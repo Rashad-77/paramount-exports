@@ -28,7 +28,7 @@ export async function setHandledAction(
     await setMessageHandled(actor!, input.id, input.handled);
     refreshMessage(input.id);
     return {
-      message: input.handled ? "Marked as handled." : "Moved back to open.",
+      message: input.handled ? "Message marked as handled." : "Message moved back to open.",
     };
   });
 }
@@ -63,7 +63,7 @@ export async function closeQuotationAction(
   return runAction(fd, closeQuoteSchema, async (input, { actor }) => {
     await closeQuotation(actor!, input.id, input.reason);
     refreshMessage(input.id);
-    return { message: "The quotation has been closed." };
+    return { message: "Quotation closed without a price." };
   });
 }
 
@@ -93,7 +93,7 @@ export async function setEnquiryStateAction(
       refreshMessage(input.id);
       return {
         message:
-          input.state === "responded" ? "Marked as responded." : "Moved back to new.",
+          input.state === "responded" ? "Enquiry marked as responded." : "Enquiry moved back to new.",
       };
     },
   );
@@ -109,7 +109,7 @@ export async function startReviewAction(
     async (input, { actor }) => {
       await startQuoteReview(actor!, input.id);
       refreshMessage(input.id);
-      return { message: "Moved to under review." };
+      return { message: "Quotation request moved to under review." };
     },
   );
 }

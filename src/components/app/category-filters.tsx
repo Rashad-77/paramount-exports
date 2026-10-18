@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { PanelSelect } from "@/components/app/panel-select";
+import { CascadeFilter, type CascadeGroup } from "@/components/app/cascade-filter";
 import { StatusFilter } from "@/components/app/status-filter";
 import { TextField } from "@/components/ui/field";
 
@@ -23,36 +23,36 @@ const CATEGORY_STATUS_GROUPS = [
  */
 export function CategoryFilters({
   q,
-  group,
+  categoryIds,
   statuses,
-  groups,
+  categories,
 }: {
   q?: string;
-  group?: string;
+  categoryIds: string[];
   statuses: string[];
-  groups: Array<{ id: string; name: string }>;
+  categories: CascadeGroup[];
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [text, setText] = useState(q ?? "");
-  const [grp, setGrp] = useState(group ?? "");
+  const [grp, setGrp] = useState(categoryIds);
   const [status, setStatus] = useState(statuses);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // When the address changes from outside (Clear filters), the boxes follow it.
-  const key = JSON.stringify([q ?? "", group ?? "", statuses]);
+  const key = JSON.stringify([q ?? "", categoryIds, statuses]);
   const [seen, setSeen] = useState(key);
   if (key !== seen) {
     setSeen(key);
     setText(q ?? "");
-    setGrp(group ?? "");
+    setGrp(categoryIds);
     setStatus(statuses);
   }
 
-  const go = (next: { q: string; group: string; status: string[] }) => {
+  const go = (next: { q: string; group: string[]; status: string[] }) => {
     const u = new URLSearchParams();
     if (next.q.trim()) u.set("q", next.q.trim());
-    if (next.group) u.set("group", next.group);
+    for (const c of next.group) u.append("category", c);
     for (const s of next.status) u.append("status", s);
     const qs = u.toString();
     startTransition(() => router.replace(qs ? `/app/categories?${qs}` : "/app/categories", { scroll: false }));
@@ -73,21 +73,19 @@ export function CategoryFilters({
           timer.current = setTimeout(() => go({ q: value, group: grp, status }), 300);
         }}
       />
-      <PanelSelect
+      <CascadeFilter
         label="Category"
-        placeholder="All categories"
-        quietPlaceholder={false}
-        value={grp}
-        options={groups.map((g) => ({ value: g.id, label: g.name }))}
-        onChange={(v) => {
-          setGrp(v);
-          go({ q: text, group: v, status });
+        groups={categories}
+        selected={grp}
+        onChange={(ids) => {
+          setGrp(ids);
+          go({ q: text, group: ids, status });
         }}
       />
       <StatusFilter
         selected={status}
         groups={CATEGORY_STATUS_GROUPS}
-        emptyLabel="Active (visible and hidden)"
+        emptyLabel="All statuses"
         onChange={(v) => {
           setStatus(v);
           go({ q: text, group: grp, status: v });

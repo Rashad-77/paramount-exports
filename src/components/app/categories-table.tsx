@@ -5,7 +5,8 @@ import { useActionState, useRef, useState } from "react";
 import { useEdit } from "@/components/app/edit-mode";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
-import { Alert, StatusBadge } from "@/components/ui/status";
+import { StatusBadge } from "@/components/ui/status";
+import { useResultToast } from "@/components/ui/toaster";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import type { ActionState } from "@/lib/action-state";
 
@@ -14,6 +15,7 @@ export interface CategoryRow {
   name: string;
   /** 1, 2, 3 for main categories and 1.1, 1.2 for the subcategories under them. */
   number: string;
+  parentId: string | null;
   /** A subcategory (shown in the Subcategory column). */
   depth: 0 | 1;
   /** The main category a subcategory sits under. */
@@ -21,7 +23,12 @@ export interface CategoryRow {
   /** Whether to name the main category on this row: not when it or a sibling is the row just above. */
   showGroup: boolean;
   productCount: number;
+  /** What shows in the Status column: a subcategory follows its main category when that is hidden or archived. */
+  status: "visible" | "hidden" | "archived";
+  inherited: boolean;
+  /** Its own hidden state (not what it inherits). */
   isActive: boolean;
+  /** Its own archived state, which is what Archive and Restore act on. */
   archived: boolean;
 }
 
@@ -61,15 +68,46 @@ export function CategoriesTable({
   const onPage = new Set(rows.map((r) => r.id));
   const ticked = [...selected].filter((id) => onPage.has(id));
   const allTicked = rows.length > 0 && ticked.length === rows.length;
-  const anyArchivedTicked = rows.some((r) => selected.has(r.id) && r.archived);
-  const anyLiveTicked = rows.some((r) => selected.has(r.id) && !r.archived);
+  // Which buttons show depends on the state of the ticked rows themselves: visible, hidden or archived.
+  const kinds = new Set<string>(rows.filter((r) => selected.has(r.id)).map((r) => (r.archived ? "archived" : r.isActive ? "visible" : "hidden")));
+  const only = (k: string) => kinds.size === 1 && kinds.has(k);
+  const idle = kinds.size === 0; // nothing ticked: every button shows, greyed out
+  const canHide = idle || only("visible");
+  const canRestore = idle || !only("visible");
+  const canArchive = !only("archived");
+  const tickedSubs = rows.filter((r) => selected.has(r.id) && r.depth === 1).length;
+  const tickedMain = ticked.length - tickedSubs;
+  const deleteWhat = [
+    tickedMain > 0 ? `${tickedMain} ${tickedMain === 1 ? "category" : "categories"}` : "",
+    tickedSubs > 0 ? `${tickedSubs} ${tickedSubs === 1 ? "subcategory" : "subcategories"}` : "",
+  ]
+    .filter(Boolean)
+    .join(" and ");
+  const tickedRows = rows.filter((r) => selected.has(r.id));
+  const shortList = (names: string[]) => (names.length <= 2 ? names.join(" and ") : `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`);
+  const nameList = (names: string[]) => (names.length <= 4 ? names.join(", ") : `${names.slice(0, 4).join(", ")} and ${names.length - 4} more`);
+  // Delete is unavailable while something ticked still has products, or a ticked main category still has subcategories that are not ticked.
+  const withProducts = tickedRows.filter((r) => r.productCount > 0).map((r) => r.name);
+  const withSubs = tickedRows.filter((r) => r.depth === 0 && rows.some((k) => k.parentId === r.id && !selected.has(k.id))).map((r) => r.name);
+  const deleteBlocked = [
+    withProducts.length ? `${shortList(withProducts)} ${withProducts.length === 1 ? "has" : "have"} products.` : "",
+    withSubs.length ? `${shortList(withSubs)} ${withSubs.length === 1 ? "has" : "have"} subcategories not ticked.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const deleteDescription = `${nameList(tickedRows.map((r) => r.name))} will be permanently deleted. This cannot be undone.`;
   const busy = archivePending || deletePending;
-  const message = [deleteState, archiveState].find((s) => s.error || (s.ok && s.message));
+  useResultToast(deleteState);
+  useResultToast(archiveState);
 
   const toggle = (id: string, on: boolean) => {
     const next = new Set(selected);
-    if (on) next.add(id);
-    else next.delete(id);
+    // Ticking a main category ticks the subcategories under it too (and unticking clears them).
+    const ids = [id, ...rows.filter((r) => r.parentId === id).map((r) => r.id)];
+    for (const i of ids) {
+      if (on) next.add(i);
+      else next.delete(i);
+    }
     setSelected(next);
   };
   const idInputs = ticked.map((id) => <input key={id} type="hidden" name="ids" value={id} />);
@@ -82,28 +120,42 @@ export function CategoriesTable({
           {editing ? <span> · {ticked.length} selected</span> : null}
         </p>
         {canWrite && editing ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {anyLiveTicked || ticked.length === 0 ? (
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+            {deleteBlocked ? (
+              <span className="min-w-0 flex-1 truncate text-right text-sm text-danger" title={deleteBlocked} role="status">
+                Cannot delete: {deleteBlocked}
+              </span>
+            ) : null}
+            {canHide ? (
               <form action={archiveForm}>
                 {idInputs}
-                <input type="hidden" name="archive" value="true" />
+                <input type="hidden" name="mode" value="hide" />
+                <Button type="submit" variant="secondary" disabled={idle || busy}>
+                  Hide
+                </Button>
+              </form>
+            ) : null}
+            {canRestore ? (
+              <form action={archiveForm}>
+                {idInputs}
+                <input type="hidden" name="mode" value="restore" />
+                <Button type="submit" variant="secondary" disabled={idle || busy}>
+                  Restore
+                </Button>
+              </form>
+            ) : null}
+            {canArchive ? (
+              <form action={archiveForm}>
+                {idInputs}
+                <input type="hidden" name="mode" value="archive" />
                 <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
                   Archive
                 </Button>
               </form>
             ) : null}
-            {anyArchivedTicked ? (
-              <form action={archiveForm}>
-                {idInputs}
-                <input type="hidden" name="archive" value="false" />
-                <Button type="submit" variant="secondary" disabled={busy}>
-                  Restore
-                </Button>
-              </form>
-            ) : null}
             <form ref={deleteRef} action={deleteForm}>
               {idInputs}
-              <Button type="button" variant="danger" disabled={ticked.length === 0 || busy} onClick={() => setConfirmDelete(true)}>
+              <Button type="button" variant="danger" disabled={ticked.length === 0 || busy || Boolean(deleteBlocked)} onClick={() => setConfirmDelete(true)}>
                 Delete
               </Button>
             </form>
@@ -111,11 +163,6 @@ export function CategoriesTable({
         ) : null}
       </div>
 
-      {message ? (
-        <div className="mb-3">
-          <Alert tone={message.error ? "danger" : "success"}>{message.error ?? message.message}</Alert>
-        </div>
-      ) : null}
 
       <TableWrap label="Categories">
         <Table>
@@ -166,7 +213,9 @@ export function CategoriesTable({
                 </TD>
                 <TD className="tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">{c.productCount}</TD>
                 <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
-                  {c.archived ? <StatusBadge>Archived</StatusBadge> : c.isActive ? <StatusBadge tone="success">Visible</StatusBadge> : <StatusBadge tone="warning">Hidden</StatusBadge>}
+                  <span title={c.inherited ? `Follows ${c.groupName ?? "its main category"}` : undefined}>
+                    {c.status === "archived" ? <StatusBadge>Archived</StatusBadge> : c.status === "visible" ? <StatusBadge tone="success">Visible</StatusBadge> : <StatusBadge tone="warning">Hidden</StatusBadge>}
+                  </span>
                 </TD>
               </TR>
             ))}
@@ -177,8 +226,8 @@ export function CategoriesTable({
       <ConfirmDialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title={`Delete ${ticked.length} ${ticked.length === 1 ? "item" : "items"}?`}
-        description="This permanently deletes the categories and subcategories you ticked. One that still has products, or subcategories under it, is left alone. This cannot be undone. To hide a category and keep it on record, archive it instead."
+        title={`Delete ${deleteWhat}?`}
+        description={deleteDescription}
         confirmLabel="Delete"
         destructive
         pending={deletePending}

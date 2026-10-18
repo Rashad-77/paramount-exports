@@ -36,10 +36,27 @@ export const categorySchema = z.object({
   slug: slugOrBlank,
   description: optText("Description", 500),
   parentId: optUuid("group"),
-  sortOrder: z.preprocess((v) => (v === "" || v === undefined ? 0 : Number(v)), z.number({ error: "Sort order must be a whole number." }).int().min(0).max(9999)),
+  sortOrder: z.preprocess((v) => (v === "" || v === undefined ? undefined : Number(v)), z.number({ error: "Sort order must be a whole number." }).int().min(0).max(9999).optional()),
   isActive: checkbox,
 });
 export type CategoryInput = z.output<typeof categorySchema>;
+
+/** The Add category pop-up: a main category (optionally with subcategories made at the same time) or a subcategory under a main one. */
+export const categoryCreateSchema = categorySchema.safeExtend({
+  kind: z.enum(["main", "sub"], { error: "Choose whether this is a main category or a subcategory." }),
+  subs: z.preprocess(
+    (v) => {
+      if (typeof v !== "string" || !v) return [];
+      try {
+        return JSON.parse(v);
+      } catch {
+        return [];
+      }
+    },
+    z.array(z.string().trim().min(1).max(80, "A subcategory name must be 80 characters or fewer.")).max(30, "Add up to 30 subcategories at a time.").default([]),
+  ),
+});
+export type CategoryCreateInput = z.output<typeof categoryCreateSchema>;
 
 export const VISIBILITY = ["draft", "published", "archived"] as const;
 export const VISIBILITY_LABEL: Record<(typeof VISIBILITY)[number], string> = { draft: "Draft: hidden from the website", published: "Published: shown on the website", archived: "Archived: hidden and kept on record" };

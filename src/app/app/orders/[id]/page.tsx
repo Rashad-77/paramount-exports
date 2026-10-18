@@ -63,7 +63,7 @@ export default async function OrderPage({
 
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/orders", to: "orders" }}
         title={o.reference}
         description={`Placed ${formatDateTime(o.createdAt, business.timezone)}`}
         actions={

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AddressActions, AddressForm, DeleteForm, PasswordForm, ProfileForm } from "@/components/public/account-forms";
 import { Pill } from "@/components/public/account-ui";
-import { Alert } from "@/components/ui/status";
+import { ToastOnMount } from "@/components/ui/toaster";
 import { customerAuthMode, requireCustomer } from "@/lib/auth/customer";
 import { one, type SP } from "@/lib/list-params";
 import { addressRows } from "@/lib/address-lines";
@@ -21,8 +21,8 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
   const canChangePassword = customerAuthMode() !== "off";
   return (
     <>
-      {notice === "saved" ? <Alert tone="success">Your address is saved.</Alert> : null}
-      {notice === "deleted" ? <Alert tone="success">The address has been deleted.</Alert> : null}
+      {notice === "saved" ? <ToastOnMount message="Your address is saved." /> : null}
+      {notice === "deleted" ? <ToastOnMount message="The address has been deleted." /> : null}
 
       <section aria-label="Profile details" className="acct-card acct-stack">
         <div className="acct-part">

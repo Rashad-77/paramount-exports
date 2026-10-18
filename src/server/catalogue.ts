@@ -73,18 +73,52 @@ async function categorySlugFor(tx: DbOrTx, input: { slug?: string; name: string 
   return `${base.slice(0, 60)}-${randomBytes(3).toString("hex")}`;
 }
 
+async function insertCategory(tx: DbOrTx, actor: Actor, input: CategoryInput): Promise<string> {
+  const slugValue = await categorySlugFor(tx, input);
+  await assertParentUsable(tx, input.parentId);
+  // Without a position it goes to the end of its list (main categories together, or the subcategories under one main category).
+  let sortOrder = input.sortOrder;
+  if (sortOrder === undefined) {
+    const [{ top } = { top: -1 }] = await tx
+      .select({ top: sql<number>`coalesce(max(${productCategories.sortOrder}), -1)::int` })
+      .from(productCategories)
+      .where(input.parentId ? eq(productCategories.parentId, input.parentId) : isNull(productCategories.parentId));
+    sortOrder = top + 1;
+  }
+  const [c] = await tx
+    .insert(productCategories)
+    .values({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder, isActive: input.isActive })
+    .returning({ id: productCategories.id });
+  await recordAudit(tx, actor, { action: "category.created", entityType: "product_category", entityId: c!.id, after: { name: input.name, slug: slugValue } });
+  return c!.id;
+}
+
 export async function createCategory(actor: Actor, input: CategoryInput): Promise<string> {
   requirePermission(actor, "products:write");
   try {
+    return await withTx((tx) => insertCategory(tx, actor, input));
+  } catch (e) {
+    if (isUniqueViolation(e)) throw conflict("A category with that web address name already exists.");
+    throw e;
+  }
+}
+
+/** A main category with subcategories made in the same step, or a single subcategory. All of it is saved, or none of it. */
+export async function createCategoryWithSubs(actor: Actor, input: CategoryInput, subs: string[]): Promise<{ id: string; parentName: string | null }> {
+  requirePermission(actor, "products:write");
+  try {
     return await withTx(async (tx) => {
-      const slugValue = await categorySlugFor(tx, input);
-      await assertParentUsable(tx, input.parentId);
-      const [c] = await tx
-        .insert(productCategories)
-        .values({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
-        .returning({ id: productCategories.id });
-      await recordAudit(tx, actor, { action: "category.created", entityType: "product_category", entityId: c!.id, after: { name: input.name, slug: slugValue } });
-      return c!.id;
+      const id = await insertCategory(tx, actor, input);
+      let order = 0;
+      for (const name of subs) {
+        await insertCategory(tx, actor, { name, slug: undefined, description: undefined, parentId: id, sortOrder: order++, isActive: input.isActive });
+      }
+      let parentName: string | null = null;
+      if (input.parentId) {
+        const [p] = await tx.select({ name: productCategories.name }).from(productCategories).where(eq(productCategories.id, input.parentId)).limit(1);
+        parentName = p?.name ?? null;
+      }
+      return { id, parentName };
     });
   } catch (e) {
     if (isUniqueViolation(e)) throw conflict("A category with that web address name already exists.");
@@ -103,7 +137,7 @@ export async function updateCategory(actor: Actor, id: string, input: CategoryIn
       await assertParentUsable(tx, input.parentId, id);
       await tx
         .update(productCategories)
-        .set({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder: input.sortOrder, isActive: input.isActive })
+        .set({ name: input.name, slug: slugValue, description: input.description === undefined ? before.description : input.description, parentId: input.parentId ?? null, sortOrder: input.sortOrder ?? before.sortOrder, isActive: input.isActive })
         .where(eq(productCategories.id, id));
       await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { name: before.name, slug: before.slug, isActive: before.isActive }, after: { name: input.name, slug: slugValue, isActive: input.isActive } });
     });
@@ -125,7 +159,7 @@ export async function setCategoryArchived(actor: Actor, id: string, archived: bo
         .where(and(eq(products.categoryId, id), isNull(products.archivedAt)));
       if (n > 0) throw conflict("Move or archive the products in this category first.");
     }
-    await tx.update(productCategories).set({ archivedAt: archived ? new Date() : null, isActive: archived ? false : c.isActive }).where(eq(productCategories.id, id));
+    await tx.update(productCategories).set({ archivedAt: archived ? new Date() : null, isActive: !archived }).where(eq(productCategories.id, id));
     await recordAudit(tx, actor, { action: archived ? "category.archived" : "category.restored", entityType: "product_category", entityId: id });
   });
 }
@@ -149,12 +183,12 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
   const where: SQL[] = [];
   const has = (s: ProductStatus) => f.statuses.includes(s);
 
-  // Published / draft / archived: any of those picked. Nothing picked: everything that is not archived.
+  // Published / draft / archived: any of those picked. Nothing picked: everything, archived included.
   const visibility: SQL[] = [];
   if (has("published")) visibility.push(and(isNull(products.archivedAt), eq(products.isPublished, true))!);
   if (has("draft")) visibility.push(and(isNull(products.archivedAt), eq(products.isPublished, false))!);
   if (has("archived")) visibility.push(isNotNull(products.archivedAt));
-  where.push(visibility.length ? or(...visibility)! : isNull(products.archivedAt));
+  if (visibility.length) where.push(or(...visibility)!);
 
   const flags: SQL[] = [];
   if (has("featured")) flags.push(eq(products.isFeatured, true));
@@ -449,6 +483,23 @@ export async function setProductsArchived(actor: Actor, ids: string[], archived:
   });
 }
 
+/** Takes published products off the website without archiving them; they go back to draft. */
+export async function setProductsUnpublished(actor: Actor, ids: string[]): Promise<number> {
+  requirePermission(actor, "products:write");
+  if (ids.length === 0) return 0;
+  return withTx(async (tx) => {
+    const rows = await tx.select().from(products).where(inArray(products.id, ids)).for("update");
+    let changed = 0;
+    for (const p of rows) {
+      if (!p.isPublished || p.archivedAt) continue;
+      await tx.update(products).set({ isPublished: false }).where(eq(products.id, p.id));
+      await recordAudit(tx, actor, { action: "product.unpublished", entityType: "product", entityId: p.id });
+      changed++;
+    }
+    return changed;
+  });
+}
+
 /**
  * Permanently deletes products with their options and photographs. Orders and quotations that mention them keep the names and prices
  * they were placed with; only the link to the product is dropped. Customers' saved-for-later lists lose the product.
@@ -671,14 +722,17 @@ export async function listVariantOptions(actor: Actor): Promise<Array<{ id: stri
 }
 
 /** Archive or restore several categories at once. A category that still has products in it is skipped when archiving. Returns how many changed. */
-export async function setCategoriesArchived(actor: Actor, ids: string[], archived: boolean): Promise<{ changed: number; skipped: string[] }> {
+export async function setCategoriesArchived(actor: Actor, ids: string[], archived: boolean): Promise<{ changed: number; subs: number; skipped: string[] }> {
   requirePermission(actor, "products:write");
   const skipped: string[] = [];
   let changed = 0;
+  let subs = 0;
   for (const id of ids) {
     try {
+      const [before] = await getDb().select({ parentId: productCategories.parentId }).from(productCategories).where(eq(productCategories.id, id)).limit(1);
       await setCategoryArchived(actor, id, archived);
       changed++;
+      if (before?.parentId) subs++;
     } catch (e) {
       if (e instanceof AppError && e.code === "CONFLICT") {
         const [c] = await getDb().select({ name: productCategories.name }).from(productCategories).where(eq(productCategories.id, id)).limit(1);
@@ -686,15 +740,50 @@ export async function setCategoriesArchived(actor: Actor, ids: string[], archive
       } else throw e;
     }
   }
-  return { changed, skipped };
+  return { changed, subs, skipped };
+}
+
+/** Puts the main categories in the given order (first id first). Their display order numbers become 0, 1, 2… */
+export async function reorderMainCategories(actor: Actor, ids: string[]): Promise<number> {
+  requirePermission(actor, "products:write");
+  if (ids.length === 0) return 0;
+  return withTx(async (tx) => {
+    const rows = await tx.select({ id: productCategories.id, parentId: productCategories.parentId }).from(productCategories).where(inArray(productCategories.id, ids)).for("update");
+    if (rows.length !== ids.length || rows.some((r) => r.parentId)) throw validation("Only main categories can be put in order here.");
+    for (const [i, id] of ids.entries()) await tx.update(productCategories).set({ sortOrder: i }).where(eq(productCategories.id, id));
+    await recordAudit(tx, actor, { action: "category.reordered", entityType: "product_category", entityId: ids[0]!, after: { order: ids } });
+    return ids.length;
+  });
+}
+
+/** Hides categories from the website without archiving them. */
+export async function setCategoriesHidden(actor: Actor, ids: string[]): Promise<{ changed: number; subs: number }> {
+  requirePermission(actor, "products:write");
+  let changed = 0;
+  let subs = 0;
+  await withTx(async (tx) => {
+    for (const id of ids) {
+      const [c] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
+      if (!c || !c.isActive) continue;
+      await tx.update(productCategories).set({ isActive: false }).where(eq(productCategories.id, id));
+      await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { isActive: true }, after: { isActive: false } });
+      changed++;
+      if (c.parentId) subs++;
+    }
+  });
+  return { changed, subs };
 }
 
 /** Permanently deletes categories that have no products (archived ones included) and no categories under them. Returns how many were deleted and the names left alone. */
-export async function deleteCategories(actor: Actor, ids: string[]): Promise<{ deleted: number; kept: string[] }> {
+export async function deleteCategories(actor: Actor, ids: string[]): Promise<{ deleted: number; subs: number; kept: string[] }> {
   requirePermission(actor, "products:write");
   const kept: string[] = [];
   let deleted = 0;
-  for (const id of ids) {
+  let subs = 0;
+  // Subcategories go first, so a main category ticked together with its subcategories can be deleted in the same go.
+  const parents = new Map((await getDb().select({ id: productCategories.id, parentId: productCategories.parentId }).from(productCategories).where(inArray(productCategories.id, ids))).map((r) => [r.id, r.parentId]));
+  const ordered = [...ids].sort((a, b) => Number(Boolean(parents.get(b))) - Number(Boolean(parents.get(a))));
+  for (const id of ordered) {
     await withTx(async (tx) => {
       const [c] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
       if (!c) return;
@@ -709,7 +798,8 @@ export async function deleteCategories(actor: Actor, ids: string[]): Promise<{ d
       await tx.delete(productCategories).where(eq(productCategories.id, id));
       await recordAudit(tx, actor, { action: "category.deleted", entityType: "product_category", entityId: id, before: { name: c.name, slug: c.slug } });
       deleted++;
+      if (c.parentId) subs++;
     });
   }
-  return { deleted, kept };
+  return { deleted, subs, kept };
 }

@@ -37,7 +37,7 @@ export default async function ProductAdminPage({
 
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/products", to: "products" }}
         title={product.name}
         description={`/products/${product.slug}`}
         actions={

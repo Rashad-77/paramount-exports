@@ -18,7 +18,7 @@ export default async function NewProductPage() {
   const cats = allCats.filter((c) => !c.archivedAt);
   return (
     <>
-      <PageHeader title="Add product" />
+      <PageHeader back={{ href: "/app/products", to: "products" }} title="Add product" />
       <Panel>
         {cats.length === 0 ? (
           <p className="text-sm">

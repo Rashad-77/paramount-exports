@@ -21,7 +21,7 @@ export default async function NewGalleryPage({
   const categories = (await listCategories(actor)).filter((c) => !c.archivedAt);
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/gallery", to: "the gallery" }}
         title={
           area === "projects"
             ? "Add gallery project"

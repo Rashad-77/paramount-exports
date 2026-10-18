@@ -12,6 +12,7 @@ import {
 import { OrderStatusPill } from "@/components/public/account-ui";
 import { SiteImage } from "@/components/public/site-image";
 import { Alert } from "@/components/ui/status";
+import { ToastOnMount } from "@/components/ui/toaster";
 import { orderNumber } from "@/lib/schemas/tracking";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { dec, formatMoney } from "@/lib/money";
@@ -50,12 +51,7 @@ function Result({ timezone }: { timezone: string }) {
   if (!state.ok) return null;
   const o = state.data as TrackedOrder | null | undefined;
   if (!o) {
-    return (
-      <Alert tone="danger" className="mt-8">
-        We could not find an order with that number. Please check it and try
-        again, or contact us.
-      </Alert>
-    );
+    return <ToastOnMount tone="danger" message="We could not find an order with that number. Please check it and try again, or contact us." />;
   }
 
   return <OrderView o={o} timezone={timezone} />;

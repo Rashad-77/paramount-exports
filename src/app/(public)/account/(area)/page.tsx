@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Alert } from "@/components/ui/status";
+import { ToastOnMount } from "@/components/ui/toaster";
 import { ButtonLink } from "@/components/ui/button";
 import { Feed, OrderStatusText, SectionHead } from "@/components/public/account-ui";
 import { requireCustomer } from "@/lib/auth/customer";
@@ -22,7 +22,7 @@ export default async function AccountDashboardPage({ searchParams }: { searchPar
   const nothingYet = data.activeOrders.length === 0 && updates.length === 0;
   return (
     <>
-      {one(sp.notice) === "password-changed" ? <Alert tone="success">Your password has been changed.</Alert> : null}
+      {one(sp.notice) === "password-changed" ? <ToastOnMount message="Your password has been changed." /> : null}
 
       <ul className="acct-stats">
         {[

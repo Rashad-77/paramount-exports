@@ -76,7 +76,7 @@ export default async function MessagePage({
 
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/messages", to: "messages" }}
         title={m.kind === "custom" ? quoteRef(m.reference) : m.reference}
         description={`${MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · received ${formatDateTime(m.createdAt, business.timezone)}`}
         actions={

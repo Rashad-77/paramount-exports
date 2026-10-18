@@ -41,7 +41,7 @@ export async function updateGalleryAction(
     async (input, { actor }) => {
       await updateGalleryProject(actor!, input.id, input);
       refresh(input.id);
-      return { message: "Project saved." };
+      return { message: `Project "${input.title}" saved.` };
     },
   );
 }
@@ -59,8 +59,8 @@ export async function archiveGalleryAction(
       return {
         message:
           input.archive === "true"
-            ? "Project archived."
-            : "Project restored (unpublished).",
+            ? "Project archived and hidden from the website."
+            : "Project restored (still unpublished until you publish it).",
       };
     },
   );
@@ -81,7 +81,7 @@ export async function addGalleryImagesAction(
         input.altText,
       );
       refresh(input.projectId);
-      return { message: "Images added." };
+      return { message: `${input.fileIds.length} ${input.fileIds.length === 1 ? "image" : "images"} added to the project.` };
     },
   );
 }
@@ -96,7 +96,7 @@ export async function removeGalleryImageAction(
     async (input, { actor }) => {
       await removeGalleryImage(actor!, input.imageId);
       refresh(input.projectId);
-      return { message: "Image removed." };
+      return { message: "Image removed from the project." };
     },
   );
 }

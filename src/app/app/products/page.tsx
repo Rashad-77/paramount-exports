@@ -65,11 +65,12 @@ export default async function ProductsAdminPage({
         actions={
           canWrite ? (
             <>
-              {filtered ? (
+              {/* Always in place, so the buttons beside it do not move when it appears. */}
+              <span className={filtered ? undefined : "invisible"} inert={!filtered}>
                 <ButtonLink href="/app/products" variant="ghost">
                   Clear filters
                 </ButtonLink>
-              ) : null}
+              </span>
               <EditToggle />
               <ButtonLink href="/app/products/new">Add product</ButtonLink>
             </>

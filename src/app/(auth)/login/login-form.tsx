@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
+import { toast } from "@/components/ui/toaster";
 import { signIn, type LoginState } from "./actions";
 
 /** A dropped connection shows a message and keeps the email; sign-in redirects and other framework signals pass through. */
@@ -20,10 +21,12 @@ const safeSignIn = async (prev: LoginState, formData: FormData): Promise<LoginSt
 
 export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(safeSignIn, {});
+  useEffect(() => {
+    if (state.error) toast(state.error, "danger");
+  }, [state]);
   return (
     <form action={action} noValidate className="space-y-5" onSubmit={(e) => pending && e.preventDefault()}>
       {notice ? <Alert tone="warning">{notice}</Alert> : null}
-      {state.error ? <Alert tone="danger">{state.error}</Alert> : null}
       <input type="hidden" name="next" value={next ?? ""} />
       <TextField label="Email" name="email" type="email" autoComplete="username" inputMode="email" maxLength={200} required defaultValue={state.email} error={state.fieldErrors?.email} />
       <TextField label="Password" name="password" type="password" autoComplete="current-password" required error={state.fieldErrors?.password} />

@@ -20,7 +20,7 @@ export function Dialog({
   open: boolean;
   onClose: () => void;
   title: string;
-  description?: string;
+  description?: ReactNode;
   children?: ReactNode;
   /** A larger window, for a preview. */
   wide?: boolean;
@@ -50,7 +50,7 @@ export function Dialog({
       }}
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
-      className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto" : "m-auto w-[min(32rem,calc(100vw-2rem))]") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"}
+      className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto" : "m-auto max-h-[92vh] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"}
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>
@@ -58,9 +58,9 @@ export function Dialog({
             {title}
           </h2>
           {description ? (
-            <p id="dialog-desc" className="mt-1 text-sm text-text-muted">
+            <div id="dialog-desc" className="mt-1 text-sm text-text-muted">
               {description}
-            </p>
+            </div>
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -94,7 +94,7 @@ export function ConfirmDialog({
   open: boolean;
   onClose: () => void;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmLabel: string;
   onConfirm: () => void;
   destructive?: boolean;

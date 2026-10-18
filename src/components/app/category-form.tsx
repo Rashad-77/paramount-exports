@@ -1,5 +1,5 @@
 import { FPanelSelect } from "@/components/app/panel-select";
-import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FCheckbox, FField, SubmitButton } from "@/components/forms/action-form";
 import type { ActionState } from "@/lib/action-state";
 
 export interface CategoryFormValues {
@@ -38,10 +38,6 @@ export function CategoryForm({
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
           hint="Choose a main category to make this a subcategory under it, for example Tables under Furniture."
         />
-      </div>
-      <FTextArea name="description" label="Description" rows={3} defaultValue={values.description ?? ""} />
-      <div className="grid gap-5 md:grid-cols-2">
-        <FField name="sortOrder" label="Display order" type="number" min={0} defaultValue={String(values.sortOrder ?? 0)} hint="Lower numbers come first." />
       </div>
       <FCheckbox name="isActive" label="Visible on the website" defaultChecked={values.isActive ?? true} />
       <SubmitButton>{submitLabel}</SubmitButton>

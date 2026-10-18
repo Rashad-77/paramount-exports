@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
+import { useResultToast } from "@/components/ui/toaster";
 import { DateField } from "./date-field";
 
 type Action = (prev: ActionState, formData: FormData) => Promise<ActionState>;
@@ -55,7 +56,6 @@ export function ActionForm({
 }) {
   const [state, formAction, pending] = useActionState(guarded(action), {});
   const form = useRef<HTMLFormElement>(null);
-  const alert = useRef<HTMLDivElement>(null);
 
   // Unsaved changes: what the form held just before the person first touched it, compared with what it holds now. Leaving the page
   // (closing the tab, reloading, or following a link) with a difference asks first.
@@ -104,10 +104,12 @@ export function ActionForm({
   useEffect(() => {
     if (state.ok || (!state.error && !state.fieldErrors)) return;
     const bad = form.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
-    const target = bad ?? alert.current;
+    const target = bad;
     target?.focus({ preventScroll: true });
     target?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, [state]);
+
+  useResultToast(state);
 
   if (state.ok && hideOnSuccess) {
     return (
@@ -132,12 +134,6 @@ export function ActionForm({
       }}
     >
       <Ctx.Provider value={{ state, pending }}>
-        {state.error ? (
-          <div ref={alert} tabIndex={-1} className="outline-none">
-            <Alert tone="danger">{state.error}</Alert>
-          </div>
-        ) : null}
-        {state.ok && state.message ? <Alert tone="success">{state.message}</Alert> : null}
         {children}
       </Ctx.Provider>
     </form>
@@ -187,13 +183,13 @@ export function FCheckbox({ name, label, hint, defaultChecked }: Shared & { labe
   const error = state.fieldErrors?.[name]?.[0];
   return (
     <div>
-      <label className="flex min-h-10 items-start gap-3 text-sm">
+      <label className="flex items-start gap-2.5 py-1.5 text-sm leading-5">
         <input
           type="checkbox"
           name={name}
           defaultChecked={checked}
           aria-invalid={error ? true : undefined}
-          className="mt-0.5 size-5 shrink-0 accent-[var(--color-walnut)]"
+          className="mt-[1.5px] size-4 shrink-0 accent-[var(--color-walnut)]"
         />
         <span>
           <span className="font-medium">{label}</span>

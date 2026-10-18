@@ -19,7 +19,9 @@ import { publicFileUrl } from "./files";
 const PAGE_SIZE = 24;
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
-const visible = and(eq(products.isPublished, true), isNull(products.archivedAt), eq(productCategories.isActive, true), isNull(productCategories.archivedAt));
+// A subcategory is only shown while the main category it sits under is shown too.
+const parentShown = sql`(${productCategories.parentId} IS NULL OR EXISTS (SELECT 1 FROM product_categories pc WHERE pc.id = ${productCategories.parentId} AND pc.is_active AND pc.archived_at IS NULL))`;
+const visible = and(eq(products.isPublished, true), isNull(products.archivedAt), eq(productCategories.isActive, true), isNull(productCategories.archivedAt), parentShown);
 
 export interface PublicCard {
   id: string;
@@ -276,7 +278,7 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
     })
     .from(productCategories)
     .leftJoin(products, eq(products.categoryId, productCategories.id))
-    .where(and(eq(productCategories.isActive, true), isNull(productCategories.archivedAt)))
+    .where(and(eq(productCategories.isActive, true), isNull(productCategories.archivedAt), parentShown))
     .groupBy(productCategories.id)
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
   // A group counts the pieces in the categories under it as well as its own.

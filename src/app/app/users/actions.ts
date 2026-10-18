@@ -26,7 +26,7 @@ export async function setRolesAction(
   return runAction(fd, rolesSchema, async (input, { actor }) => {
     await setUserRoles(actor!, input.userId, input.roles);
     revalidatePath("/app/users");
-    return { message: "Roles saved." };
+    return { message: input.roles.length ? `Roles saved: ${input.roles.join(", ")}.` : "All roles removed from this user." };
   });
 }
 
@@ -40,8 +40,8 @@ export async function setActiveAction(
     return {
       message:
         input.active === "1"
-          ? "Account reactivated."
-          : "Account deactivated. They can no longer use the system.",
+          ? "User account reactivated."
+          : "User account deactivated. They can no longer sign in.",
     };
   });
 }

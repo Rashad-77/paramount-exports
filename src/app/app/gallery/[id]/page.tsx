@@ -40,7 +40,7 @@ export default async function GalleryProjectPage({
   const { project, images } = data;
   return (
     <>
-      <PageHeader title={project.title} />
+      <PageHeader back={{ href: "/app/gallery", to: "the gallery" }} title={project.title} />
       {project.archivedAt ? (
         <Alert tone="warning" title="Archived" className="mb-6">
           This project is hidden from the website.

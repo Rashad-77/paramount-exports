@@ -30,7 +30,7 @@ export async function setStatusAction(
     refresh(input.id);
     return {
       message:
-        input.status === "cancelled" ? "Order cancelled." : "Order updated.",
+        input.status === "cancelled" ? "Order cancelled." : `Order status changed to ${String(input.status).replace(/_/g, " ")}.`,
     };
   });
 }
@@ -46,7 +46,7 @@ export async function updateDetailsAction(
       scheduledFor: input.scheduledFor,
     });
     refresh(input.id);
-    return { message: "Order details saved." };
+    return { message: "Order delivery charge, schedule and note saved." };
   });
 }
 
@@ -57,6 +57,6 @@ export async function setPaidAction(
   return runAction(fd, orderPaidSchema, async (input, { actor }) => {
     await setOrderPaid(actor!, input.id, input.paid);
     refresh(input.id);
-    return { message: input.paid ? "Marked as paid." : "Marked as not paid." };
+    return { message: input.paid ? "Order marked as paid." : "Order marked as not paid." };
   });
 }

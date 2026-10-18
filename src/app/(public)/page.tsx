@@ -82,7 +82,9 @@ export default async function HomePage() {
   // One band per group, with the categories under it as the note.
   const groups = categories.filter((c) => !c.parentId);
   const rows = groups.slice(0, PRODUCT_ROWS).map((g) => {
-    const kids = categories.filter((c) => c.parentId === g.id).map((c) => c.name);
+    const allKids = categories.filter((c) => c.parentId === g.id).map((c) => c.name);
+    // Up to twelve names fit a band comfortably; the rest are on the collection page.
+    const kids = allKids.length > 12 ? [...allKids.slice(0, 12), "…"] : allKids;
     return { key: g.id, name: g.name, href: `/products?category=${g.slug}`, all: kids.join(" · "), lines: kids.length > 6 ? [kids.slice(0, 5).join(" · "), kids.slice(5).join(" · ")] : [], note: kids.length > 0 ? kids.slice(0, 4).join(" · ") + (kids.length > 4 ? " · …" : "") : g.count > 0 ? `${g.count} ${g.count === 1 ? "piece" : "pieces"}` : "Made to order" };
   });
   const reach = [

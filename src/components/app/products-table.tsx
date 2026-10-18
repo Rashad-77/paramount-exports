@@ -6,7 +6,8 @@ import { useActionState, useRef, useState } from "react";
 import { useEdit } from "@/components/app/edit-mode";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
-import { Alert, StatusBadge } from "@/components/ui/status";
+import { StatusBadge } from "@/components/ui/status";
+import { useResultToast } from "@/components/ui/toaster";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import type { ActionState } from "@/lib/action-state";
 
@@ -59,10 +60,16 @@ export function ProductsTable({
   const onPage = new Set(rows.map((r) => r.id));
   const ticked = [...selected].filter((id) => onPage.has(id));
   const allTicked = rows.length > 0 && ticked.length === rows.length;
-  const anyArchivedTicked = rows.some((r) => selected.has(r.id) && r.archived);
-  const anyLiveTicked = rows.some((r) => selected.has(r.id) && !r.archived);
+  // Which buttons show depends on the ticked rows themselves: published, draft or archived.
+  const kinds = new Set<string>(rows.filter((r) => selected.has(r.id)).map((r) => (r.archived ? "archived" : r.isPublished ? "published" : "draft")));
+  const only = (k: string) => kinds.size === 1 && kinds.has(k);
+  const idle = kinds.size === 0; // nothing ticked: every button shows, greyed out
+  const canUnpublish = idle || only("published");
+  const canRestore = idle || kinds.has("archived");
+  const canArchive = !only("archived");
   const busy = archivePending || deletePending;
-  const message = [deleteState, archiveState].find((s) => s.error || (s.ok && s.message));
+  useResultToast(deleteState);
+  useResultToast(archiveState);
 
   const toggle = (id: string, on: boolean) => {
     const next = new Set(selected);
@@ -81,26 +88,35 @@ export function ProductsTable({
           {editing ? <span> · {ticked.length} selected</span> : null}
         </p>
         {canWrite && editing ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             {editing ? (
               <>
-                {anyLiveTicked || ticked.length === 0 ? (
-                  <form action={archiveForm}>
-                    {idInputs}
-                    <input type="hidden" name="archive" value="true" />
-                    <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
-                      Archive
-                    </Button>
-                  </form>
+                {canUnpublish ? (
+                <form action={archiveForm}>
+                  {idInputs}
+                  <input type="hidden" name="mode" value="unpublish" />
+                  <Button type="submit" variant="secondary" disabled={idle || busy}>
+                    Unpublish
+                  </Button>
+                </form>
                 ) : null}
-                {anyArchivedTicked ? (
-                  <form action={archiveForm}>
-                    {idInputs}
-                    <input type="hidden" name="archive" value="false" />
-                    <Button type="submit" variant="secondary" disabled={busy}>
-                      Restore
-                    </Button>
-                  </form>
+                {canRestore ? (
+                <form action={archiveForm}>
+                  {idInputs}
+                  <input type="hidden" name="mode" value="restore" />
+                  <Button type="submit" variant="secondary" disabled={idle || busy}>
+                    Restore
+                  </Button>
+                </form>
+                ) : null}
+                {canArchive ? (
+                <form action={archiveForm}>
+                  {idInputs}
+                  <input type="hidden" name="mode" value="archive" />
+                  <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
+                    Archive
+                  </Button>
+                </form>
                 ) : null}
                 <form ref={deleteRef} action={deleteForm}>
                   {idInputs}
@@ -114,11 +130,6 @@ export function ProductsTable({
         ) : null}
       </div>
 
-      {message ? (
-        <div className="mb-3">
-          <Alert tone={message.error ? "danger" : "success"}>{message.error ?? message.message}</Alert>
-        </div>
-      ) : null}
 
       <TableWrap label="Products">
         <Table>

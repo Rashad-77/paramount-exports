@@ -5,18 +5,17 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "light" | "onDark";
 type Size = "md" | "lg" | "cta";
 
-// Square, hairline, quiet. Hover is a considered inversion rather than a colour flash; press nudges 1px.
+// Square, hairline, quiet. Hover is a considered inversion rather than a colour flash; pressing does not move the button.
 const base =
-  "inline-flex items-center justify-center gap-2.5 font-medium whitespace-nowrap select-none " +
+  "btn inline-flex items-center justify-center gap-2.5 font-medium whitespace-nowrap select-none " +
   "border transition-[background-color,color,border-color] duration-[var(--duration-base)] ease-[var(--ease-out)] " +
-  "active:translate-y-px motion-reduce:active:translate-y-0 " +
   "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
-  primary: "btn-solid text-ivory border-walnut-dark",
-  secondary: "bg-transparent text-walnut border-walnut hover:bg-walnut hover:text-ivory",
+  primary: "btn-solid text-ivory border-transparent",
+  secondary: "bg-transparent text-walnut border-walnut enabled:hover:bg-walnut enabled:hover:text-ivory",
   ghost: "bg-transparent text-text border-transparent hover:bg-linen",
-  danger: "bg-danger text-ivory border-danger hover:bg-transparent hover:text-danger",
+  danger: "bg-danger text-ivory border-danger enabled:hover:bg-[color-mix(in_srgb,var(--color-danger)_82%,black)] enabled:hover:border-[color-mix(in_srgb,var(--color-danger)_82%,black)]",
   // For use on dark (walnut) bands
   light: "bg-white text-walnut-dark border-white hover:bg-white/85",
   // Outline for use on dark (wood) bands

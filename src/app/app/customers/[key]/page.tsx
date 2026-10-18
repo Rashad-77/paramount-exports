@@ -31,7 +31,7 @@ export default async function CustomerPage({
   const business = await getBusinessSettings();
   return (
     <>
-      <PageHeader
+      <PageHeader back={{ href: "/app/customers", to: "customers" }}
         title={c.name}
         description={`${c.orders.length} ${c.orders.length === 1 ? "order" : "orders"} · ${c.quotations.length} ${c.quotations.length === 1 ? "quotation" : "quotations"} · ${c.enquiries.length} ${c.enquiries.length === 1 ? "enquiry" : "enquiries"} · ${formatMoney(c.spent, c.currency)} ordered in total (cancelled orders not counted)`}
       />

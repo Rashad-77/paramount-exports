@@ -6,7 +6,7 @@ import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { reqUuid } from "@/lib/validation";
-import { createProduct, deleteProducts, setProductsArchived, updateProduct } from "@/server/catalogue";
+import { createProduct, deleteProducts, setProductsArchived, setProductsUnpublished, updateProduct } from "@/server/catalogue";
 
 const refresh = (id?: string) => {
   revalidatePath("/app/products");
@@ -37,7 +37,7 @@ export async function updateProductAction(
     async (input, { actor }) => {
       await updateProduct(actor!, input.id, input);
       refresh(input.id);
-      return { message: "Product saved." };
+      return { message: `Product "${input.name}" saved.` };
     },
   );
 }
@@ -54,9 +54,14 @@ export async function archiveProductsAction(
 ): Promise<ActionState> {
   return runAction(
     fd,
-    z.object({ ids: idsField, archive: z.enum(["true", "false"]) }),
+    z.object({ ids: idsField, mode: z.enum(["archive", "restore", "unpublish"]) }),
     async (input, { actor }) => {
-      const archive = input.archive === "true";
+      if (input.mode === "unpublish") {
+        const n = await setProductsUnpublished(actor!, input.ids);
+        refresh();
+        return { message: `${n} ${n === 1 ? "product" : "products"} taken off the website (kept as drafts).` };
+      }
+      const archive = input.mode === "archive";
       const n = await setProductsArchived(actor!, input.ids, archive);
       refresh();
       return {

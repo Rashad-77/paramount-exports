@@ -37,7 +37,7 @@ export async function updatePagesAction(
   return runAction(fd, pagesFormSchema, async (input, { actor }) => {
     await updatePages(actor!, input);
     refresh();
-    return { message: "Page content saved." };
+    return { message: "Website page text saved." };
   });
 }
 
@@ -48,6 +48,6 @@ export async function updateAccountsAction(
   return runAction(fd, accountsFormSchema, async (input, { actor }) => {
     await updateAccounts(actor!, input);
     revalidatePath("/", "layout");
-    return { message: "Customer account options saved." };
+    return { message: "Customer account settings saved." };
   });
 }

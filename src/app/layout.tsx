@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { publicEnv } from "@/lib/env";
 import { getBusinessSettings, isPlaceholderBusiness } from "@/lib/settings";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Skip to main content
         </a>
         {children}
+        <Toaster />
       </body>
     </html>
   );
