@@ -17,3 +17,10 @@ export const GALLERY_VIDEO: { desktop: string | null; mobile: string | null; pos
   mobile: null,
   poster: null,
 };
+
+/** Premium range page hero video. Same rules as above: leave null until the footage is supplied. */
+export const PREMIUM_VIDEO: { desktop: string | null; mobile: string | null; poster: string | null } = {
+  desktop: null,
+  mobile: null,
+  poster: null,
+};

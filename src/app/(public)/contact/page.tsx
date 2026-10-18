@@ -7,6 +7,7 @@ import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
+import { BackBar } from "@/components/public/back-link";
 import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
 import { getBusinessSettings } from "@/lib/settings";
@@ -56,7 +57,8 @@ export default async function ContactPage() {
   ];
   return (
     <>
-      <header className="plain-band on-wood text-center">
+      <header className="plain-band on-wood relative text-center">
+        <BackBar href="/" to="home" />
         <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
           <p className="eyebrow rise-in">Contact us</p>
           <h1 className="font-display rise-in rise-in-2 mx-auto mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>

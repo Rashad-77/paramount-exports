@@ -68,13 +68,13 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
     return { email: parsed.data.email, error: "Incorrect email or password." };
   }
 
-  // Valid credentials are not enough: the person needs an active staff profile with at least one role.
+  // Valid credentials are not enough: this sign-in is for the business owner only, so the account must be active and hold the owner role.
   const db = getDb();
   const [profile] = await db.select({ isActive: profiles.isActive }).from(profiles).where(eq(profiles.id, data.user.id)).limit(1);
   const roles = await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, data.user.id));
-  if (!profile?.isActive || roles.length === 0) {
+  if (!profile?.isActive || !roles.some((r) => r.role === "owner")) {
     await supabase.auth.signOut();
-    return { email: parsed.data.email, error: "This account does not have access. Please contact the business owner." };
+    return { email: parsed.data.email, error: "This sign-in is for the business owner only." };
   }
 
   redirect(safeNext(parsed.data.next));

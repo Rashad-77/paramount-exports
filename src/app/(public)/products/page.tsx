@@ -5,7 +5,8 @@ import { customerAuthMode } from "@/lib/auth/customer";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { parseSort } from "@/lib/catalogue-sort";
 import { toGroups } from "@/lib/category-tree";
-import { listPublicCategories, listPublicMaterials, listPublicProducts } from "@/server/catalogue-public";
+import { PremiumBanner } from "@/components/public/premium";
+import { listPremiumProducts, listPublicCategories, listPublicMaterials, listPublicProducts } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
   title: "Collection",
@@ -26,11 +27,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sort = parseSort(one(sp.sort));
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
-  const [business, categories, materials, result] = await Promise.all([
+  const [business, categories, materials, result, premium] = await Promise.all([
     getBusinessSettings(),
     listPublicCategories(),
     listPublicMaterials(),
     listPublicProducts({ q, category, material, sort, page }),
+    listPremiumProducts(1),
   ]);
 
   // The wood types of the timber group come first, then any other material already used on a product.
@@ -40,13 +42,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <PageIntro
+      <PageIntro back={{ href: "/", to: "home" }}
         plain
         title="Collection"
         lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements."
         action={{ href: "/custom#quotation", label: "Request quotation" }}
       />
       <div className="bg-white pt-10 pb-16">
+        {premium[0] ? <PremiumBanner image={premium[0].images[0] ?? null} /> : null}
         <CatalogueBrowser
           wishlist={(await getAccountSettings()).enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}

@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { outer } from "@/lib/db/outer";
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
@@ -14,8 +15,10 @@ import {
   type ProductUpdateInput,
   type VariantInput,
 } from "@/lib/schemas/catalogue";
+import { slugify } from "@/lib/contact";
+import { legacyColumns, normalizeSpecs, type SpecEntry } from "@/lib/specifications";
 import { recordAudit } from "./audit";
-import { linkUploads, publicFileUrl, verifyUploads } from "./files";
+import { linkUploads, publicFileUrl, verifyUploads, type VerifiedFile } from "./files";
 import type { BucketName } from "@/lib/storage";
 import { getStorage } from "@/lib/storage";
 
@@ -115,10 +118,14 @@ export async function setCategoryArchived(actor: Actor, id: string, archived: bo
 
 /* ───────────────────────────── products ───────────────────────────── */
 
+/** Every status a product can be filtered by on the staff list. Statuses of one kind add up (published or draft); kinds narrow each other. */
+export const PRODUCT_STATUSES = ["published", "draft", "archived", "featured", "premium", "in_stock", "made_to_order", "sold"] as const;
+export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
+
 export interface ProductListFilters {
   q?: string;
-  status?: "published" | "draft" | "archived";
-  categoryId?: string;
+  statuses: ProductStatus[];
+  categoryIds?: string[];
   page: number;
   pageSize: number;
 }
@@ -126,17 +133,29 @@ export interface ProductListFilters {
 export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
   requirePermission(actor, "products:view");
   const where: SQL[] = [];
-  if (f.status === "archived") where.push(isNotNull(products.archivedAt));
-  else {
-    where.push(isNull(products.archivedAt));
-    if (f.status === "published") where.push(eq(products.isPublished, true));
-    if (f.status === "draft") where.push(eq(products.isPublished, false));
+  const has = (s: ProductStatus) => f.statuses.includes(s);
+
+  // Published / draft / archived: any of those picked. Nothing picked: everything that is not archived.
+  const visibility: SQL[] = [];
+  if (has("published")) visibility.push(and(isNull(products.archivedAt), eq(products.isPublished, true))!);
+  if (has("draft")) visibility.push(and(isNull(products.archivedAt), eq(products.isPublished, false))!);
+  if (has("archived")) visibility.push(isNotNull(products.archivedAt));
+  where.push(visibility.length ? or(...visibility)! : isNull(products.archivedAt));
+
+  const flags: SQL[] = [];
+  if (has("featured")) flags.push(eq(products.isFeatured, true));
+  if (has("premium")) flags.push(eq(products.isPremium, true));
+  if (flags.length) where.push(or(...flags)!);
+
+  const availability = (["in_stock", "made_to_order", "sold"] as const).filter(has);
+  if (availability.length) where.push(inArray(products.availability, has("made_to_order") ? [...availability, "on_request" as const] : availability));
+
+  if (f.categoryIds?.length) {
+    // A group stands for every category under it.
+    const ids = sql.join(f.categoryIds.map((c) => sql`${c}::uuid`), sql`, `);
+    where.push(or(inArray(products.categoryId, f.categoryIds), sql`${products.categoryId} IN (SELECT c.id FROM product_categories c WHERE c.parent_id IN (${ids}))`)!);
   }
-  if (f.categoryId) where.push(eq(products.categoryId, f.categoryId));
-  if (f.q) {
-    const like = `%${escapeLike(f.q)}%`;
-    where.push(or(ilike(products.name, like), sql`EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = ${outer(products.id)} AND v.sku ILIKE ${like})`)!);
-  }
+  if (f.q) where.push(ilike(products.name, `%${escapeLike(f.q)}%`));
   const cond = and(...where);
   const db = getDb();
   const [rows, countRows] = await Promise.all([
@@ -147,17 +166,17 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
         slug: products.slug,
         isPublished: products.isPublished,
         isFeatured: products.isFeatured,
+        isPremium: products.isPremium,
         kind: products.kind,
+        availability: products.availability,
         categoryName: productCategories.name,
         archivedAt: products.archivedAt,
         updatedAt: products.updatedAt,
-        skus: sql<string>`coalesce((SELECT string_agg(v.sku, ', ' ORDER BY v.sort_order, v.sku) FROM product_variants v WHERE v.product_id = ${outer(products.id)}), '')`,
-        imageCount: sql<number>`(SELECT count(*)::int FROM product_images i WHERE i.product_id = ${outer(products.id)})`,
       })
       .from(products)
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
       .where(cond)
-      .orderBy(desc(products.updatedAt))
+      .orderBy(desc(products.updatedAt), asc(products.name))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: sql<number>`count(*)::int` }).from(products).where(cond),
@@ -172,7 +191,7 @@ export async function getProductAdmin(actor: Actor, id: string) {
   const [product] = await db.select().from(products).where(eq(products.id, id)).limit(1);
   if (!product) throw notFound("That product could not be found.");
   const [variants, images] = await Promise.all([
-    db.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.label)),
+    db.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.createdAt)),
     db
       .select({ id: productImages.id, alt: productImages.altText, position: productImages.position, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
       .from(productImages)
@@ -188,12 +207,101 @@ async function assertCategoryUsable(tx: DbOrTx, categoryId: string) {
   if (!c || c.archivedAt) throw validation("Choose an active category.", { categoryId: ["Choose an active category."] });
 }
 
+/** The web address name is always made from the product name; a second product with the same name gets -2, -3… */
+async function uniqueProductSlug(tx: DbOrTx, name: string): Promise<string> {
+  const base = slugify(name) || "product";
+  for (let n = 1; n < 200; n++) {
+    const candidate = n === 1 ? base : `${base.slice(0, 74)}-${n}`;
+    const [hit] = await tx.select({ id: products.id }).from(products).where(eq(products.slug, candidate)).limit(1);
+    if (!hit) return candidate;
+  }
+  return `${base.slice(0, 60)}-${randomBytes(3).toString("hex")}`;
+}
+
+/** The option codes are no longer typed in: one is made from the web address name. */
+async function newSku(tx: DbOrTx, slugValue: string): Promise<string> {
+  const base = slugValue.toUpperCase().slice(0, 40);
+  for (let i = 0; i < 20; i++) {
+    const candidate = `${base}-${randomBytes(2).toString("hex").toUpperCase()}`;
+    const [hit] = await tx.select({ id: productVariants.id }).from(productVariants).where(eq(productVariants.sku, candidate)).limit(1);
+    if (!hit) return candidate;
+  }
+  return `${base}-${randomBytes(4).toString("hex").toUpperCase()}`;
+}
+
+/** The older single-value fields, as specification rows, for a product saved without a specification list. */
+function specsFromLegacy(input: { material?: string; finish?: string; dimensions?: string }): SpecEntry[] {
+  const out: SpecEntry[] = [];
+  if (input.material) out.push({ key: "material", label: "Material", type: "list", values: input.material.split(/,\s*/).filter(Boolean) });
+  if (input.finish) out.push({ key: "finish", label: "Finish", type: "list", values: input.finish.split(/,\s*/).filter(Boolean) });
+  if (input.dimensions) out.push({ key: "dimensions", label: "Dimensions", type: "dims", values: [input.dimensions] });
+  return out;
+}
+
+type ProductFormInput = ProductInput | ProductUpdateInput;
+
+/** What the form's fields mean for the product row. The staff form's visibility, availability and price decide what shows publicly. */
+function resolveFields(input: ProductFormInput) {
+  const staff = input.visibility !== undefined;
+  const specs = input.specifications ? normalizeSpecs(input.specifications as SpecEntry[]) : null;
+  const legacy = specs ? legacyColumns(specs) : { material: input.material ?? null, finish: input.finish ?? null, dimensions: input.dimensions ?? null, colour: null };
+  return {
+    staff,
+    specs,
+    legacy,
+    isPublished: staff ? input.visibility === "published" : input.isPublished,
+    archived: staff ? input.visibility === "archived" : null,
+    showPrice: staff ? Boolean(input.listPrice) : input.showPrice,
+    showAvailability: staff ? Boolean(input.availability) : input.showAvailability,
+    /** In stock counts the stock; sold is nothing left; the other two are not counted. */
+    stock: input.availability === "in_stock" ? (input.stockQuantity ?? null) : input.availability === "sold" ? 0 : null,
+  };
+}
+
+/**
+ * Makes the product's photos match the list the form sent: removes the ones left out, adds the new uploads, saves the order and
+ * the thumbnail. Returns the files of removed photos, to delete from storage once the transaction has committed.
+ */
+async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: string[], thumbnail: number | undefined, verified: VerifiedFile[]): Promise<string[]> {
+  const existing = await tx.select().from(productImages).where(eq(productImages.productId, productId));
+  const byId = new Map(existing.map((i) => [i.id, i]));
+  const keep = new Set(items.filter((i) => i.startsWith("id:")).map((i) => i.slice(3)));
+  for (const id of keep) if (!byId.has(id)) throw validation("A photo on this page has changed. Reload the page and try again.", { photos: ["Reload the page and try again."] });
+  const removed = existing.filter((i) => !keep.has(i.id));
+  if (removed.length) await tx.delete(productImages).where(inArray(productImages.id, removed.map((r) => r.id)));
+  await linkUploads(tx, verified, { type: "product", id: productId });
+  const verifiedIds = new Set(verified.map((v) => v.id));
+  const ids: string[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]!;
+    const kind = item.slice(0, item.indexOf(":"));
+    const ref = item.slice(item.indexOf(":") + 1);
+    const alt = `${name}, photo ${i + 1}`;
+    if (kind === "id") {
+      await tx.update(productImages).set({ position: i, altText: alt }).where(eq(productImages.id, ref));
+      ids.push(ref);
+    } else {
+      if (!verifiedIds.has(ref)) throw validation("A photo could not be attached. Upload it again.", { photos: ["Upload the photo again."] });
+      const [row] = await tx.insert(productImages).values({ productId, fileId: ref, altText: alt, position: i }).returning({ id: productImages.id });
+      ids.push(row!.id);
+    }
+  }
+  const thumb = ids.length ? ids[Math.min(Math.max((thumbnail ?? 1) - 1, 0), ids.length - 1)]! : null;
+  await tx.update(products).set({ thumbnailImageId: thumb }).where(eq(products.id, productId));
+  return removed.map((r) => r.fileId);
+}
+
+const photoFileIds = (items: string[]) => items.filter((i) => i.startsWith("file:")).map((i) => i.slice(5));
+
 export async function createProduct(actor: Actor, input: ProductInput): Promise<string> {
   requirePermission(actor, "products:write");
-  const slugValue = resolveSlug(input.slug, input.name);
+  const f = resolveFields(input);
+  const verified = f.staff ? await verifyUploads(photoFileIds(input.photos), "catalogue", actor) : [];
   try {
     return await withTx(async (tx) => {
       await assertCategoryUsable(tx, input.categoryId);
+      const slugValue = input.slug ? resolveSlug(input.slug, input.name) : await uniqueProductSlug(tx, input.name);
+      const specs = f.specs ?? specsFromLegacy({ material: input.material, finish: input.finish, dimensions: input.dimensions });
       const [p] = await tx
         .insert(products)
         .values({
@@ -202,30 +310,30 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
           description: input.description ?? null,
           categoryId: input.categoryId,
           kind: input.kind,
-          material: input.material ?? null,
-          finish: input.finish ?? null,
-          dimensions: input.dimensions ?? null,
+          material: f.legacy.material,
+          finish: f.legacy.finish,
+          dimensions: f.legacy.dimensions,
+          colour: f.legacy.colour,
+          specifications: specs,
           shortDescription: input.shortDescription ?? null,
-          features: input.features ?? null,
-          uses: input.uses ?? null,
-          woodTreatment: input.woodTreatment ?? null,
-          colour: input.colour ?? null,
-          otherSpecs: input.otherSpecs ?? null,
-          careInstructions: input.careInstructions ?? null,
-          customization: input.customization,
-          purchaseMode: input.purchaseMode,
-          isPublished: input.isPublished,
+          customization: input.customization ?? [],
+          purchaseMode: input.purchaseMode ?? "direct",
+          isPublished: f.isPublished && !f.archived,
           isFeatured: input.isFeatured,
-          showAvailability: input.showAvailability,
+          isPremium: input.isPremium,
+          showAvailability: f.showAvailability,
           availability: input.availability ?? null,
-          showPrice: input.showPrice,
+          showPrice: f.showPrice,
           seoTitle: input.seoTitle ?? null,
           seoDescription: input.seoDescription ?? null,
+          archivedAt: f.archived ? new Date() : null,
           createdBy: actor.id,
         })
         .returning({ id: products.id });
-      await tx.insert(productVariants).values({ productId: p!.id, sku: input.sku, label: "Standard", listPrice: input.listPrice ?? null });
-      await recordAudit(tx, actor, { action: "product.created", entityType: "product", entityId: p!.id, after: { name: input.name, slug: slugValue, sku: input.sku, isPublished: input.isPublished } });
+      const sku = input.sku ?? (await newSku(tx, slugValue));
+      await tx.insert(productVariants).values({ productId: p!.id, sku, label: "Standard", listPrice: input.listPrice ?? null, stockQuantity: f.staff ? f.stock : (input.stockQuantity ?? null) });
+      if (f.staff) await syncPhotos(tx, p!.id, input.name, input.photos, input.thumbnail, verified);
+      await recordAudit(tx, actor, { action: "product.created", entityType: "product", entityId: p!.id, after: { name: input.name, slug: slugValue, sku, isPublished: f.isPublished } });
       return p!.id;
     });
   } catch (e) {
@@ -237,70 +345,121 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
 
 export async function updateProduct(actor: Actor, id: string, input: ProductUpdateInput): Promise<void> {
   requirePermission(actor, "products:write");
-  const slugValue = resolveSlug(input.slug, input.name);
+  const f = resolveFields(input);
+  const verified = f.staff ? await verifyUploads(photoFileIds(input.photos), "catalogue", actor) : [];
+  let removedFiles: string[] = [];
   try {
     await withTx(async (tx) => {
       const [before] = await tx.select().from(products).where(eq(products.id, id)).for("update");
       if (!before) throw notFound("That product could not be found.");
       await assertCategoryUsable(tx, input.categoryId);
-      if (input.showPrice) {
+      if (!f.staff && input.showPrice) {
         const [{ n } = { n: 0 }] = await tx
           .select({ n: sql<number>`count(*)::int` })
           .from(productVariants)
           .where(and(eq(productVariants.productId, id), eq(productVariants.isActive, true), isNotNull(productVariants.listPrice)));
         if (n === 0) throw validation("Add a price to at least one option, or untick “Show price publicly”.", { showPrice: ["No option has a price yet."] });
       }
+      // Without a specification list (the older form) only the fields that were sent change.
+      const specColumns = f.specs
+        ? { specifications: f.specs, material: f.legacy.material, finish: f.legacy.finish, dimensions: f.legacy.dimensions, colour: f.legacy.colour }
+        : { material: f.legacy.material, finish: f.legacy.finish, dimensions: f.legacy.dimensions };
+      const wasArchived = before.archivedAt !== null;
+      const nowPublished = f.archived ? false : f.isPublished;
       await tx
         .update(products)
         .set({
-          slug: slugValue,
+          // The web address name keeps its first value so links already shared do not break; an older form may still set it.
+          ...(input.slug ? { slug: resolveSlug(input.slug, input.name) } : {}),
           name: input.name,
           description: input.description ?? null,
           categoryId: input.categoryId,
           kind: input.kind,
-          material: input.material ?? null,
-          finish: input.finish ?? null,
-          dimensions: input.dimensions ?? null,
+          ...specColumns,
           shortDescription: input.shortDescription ?? null,
-          features: input.features ?? null,
-          uses: input.uses ?? null,
-          woodTreatment: input.woodTreatment ?? null,
-          colour: input.colour ?? null,
-          otherSpecs: input.otherSpecs ?? null,
-          careInstructions: input.careInstructions ?? null,
-          customization: input.customization,
-          purchaseMode: input.purchaseMode,
-          isPublished: input.isPublished,
+          ...(input.customization ? { customization: input.customization } : {}),
+          ...(input.purchaseMode ? { purchaseMode: input.purchaseMode } : {}),
+          isPublished: nowPublished,
           isFeatured: input.isFeatured,
-          showAvailability: input.showAvailability,
+          isPremium: input.isPremium,
+          showAvailability: f.showAvailability,
           availability: input.availability ?? null,
-          showPrice: input.showPrice,
-          seoTitle: input.seoTitle ?? null,
-          seoDescription: input.seoDescription ?? null,
+          showPrice: f.showPrice,
+          ...(f.staff ? { archivedAt: f.archived ? (before.archivedAt ?? new Date()) : null } : {}),
+          ...(f.staff ? {} : { seoTitle: input.seoTitle ?? null, seoDescription: input.seoDescription ?? null }),
         })
         .where(eq(products.id, id));
+      if (f.staff) {
+        // The product's one price line: the first option. Further options made earlier are left as they are.
+        const [first] = await tx.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.createdAt)).limit(1);
+        const price = input.listPrice ?? null;
+        if (first) {
+          const compare = price && first.comparePrice && Number(first.comparePrice) > Number(price) ? first.comparePrice : null;
+          await tx.update(productVariants).set({ listPrice: price, comparePrice: compare, stockQuantity: f.stock }).where(eq(productVariants.id, first.id));
+        } else {
+          await tx.insert(productVariants).values({ productId: id, sku: await newSku(tx, before.slug), label: "Standard", listPrice: price, stockQuantity: f.stock });
+        }
+        removedFiles = await syncPhotos(tx, id, input.name, input.photos, input.thumbnail, verified);
+      }
+      const archiveChanged = f.staff && wasArchived !== Boolean(f.archived);
       await recordAudit(tx, actor, {
-        action: before.isPublished !== input.isPublished ? (input.isPublished ? "product.published" : "product.unpublished") : "product.updated",
+        action: archiveChanged ? (f.archived ? "product.archived" : "product.restored") : before.isPublished !== nowPublished ? (nowPublished ? "product.published" : "product.unpublished") : "product.updated",
         entityType: "product",
         entityId: id,
         before: { name: before.name, slug: before.slug, isPublished: before.isPublished, showPrice: before.showPrice },
-        after: { name: input.name, slug: slugValue, isPublished: input.isPublished, showPrice: input.showPrice },
+        after: { name: input.name, isPublished: nowPublished, showPrice: f.showPrice },
       });
     });
   } catch (e) {
     if (isUniqueViolation(e)) throw conflict("A product with that web address name already exists. Change the web address name.");
     throw e;
   }
+  for (const fileId of removedFiles) await removeFileObject(fileId);
+}
+
+/** Archive or restore several products at once (the staff list's edit mode). Returns how many changed. */
+export async function setProductsArchived(actor: Actor, ids: string[], archived: boolean): Promise<number> {
+  requirePermission(actor, "products:write");
+  if (ids.length === 0) return 0;
+  return withTx(async (tx) => {
+    const rows = await tx.select().from(products).where(inArray(products.id, ids)).for("update");
+    let changed = 0;
+    for (const p of rows) {
+      if (archived === (p.archivedAt !== null)) continue;
+      await tx.update(products).set({ archivedAt: archived ? new Date() : null, isPublished: archived ? false : p.isPublished }).where(eq(products.id, p.id));
+      await recordAudit(tx, actor, { action: archived ? "product.archived" : "product.restored", entityType: "product", entityId: p.id });
+      changed++;
+    }
+    return changed;
+  });
+}
+
+/**
+ * Permanently deletes products with their options and photographs. Orders and quotations that mention them keep the names and prices
+ * they were placed with; only the link to the product is dropped. Customers' saved-for-later lists lose the product.
+ */
+export async function deleteProducts(actor: Actor, ids: string[]): Promise<number> {
+  requirePermission(actor, "products:write");
+  if (ids.length === 0) return 0;
+  const files: string[] = [];
+  const count = await withTx(async (tx) => {
+    const rows = await tx.select({ id: products.id, name: products.name }).from(products).where(inArray(products.id, ids)).for("update");
+    if (rows.length === 0) return 0;
+    const found = rows.map((r) => r.id);
+    const imgs = await tx.select({ fileId: productImages.fileId }).from(productImages).where(inArray(productImages.productId, found));
+    files.push(...imgs.map((i) => i.fileId));
+    await tx.delete(productImages).where(inArray(productImages.productId, found));
+    await tx.delete(productVariants).where(inArray(productVariants.productId, found));
+    await tx.delete(products).where(inArray(products.id, found));
+    for (const r of rows) await recordAudit(tx, actor, { action: "product.deleted", entityType: "product", entityId: r.id, before: { name: r.name } });
+    return rows.length;
+  });
+  for (const fileId of files) await removeFileObject(fileId);
+  return count;
 }
 
 export async function setProductArchived(actor: Actor, id: string, archived: boolean): Promise<void> {
-  requirePermission(actor, "products:write");
-  await withTx(async (tx) => {
-    const [p] = await tx.select().from(products).where(eq(products.id, id)).for("update");
-    if (!p) throw notFound("That product could not be found.");
-    await tx.update(products).set({ archivedAt: archived ? new Date() : null, isPublished: archived ? false : p.isPublished }).where(eq(products.id, id));
-    await recordAudit(tx, actor, { action: archived ? "product.archived" : "product.restored", entityType: "product", entityId: id });
-  });
+  await setProductsArchived(actor, [id], archived);
 }
 
 export async function addVariant(actor: Actor, productId: string, input: VariantInput): Promise<void> {

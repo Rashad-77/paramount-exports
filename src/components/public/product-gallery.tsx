@@ -16,17 +16,21 @@ export function ProductGallery({
   name,
   heart,
   saleLabel,
+  premium = false,
 }: {
   images: Array<{ id: string; url: string; alt: string }>;
   name: string;
   heart?: ReactNode;
   saleLabel?: string;
+  /** A piece of the premium range: a Premium range tag runs above the photograph, as wide as it. */
+  premium?: boolean;
 }) {
   const [active, setActive] = useState(0);
   const total = Math.max(SLOTS, images.length);
   const current = images[active];
   return (
     <div>
+      {premium ? <p className="premium-tag">Premium range</p> : null}
       {saleLabel ? <p className="sale-tag">{saleLabel}</p> : null}
       <div className="relative aspect-[4/5] overflow-hidden bg-linen">
         {current ? (

@@ -77,7 +77,7 @@ test.describe("access control", () => {
   });
 
   test("deep internal links and the print view are protected too", async ({ page }) => {
-    for (const path of ["/app/orders", "/app/orders/00000000-0000-4000-8000-000000000000", "/app/messages", "/app/quotations", "/app/enquiries", "/app/delivery", "/app/showroom", "/app/customers", "/app/products", "/app/settings", "/app/users", "/app/website"]) {
+    for (const path of ["/app/orders", "/app/orders/00000000-0000-4000-8000-000000000000", "/app/messages", "/app/quotations", "/app/enquiries", "/app/showroom", "/app/customers", "/app/products", "/app/settings", "/app/users", "/app/website"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/login/);
     }

@@ -10,7 +10,7 @@ export default async function Page() {
   const pages = await getPageContent();
   return (
     <>
-      <PageIntro title="Privacy notice" />
+      <PageIntro back={{ href: "/", to: "home" }} title="Privacy notice" />
       <div className="container-page py-[var(--section-space)]">
         <Prose text={pages.privacy ?? DEFAULT_PRIVACY} />
       </div>

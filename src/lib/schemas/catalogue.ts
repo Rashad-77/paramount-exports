@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { slugify } from "@/lib/contact";
 import { validation } from "@/lib/errors";
+import { DIM_UNITS } from "@/lib/specifications";
 import { checkbox, enumOf, idList, optEnum, optMoney, optText, optUuid, reqText, reqUuid, slug } from "@/lib/validation";
 
 export const PRODUCT_KINDS = ["stocked", "made_to_order"] as const;
@@ -18,12 +19,13 @@ export const CUSTOMIZATION_LABEL: Record<(typeof CUSTOMIZATIONS)[number], string
   finish: "Choice of finish and colour",
   requirements: "Additional requirements",
 };
-export const AVAILABILITY = ["in_stock", "made_to_order", "on_request", "sold"] as const;
-export const AVAILABILITY_LABEL: Record<(typeof AVAILABILITY)[number], string> = {
+/** What staff can choose. The database enum still holds "on_request" from before it was merged into made to order. */
+export const AVAILABILITY = ["in_stock", "made_to_order", "sold"] as const;
+export const AVAILABILITY_LABEL: Record<(typeof AVAILABILITY)[number] | "on_request", string> = {
   in_stock: "In stock",
   made_to_order: "Made to order",
-  on_request: "Available on request",
-  sold: "Sold",
+  on_request: "Made to order",
+  sold: "Out of stock",
 };
 
 /** Slug may be left blank; it is then derived from the name. */
@@ -39,54 +41,99 @@ export const categorySchema = z.object({
 });
 export type CategoryInput = z.output<typeof categorySchema>;
 
+export const VISIBILITY = ["draft", "published", "archived"] as const;
+export const VISIBILITY_LABEL: Record<(typeof VISIBILITY)[number], string> = { draft: "Draft: hidden from the website", published: "Published: shown on the website", archived: "Archived: hidden and kept on record" };
+export const MAX_PHOTOS = 20;
+
+const dimPart = z.preprocess((v) => (typeof v === "string" ? v.trim() : ""), z.string().regex(/^(\d+(\.\d+)?)?$/, "Enter dimensions as numbers, like 180 or 7.5."));
+const specEntrySchema = z.object({
+  key: z.string().trim().min(1).max(60),
+  label: z.string().trim().min(1, "Every specification needs a type.").max(60, "A specification type must be 60 characters or fewer."),
+  type: z.enum(["text", "list", "dims"]),
+  values: z.array(z.string().trim().max(200, "A specification value must be 200 characters or fewer.")).max(30).default([]),
+  dims: z.object({ w: dimPart, d: dimPart, h: dimPart, unit: z.enum(DIM_UNITS).default("cm") }).optional(),
+});
+/** The specification rows arrive as one JSON field from the specifications editor. */
+const specificationsField = z.preprocess(
+  (v) => {
+    if (v === undefined || v === "") return undefined;
+    if (typeof v !== "string") return v;
+    try {
+      return JSON.parse(v);
+    } catch {
+      return null;
+    }
+  },
+  z.array(specEntrySchema, { error: "The specifications could not be read. Reload the page and try again." }).max(40, "Add at most 40 specifications.").optional(),
+);
+
+/** "id:<existing photo>" or "file:<newly uploaded file>", in the order the photos are shown. */
+const photosField = z.preprocess(
+  (v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v.filter((x) => x !== "") : [v]),
+  z.array(z.string().regex(/^(id|file):[0-9a-fA-F-]{36}$/, "A photo could not be read. Reload the page and try again.")).max(MAX_PHOTOS, `Add up to ${MAX_PHOTOS} photos.`),
+);
+
+const optInt = (label: string, max: number) =>
+  z.preprocess((v) => (v === "" || v === null || v === undefined ? undefined : v), z.coerce.number({ error: `${label} must be a whole number.` }).int(`${label} must be a whole number.`).min(0, `${label} cannot be negative.`).max(max).optional());
+
 const productBase = z.object({
   name: reqText("Product name", 120),
+  /** Left out on the form: the web address name is always made from the product name. */
   slug: slugOrBlank,
   categoryId: reqUuid("category"),
   kind: enumOf(PRODUCT_KINDS, "product type"),
   description: optText("Description", 4000),
+  shortDescription: optText("Short description", 300),
+  specifications: specificationsField,
+  /** Older single-value fields, used when no specification list is sent. */
   material: optText("Wood / material", 120),
   finish: optText("Finish", 120),
   dimensions: optText("Dimensions", 200),
-  shortDescription: optText("Short description", 300),
-  features: optText("Features", 2000),
-  uses: optText("Uses", 1500),
-  woodTreatment: optEnum(WOOD_TREATMENTS, "wood treatment"),
-  colour: optText("Colour", 120),
-  otherSpecs: optText("Other specifications", 1500),
-  careInstructions: optText("Care instructions", 2000),
-  customization: z.preprocess((v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(CUSTOMIZATIONS)).max(4)),
-  purchaseMode: enumOf(PURCHASE_MODES, "way of selling"),
+  customization: z.preprocess((v) => (v === undefined ? undefined : v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(CUSTOMIZATIONS)).max(4).optional()),
+  purchaseMode: optEnum(PURCHASE_MODES, "way of selling"),
   sku: z
-    .string({ error: "SKU is required." })
+    .string()
     .trim()
-    .min(1, "SKU is required.")
     .max(60, "SKU must be 60 characters or fewer.")
-    .regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dots, hyphens and underscores only."),
+    .regex(/^[A-Za-z0-9._-]*$/, "Use letters, numbers, dots, hyphens and underscores only.")
+    .optional()
+    .transform((v) => v || undefined),
   listPrice: optMoney("Price"),
+  /** How many are in stock; needed when the availability is "In stock". */
+  stockQuantity: optInt("Available amount", 1000000),
+  /** Draft, published or archived. Present only on the staff form, where it takes the place of the older tick boxes below. */
+  visibility: optEnum(VISIBILITY, "visibility"),
   isPublished: checkbox,
   isFeatured: checkbox,
+  isPremium: checkbox,
   showAvailability: checkbox,
   availability: optEnum(AVAILABILITY, "availability"),
   showPrice: checkbox,
+  photos: photosField,
+  /** The number (1, 2, 3…) of the photo used as the thumbnail. */
+  thumbnail: optInt("Thumbnail number", MAX_PHOTOS),
   seoTitle: optText("Page title", 70),
   seoDescription: optText("Page description", 160),
 });
 
-type AvailabilityFields = { showAvailability: boolean; availability?: string };
-const availabilityRule = (v: AvailabilityFields, ctx: z.RefinementCtx) => {
+type StaffFormFields = { visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string };
+const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
+  if (v.visibility !== undefined) {
+    // The staff form: in stock needs an amount; what is shown publicly follows what was filled in.
+    if (v.availability === "in_stock" && v.stockQuantity === undefined) ctx.addIssue({ code: "custom", path: ["stockQuantity"], message: "Enter how many are available." });
+    return;
+  }
   if (v.showAvailability && !v.availability) ctx.addIssue({ code: "custom", path: ["availability"], message: "Choose the availability to show, or untick “Show availability”." });
 };
 
-/** Create: also takes the first SKU and price (stored on the default "Standard" option). */
 export const productSchema = productBase.superRefine((v, ctx) => {
-  availabilityRule(v, ctx);
-  if (v.showPrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter a price, or untick “Show price publicly”." });
+  productRules(v, ctx);
+  if (v.visibility === undefined && v.showPrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter a price, or untick “Show price publicly”." });
 });
 export type ProductInput = z.output<typeof productSchema>;
 
-/** Update: SKU and prices live on the options (variants), so they are not part of this form. */
-export const productUpdateSchema = productBase.omit({ sku: true, listPrice: true }).superRefine(availabilityRule);
+/** Update from the staff form carries the price and stock of the product's one price line; the older form left prices to the options. */
+export const productUpdateSchema = productBase.omit({ sku: true }).superRefine(productRules);
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
 export const variantSchema = z

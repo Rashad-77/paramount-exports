@@ -1,4 +1,5 @@
 import "server-only";
+import { quoteRef } from "@/lib/quotation-ui";
 import { and, count, desc, eq, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
@@ -109,7 +110,7 @@ export async function listMessages(actor: Actor, f: MessageFilters) {
   if (f.state === "open") where.push(eq(messages.isHandled, false));
   if (f.state === "handled") where.push(eq(messages.isHandled, true));
   if (f.q) {
-    const like = `%${escapeLike(f.q)}%`;
+    const like = `%${escapeLike(f.q.replace(/^quo(?=[-sd])/i, "MSG"))}%`; // a quotation can be searched by its QUO number
     where.push(or(ilike(messages.reference, like), ilike(messages.name, like), ilike(messages.phone, like), ilike(messages.email, like), ilike(messages.message, like))!);
   }
   const cond = where.length ? and(...where) : undefined;
@@ -193,10 +194,10 @@ export async function sendQuote(actor: Actor, id: string, input: { amount: strin
     await recordAudit(tx, actor, { action: "quotation.priced", entityType: "message", entityId: id, before: { status: m.quoteStatus, amount: m.quotedAmount }, after: { status: "quoted", amount } });
     const who = await quoteAudience(tx, m);
     const price = formatMoney(amount, business.currency);
-    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Your quotation ${m.reference} is ready`, body: `Our price is ${price}. Please read it and accept or decline.` });
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Your quotation ${quoteRef(m.reference)} is ready`, body: `Our price is ${price}. Please read it and accept or decline.` });
     notify = {
       email: who.email,
-      subject: `Your quotation ${m.reference} is ready - ${business.name}`,
+      subject: `Your quotation ${quoteRef(m.reference)} is ready - ${business.name}`,
       text: [
         `Hello ${m.name},`,
         ``,
@@ -204,7 +205,7 @@ export async function sendQuote(actor: Actor, id: string, input: { amount: strin
         input.validUntil ? `This price is valid until ${input.validUntil}.` : null,
         input.note ? `\n${input.note}` : null,
         ``,
-        `To accept, please call us on ${business.phone ?? "the number on our website"} and quote ${m.reference}.`,
+        `To accept, please call us on ${business.phone ?? "the number on our website"} and quote ${quoteRef(m.reference)}.`,
         ``,
         business.name,
       ]

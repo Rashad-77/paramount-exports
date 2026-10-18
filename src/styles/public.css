@@ -229,7 +229,7 @@ html:has(.page-body) {
     overflow-x: clip;
   }
   /* Room under the fixed header for pages that do not start with a dark band */
-  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band) {
+  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band, .prem-page) {
     margin-top: 5.25rem;
   }
 
@@ -1403,6 +1403,28 @@ html:has(.page-body) {
     font-size: 0.875rem;
     letter-spacing: normal;
     text-transform: none;
+  }
+  .gs-field .gs-panel {
+    max-height: min(22rem, 60vh);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .gs-field .gs-panel::-webkit-scrollbar {
+    display: none;
+  }
+  /* Groups in a list: the heading is a bold label that cannot be picked, its subcategories sit indented under it */
+  .gs-field .gs-opt[data-heading] {
+    cursor: default;
+    font-weight: 600;
+    padding-bottom: 0.3rem;
+    pointer-events: none;
+  }
+  .gs-field .gs-opt[data-heading]:not(:first-child) {
+    border-top: 1px solid rgb(28 25 22 / 0.08);
+    margin-top: 0.2rem;
+  }
+  .gs-field .gs-opt[data-indent] {
+    padding-left: 1.75rem;
   }
   /* ── Motion: how the public site moves. Everything here is switched off under prefers-reduced-motion. ── */
   @media (prefers-reduced-motion: no-preference) {
@@ -4786,4 +4808,68 @@ span.cat-pagebtn {
 }
 .pp-stock[data-state="made_to_order"] .pp-dot {
   background: #8a847d;
+}
+
+/* ── Back link: an arrow and one word, at the top left of every inner page. Plain until it is hovered, then bold. ─────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding-block: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.back-link[data-tone="dark"] {
+  color: var(--color-text);
+}
+.back-link svg {
+  display: block;
+  flex: none;
+  stroke-width: 2;
+  /* Capital letters sit a hair above the middle of their line, so the arrow is lifted by the same amount to line up with them */
+  transform: translateY(-0.1em);
+}
+/* Hovered: the word and the arrow both go bold */
+@media (hover: hover) {
+  .back-link:hover {
+    font-weight: 700;
+  }
+  .back-link:hover svg {
+    stroke-width: 2.75;
+  }
+}
+/* On a dark banner it is pinned under the header, at the left edge of the content */
+.back-bar {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: calc(var(--head-h) + 0.1rem + 0.2cm);
+  /* Closer to the edge of the screen than the page content, whatever the screen width */
+  max-width: none;
+  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+/* The open/close arrow on "Add another address": ours, not the browser's triangle */
+.acct-add > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.acct-add > summary::after {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 200ms ease;
+}
+.acct-add[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
 }

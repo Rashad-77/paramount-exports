@@ -24,6 +24,35 @@ interface SignResponse {
   error?: string;
 }
 
+/**
+ * Sends one file straight to storage and returns the id the form action later verifies and links. Throws an Error with a plain
+ * message when the upload cannot start or fails.
+ */
+export async function uploadToStorage(file: File, purpose: string): Promise<string> {
+  const signRes = await fetch("/api/uploads/sign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ purpose, fileName: file.name, contentType: file.type, size: file.size }),
+  });
+  const s = (await signRes.json()) as SignResponse;
+  if (!signRes.ok) throw new Error(s.error ?? "The upload could not be started.");
+
+  if (s.driver === "local") {
+    const put = await fetch(s.url!, { method: "PUT", body: file });
+    if (!put.ok) throw new Error("The upload failed. Please try again.");
+  } else {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) throw new Error("Uploads are not configured yet.");
+    // Loaded only when a file is actually uploaded, so pages with an uploader do not ship the Supabase client up front.
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { error } = await supabase.storage.from(s.bucket).uploadToSignedUrl(s.key, s.token!, file, { contentType: file.type });
+    if (error) throw new Error("The upload failed. Please try again.");
+  }
+  return s.fileId;
+}
+
 const mb = (n: number) => `${(n / 1024 / 1024).toFixed(1)} MB`;
 
 /**
@@ -60,28 +89,7 @@ export function FileUploader({
 
   async function uploadOne(file: File, key: string) {
     try {
-      const signRes = await fetch("/api/uploads/sign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purpose, fileName: file.name, contentType: file.type, size: file.size }),
-      });
-      const s = (await signRes.json()) as SignResponse;
-      if (!signRes.ok) throw new Error(s.error ?? "The upload could not be started.");
-
-      if (s.driver === "local") {
-        const put = await fetch(s.url!, { method: "PUT", body: file });
-        if (!put.ok) throw new Error("The upload failed. Please try again.");
-      } else {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        if (!url || !anon) throw new Error("Uploads are not configured yet.");
-        // Loaded only when a file is actually uploaded, so pages with an uploader do not ship the Supabase client up front.
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
-        const { error } = await supabase.storage.from(s.bucket).uploadToSignedUrl(s.key, s.token!, file, { contentType: file.type });
-        if (error) throw new Error("The upload failed. Please try again.");
-      }
-      patch(key, { state: "done", fileId: s.fileId });
+      patch(key, { state: "done", fileId: await uploadToStorage(file, purpose) });
     } catch (e) {
       patch(key, { state: "error", error: e instanceof Error ? e.message : "The upload failed." });
     }
@@ -115,8 +123,16 @@ export function FileUploader({
           void onPick(e.target.files);
           e.target.value = "";
         }}
-        className="block w-full cursor-pointer border border-border-strong bg-surface text-sm file:mr-4 file:min-h-10 file:cursor-pointer file:border-0 file:bg-linen file:px-4 file:text-sm file:font-medium hover:border-walnut"
+        className="peer sr-only"
       />
+      {/* Our own button in place of the browser's file chooser (the real input above stays for the picker and for keyboards) */}
+      <label
+        htmlFor={inputId}
+        className="flex min-h-12 cursor-pointer items-center gap-3 border border-dashed border-border-strong bg-surface px-4 py-3 text-sm hover:border-walnut peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+      >
+        <Paperclip aria-hidden="true" className="size-4 shrink-0 text-stone" />
+        <span className="font-medium">{maxFiles > 1 ? "Choose files" : "Choose a file"}</span>
+      </label>
       {hint ? <p className="text-sm text-text-muted">{hint}</p> : null}
 
       {items.length > 0 ? (

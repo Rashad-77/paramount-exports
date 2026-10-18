@@ -15,7 +15,8 @@ import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 import { parseTestimonials } from "@/lib/testimonials";
 import { ProductCard } from "@/components/public/product-card";
-import { listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
+import { PremiumTeaser } from "@/components/public/premium";
+import { listPremiumProducts, listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -25,6 +26,8 @@ const STEP = 90;
 /** The product rows: always this many, with grey labelled placeholders making up the difference. */
 const PRODUCT_ROWS = 7;
 const PRODUCT_CARDS = 6;
+/** Premium pieces whose photographs run in the homepage carousel. */
+const PREMIUM_PIECES = 8;
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDatabase()) return fallback;
@@ -68,11 +71,12 @@ const SERVICES = [
 const CARD_W = "w-[78%] shrink-0 snap-start sm:w-[47%] lg:w-[31%]";
 
 export default async function HomePage() {
-  const [business, pages, categories, products] = await Promise.all([
+  const [business, pages, categories, products, premium] = await Promise.all([
     getBusinessSettings(),
     getPageContent(),
     safe(() => listPublicCategories(), []),
     safe(async () => (await listPublicProducts({ page: 1 })).items.slice(0, PRODUCT_CARDS), []),
+    safe(() => listPremiumProducts(PREMIUM_PIECES), []),
   ]);
   const reviews = parseTestimonials(pages.testimonials);
   // One band per group, with the categories under it as the note.
@@ -110,6 +114,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 1b. The premium range: only once the owner has marked a piece premium */}
+      <PremiumTeaser pieces={premium} />
 
       {/* 2. Why choose us */}
       <section aria-labelledby="why-title" className="sec sec-white">
@@ -291,33 +298,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 8. Customer reviews: only real ones, entered in Website content; grey placeholders until then */}
-      <section aria-labelledby="reviews-title" className="sec sec-cream border-t border-border">
-        <ScrollRow label="Customer reviews" autoplay header={<Head id="reviews-title" eyebrow="Feedback" title="What Our Customers Say" />}>
-          {/* A few reviews are repeated to fill the endless row; the repeats are hidden from screen readers */}
-          {Array.from({ length: Math.max(reviews.length, 6) }, (_, i) => (reviews.length > 0 ? reviews[i % reviews.length]! : null)).map((t, i) => (
-            <figure key={i} aria-hidden={reviews.length > 0 && i >= reviews.length ? true : undefined} className={CARD_W + " soft-card flex flex-col !px-14"}>
-              <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
-              {t ? (
-                <>
-                  <blockquote className="mt-5 flex-1 text-[0.9375rem] leading-relaxed text-text">{t.quote}</blockquote>
-                  {t.name ? (
-                    <figcaption className="mt-6 border-t border-border pt-4">
-                      <span className="block text-[0.875rem] font-medium text-text">{t.name}</span>
-                      {t.place ? <span className="mt-0.5 block text-[0.8125rem] text-text-muted">{t.place}</span> : null}
-                    </figcaption>
-                  ) : null}
-                </>
-              ) : (
-                <>
-                  <p className="mt-5 flex-1 text-[0.9375rem] leading-relaxed text-text-muted">Customer review to be supplied.</p>
-                  <figcaption className="mt-6 border-t border-border pt-4 text-[0.8125rem] text-text-muted">Name and town</figcaption>
-                </>
-              )}
-            </figure>
-          ))}
-        </ScrollRow>
-      </section>
+      {/* 8. Customer reviews: only real ones, entered in Website content; the section is left out until there are some */}
+      {reviews.length > 0 ? (
+        <section aria-labelledby="reviews-title" className="sec sec-cream border-t border-border">
+          <ScrollRow label="Customer reviews" autoplay header={<Head id="reviews-title" eyebrow="Feedback" title="What Our Customers Say" />}>
+            {/* A few reviews are repeated to fill the endless row; the repeats are hidden from screen readers */}
+            {Array.from({ length: Math.max(reviews.length, 6) }, (_, i) => reviews[i % reviews.length]!).map((t, i) => (
+              <figure key={i} aria-hidden={i >= reviews.length ? true : undefined} className={CARD_W + " soft-card flex flex-col !px-14"}>
+                <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
+                <blockquote className="mt-5 flex-1 text-[0.9375rem] leading-relaxed text-text">{t.quote}</blockquote>
+                {t.name ? (
+                  <figcaption className="mt-6 border-t border-border pt-4">
+                    <span className="block text-[0.875rem] font-medium text-text">{t.name}</span>
+                    {t.place ? <span className="mt-0.5 block text-[0.8125rem] text-text-muted">{t.place}</span> : null}
+                  </figcaption>
+                ) : null}
+              </figure>
+            ))}
+          </ScrollRow>
+        </section>
+      ) : null}
 
       {/* 9. Contact: dark call to action */}
       <section aria-labelledby="cta-title" className="sec sec-cta">
@@ -339,31 +339,35 @@ export default async function HomePage() {
 
           {/* The showroom: one warm-white card on the dark band, details on the left and the map on the right */}
           <Reveal variant="up" className="mx-auto mt-14 max-w-4xl">
-            <div className="grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8 md:grid-cols-[1.1fr_1fr]">
+            <div className={"grid gap-8 rounded-3xl bg-[var(--color-ivory)] p-6 text-text sm:p-8" + (mapEmbedUrl(business.mapUrl) ? " md:grid-cols-[1.1fr_1fr]" : "")}>
               <div>
                 <p className="eyebrow">Visit the showroom</p>
                 <h3 className="font-display mt-3 fl-b leading-tight text-text">Come and see it in person.</h3>
                 <ul className="mt-5 space-y-4 fl-d sm:mt-6 sm:space-y-5">
-                  <li className="flex gap-4">
-                    <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
-                    <div>
-                      <p className="font-medium">Address</p>
-                      <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.address ?? "Showroom address to be added."}</div>
-                    </div>
-                  </li>
-                  <li className="flex gap-4">
-                    <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
-                    <div>
-                      <p className="font-medium">Opening hours</p>
-                      <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.openingHours ?? "Opening hours to be added."}</div>
-                    </div>
-                  </li>
-                  <li className="flex gap-4">
-                    <Phone aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
-                    <div>
-                      <p className="font-medium">Get in touch</p>
-                      <div className="mt-0.5 text-text-muted">
-                        {reach.length > 0 ? (
+                  {business.address ? (
+                    <li className="flex gap-4">
+                      <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                      <div>
+                        <p className="font-medium">Address</p>
+                        <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.address}</div>
+                      </div>
+                    </li>
+                  ) : null}
+                  {business.openingHours ? (
+                    <li className="flex gap-4">
+                      <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                      <div>
+                        <p className="font-medium">Opening hours</p>
+                        <div className="mt-0.5 whitespace-pre-line text-text-muted">{business.openingHours}</div>
+                      </div>
+                    </li>
+                  ) : null}
+                  {reach.length > 0 ? (
+                    <li className="flex gap-4">
+                      <Phone aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-timber" strokeWidth={1.5} />
+                      <div>
+                        <p className="font-medium">Get in touch</p>
+                        <div className="mt-0.5 text-text-muted">
                           <ul className="space-y-1">
                             {reach.map((r) => (
                               <li key={r.href}>
@@ -374,12 +378,10 @@ export default async function HomePage() {
                               </li>
                             ))}
                           </ul>
-                        ) : (
-                          "Contact details to be added."
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </li>
+                    </li>
+                  ) : null}
                 </ul>
                 <div className="mt-7">
                   {business.address && business.mapUrl ? (
@@ -394,17 +396,17 @@ export default async function HomePage() {
                   )}
                 </div>
               </div>
-              <div className="relative min-h-[14rem] overflow-hidden rounded-2xl bg-[#e4e4e2]">
-                {mapEmbedUrl(business.mapUrl) ? <iframe title="Map showing the showroom" src={mapEmbedUrl(business.mapUrl)!} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" /> : null}
-                {business.address && business.mapUrl ? (
-                  <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pill absolute left-3 top-3">
-                    Open in maps <ArrowUpRight aria-hidden="true" className="size-3.5" />
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  <span className="pill absolute left-3 top-3">Map to be added</span>
-                )}
-              </div>
+              {mapEmbedUrl(business.mapUrl) ? (
+                <div className="relative min-h-[14rem] overflow-hidden rounded-2xl bg-[#e4e4e2]">
+                  <iframe title="Map showing the showroom" src={mapEmbedUrl(business.mapUrl)!} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" />
+                  {business.address && business.mapUrl ? (
+                    <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pill absolute left-3 top-3">
+                      Open in maps <ArrowUpRight aria-hidden="true" className="size-3.5" />
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </Reveal>
         </div>

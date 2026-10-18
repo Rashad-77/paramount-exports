@@ -39,16 +39,24 @@ export interface PublicCard {
   isNew: boolean;
 }
 
+/** The photo a card or list shows for each product: the one chosen as the thumbnail, or else the first. */
 export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string }>> {
   if (productIds.length === 0) return new Map();
-  const rows = await getDb()
-    .select({ productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position })
-    .from(productImages)
-    .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
-    .where(and(inArray(productImages.productId, productIds), eq(uploadedFiles.status, "linked")))
-    .orderBy(asc(productImages.position));
+  const db = getDb();
+  const [rows, thumbs] = await Promise.all([
+    db
+      .select({ id: productImages.id, productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position })
+      .from(productImages)
+      .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
+      .where(and(inArray(productImages.productId, productIds), eq(uploadedFiles.status, "linked")))
+      .orderBy(asc(productImages.position)),
+    db.select({ id: products.id, thumb: products.thumbnailImageId }).from(products).where(inArray(products.id, productIds)),
+  ]);
+  const thumbOf = new Map(thumbs.map((t) => [t.id, t.thumb]));
   const out = new Map<string, { url: string; alt: string }>();
-  for (const r of rows) if (!out.has(r.productId)) out.set(r.productId, { url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt });
+  const toEntry = (r: (typeof rows)[number]) => ({ url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt });
+  for (const r of rows) if (r.id === thumbOf.get(r.productId)) out.set(r.productId, toEntry(r));
+  for (const r of rows) if (!out.has(r.productId)) out.set(r.productId, toEntry(r));
   return out;
 }
 
@@ -176,6 +184,42 @@ async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
   return toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })));
 }
 
+/** A piece of the premium range, with every photograph and its long description, as the showroom page shows them. */
+export interface PremiumPiece extends PublicCard {
+  description: string | null;
+  images: Array<{ id: string; url: string; alt: string }>;
+}
+
+/** The pieces the owner has marked both premium and featured, newest first. They also stay in the normal collection. */
+async function listPremiumProductsImpl(limit?: number): Promise<PremiumPiece[]> {
+  if (!hasDatabase()) return [];
+  const db = getDb();
+  const rows = await db
+    .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
+    .from(products)
+    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+    .where(and(visible, eq(products.isPremium, true), eq(products.isFeatured, true)))
+    .orderBy(desc(products.createdAt))
+    .limit(limit ?? 24);
+  if (rows.length === 0) return [];
+  const ids = rows.map((r) => r.p.id);
+  const [cards, imgs] = await Promise.all([
+    toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug }))),
+    db
+      .select({ productId: productImages.productId, id: productImages.id, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+      .from(productImages)
+      .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
+      .where(and(inArray(productImages.productId, ids), eq(uploadedFiles.status, "linked")))
+      .orderBy(asc(productImages.position)),
+  ]);
+  const byId = new Map(rows.map((r) => [r.p.id, r.p]));
+  return cards.map((c) => ({
+    ...c,
+    description: byId.get(c.id)?.description ?? null,
+    images: imgs.filter((i) => i.productId === c.id).map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
+  }));
+}
+
 /**
  * More to look at on a product page: other products in the same category first, then products from the same group
  * (the categories beside it), so the row is rarely empty.
@@ -251,19 +295,6 @@ export async function listPublicMaterials(): Promise<string[]> {
 }
 
 /** One item per non-empty line. */
-const toLines = (v: string | null): string[] =>
-  (v ?? "")
-    .split(/\r?\n/)
-    .map((l) => l.replace(/^[-•*]\s*/, "").trim())
-    .filter(Boolean);
-
-/** "Label: value" lines. A line without a colon is kept as a value on its own. */
-const toPairs = (v: string | null): Array<{ label: string; value: string }> =>
-  toLines(v).map((l) => {
-    const i = l.indexOf(":");
-    return i > 0 ? { label: l.slice(0, i).trim(), value: l.slice(i + 1).trim() } : { label: "", value: l };
-  });
-
 async function getPublicProductImpl(slugValue: string) {
   if (!hasDatabase()) return null;
   const db = getDb();
@@ -299,14 +330,10 @@ async function getPublicProductImpl(slugValue: string) {
     kind: p.kind,
     categoryId: p.categoryId,
     shortDescription: p.shortDescription,
-    features: toLines(p.features),
-    uses: toLines(p.uses),
-    woodTreatment: p.woodTreatment === "treated" ? "Treated" : p.woodTreatment === "untreated" ? "Untreated" : null,
-    colour: p.colour,
-    otherSpecs: toPairs(p.otherSpecs),
-    careInstructions: p.careInstructions,
+    specifications: p.specifications,
     customization: p.customization,
     purchaseMode: p.purchaseMode as "direct" | "quote" | "both",
+    isPremium: p.isPremium,
     priceShown: p.showPrice,
     categoryName: row.categoryName,
     categorySlug: row.categorySlug,
@@ -358,6 +385,7 @@ async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; up
 
 /* Build-safe public readers (see duringBuildSafe). */
 export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
+export const listPremiumProducts = (...args: Parameters<typeof listPremiumProductsImpl>) => duringBuildSafe("listPremiumProducts", [] as Awaited<ReturnType<typeof listPremiumProductsImpl>>, () => listPremiumProductsImpl(...args));
 export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesImpl(...args));
 export const getPublicProduct = (...args: Parameters<typeof getPublicProductImpl>) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(...args));
 export const listGalleryProjects = (...args: Parameters<typeof listGalleryProjectsImpl>) => duringBuildSafe("listGalleryProjects", [] as Awaited<ReturnType<typeof listGalleryProjectsImpl>>, () => listGalleryProjectsImpl(...args));

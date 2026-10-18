@@ -1,26 +1,29 @@
-import Link from "next/link";
-import { Button, ButtonLink } from "@/components/ui/button";
-import { SelectField, TextField } from "@/components/ui/field";
+import { EditToggle, ProductsEditProvider, ProductsTable } from "@/components/app/products-table";
+import { ProductFilters } from "@/components/app/product-filters";
+import { ButtonLink } from "@/components/ui/button";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
-import { StatusBadge } from "@/components/ui/status";
-import {
-  Pagination,
-  Table,
-  TableWrap,
-  TD,
-  TH,
-  THead,
-  TR,
-} from "@/components/ui/table";
+import { Pagination } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
-import { treeLabel, treeOrder } from "@/lib/category-tree";
-import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { listCategories, listProductsAdmin } from "@/server/catalogue";
+import { toCascadeGroups } from "@/lib/category-tree";
+import { one, pageOf, type SP } from "@/lib/list-params";
+import {
+  listCategories,
+  listProductsAdmin,
+  PRODUCT_STATUSES,
+  type ProductStatus,
+} from "@/server/catalogue";
+import { archiveProductsAction, deleteProductsAction } from "./actions";
 
 export const metadata = { title: "Products" };
 const PAGE_SIZE = 20;
+
+/** Every ?status= in the address, once each, keeping only statuses that exist. */
+const statusesOf = (v: string | string[] | undefined): ProductStatus[] => {
+  const all = Array.isArray(v) ? v : v ? [v] : [];
+  return PRODUCT_STATUSES.filter((s) => all.includes(s));
+};
 
 export default async function ProductsAdminPage({
   searchParams,
@@ -30,89 +33,54 @@ export default async function ProductsAdminPage({
   const actor = await requireActor();
   const sp = await searchParams;
   const q = one(sp.q)?.slice(0, 80);
-  const status = oneOf(one(sp.status), [
-    "published",
-    "draft",
-    "archived",
-  ] as const);
-  const categoryId = one(sp.category);
+  const statuses = statusesOf(sp.status);
+  const categoryIds = (Array.isArray(sp.category) ? sp.category : sp.category ? [sp.category] : []).filter((c) => /^[0-9a-f-]{36}$/i.test(c));
   const page = pageOf(sp);
   const [cats, result] = await Promise.all([
     listCategories(actor),
     listProductsAdmin(actor, {
       q,
-      status,
-      categoryId,
+      statuses,
+      categoryIds,
       page,
       pageSize: PAGE_SIZE,
     }),
   ]);
-  const href = (over: Record<string, string | undefined>) =>
-    buildHref("/app/products", { q, status, category: categoryId, ...over });
-  const filtered = Boolean(q || status || categoryId);
+  const href = (n: number) => {
+    const u = new URLSearchParams();
+    if (q) u.set("q", q);
+    for (const c of categoryIds) u.append("category", c);
+    for (const s of statuses) u.append("status", s);
+    u.set("page", String(n));
+    return `/app/products?${u.toString()}`;
+  };
+  const filtered = Boolean(q || statuses.length || categoryIds.length);
+  const canWrite = can(actor, "products:write");
 
   return (
-    <>
+    <ProductsEditProvider>
       <ModuleHeader
         href="/app/products"
         actions={
-          <>
-            <ButtonLink href="/app/categories" variant="secondary">
-              Categories
-            </ButtonLink>
-            {can(actor, "products:write") ? (
+          canWrite ? (
+            <>
+              {filtered ? (
+                <ButtonLink href="/app/products" variant="ghost">
+                  Clear filters
+                </ButtonLink>
+              ) : null}
+              <EditToggle />
               <ButtonLink href="/app/products/new">Add product</ButtonLink>
-            ) : null}
-          </>
+            </>
+          ) : null
         }
       />
-      <form
-        method="get"
-        className="mb-6 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
-      >
-        <TextField
-          showOptional={false}
-          label="Search"
-          name="q"
-          type="search"
-          defaultValue={q}
-          placeholder="Name or SKU"
-        />
-        <SelectField
-          showOptional={false}
-          label="Category"
-          name="category"
-          defaultValue={categoryId ?? ""}
-          placeholder="All"
-          options={treeOrder(cats.filter((c) => !c.archivedAt)).map((c) => ({
-            value: c.id,
-            label: treeLabel(c),
-          }))}
-        />
-        <SelectField
-          showOptional={false}
-          label="Status"
-          name="status"
-          defaultValue={status ?? ""}
-          placeholder="Active (published and draft)"
-          options={[
-            { value: "published", label: "Published" },
-            { value: "draft", label: "Draft" },
-            { value: "archived", label: "Archived" },
-          ]}
-        />
-        <div className="flex gap-2">
-          <Button type="submit">Apply</Button>
-          {filtered ? (
-            <ButtonLink href="/app/products" variant="ghost">
-              Clear
-            </ButtonLink>
-          ) : null}
-        </div>
-      </form>
-      <p className="mb-3 text-sm text-text-muted" role="status">
-        {result.total} {result.total === 1 ? "product" : "products"}
-      </p>
+      <ProductFilters
+        q={q}
+        categoryIds={categoryIds}
+        statuses={statuses}
+        categories={toCascadeGroups(cats.filter((c) => !c.archivedAt))}
+      />
       {result.rows.length === 0 ? (
         <EmptyState
           title={filtered ? "No products match" : "No products yet"}
@@ -122,73 +90,35 @@ export default async function ProductsAdminPage({
               : "Add a category, then your first product."
           }
           action={
-            !filtered && can(actor, "products:write") ? (
+            !filtered && canWrite ? (
               <ButtonLink href="/app/products/new">Add product</ButtonLink>
             ) : undefined
           }
         />
       ) : (
-        <TableWrap label="Products">
-          <Table>
-            <THead>
-              <tr>
-                <TH>Product</TH>
-                <TH>SKU</TH>
-                <TH>Category</TH>
-                <TH>Website</TH>
-                <TH>Photos</TH>
-              </tr>
-            </THead>
-            <tbody>
-              {result.rows.map((p) => (
-                <TR key={p.id}>
-                  <TD>
-                    <Link
-                      href={`/app/products/${p.id}`}
-                      className="font-medium text-walnut underline"
-                    >
-                      {p.name}
-                    </Link>
-                    <div className="text-text-muted">
-                      {p.kind === "made_to_order"
-                        ? "Made to order"
-                        : "Ready-made"}
-                    </div>
-                  </TD>
-                  <TD className="tabular text-text-muted">{p.skus}</TD>
-                  <TD>{p.categoryName}</TD>
-                  <TD>
-                    <div className="flex flex-wrap gap-1">
-                      {p.archivedAt ? (
-                        <StatusBadge>Archived</StatusBadge>
-                      ) : p.isPublished ? (
-                        <StatusBadge tone="success">Published</StatusBadge>
-                      ) : (
-                        <StatusBadge tone="warning">Draft</StatusBadge>
-                      )}
-                      {p.isFeatured && !p.archivedAt ? (
-                        <StatusBadge tone="info">Featured</StatusBadge>
-                      ) : null}
-                    </div>
-                  </TD>
-                  <TD>
-                    {p.imageCount === 0 ? (
-                      <StatusBadge tone="warning">None</StatusBadge>
-                    ) : (
-                      <span className="tabular">{p.imageCount}</span>
-                    )}
-                  </TD>
-                </TR>
-              ))}
-            </tbody>
-          </Table>
-        </TableWrap>
+        <ProductsTable
+          rows={result.rows.map((p) => ({
+            id: p.id,
+            name: p.name,
+            categoryName: p.categoryName,
+            isPublished: p.isPublished,
+            isFeatured: p.isFeatured,
+            isPremium: p.isPremium,
+            archived: p.archivedAt !== null,
+            availability: p.availability,
+          }))}
+          startAt={(page - 1) * PAGE_SIZE}
+          total={result.total}
+          canWrite={canWrite}
+          archiveAction={archiveProductsAction}
+          deleteAction={deleteProductsAction}
+        />
       )}
       <Pagination
         page={page}
         pageCount={result.pageCount}
-        hrefFor={(n) => href({ page: String(n) })}
+        hrefFor={href}
       />
-    </>
+    </ProductsEditProvider>
   );
 }

@@ -4,7 +4,7 @@ import type { OrderStatus } from "@/lib/order-constants";
 import { STATUS_LABEL } from "@/lib/order-constants";
 import { STAFF_QUOTE_LABEL, type QuoteStatus } from "@/lib/quotation-ui";
 
-export type TagColor = "blue" | "teal" | "amber" | "purple" | "orange" | "green" | "red" | "grey";
+export type TagColor = "blue" | "yellow" | "teal" | "amber" | "purple" | "orange" | "green" | "red" | "grey";
 
 /** A status tag: a soft tinted box with a coloured icon and the word. Every stage has its own colour and icon, so none is mistaken for another. */
 export function Tag({ color, icon: Icon, children }: { color: TagColor; icon: LucideIcon; children: ReactNode }) {
@@ -17,7 +17,7 @@ export function Tag({ color, icon: Icon, children }: { color: TagColor; icon: Lu
 }
 
 const ORDER: Record<OrderStatus, { color: TagColor; icon: LucideIcon }> = {
-  new: { color: "blue", icon: Bell },
+  new: { color: "yellow", icon: Bell },
   confirmed: { color: "teal", icon: CircleCheck },
   in_progress: { color: "amber", icon: Hammer },
   ready: { color: "purple", icon: Package },
@@ -49,7 +49,7 @@ export function PaidTag({ paid }: { paid: boolean }) {
 
 export function QuoteTag({ status }: { status: QuoteStatus }) {
   return status === "requested" ? (
-    <Tag color="blue" icon={Bell}>
+    <Tag color="yellow" icon={Bell}>
       {STAFF_QUOTE_LABEL[status]}
     </Tag>
   ) : (
@@ -65,7 +65,7 @@ export function EnquiryTag({ state }: { state: "new" | "responded" }) {
       Responded
     </Tag>
   ) : (
-    <Tag color="blue" icon={Bell}>
+    <Tag color="yellow" icon={Bell}>
       New
     </Tag>
   );

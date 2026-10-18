@@ -14,12 +14,15 @@ export function Dialog({
   title,
   description,
   children,
+  wide = false,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   description?: string;
   children?: ReactNode;
+  /** A larger window, for a preview. */
+  wide?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -40,7 +43,7 @@ export function Dialog({
       }}
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"
+      className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto" : "m-auto w-[min(32rem,calc(100vw-2rem))]") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"}
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>

@@ -7,7 +7,7 @@ import { requireActor } from "@/lib/auth/session";
 import { isAppError } from "@/lib/errors";
 import { formatMoney } from "@/lib/money";
 import { MESSAGE_KIND_LABEL } from "@/lib/order-ui";
-import { isQuoteStatus } from "@/lib/quotation-ui";
+import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { getCustomer } from "@/server/orders";
@@ -130,7 +130,7 @@ export default async function CustomerPage({
                           href={`/app/messages/${m.id}`}
                           className="font-medium text-walnut underline"
                         >
-                          {m.reference}
+                          {quoteRef(m.reference)}
                         </Link>
                         <span className="block text-text-muted">
                           {formatDateTime(m.createdAt, business.timezone)}

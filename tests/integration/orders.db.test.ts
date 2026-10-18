@@ -12,12 +12,12 @@ import { hasTestDb } from "../helpers/db";
 import { makeActor, setupApp } from "../helpers/app";
 
 const prod = (o: Record<string, unknown>) => {
-  const r = productSchema.safeParse({ kind: "stocked", ...o });
+  const r = productSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
 const upd = (o: Record<string, unknown>) => {
-  const r = productUpdateSchema.safeParse({ kind: "stocked", ...o });
+  const r = productUpdateSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
@@ -51,7 +51,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     owner = await makeActor(t, ["owner"], "Olivia Owner");
     staff = await makeActor(t, ["staff"], "Sam Staff");
     nobody = await makeActor(t, [], "No Role");
-    const cat = await createCategory(owner, { name: "Tables", slug: undefined, description: undefined, sortOrder: 0, isActive: true });
+    const cat = await createCategory(owner, { name: "Test Tables", slug: undefined, description: undefined, sortOrder: 0, isActive: true });
     const live = { categoryId: cat, isPublished: "on", showPrice: "on" };
     tableId = await createProduct(owner, prod({ name: "Teak Table", sku: "TBL-1", listPrice: "100000", ...live }));
     await updateProduct(owner, tableId, upd({ name: "Teak Table", categoryId: cat, isPublished: "on", showPrice: "on" }));
@@ -130,7 +130,9 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     const { id } = await place({ phone: "0771110005" }, [[tableVariant, 1]]);
     await expect(setOrderStatus(staff, id, "delivered")).rejects.toMatchObject({ code: "INVALID_STATE" }); // new → delivered is not allowed
     await setOrderStatus(staff, id, "confirmed");
+    await expect(setOrderStatus(staff, id, "delivered")).rejects.toMatchObject({ code: "INVALID_STATE" }); // confirmed → delivered skips the making and the ready step
     await setOrderStatus(staff, id, "in_progress");
+    await setOrderStatus(staff, id, "ready");
     await setOrderStatus(staff, id, "delivered");
     const { order } = await getOrder(staff, id);
     expect(order.status).toBe("delivered");
@@ -139,7 +141,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     await expect(setOrderStatus(staff, id, "cancelled", "too late")).rejects.toMatchObject({ code: "INVALID_STATE" });
     await expect(setOrderStatus(staff, id, "confirmed")).rejects.toMatchObject({ code: "INVALID_STATE" });
     const actions = (await t.sql`SELECT action FROM audit_logs WHERE entity_id = ${id} ORDER BY created_at`).map((r) => r.action);
-    expect(actions).toEqual(["order.placed_from_website", "order.confirmed", "order.in_progress", "order.delivered"]);
+    expect(actions).toEqual(["order.placed_from_website", "order.confirmed", "order.in_progress", "order.ready", "order.delivered"]);
   });
 
   it("cancelling needs a reason and cannot be undone", async () => {
@@ -172,6 +174,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
   it("a finished order cannot be edited", async () => {
     const { id } = await place({ phone: "0771110011" }, [[tableVariant, 1]]);
     await setOrderStatus(staff, id, "confirmed");
+    await setOrderStatus(staff, id, "ready");
     await setOrderStatus(staff, id, "delivered");
     await expect(updateOrderDetails(staff, id, { deliveryCharge: "100" })).rejects.toMatchObject({ code: "INVALID_STATE" });
   });
@@ -262,7 +265,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
 
     it("understands the order number however it is typed", () => {
       for (const v of ["ORD-000123", "ord-123", "ORD 123", "123", " 000123 "]) expect(trackSchema.parse({ reference: v, phone: "0771119003" }).reference).toBe("ORD-000123");
-      expect(trackSchema.parse({ reference: " 482 719 364 " }).reference).toBe("482719364");
+      expect(trackSchema.parse({ reference: " 482 719 366 " }).reference).toBe("482719366");
       // a mistyped number (wrong check digit) is refused before any lookup
       expect(trackSchema.safeParse({ reference: "482719365" }).success).toBe(false);
       for (const v of ["", "abc", "ORD-1234567", "12-34"]) expect(trackSchema.safeParse({ reference: v, phone: "0771119003" }).success).toBe(false);

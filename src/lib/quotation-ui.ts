@@ -23,4 +23,7 @@ export const STAFF_QUOTE_LABEL: Record<QuoteStatus, string> = {
   cancelled: "Responded",
 };
 
+/** A quotation is shown with its own prefix: QUO-000011 for the request stored as MSG-000011. Enquiries keep MSG. */
+export const quoteRef = (reference: string) => reference.replace(/^MSG-/, "QUO-");
+
 export const isQuoteStatus = (v: unknown): v is QuoteStatus => typeof v === "string" && (QUOTE_STATUSES as readonly string[]).includes(v);

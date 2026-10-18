@@ -139,7 +139,7 @@ export function ClaimOrderForm() {
   return (
     <ActionForm action={claimOrderAction}>
       <div className="grid items-start gap-5 sm:grid-cols-2">
-        <FField name="reference" label="Order number" placeholder="482719364" inputMode="numeric" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} required />
+        <FField name="reference" label="Order number" placeholder="482719366" inputMode="numeric" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} required />
         <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required />
       </div>
       <SubmitButton size="cta" pendingLabel="Adding…">

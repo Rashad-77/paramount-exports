@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Store, Truck } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/public/back-link";
 import { AskDisclosure } from "@/components/public/ask-disclosure";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductCard } from "@/components/public/product-card";
@@ -16,6 +16,7 @@ import { customerAuthMode } from "@/lib/auth/customer";
 import { publicEnv } from "@/lib/env";
 import { percentOff } from "@/lib/sale";
 import { CUSTOMIZATIONS, CUSTOMIZATION_LABEL } from "@/lib/schemas/catalogue";
+import { specText } from "@/lib/specifications";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct, listRelatedProducts } from "@/server/catalogue-public";
 
@@ -77,39 +78,22 @@ export default async function ProductPage({ params }: Props) {
 
   const quote = { productId: p.id, name: p.name, wood: p.material, finish: p.finish, size: p.dimensions };
 
-  // Only what applies to this piece is shown: an empty section never appears.
+  // Only what applies to this piece is shown: an empty section never appears. The type comes first, then the rows staff added.
   const specs: Array<{ label: string; value: string }> = [
-    { label: "Wood / material", value: p.material ?? "" },
-    { label: "Wood treatment", value: p.woodTreatment ?? "" },
-    { label: "Finish", value: p.finish ?? "" },
-    { label: "Colour", value: p.colour ?? "" },
-    { label: "Dimensions", value: p.dimensions ?? "" },
     { label: "Type", value: p.kind === "made_to_order" ? "Made to order" : "Ready-made" },
-    ...p.otherSpecs.map((o) => ({ label: o.label || "Note", value: o.value })),
+    ...p.specifications.map((s) => ({ label: s.label, value: specText(s) })),
   ].filter((s) => s.value);
 
   const customs = CUSTOMIZATIONS.filter((c) => p.customization.includes(c));
 
   const tabs: ProductTab[] = [];
-  if (p.description || p.features.length || p.uses.length) {
+  if (p.description) {
     tabs.push({
       id: "description",
       label: "Description",
       content: (
         <div className="pdp-prose">
           {p.description ? <p className="whitespace-pre-line">{p.description}</p> : null}
-          {p.features.length ? (
-            <>
-              <h3>Features</h3>
-              <List items={p.features} />
-            </>
-          ) : null}
-          {p.uses.length ? (
-            <>
-              <h3>Uses</h3>
-              <List items={p.uses} />
-            </>
-          ) : null}
         </div>
       ),
     });
@@ -200,29 +184,17 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="pdp-page">
       {bestOff ? <p className="sale-bar">Sale · save up to {bestOff}%</p> : null}
-      <div className="container-page py-8 md:py-14">
+      <div className="container-page pb-8 pt-2 md:pb-14 md:pt-3">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-        <nav aria-label="Breadcrumb" className="mb-6 text-sm text-text-muted">
-          <ol className="flex flex-wrap gap-2">
-            <li>
-              <Link href="/products" className="underline">
-                Collection
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link href={`/products?category=${p.categorySlug}`} className="underline">
-                {p.categoryName}
-              </Link>
-            </li>
-          </ol>
-        </nav>
-
+        <div className="mb-3">
+          <BackLink href="/products" to="the collection" tone="dark" history />
+        </div>
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="lg:sticky lg:top-24 lg:self-start">
             <ProductGallery
               images={p.images}
               name={p.name}
+              premium={p.isPremium}
               heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined}
             />
           </div>

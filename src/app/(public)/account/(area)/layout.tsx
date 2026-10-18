@@ -16,7 +16,7 @@ export default async function AccountAreaLayout({ children }: { children: ReactN
   const first = customer.fullName.trim().split(/\s+/)[0] ?? "";
   return (
     <>
-      <PageIntro plain eyebrow="Your account" title={first ? `Hello, ${first}` : "Your account"} />
+      <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title={first ? `Hello, ${first}` : "Your account"} />
       <div className="container-page pb-16 pt-8">
         <div className="acct-shell">
           <AccountNav />

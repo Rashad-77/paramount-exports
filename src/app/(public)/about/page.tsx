@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { SAMPLE_OWNER } from "@/lib/history";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
-import { WorkshopSection } from "@/components/public/photo-sections";
 import { DEFAULT_ABOUT } from "@/lib/default-pages";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
@@ -18,12 +16,13 @@ const STEP = 80;
 
 export default async function AboutPage() {
   const [pages, business] = await Promise.all([getPageContent(), getBusinessSettings()]);
-  const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
+  // The owner section appears once the owner has written their name and introduction in Website content; nothing is made up before then.
+  const ownerName = pages.ownerName?.trim() || null;
   const ownerRole = pages.ownerRole?.trim() || null;
-  const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
+  const ownerBio = pages.ownerBio?.trim() || null;
   return (
     <>
-      <PageIntro eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
+      <PageIntro back={{ href: "/", to: "home" }} eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
 
       {/* Who we are: editable text beside a portrait photograph */}
       <section aria-labelledby="story-title" className="section-y">
@@ -46,28 +45,27 @@ export default async function AboutPage() {
       </section>
 
       {/* The owner */}
-      <section id="owner" aria-labelledby="owner-title" className="scroll-mt-24 bg-[var(--color-ivory,#faf8f4)] section-y">
-        <div className="container-page grid items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
-          <Reveal variant="left">
-            <ImagePlaceholder label={`${ownerName}, photograph`} className="aspect-[4/5] w-full" />
-          </Reveal>
-          <Reveal variant="right" delay={STEP}>
-            <p className="eyebrow">Meet the owner</p>
-            <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
-              {ownerName}
-            </h2>
-            {ownerRole ? <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
-            <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
-              {ownerBio.split(/\n{2,}/).map((para, i) => (
-                <p key={i}>{para.trim()}</p>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* The workshop, in pictures */}
-      <WorkshopSection id="pictures-title" />
+      {ownerName && ownerBio ? (
+        <section id="owner" aria-labelledby="owner-title" className="scroll-mt-24 bg-[var(--color-ivory,#faf8f4)] section-y">
+          <div className="container-page grid items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
+            <Reveal variant="left">
+              <ImagePlaceholder label={`${ownerName}, photograph`} className="aspect-[4/5] w-full" />
+            </Reveal>
+            <Reveal variant="right" delay={STEP}>
+              <p className="eyebrow">Meet the owner</p>
+              <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
+                {ownerName}
+              </h2>
+              {ownerRole ? <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
+              <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
+                {ownerBio.split(/\n{2,}/).map((para, i) => (
+                  <p key={i}>{para.trim()}</p>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      ) : null}
 
       {/* The process in full: a picture and a proper explanation for every step (the homepage links here) */}
       <section id="process" aria-labelledby="process-title" className="scroll-mt-24 border-t border-border bg-white section-y">

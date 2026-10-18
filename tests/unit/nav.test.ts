@@ -20,7 +20,7 @@ describe("navigation visibility", () => {
 
   it("shows the order screens to staff and the owner", () => {
     for (const r of ["owner", "staff"] as Role[]) {
-      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Delivery and collection", "Customers", "Products", "Showroom and workshop", "Website", "Settings"]));
+      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Customers", "Products", "Showroom and workshop", "Website", "Settings"]));
     }
   });
 
@@ -40,7 +40,9 @@ describe("navigation visibility", () => {
     expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Gallery", "Pages"]));
     const products = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Products")!;
     expect(products.href).toBe("/app/products");
-    expect(products.pages.map((x) => x.label)).toEqual(["Products", "Categories"]);
+    expect(products.pages.map((x) => x.label)).toEqual(["Products"]);
+    const categories = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Categories")!;
+    expect(categories.href).toBe("/app/categories"); // Categories has its own entry under Catalogue
   });
 
   it("shows nothing to inactive users and drops empty groups", () => {

@@ -18,7 +18,7 @@ import { formatDateTime } from "@/lib/time";
 import { getMessage } from "@/server/messages";
 import { formatMoney } from "@/lib/money";
 import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
-import { isQuoteStatus } from "@/lib/quotation-ui";
+import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
 import { ButtonLink } from "@/components/ui/button";
 import {
   closeQuotationAction,
@@ -77,7 +77,7 @@ export default async function MessagePage({
   return (
     <>
       <PageHeader
-        title={m.reference}
+        title={m.kind === "custom" ? quoteRef(m.reference) : m.reference}
         description={`${MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · received ${formatDateTime(m.createdAt, business.timezone)}`}
         actions={
           <div className="flex flex-wrap items-center gap-3">

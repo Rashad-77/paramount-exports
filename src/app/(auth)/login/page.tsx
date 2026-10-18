@@ -3,10 +3,10 @@ import { demoSignInAllowed } from "@/lib/auth/demo";
 import { getBusinessSettings } from "@/lib/settings";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Staff sign in", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Owner sign in", robots: { index: false, follow: false } };
 
 const NOTICES: Record<string, string> = {
-  "no-access": "Your account does not have access to the staff area. Please contact the business owner.",
+  "no-access": "This sign-in is for the business owner only.",
   "not-configured": "Sign-in has not been configured yet. Ask the system administrator to finish setup.",
 };
 
@@ -14,18 +14,18 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const [{ next, error }, business, demo] = await Promise.all([searchParams, getBusinessSettings(), demoSignInAllowed()]);
   if (demo) return <DemoSignIn name={business.name} />;
   return (
-    <AuthFrame name={business.name} heading="Staff sign in" sub="For employees only. Accounts are created by the business owner.">
+    <AuthFrame name={business.name} heading="Owner sign in">
       <LoginForm next={next} notice={error ? NOTICES[error] : undefined} />
     </AuthFrame>
   );
 }
 
 /** Split screen: a dark textured brand panel beside the form. */
-function AuthFrame({ name, heading, sub, children }: { name: string; heading: string; sub: string; children: React.ReactNode }) {
+function AuthFrame({ name, heading, sub, children }: { name: string; heading: string; sub?: string; children: React.ReactNode }) {
   return (
     <main id="main" className="app-ui grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
       <div className="relative isolate hidden bg-walnut-dark overflow-hidden p-14 text-ivory lg:flex lg:flex-col lg:justify-between">
-        <p className="eyebrow rise-in relative !text-linen-dark">Staff area</p>
+        <p className="eyebrow rise-in relative !text-linen-dark">Owner area</p>
         <div className="relative">
           <p className="font-display rise-in rise-in-2 text-[clamp(3rem,5vw,5.5rem)] leading-[1.02] tracking-[-0.02em]">{name}</p>
           <div className="rise-in rise-in-3 mt-8 h-px w-24 bg-brand" />
@@ -35,8 +35,8 @@ function AuthFrame({ name, heading, sub, children }: { name: string; heading: st
       <div className="flex items-center justify-center px-[var(--gutter)] py-14">
         <div className="rise-in w-full max-w-sm">
           <p className="font-display text-2xl text-walnut lg:hidden">{name}</p>
-          <h1 className="font-display mt-6 text-[2.25rem] leading-tight text-walnut lg:mt-0">{heading}</h1>
-          <p className="mt-2 mb-8 text-sm text-text-muted">{sub}</p>
+          <h1 className={"font-display mt-6 text-[2.25rem] leading-tight text-walnut lg:mt-0" + (sub ? "" : " mb-8")}>{heading}</h1>
+          {sub ? <p className="mt-2 mb-8 text-sm text-text-muted">{sub}</p> : null}
           {children}
         </div>
       </div>

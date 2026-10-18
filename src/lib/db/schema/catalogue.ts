@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
-import { type AnyPgColumn, boolean, check, index, integer, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
+import type { SpecEntry } from "@/lib/specifications";
 import { profiles, uploadedFiles } from "./foundation";
 
 export const productKind = pgEnum("product_kind", ["stocked", "made_to_order"]);
@@ -56,6 +57,10 @@ export const products = pgTable(
     /** e.g. "2 to 3 weeks". Shown when given. */
     leadTime: text("lead_time"),
     careInstructions: text("care_instructions"),
+    /** The specification rows shown on the product page: [{ key, label, type, values, dims? }]. See src/lib/specifications.ts. */
+    specifications: jsonb("specifications").$type<SpecEntry[]>().notNull().default(sql`'[]'::jsonb`),
+    /** The photo used on cards and lists. Empty: the first photo. */
+    thumbnailImageId: uuid("thumbnail_image_id"),
     /** What can be tailored: any of "dimensions", "wood", "finish", "requirements". Empty means nothing is offered. */
     customization: text("customization").array().notNull().default(sql`'{}'::text[]`),
     /** How it is sold: "direct" (add to cart), "quote" (request a quotation), or "both". */
@@ -63,6 +68,8 @@ export const products = pgTable(
     isPublished: boolean("is_published").notNull().default(false),
     /** Shown in the homepage "featured" section. */
     isFeatured: boolean("is_featured").notNull().default(false),
+    /** Part of the premium range: shown in the homepage premium section and the premium showroom, as well as in the normal collection. */
+    isPremium: boolean("is_premium").notNull().default(false),
     /** Availability is only shown publicly when the business has approved it for this product. */
     showAvailability: boolean("show_availability").notNull().default(false),
     availability: availabilityStatus("availability"),

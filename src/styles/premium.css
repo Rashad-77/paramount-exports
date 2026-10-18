@@ -1,0 +1,600 @@
+/*
+ * Premium range: a dark, quiet showroom. Warm black ground, white type, one gold accent and a light serif for headings.
+ * Used by the homepage section, the banner above the collection and the /premium showroom page. Everything that moves is
+ * switched off under prefers-reduced-motion (only soft fades remain).
+ */
+:root {
+  --font-premium: "Cormorant Variable", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --prem-bg: #0b0807;
+  --prem-gold: #c5aa86;
+  --prem-gold-soft: #e6d6bb;
+  --prem-line: rgb(197 170 134 / 0.28);
+  --prem-text: rgb(255 255 255 / 0.72);
+  /* Gentle, long easings: a soft start and a soft landing, so nothing snaps */
+  --prem-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --prem-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+.prem-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--prem-gold);
+}
+.prem-eyebrow::before {
+  content: "";
+  width: 2rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.prem-title {
+  font-family: var(--font-premium);
+  font-weight: 300;
+  font-size: clamp(2.1rem, 1.3rem + 3.4vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  color: #fff;
+}
+.prem-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--prem-gold-soft);
+}
+/* The banner title: the showroom serif, over the video (the shared hero heading rule would make it plain sans) */
+.vhero h1.prem-title {
+  font-family: var(--font-premium);
+  font-size: clamp(2.7rem, 1.6rem + 5.2vw, 5.5rem);
+  font-weight: 300;
+  letter-spacing: -0.012em;
+  line-height: 1;
+}
+.prem-title-xl {
+  font-size: clamp(2.7rem, 1.6rem + 5.2vw, 5.5rem);
+  line-height: 1;
+}
+.prem-lead {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--prem-text);
+}
+:where(.prem-page, .prem-sec, .prem-close) :where(a, button):focus-visible {
+  outline-color: var(--prem-gold);
+}
+
+/* Homepage section under the hero */
+.prem-sec {
+  position: relative;
+  isolation: isolate;
+  padding-block: var(--section-space);
+  color: #fff;
+  background:
+    radial-gradient(60% 55% at 85% 0%, rgb(197 170 134 / 0.1), transparent 70%),
+    radial-gradient(50% 50% at 0% 100%, rgb(176 98 57 / 0.08), transparent 70%),
+    var(--prem-bg);
+}
+.prem-sec::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--prem-line) 20%, var(--prem-line) 80%, transparent);
+}
+.prem-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.prem-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-block: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--prem-gold-soft);
+  transition:
+    border-color 400ms,
+    color 400ms;
+}
+.prem-link svg {
+  transition: transform 350ms var(--prem-ease-out);
+}
+@media (hover: hover) {
+  .prem-link:hover {
+    border-color: var(--prem-gold);
+    color: #fff;
+  }
+  .prem-link:hover svg {
+    transform: translate3d(5px, 0, 0);
+  }
+}
+/* The link into the showroom, at the bottom right of the section */
+.prem-visit {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+/* One photograph in the endless row: rectangular, no words */
+.pm-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #1b1511;
+}
+.pm-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-shadow: inset 0 0 0 1px rgb(197 170 134 / 0.22);
+  pointer-events: none;
+  transition: box-shadow 600ms;
+}
+.pm-tile img {
+  transition: transform 1400ms var(--prem-ease-out);
+}
+.pm-tile .image-placeholder {
+  background: #1b1511;
+}
+@media (hover: hover) {
+  .pm-tile:hover img {
+    transform: scale(1.05);
+  }
+  .pm-tile:hover::after {
+    box-shadow: inset 0 0 0 1px rgb(197 170 134 / 0.6);
+  }
+}
+.pg-main .image-placeholder {
+  background: #1b1511;
+}
+.pg-main figcaption {
+  color: rgb(255 255 255 / 0.4);
+}
+
+/* Banner above the collection */
+.prem-banner-wrap {
+  margin-bottom: 2rem;
+}
+.prem-banner {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+  min-height: 9.5rem;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: #fff;
+  background:
+    radial-gradient(60% 120% at 100% 0%, rgb(197 170 134 / 0.14), transparent 70%),
+    var(--prem-bg);
+  box-shadow: inset 0 0 0 1px var(--prem-line);
+  transition: box-shadow 600ms;
+}
+@media (min-width: 40rem) {
+  .prem-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 10.5rem;
+  }
+}
+.prem-banner-img {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: -1;
+  width: min(66%, 36rem);
+  opacity: 0.32;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 75%);
+  mask-image: linear-gradient(90deg, transparent, #000 75%);
+  transition: opacity 800ms;
+}
+@media (min-width: 40rem) {
+  .prem-banner-img {
+    opacity: 0.55;
+  }
+}
+.prem-banner-img img {
+  transition: transform 1600ms var(--prem-ease-out);
+}
+.prem-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 30rem;
+}
+.prem-banner-title {
+  font-family: var(--font-premium);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.08;
+}
+.prem-banner-sub {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--prem-text);
+}
+.prem-banner-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--prem-gold-soft);
+}
+.prem-banner-go svg {
+  transition: transform 350ms var(--prem-ease-out);
+}
+@media (hover: hover) {
+  .prem-banner:hover {
+    box-shadow: inset 0 0 0 1px rgb(197 170 134 / 0.65);
+  }
+  .prem-banner:hover .prem-banner-img {
+    opacity: 0.8;
+  }
+  .prem-banner:hover .prem-banner-img img {
+    transform: scale(1.05);
+  }
+  .prem-banner:hover .prem-banner-go svg {
+    transform: translate3d(6px, 0, 0);
+  }
+}
+
+/* The showroom page */
+.prem-page {
+  color: #fff;
+  background:
+    radial-gradient(55% 40rem at 80% 0%, rgb(197 170 134 / 0.14), transparent 70%),
+    var(--prem-bg);
+}
+/* Room above the search box, under the banner, and below it before the first piece */
+.prem-searchbar {
+  padding-block: clamp(1.5rem, 3vw, 2.25rem) clamp(0.5rem, 1.5vw, 1rem);
+}
+.prem-nomatch {
+  padding-block: clamp(3rem, 7vw, 5rem);
+  text-align: center;
+}
+/* A smaller heading than the page titles: it is a note, not a headline */
+.prem-nomatch .prem-title {
+  font-size: clamp(1.35rem, 1.1rem + 1.1vw, 1.9rem);
+}
+.prem-nomatch-rule {
+  display: block;
+  width: 3.5rem;
+  height: 1px;
+  margin: 1.5rem auto 0;
+  background: var(--prem-gold);
+  opacity: 0.6;
+}
+.prem-list {
+  list-style: none;
+  padding-block: clamp(1.5rem, 3vw, 2.5rem) clamp(3rem, 6vw, 5rem);
+}
+.prem-piece {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+  padding-block: clamp(2.5rem, 5vw, 4.5rem);
+}
+.prem-piece + .prem-piece {
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+}
+@media (min-width: 48rem) {
+  .prem-piece {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+@media (min-width: 64rem) {
+  .prem-piece {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    gap: 4.5rem;
+  }
+  .prem-piece:nth-child(even) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  }
+}
+.prem-gallery-wrap {
+  min-width: 0;
+}
+
+/* The photograph: large and rectangular, with the row of frames under it */
+.pg-main {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #1b1511;
+}
+.pg-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(0deg, rgb(11 8 7 / 0.45), transparent 30%);
+  pointer-events: none;
+}
+.pg-main::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-shadow: inset 0 0 0 1px rgb(197 170 134 / 0.22);
+  pointer-events: none;
+}
+.pg-img {
+  opacity: 0;
+  transform: scale(1.04);
+  will-change: opacity, transform;
+}
+.pg-img[data-prev] {
+  opacity: 1;
+  z-index: 1;
+}
+.pg-img[data-on] {
+  opacity: 1;
+  z-index: 2;
+  transform: none;
+  transition:
+    opacity 1100ms ease,
+    transform 1800ms var(--prem-ease-out);
+}
+@media (hover: hover) {
+  .pg-main:hover .pg-img[data-on] {
+    transform: scale(1.025);
+  }
+}
+.pg-count {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.85rem;
+  z-index: 3;
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.pg-count i {
+  font-style: normal;
+  opacity: 0.5;
+}
+.pg-thumbs {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+.pg-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  background: #1b1511;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  transition:
+    border-color 600ms var(--prem-ease-out),
+    box-shadow 600ms var(--prem-ease-out);
+}
+.pg-thumb img {
+  opacity: 0.55;
+  transition:
+    opacity 700ms var(--prem-ease-out),
+    transform 1200ms var(--prem-ease-out);
+}
+@media (hover: hover) {
+  .pg-thumb:hover {
+    border-color: rgb(197 170 134 / 0.7);
+  }
+  .pg-thumb:hover img {
+    opacity: 0.95;
+    transform: scale(1.07);
+  }
+}
+.pg-thumb.is-on {
+  border-color: var(--prem-gold);
+  box-shadow: inset 0 0 0 1px var(--prem-gold);
+}
+.pg-thumb.is-on img {
+  opacity: 1;
+}
+.pg-thumb.is-empty {
+  cursor: default;
+  background: transparent;
+  border-style: dashed;
+}
+
+/* The words beside it */
+.prem-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.prem-piece-name {
+  /* The tops of the capitals line up with the top of the photograph */
+  margin-top: -0.12em;
+  font-family: var(--font-premium);
+  font-size: clamp(1.9rem, 1.3rem + 2.4vw, 3rem);
+  font-weight: 300;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.prem-piece-text {
+  margin-top: 1.1rem;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--prem-text);
+}
+.prem-piece-text p + p {
+  margin-top: 1rem;
+}
+/* Beside the photograph the words keep a comfortable line length; on phones they use the full width */
+@media (min-width: 48rem) {
+  .prem-piece-text {
+    max-width: 28rem;
+  }
+}
+.prem-cta {
+  margin-top: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding: 0 1.6rem;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+}
+/* No animation: on hover the button simply switches to white with dark text */
+@media (hover: hover) {
+  .prem-cta:hover {
+    background: #fff;
+    border-color: #fff;
+    color: #0b0807;
+  }
+}
+
+/* Entrance: the photograph is uncovered from the top, its frames and the words follow one after another */
+.js .prem-gallery-wrap[data-reveal],
+.js .prem-info[data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+.js .prem-gallery-wrap[data-reveal] .pg-main {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 950ms var(--prem-ease-out) var(--d, 0ms);
+}
+.js .prem-gallery-wrap[data-reveal] .pg-thumbs {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition:
+    opacity 800ms ease 350ms,
+    transform 900ms var(--prem-ease-out) 350ms;
+}
+.js .prem-gallery-wrap[data-reveal].in .pg-main {
+  clip-path: inset(0);
+}
+.js .prem-gallery-wrap[data-reveal].in .pg-thumbs {
+  opacity: 1;
+  transform: none;
+}
+.js .prem-info[data-reveal] > * {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 1200ms ease,
+    transform 1400ms var(--prem-ease-out);
+}
+.js .prem-info[data-reveal].in > * {
+  opacity: 1;
+  transform: none;
+}
+.js .prem-info[data-reveal].in > :nth-child(1) { transition-delay: 150ms; }
+.js .prem-info[data-reveal].in > :nth-child(2) { transition-delay: 240ms; }
+.js .prem-info[data-reveal].in > :nth-child(3) { transition-delay: 330ms; }
+.js .prem-info[data-reveal].in > :nth-child(4) { transition-delay: 420ms; }
+.js .prem-info[data-reveal].in > :nth-child(5) { transition-delay: 510ms; }
+.js .prem-info[data-reveal].in > :nth-child(6) { transition-delay: 600ms; }
+.js .prem-info[data-reveal].in > :nth-child(n + 7) { transition-delay: 690ms; }
+
+.prem-close {
+  padding-block: var(--section-space);
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+  background:
+    radial-gradient(60% 80% at 50% 0%, rgb(197 170 134 / 0.1), transparent 70%),
+    var(--prem-bg);
+}
+
+/* The header on the showroom page: the same bar, as dark glass with white type */
+.page-body:has(.prem-page) .head-back {
+  background: var(--prem-bg);
+}
+.page-body:has(.prem-page) .phead {
+  color: #fff;
+  border-bottom-color: rgb(255 255 255 / 0.1);
+}
+.page-body:has(.prem-page) .phead::before {
+  background: linear-gradient(180deg, rgb(11 8 7 / 0.78) 0%, rgb(11 8 7 / 0.62) 100%);
+}
+.page-body:has(.prem-page) .phead :is(.logo, .logo b, nav a, nav a:hover, nav a[aria-current="page"], .cart, .toggle) {
+  color: #fff;
+}
+.page-body:has(.prem-page) .phead .logo i {
+  color: rgb(255 255 255 / 0.7);
+}
+.page-body:has(.prem-page) .phead .logo .mark {
+  filter: brightness(0) invert(1);
+}
+.page-body:has(.prem-page) .phead .cart:hover {
+  color: var(--prem-gold-soft);
+}
+.page-body:has(.prem-page) .phead .cart-dot {
+  box-shadow: 0 0 0 2px var(--prem-bg);
+}
+@media (max-width: 72rem) {
+  .page-body:has(.prem-page) .phead nav {
+    background: rgb(11 8 7 / 0.97);
+    border-top-color: rgb(255 255 255 / 0.1);
+  }
+  .page-body:has(.prem-page) .phead nav a {
+    border-color: rgb(255 255 255 / 0.1);
+  }
+}
+
+/* Reduced motion: nothing slides, wipes, drifts or zooms; the page still fades in softly */
+@media (prefers-reduced-motion: reduce) {
+  .js .prem-gallery-wrap[data-reveal] .pg-main {
+    clip-path: none;
+    transition: none;
+  }
+  .js .prem-gallery-wrap[data-reveal] .pg-thumbs,
+  .js .prem-info[data-reveal] > * {
+    transform: none;
+    transition: opacity 700ms var(--prem-ease-out);
+  }
+  .pg-img {
+    transform: none !important;
+    transition: opacity 500ms;
+  }
+  .pm-tile img,
+  .pg-thumb img,
+  .prem-banner-img img {
+    transform: none !important;
+  }
+}
+
+/* The Premium tag above the photograph on a premium product page: as wide as the photograph, in the showroom colours */
+.premium-tag {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  background: var(--prem-bg);
+  box-shadow: inset 0 0 0 1px rgb(197 170 134 / 0.35);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.26em;
+  text-align: center;
+  text-transform: uppercase;
+}

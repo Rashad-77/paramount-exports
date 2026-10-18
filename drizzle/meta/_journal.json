@@ -197,6 +197,34 @@
       "when": 1792857200000,
       "tag": "0027_variant_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792943600000,
+      "tag": "0028_product_premium",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793030000000,
+      "tag": "0029_product_specifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793116400000,
+      "tag": "0030_availability_merge",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793202800000,
+      "tag": "0031_drop_text_specs",
+      "breakpoints": true
     }
   ]
 }

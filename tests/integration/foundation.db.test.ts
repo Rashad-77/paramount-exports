@@ -23,7 +23,8 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
 
   it("numbers orders and messages with readable references", async () => {
     const [r] = await t.sql`SELECT next_reference('order') AS o, next_reference('message') AS m`;
-    expect(r).toMatchObject({ o: "ORD-000001", m: "MSG-000001" });
+    // Order numbers are random nine-digit numbers with a check digit (migration 0025); messages are still numbered in turn.
+    expect(r).toMatchObject({ o: expect.stringMatching(/^[1-9][0-9]{8}$/), m: "MSG-000001" });
     await expect(t.sql`SELECT next_reference('quotation')`).rejects.toThrow();
   });
 

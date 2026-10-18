@@ -147,14 +147,18 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <div>
             <p className="foot-head">Visit us</p>
             <ul className="foot-list">
-              <li className="plain">
-                <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
-                {business.address ?? "Showroom address to be added."}
-              </li>
-              <li className="plain">
-                <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
-                {business.openingHours ?? "Opening hours to be added."}
-              </li>
+              {business.address ? (
+                <li className="plain">
+                  <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                  {business.address}
+                </li>
+              ) : null}
+              {business.openingHours ? (
+                <li className="plain">
+                  <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
+                  {business.openingHours}
+                </li>
+              ) : null}
             </ul>
           </div>
         </Reveal>
@@ -162,7 +166,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <p>
             © {new Date().getFullYear()} {business.name}
           </p>
-          <Link href="/login">Staff sign in</Link>
+          <Link href="/login">Owner sign in</Link>
         </div>
       </div>
     </footer>

@@ -5,10 +5,9 @@ import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { requireActor } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/money";
-import { isQuoteStatus } from "@/lib/quotation-ui";
-import { STATUS_LABEL } from "@/lib/schemas/orders";
+import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDate, formatDateTime } from "@/lib/time";
+import { formatDateTime } from "@/lib/time";
 import { getDashboard } from "@/server/orders";
 
 export const metadata = { title: "Dashboard" };
@@ -112,11 +111,6 @@ export default async function DashboardPage() {
           href="/app/orders?view=unpaid"
         />
         <Figure
-          label="Upcoming deliveries"
-          value={d.upcomingDeliveriesCount}
-          href="/app/delivery"
-        />
-        <Figure
           label="New enquiries"
           value={d.newEnquiries}
           href="/app/enquiries?state=new"
@@ -192,7 +186,7 @@ export default async function DashboardPage() {
                           href={`/app/messages/${m.id}`}
                           className="font-medium text-walnut underline"
                         >
-                          {m.reference}
+                          {quoteRef(m.reference)}
                         </Link>
                         <p className="truncate text-sm text-text-muted">
                           {what ? `${what} · ` : ""}
@@ -239,46 +233,6 @@ export default async function DashboardPage() {
           </Panel>
         </div>
         <div className="min-w-0 space-y-6">
-          <Panel
-            title="Upcoming deliveries"
-            actions={<More href="/app/delivery">All</More>}
-          >
-            {d.upcomingDeliveries.length === 0 ? (
-              <p className="text-sm text-text-muted">No deliveries waiting.</p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {d.upcomingDeliveries.map((o) => (
-                  <li
-                    key={o.id}
-                    className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0">
-                      <Link
-                        href={`/app/orders/${o.id}`}
-                        className="font-medium text-walnut underline"
-                      >
-                        {o.reference}
-                      </Link>
-                      <p className="truncate text-sm text-text-muted">
-                        {o.customerName}
-                      </p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className="font-medium">
-                        {o.scheduledFor
-                          ? formatDate(o.scheduledFor, "UTC")
-                          : "Date not set"}
-                      </p>
-                      <p className="text-text-muted">
-                        {STATUS_LABEL[o.status]}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Panel>
-
           <Panel
             title="Recent customer enquiries"
             actions={<More href="/app/enquiries">All enquiries</More>}

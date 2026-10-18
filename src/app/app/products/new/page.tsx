@@ -3,6 +3,7 @@ import { ProductForm } from "@/components/app/product-form";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import { getBusinessSettings } from "@/lib/settings";
 import { listCategories } from "@/server/catalogue";
 import { createProductAction } from "../actions";
 
@@ -11,13 +12,11 @@ export const metadata = { title: "Add product" };
 export default async function NewProductPage() {
   const actor = await requireActor();
   if (!can(actor, "products:write")) redirect("/app/products");
-  const cats = (await listCategories(actor)).filter((c) => !c.archivedAt);
+  const [allCats, business] = await Promise.all([listCategories(actor), getBusinessSettings()]);
+  const cats = allCats.filter((c) => !c.archivedAt);
   return (
     <>
-      <PageHeader
-        title="Add product"
-        description="You can add photographs and more options after saving."
-      />
+      <PageHeader title="Add product" />
       <Panel>
         {cats.length === 0 ? (
           <p className="text-sm">
@@ -31,7 +30,7 @@ export default async function NewProductPage() {
           <ProductForm
             action={createProductAction}
             categories={cats}
-            creating
+            currency={business.currency}
             submitLabel="Create product"
           />
         )}

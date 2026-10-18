@@ -42,18 +42,17 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
-    label: "Fulfilment",
-    modules: [
-      { label: "Delivery and collection", description: "Orders ready to go out, on the road, delivered, and collected from the showroom, with the delivery charges agreed.", pages: [page("Delivery and collection", "/app/delivery", "orders:view")] },
-    ],
-  },
-  {
     label: "Catalogue",
     modules: [
       {
         label: "Products",
         description: "The furniture shown on the website: options, prices, photographs and what is published.",
-        pages: [page("Products", "/app/products", "products:view"), page("Categories", "/app/categories", "products:view")],
+        pages: [page("Products", "/app/products", "products:view")],
+      },
+      {
+        label: "Categories",
+        description: "The groups the furniture is filed under, which visitors use to browse the collection.",
+        pages: [page("Categories", "/app/categories", "products:view")],
       },
     ],
   },

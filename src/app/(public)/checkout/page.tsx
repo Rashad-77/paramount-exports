@@ -11,7 +11,7 @@ export default async function CheckoutPage() {
   const [business, accounts] = await Promise.all([getBusinessSettings(), getAccountSettings()]);
   return (
     <>
-      <PageIntro plain title="Checkout" lead="Tell us where to reach you and how you would like it. No payment is taken on this website." eyebrow="Order" />
+      <PageIntro back={{ href: "/cart", to: "your cart" }} plain title="Checkout" lead="Tell us where to reach you and how you would like it. No payment is taken on this website." eyebrow="Order" />
       <div className="container-page py-[var(--section-space)]">
         <CheckoutForm currency={business.currency} bankDetails={business.bankDetails} turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY} requireAccount={accounts.enabled && accounts.requiredForCheckout} />
       </div>

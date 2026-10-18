@@ -16,7 +16,7 @@ import {
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatAmount } from "@/lib/money";
-import { isQuoteStatus } from "@/lib/quotation-ui";
+import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listQuotations } from "@/server/messages";
@@ -89,8 +89,8 @@ export default async function QuotationsPage({
                   <TH>Request</TH>
                   <TH>Customer</TH>
                   <TH>Status</TH>
-                  <TH className="text-right">Price sent</TH>
                   <TH>Received</TH>
+                  <TH className="text-right">Price sent</TH>
                 </tr>
               </THead>
               <tbody>
@@ -108,7 +108,7 @@ export default async function QuotationsPage({
                           href={`/app/messages/${r.id}`}
                           className="font-medium text-walnut underline"
                         >
-                          {r.reference}
+                          {quoteRef(r.reference)}
                         </Link>
                         <div className="mt-0.5 line-clamp-1 max-w-md text-text-muted">
                           {what ?? r.message ?? "—"}
@@ -121,15 +121,15 @@ export default async function QuotationsPage({
                       <TD>
                         <QuoteTag status={st} />
                       </TD>
+                      <TD className="whitespace-nowrap">
+                        {formatDateTime(r.createdAt, business.timezone)}
+                      </TD>
                       <TD numeric>
                         {r.quotedAmount ? (
                           formatAmount(r.quotedAmount)
                         ) : (
                           <span className="text-text-muted">—</span>
                         )}
-                      </TD>
-                      <TD className="whitespace-nowrap">
-                        {formatDateTime(r.createdAt, business.timezone)}
                       </TD>
                     </TR>
                   );

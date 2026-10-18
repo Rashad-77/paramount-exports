@@ -22,7 +22,7 @@ const TOPICS = [
 export default async function HelpPage() {
   return (
     <>
-      <PageIntro plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
+      <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
 
       <div className="container-page py-[var(--section-space)]">
         <nav aria-label="On this page" className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-6">

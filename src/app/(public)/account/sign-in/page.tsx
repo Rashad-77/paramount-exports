@@ -21,7 +21,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const checkEmail = one(sp.notice) === "check-email";
   return (
     <>
-      <PageIntro plain eyebrow="Your account" title="Sign in" lead="See your orders, and keep your details ready for next time. You can still order without an account." />
+      <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title="Sign in" lead="See your orders, and keep your details ready for next time. You can still order without an account." />
       <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-2 lg:gap-16">
         <section aria-labelledby="signin-title" className="soft-card space-y-5">
           <h2 id="signin-title" className="font-display text-[1.5rem] leading-tight text-brand">
@@ -51,7 +51,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
 function NotAvailable() {
   return (
     <>
-      <PageIntro plain eyebrow="Your account" title="Accounts are coming soon" lead="You do not need an account to order from us or to follow an order." />
+      <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title="Accounts are coming soon" lead="You do not need an account to order from us or to follow an order." />
       <div className="container-page max-w-xl py-[var(--section-space)]">
         <div className="soft-card space-y-5">
           <p className="text-text-muted">Add pieces to your cart and place an order with your name and phone number. Afterwards you can follow it with the order number and the same phone number.</p>

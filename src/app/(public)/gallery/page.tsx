@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GalleryBrowser, type GalleryItem } from "@/components/public/gallery-browser";
+import { BackBar } from "@/components/public/back-link";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ButtonLink } from "@/components/ui/button";
 import { GALLERY_VIDEO } from "@/lib/home-media";
@@ -16,6 +17,7 @@ export default async function GalleryPage() {
     <>
       {/* Video hero, like the homepage: a silent looping clip under a dark gradient */}
       <section aria-labelledby="gallery-title" className="vhero vhero-short on-wood">
+        <BackBar href="/" to="home" />
         <HeroVideo desktop={GALLERY_VIDEO.desktop} mobile={GALLERY_VIDEO.mobile} poster={GALLERY_VIDEO.poster} />
         <div className="container-page w-full pt-24 pb-[clamp(2.5rem,6vw,4.5rem)]">
           <div className="max-w-2xl">

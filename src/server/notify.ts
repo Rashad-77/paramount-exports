@@ -1,4 +1,5 @@
 import "server-only";
+import { quoteRef } from "@/lib/quotation-ui";
 import { eq } from "drizzle-orm";
 import { after } from "next/server";
 import { getDb } from "@/lib/db/client";
@@ -73,9 +74,9 @@ export function notifyQuotationAnswered(messageId: string): void {
     if (!m) return;
     const accepted = m.quoteStatus === "accepted";
     await sendToOwner(
-      `Quotation ${m.reference} ${accepted ? "accepted" : "declined"} - ${m.name}`,
+      `Quotation ${quoteRef(m.reference)} ${accepted ? "accepted" : "declined"} - ${m.name}`,
       [
-        `${m.name} has ${accepted ? "ACCEPTED" : "declined"} quotation ${m.reference}.`,
+        `${m.name} has ${accepted ? "ACCEPTED" : "declined"} quotation ${quoteRef(m.reference)}.`,
         m.quotedAmount ? `Quoted price: ${m.quotedAmount}` : null,
         !accepted && m.declineReason ? `Reason: ${m.declineReason}` : null,
         `Phone: ${m.phone}`,

@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
+import { DateField } from "./date-field";
 
 type Action = (prev: ActionState, formData: FormData) => Promise<ActionState>;
 
@@ -100,6 +101,11 @@ type Shared = { name: string };
 
 export function FField({ name, defaultValue, ...props }: Shared & Omit<ComponentProps<typeof TextField>, "name" | "error">) {
   const { state } = useFormState();
+  if (props.type === "date") {
+    const { type: _type, min, max, ...rest } = props;
+    void _type;
+    return <DateField name={name} defaultValue={String(state.values?.[name] ?? defaultValue ?? "")} min={min as string | undefined} max={max as string | undefined} error={state.fieldErrors?.[name]?.[0]} {...rest} />;
+  }
   return <TextField name={name} defaultValue={state.values?.[name] ?? defaultValue} error={state.fieldErrors?.[name]?.[0]} {...props} />;
 }
 

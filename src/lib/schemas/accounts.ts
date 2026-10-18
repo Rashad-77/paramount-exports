@@ -80,7 +80,7 @@ export const claimOrderSchema = z.object({
     .string({ error: "Enter your order number." })
     .trim()
     .min(1, "Enter your order number.")
-    .refine((v) => normaliseOrderRef(v) !== null, "Enter your order number, like 482719364.")
+    .refine((v) => normaliseOrderRef(v) !== null, "Enter your order number, like 482719366.")
     .transform((v) => normaliseOrderRef(v)!),
   phone: reqPhone,
 });

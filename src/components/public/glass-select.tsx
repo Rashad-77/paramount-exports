@@ -5,6 +5,12 @@ import { useEffect, useId, useRef, useState } from "react";
 export interface GlassOption {
   value: string;
   label: string;
+  /** A group heading: shown in bold, never picked, and skipped by the keyboard. */
+  heading?: boolean;
+  /** A subcategory: indented under its heading. */
+  indent?: boolean;
+  /** What the closed box shows when this option is picked, when it should say more than the list does ("Furniture › Tables"). */
+  display?: string;
 }
 
 /**
@@ -42,14 +48,26 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
   const selected = Math.max(0, options.findIndex((o) => o.value === current));
   const [active, setActive] = useState(selected);
 
-  // A form reset puts the box back to the value it started with, as a native select does.
+  // When the form's starting value changes (the page reloaded with what was just saved, or the form gave back what was typed after an
+  // error), the box follows it, so a form that React resets after submitting never leaves the box on a stale value.
+  const [seenDefault, setSeenDefault] = useState(defaultValue);
+  if (defaultValue !== seenDefault) {
+    setSeenDefault(defaultValue);
+    setInner(defaultValue ?? "");
+  }
+  // A form reset puts the box back to the value it started with, as a native select does. The starting value is read a moment later
+  // so that a reset which comes with a new one (after a submit) lands on the new one.
+  const latestDefault = useRef(defaultValue);
+  useEffect(() => {
+    latestDefault.current = defaultValue;
+  });
   useEffect(() => {
     const form = hidden.current?.form;
     if (!form) return;
-    const reset = () => setInner(defaultValue ?? "");
+    const reset = () => setTimeout(() => setInner(latestDefault.current ?? ""), 0);
     form.addEventListener("reset", reset);
     return () => form.removeEventListener("reset", reset);
-  }, [defaultValue]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -66,6 +84,7 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
   };
   const pick = (i: number) => {
     const o = options[i];
+    if (o?.heading) return;
     if (o) {
       setInner(o.value);
       onChange?.(o.value);
@@ -82,16 +101,21 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
       return;
     }
     const last = options.length - 1;
-    if (e.key === "ArrowDown") setActive((a) => Math.min(last, a + 1));
-    else if (e.key === "ArrowUp") setActive((a) => Math.max(0, a - 1));
-    else if (e.key === "Home") setActive(0);
-    else if (e.key === "End") setActive(last);
+    // Group headings cannot be picked, so the cursor steps over them.
+    const step = (from: number, dir: 1 | -1) => {
+      for (let i = from + dir; i >= 0 && i <= last; i += dir) if (!options[i]?.heading) return i;
+      return from;
+    };
+    if (e.key === "ArrowDown") setActive((a) => step(a, 1));
+    else if (e.key === "ArrowUp") setActive((a) => step(a, -1));
+    else if (e.key === "Home") setActive(step(-1, 1));
+    else if (e.key === "End") setActive(step(last + 1, -1));
     else if (e.key === "Enter" || e.key === " ") pick(active);
     else if (e.key === "Escape") setOpen(false);
     else if (e.key === "Tab") setOpen(false);
     else if (e.key.length === 1) {
-      const from = options.findIndex((o, i) => i > active && o.label.toLowerCase().startsWith(e.key.toLowerCase()));
-      const any = from >= 0 ? from : options.findIndex((o) => o.label.toLowerCase().startsWith(e.key.toLowerCase()));
+      const from = options.findIndex((o, i) => i > active && !o.heading && o.label.toLowerCase().startsWith(e.key.toLowerCase()));
+      const any = from >= 0 ? from : options.findIndex((o) => !o.heading && o.label.toLowerCase().startsWith(e.key.toLowerCase()));
       if (any >= 0) setActive(any);
       return;
     } else return;
@@ -108,7 +132,7 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
         disabled={disabled}
         aria-invalid={invalid ? true : undefined}
         aria-describedby={describedBy}
-        aria-label={variant === "bar" ? `${label}, ${options[selected]?.label ?? ""}` : undefined}
+        aria-label={variant === "bar" ? `${label}, ${options[selected]?.display ?? options[selected]?.label ?? ""}` : undefined}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-list`}
@@ -117,11 +141,11 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKeyDown}
       >
-        <span className="gs-label">{options[selected]?.label}</span>
+        <span className="gs-label">{options[selected]?.display ?? options[selected]?.label}</span>
         {/* Invisible copies of every option, bold, so the box is always as wide as the widest one and the list */}
         <span aria-hidden="true" className="gs-sizer">
           {options.map((o) => (
-            <span key={o.value}>{o.label}</span>
+            <span key={o.value}>{o.display ?? o.label}</span>
           ))}
         </span>
       </button>
@@ -131,11 +155,13 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
             <li
               key={o.value}
               id={`${id}-${i}`}
-              role="option"
-              aria-selected={i === selected}
-              data-active={i === active || undefined}
+              role={o.heading ? "presentation" : "option"}
+              aria-selected={o.heading ? undefined : i === selected}
+              data-active={!o.heading && i === active ? true : undefined}
+              data-heading={o.heading || undefined}
+              data-indent={o.indent || undefined}
               className="gs-opt"
-              onPointerEnter={() => setActive(i)}
+              onPointerEnter={() => (o.heading ? undefined : setActive(i))}
               onClick={() => pick(i)}
             >
               {o.label}

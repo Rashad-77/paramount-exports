@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { BackBar } from "@/components/public/back-link";
 import { ButtonLink } from "@/components/ui/button";
 
 /**
@@ -35,11 +36,12 @@ export function Prose({ text }: { text: string }) {
   return <div className="max-w-[var(--reading-width)] space-y-4 text-text">{out}</div>;
 }
 
-export function PageIntro({ title, lead, eyebrow, action, brand }: { title: string; lead?: string; eyebrow?: string; plain?: boolean; action?: { href: string; label: string }; brand?: string }) {
+export function PageIntro({ title, lead, eyebrow, action, brand, back }: { title: string; lead?: string; eyebrow?: string; plain?: boolean; action?: { href: string; label: string }; brand?: string; back?: { href: string; to: string } }) {
   const [brandFirst = "", ...brandRest] = (brand ?? "").trim().split(/\s+/);
   return (
     // A dark band that runs up behind the floating header.
-    <header className="plain-band on-wood">
+    <header className="plain-band on-wood relative">
+      {back ? <BackBar href={back.href} to={back.to} /> : null}
       <div className="container-page flex items-end justify-between gap-10 pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
         <div className="min-w-0">
         <p className="eyebrow rise-in">{eyebrow ?? "Showroom and workshop"}</p>

@@ -2,9 +2,12 @@
 @import "@fontsource-variable/urbanist";
 @import "@fontsource-variable/epilogue";
 @import "@fontsource-variable/inter";
+@import "@fontsource-variable/cormorant";
 @import "../styles/tokens.css";
 @import "../styles/wood.css";
 @import "../styles/public.css";
+@import "../styles/premium.css";
+@import "../styles/controls.css";
 
 /*
  * Staff area: no theme. Plain white, neutral greys and an information-first typeface. Everything below the .app-ui wrapper reads
@@ -134,8 +137,13 @@
   /* Denser form controls on desktop; phones keep the full 44px touch target. */
   @media (min-width: 48rem) {
     /* !important: these must beat the component utilities, which sit in a later cascade layer */
-    .app-ui :is(input, select, textarea) {
+    .app-ui :is(input, textarea):not([data-dropdown-search]) {
       font-size: 0.875rem !important;
+    }
+    /* Drop-downs (the unit box, and the search box inside a drop-down list) use the one smaller size */
+    .app-ui select,
+    .app-ui input[data-dropdown-search] {
+      font-size: 0.8125rem !important;
     }
     .app-ui .min-h-11 {
       min-height: 2.25rem !important;
@@ -723,6 +731,11 @@ html:has(.app-ui) {
   color: var(--c);
 }
 .tag-blue { --c: #2f7fd1; }
+/* New: a solid bright yellow, so anything waiting for a first look stands out */
+.tag-yellow {
+  --c: #1c1916;
+  background: #ffd400;
+}
 .tag-teal { --c: #14916b; }
 .tag-amber { --c: #b4690e; }
 .tag-purple { --c: #6f66d6; }
@@ -793,4 +806,73 @@ html:has(.app-ui) {
 .app-nav-group + .app-nav-group {
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
+}
+
+/* Filter rows in the staff area: the search box, the drop-downs and the button are exactly the same height, so their tops, bottoms and labels line up. */
+.app-ui .app-filter :is(input:not([type="hidden"]), .gs-field .gs-button, button[type="submit"], button[data-filter-trigger]) {
+  box-sizing: border-box;
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+}
+
+/*
+ * Drop-downs in the staff area all look like the unit box on the dimensions row: a plain bordered box with a small arrow, and a flat white
+ * list under it. This overrides the frosted-glass style the public site uses for the same component.
+ */
+.app-ui .gs-field {
+  --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8' fill='none' stroke='%231c1916' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+}
+.app-ui .gs-field .gs-button,
+.app-ui .gs-field[data-open] .gs-button {
+  min-height: 2.5rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  background-color: var(--color-surface);
+  background-image: var(--chev);
+  background-position: right 0.85rem center;
+  background-repeat: no-repeat;
+  font-size: 0.8125rem;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--color-text, inherit);
+}
+.app-ui .gs-field .gs-panel {
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  background: var(--color-surface);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.22);
+}
+.app-ui .gs-field .gs-opt {
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  -webkit-text-stroke: 0;
+}
+.app-ui .gs-field .gs-opt[data-active] {
+  background: rgb(0 0 0 / 0.05);
+  -webkit-text-stroke: 0;
+}
+.app-ui .gs-field .gs-opt[aria-selected="true"] {
+  font-weight: 600;
+  -webkit-text-stroke: 0;
+}
+.app-ui .gs-field .gs-opt[data-heading] {
+  padding: 0.5rem 0.25rem 0.1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #6b7280);
+  background: transparent;
 }

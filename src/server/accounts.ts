@@ -5,7 +5,7 @@ import { phoneKey } from "@/lib/contact";
 import { getDb, withTx } from "@/lib/db/client";
 import { customerAccounts, customerAddresses, customerCarts, customerWishlist, messages, orderItems, orders, products, uploadedFiles } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
-import { isQuoteStatus, QUOTE_DETAIL_LABELS, type QuoteStatus } from "@/lib/quotation-ui";
+import { isQuoteStatus, QUOTE_DETAIL_LABELS, quoteRef, type QuoteStatus } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { todayLocal } from "@/lib/time";
 import { hitRateLimit } from "@/lib/rate-limit";
@@ -219,7 +219,7 @@ export async function respondToQuotation(accountId: string, reference: string, d
       .where(eq(messages.id, m.id));
     await recordUpdate(tx, accountId, {
       kind: "quotation",
-      title: accepted ? `You accepted quotation ${m.reference}` : `You declined quotation ${m.reference}`,
+      title: accepted ? `You accepted quotation ${quoteRef(m.reference)}` : `You declined quotation ${quoteRef(m.reference)}`,
       body: accepted ? "We will contact you to confirm your order." : undefined,
     });
     await recordAudit(tx, null, { action: accepted ? "quotation.accepted_by_customer" : "quotation.declined_by_customer", entityType: "message", entityId: m.id, after: { reference: m.reference } });

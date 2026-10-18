@@ -122,7 +122,7 @@ export function GalleryBrowser({ items, categories = [] }: { items: GalleryItem[
                 {current.src ? (
                   <SiteImage src={current.src} alt={current.alt} fill sizes="90vw" className="object-contain" priority />
                 ) : (
-                  <span className="gal-ph">Photo to be supplied</span>
+                  <span className="gal-ph" aria-hidden="true" />
                 )}
               </div>
               <figcaption>

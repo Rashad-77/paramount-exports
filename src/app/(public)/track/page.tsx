@@ -14,7 +14,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
   const business = await getBusinessSettings();
   return (
     <>
-      <PageIntro plain eyebrow="Order" title="Track your order" lead="Enter your order number and the phone number you gave us, and we will show you where your order is." />
+      <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Order" title="Track your order" lead="Enter your order number and the phone number you gave us, and we will show you where your order is." />
       <div className="container-page max-w-3xl py-[var(--section-space)]">
         <TrackOrder initialReference={ref ? (normaliseOrderRef(ref) ?? undefined) : undefined} timezone={business.timezone} />
       </div>

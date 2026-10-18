@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackLink } from "@/components/public/back-link";
 import { OrderConfirmed } from "@/components/public/order-confirmed";
 import { one, type SP } from "@/lib/list-params";
 import { FULFILMENT, PAYMENT_METHODS, type Fulfilment, type PaymentMethod } from "@/lib/schemas/orders";
@@ -14,7 +15,10 @@ export default async function OrderConfirmedPage({ searchParams }: { searchParam
   const how = one(sp.how);
   const business = await getBusinessSettings();
   return (
-    <div className="container-page py-[var(--section-space)]">
+    <div className="container-page pb-[var(--section-space)] pt-3">
+      <div className="mb-6">
+        <BackLink href="/" to="home" tone="dark" />
+      </div>
       <OrderConfirmed
         reference={ref && /^(ORD-\d{6}|[1-9]\d{8})$/.test(ref) ? ref : null}
         payment={pay && (PAYMENT_METHODS as readonly string[]).includes(pay) ? (pay as PaymentMethod) : null}

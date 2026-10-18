@@ -81,8 +81,8 @@ async function main() {
     const id = await createProduct(owner, {
       name: p.name, slug: undefined, categoryId: p.cat, kind: "stocked", description: "Sample data for development and demos only. Not a real product.",
       material: "Sample timber", finish: "Sample finish", dimensions: p.dims, sku: p.sku, listPrice: p.price,
-      isPublished: true, isFeatured: p.featured, showAvailability: false, availability: undefined, showPrice: true, seoTitle: undefined, seoDescription: undefined,
-      customization: [], purchaseMode: "direct",
+      isPublished: true, isFeatured: p.featured, isPremium: false, showAvailability: false, availability: undefined, showPrice: true, seoTitle: undefined, seoDescription: undefined,
+      customization: [], purchaseMode: "direct", photos: [],
     });
     if (withImages) await attachProductImages(owner, id, [await upload("catalogue")], `${p.name} (sample image)`);
     if (p.sku === "SMP-DT-180") await addVariant(owner, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });

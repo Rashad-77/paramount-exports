@@ -17,6 +17,7 @@ export default function CustomPage() {
   return (
     <>
       <PageIntro
+        back={{ href: "/", to: "home" }}
         title="Made to your measurements"
         eyebrow="Made to order"
         lead="Send us the details of what you have in mind. There is no obligation, and an enquiry does not create an order."

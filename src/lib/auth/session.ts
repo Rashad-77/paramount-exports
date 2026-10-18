@@ -33,11 +33,13 @@ export const getActor = cache(async (): Promise<Actor | null> => {
 
   const roleRows = await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, user.id));
 
+  const roles = roleRows.map((r) => r.role).filter(isRole);
   return {
     id: profile.id,
     fullName: profile.fullName,
     isActive: profile.isActive,
-    roles: roleRows.map((r) => r.role).filter(isRole),
+    // Only the business owner uses the staff area: any other account, even with a valid session, has no roles and so no access.
+    roles: roles.includes("owner") ? roles : [],
   };
 });
 

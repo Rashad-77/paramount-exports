@@ -14,13 +14,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
  * keyboard focus is on it, while it is off screen or the tab is hidden, and for visitors who prefer reduced motion, and picks up
  * again from wherever it was left.
  */
-export function ScrollRow({ label, children, header, autoplay = false, pxPerSecond = 42 }: { label: string; children: ReactNode; header: ReactNode; autoplay?: boolean; pxPerSecond?: number }) {
+export function ScrollRow({ label, children, header, autoplay = false, pxPerSecond = 42, onDark = false, centered = false }: { label: string; children: ReactNode; header: ReactNode; autoplay?: boolean; pxPerSecond?: number; onDark?: boolean; centered?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const [reduced, setReduced] = useState(false);
   const held = useRef(false);
   const visible = useRef(false);
+  /** After an arrow press in a centred row, the drift waits until this time so the photo stays where it was centred. */
+  const resumeAt = useRef(0);
 
   /** Width of one copy of the cards, measured as the distance between the first card of copy 1 and of copy 2. */
   const setWidth = useCallback(() => {
@@ -66,10 +68,21 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     if (!el) return;
     // Make sure there is room to move in either direction first (an invisible jump), then glide by one card.
     normalize();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior = reduce ? "auto" : "smooth";
+    if (centered) {
+      // Glide to the next card in that direction and land with it exactly in the middle of the row, whatever the drift left it at.
+      const cards = Array.from(el.querySelectorAll<HTMLElement>("[data-copy] > *"));
+      const middle = el.scrollLeft + el.clientWidth / 2;
+      const centreOf = (c: HTMLElement) => c.offsetLeft + c.offsetWidth / 2;
+      const target = dir === 1 ? cards.find((c) => centreOf(c) > middle + 2) : [...cards].reverse().find((c) => centreOf(c) < middle - 2);
+      if (target) el.scrollTo({ left: centreOf(target) - el.clientWidth / 2, behavior });
+      resumeAt.current = Date.now() + 4500;
+      return;
+    }
     const card = el.querySelector<HTMLElement>('[data-copy="0"] > :first-child');
     const step = (card?.getBoundingClientRect().width ?? el.clientWidth * 0.8) + 20;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollBy({ left: dir * step, behavior: reduce ? "auto" : "smooth" });
+    el.scrollBy({ left: dir * step, behavior });
   };
 
   useEffect(() => {
@@ -100,7 +113,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
       raf = requestAnimationFrame(tick);
       const dt = Math.min(64, now - last);
       last = now;
-      if (held.current || !visible.current || document.hidden || dt <= 0) {
+      if (held.current || Date.now() < resumeAt.current || !visible.current || document.hidden || dt <= 0) {
         pos = null; // whoever moved it meanwhile (a press, a swipe) decides where we carry on from
         return;
       }
@@ -119,7 +132,8 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
   }, [auto, pxPerSecond, setWidth]);
 
   const btn =
-    "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center text-black shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
+    "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 " +
+    (onDark ? "text-white drop-shadow-[0_1px_3px_rgb(0_0_0/0.7)] focus-visible:outline-white" : "text-black focus-visible:outline-black");
 
   return (
     <>

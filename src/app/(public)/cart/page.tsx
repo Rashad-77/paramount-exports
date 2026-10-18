@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { CartView } from "@/components/public/cart-view";
-import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { ProductCard } from "@/components/public/product-card";
 import { PageIntro } from "@/components/public/prose";
 import { ScrollRow } from "@/components/public/scroll-row";
@@ -11,13 +10,16 @@ export const metadata: Metadata = { title: "Your cart", robots: { index: false, 
 export const revalidate = 300;
 
 const CARDS = 8;
+/** The row always holds at least this many cards (repeating the pieces when there are fewer) so it can run endlessly. */
+const MIN_TILES = 6;
 const CARD_W = "w-[62%] shrink-0 sm:w-[32%] lg:w-[23%]";
 
 export default async function CartPage() {
   const [business, products] = await Promise.all([getBusinessSettings(), listPublicProducts({ sort: "newest" }).then((r) => r.items.slice(0, CARDS))]);
 
   // Shown only while the cart is empty (the cart decides, in the browser): a row of pieces to start from.
-  const suggestions = (
+  const tiles = products.length > 0 ? Array.from({ length: Math.max(products.length, MIN_TILES) }, (_, i) => ({ n: i, p: products[i % products.length]!, repeat: i >= products.length })) : [];
+  const suggestions = products.length > 0 ? (
     <section aria-labelledby="suggest-title" className="border-t border-border bg-white pb-16 pt-14">
       <ScrollRow
         label="Pieces from the collection"
@@ -31,29 +33,19 @@ export default async function CartPage() {
           </div>
         }
       >
-        {products.map((p) => (
-          <div key={p.id} className={CARD_W}>
-            <ProductCard product={p} currency={business.currency} />
-          </div>
-        ))}
-        {Array.from({ length: Math.max(0, CARDS - products.length) }, (_, i) => (
-          <div key={`ph-${i}`} className={CARD_W}>
-            <div className="h-full border border-black">
-              <ImagePlaceholder label="Product photograph" className="aspect-[4/5] w-full" compact />
-              <div className="px-4 pb-5 pt-4">
-                <p className="font-display text-[1.2rem] leading-snug text-text">Product to be added</p>
-                <p className="mt-1.5 text-[0.8125rem] text-text-muted">Details to be supplied</p>
-              </div>
-            </div>
+        {tiles.map((t) => (
+          // Repeats only keep the endless row long enough; they are hidden from screen readers and cannot be tabbed to.
+          <div key={t.n} className={CARD_W} aria-hidden={t.repeat ? true : undefined} inert={t.repeat ? true : undefined}>
+            <ProductCard product={t.p} currency={business.currency} />
           </div>
         ))}
       </ScrollRow>
     </section>
-  );
+  ) : null;
 
   return (
     <>
-      <PageIntro plain title="Your cart" lead="Check what you have chosen." eyebrow="Cart" />
+      <PageIntro back={{ href: "/products", to: "the collection" }} plain title="Your cart" lead="Check what you have chosen." eyebrow="Cart" />
       <CartView currency={business.currency} suggestions={suggestions} />
     </>
   );
