@@ -48,16 +48,16 @@ export async function listCategories(actor: Actor) {
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
 }
 
-/** A category may sit under a group, never under another category and never under itself. */
+/** A subcategory sits under a main category, never under another subcategory and never under itself. */
 async function assertParentUsable(tx: DbOrTx, parentId: string | undefined, selfId?: string) {
   if (!parentId) return;
-  const bad = validation("Choose a group, or leave this as a group of its own.", { parentId: ["Choose a group, or leave this as a group of its own."] });
+  const bad = validation("Choose a main category, or leave this as a main category.", { parentId: ["Choose a main category, or leave this as a main category."] });
   if (parentId === selfId) throw bad;
   const [g] = await tx.select({ parentId: productCategories.parentId, archivedAt: productCategories.archivedAt }).from(productCategories).where(eq(productCategories.id, parentId)).limit(1);
   if (!g || g.parentId || g.archivedAt) throw bad;
   if (selfId) {
     const [{ n } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(productCategories).where(eq(productCategories.parentId, selfId));
-    if (n > 0) throw validation("This group has categories under it, so it cannot go under another group.", { parentId: ["This group has categories under it, so it cannot go under another group."] });
+    if (n > 0) throw validation("This category has subcategories under it, so it cannot become a subcategory.", { parentId: ["This category has subcategories under it, so it cannot become a subcategory."] });
   }
 }
 
@@ -165,7 +165,7 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
   if (availability.length) where.push(inArray(products.availability, has("made_to_order") ? [...availability, "on_request" as const] : availability));
 
   if (f.categoryIds?.length) {
-    // A group stands for every category under it.
+    // A main category stands for every subcategory under it.
     const ids = sql.join(f.categoryIds.map((c) => sql`${c}::uuid`), sql`, `);
     where.push(or(inArray(products.categoryId, f.categoryIds), sql`${products.categoryId} IN (SELECT c.id FROM product_categories c WHERE c.parent_id IN (${ids}))`)!);
   }

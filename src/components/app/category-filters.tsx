@@ -74,8 +74,8 @@ export function CategoryFilters({
         }}
       />
       <PanelSelect
-        label="Group"
-        placeholder="All groups"
+        label="Category"
+        placeholder="All categories"
         quietPlaceholder={false}
         value={grp}
         options={groups.map((g) => ({ value: g.id, label: g.name }))}

@@ -19,7 +19,7 @@ export function CategoryForm({
   submitLabel,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
-  /** The groups a category can be filed under (never itself). */
+  /** The main categories a subcategory can be filed under (never itself). */
   groups: Array<{ id: string; name: string }>;
   values?: CategoryFormValues;
   submitLabel: string;
@@ -28,15 +28,15 @@ export function CategoryForm({
     <ActionForm action={action}>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       <div className="grid gap-5 md:grid-cols-2">
-        <FField name="name" label="Category name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
+        <FField name="name" label="Name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
         <FPanelSelect
           name="parentId"
-          label="Group"
+          label="Parent category"
           defaultValue={values.parentId ?? ""}
-          placeholder="None (this is a group)"
+          placeholder="None (this is a main category)"
           quietPlaceholder={false}
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
-          hint="Choose a group to file this under it, for example Tables under Furniture."
+          hint="Choose a main category to make this a subcategory under it, for example Tables under Furniture."
         />
       </div>
       <FTextArea name="description" label="Description" rows={3} defaultValue={values.description ?? ""} />

@@ -78,6 +78,6 @@ export async function deleteCategoriesAction(
     const r = await deleteCategories(actor!, input.ids);
     refresh();
     const done = `${plural(r.deleted, "category", "categories")} deleted.`;
-    return { message: r.kept.length ? `${done} Not deleted because they still have products or categories under them: ${r.kept.join(", ")}. Archive them instead, or move what is inside first.` : done };
+    return { message: r.kept.length ? `${done} Not deleted because they still have products or subcategories: ${r.kept.join(", ")}. Archive them instead, or move what is inside first.` : done };
   });
 }

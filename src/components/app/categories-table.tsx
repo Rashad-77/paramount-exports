@@ -12,8 +12,14 @@ import type { ActionState } from "@/lib/action-state";
 export interface CategoryRow {
   id: string;
   name: string;
-  /** A category under a group (indented in the list). */
+  /** 1, 2, 3 for main categories and 1.1, 1.2 for the subcategories under them. */
+  number: string;
+  /** A subcategory (shown in the Subcategory column). */
   depth: 0 | 1;
+  /** The main category a subcategory sits under. */
+  groupName: string | null;
+  /** Whether to name the main category on this row: not when it or a sibling is the row just above. */
+  showGroup: boolean;
   productCount: number;
   isActive: boolean;
   archived: boolean;
@@ -116,7 +122,7 @@ export function CategoriesTable({
           <THead>
             <tr>
               {editing ? (
-                <TH className="w-10 px-2 py-1.5 text-center">
+                <TH className="w-10 px-2 py-1.5 text-center border-r border-border-strong/50 last:border-r-0">
                   <input
                     type="checkbox"
                     aria-label="Select all categories"
@@ -126,28 +132,40 @@ export function CategoriesTable({
                   />
                 </TH>
               ) : null}
-              <TH className="w-12 px-2 py-1.5 text-left">No.</TH>
-              <TH className="px-2 py-1.5 text-left">Category</TH>
-              <TH className="px-2 py-1.5 text-left">Products</TH>
-              <TH className="px-2 py-1.5 text-left">Status</TH>
+              <TH className="w-16 px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">No.</TH>
+              <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Category</TH>
+              <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Subcategory</TH>
+              <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Products</TH>
+              <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Status</TH>
             </tr>
           </THead>
           <tbody>
             {rows.map((c, i) => (
-              <TR key={c.id} className={selected.has(c.id) ? "bg-linen" : undefined}>
+              <TR key={c.id} className={(selected.has(c.id) ? "bg-linen " : "") + "border-b border-border-strong/50" + (c.depth === 0 && i > 0 ? " border-t-2 border-t-border-strong" : "")}>
                 {editing ? (
-                  <TD className="px-2 py-1 text-center">
+                  <TD className="px-2 py-1 text-center border-r border-border-strong/50 last:border-r-0">
                     <input type="checkbox" aria-label={`Select ${c.name}`} checked={selected.has(c.id)} onChange={(e) => toggle(c.id, e.target.checked)} className="size-4" />
                   </TD>
                 ) : null}
-                <TD className="tabular px-2 py-1 text-left text-text-muted">{i + 1}</TD>
-                <TD className={"px-2 py-1 text-left " + (c.depth ? "pl-7" : "")}>
-                  <Link href={`/app/categories/${c.id}`} className={"text-walnut underline " + (c.depth ? "" : "font-semibold")}>
-                    {c.depth ? `› ${c.name}` : c.name}
-                  </Link>
+                <TD className={"tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0 " + (c.depth ? "text-text-muted" : "font-medium")}>{c.number}</TD>
+                <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
+                  {c.depth ? (
+                    c.showGroup && c.groupName ? <span className="text-text-muted">{c.groupName}</span> : null
+                  ) : (
+                    <Link href={`/app/categories/${c.id}`} className="font-semibold text-walnut underline">
+                      {c.name}
+                    </Link>
+                  )}
                 </TD>
-                <TD className="tabular px-2 py-1 text-left">{c.productCount}</TD>
-                <TD className="px-2 py-1 text-left">
+                <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
+                  {c.depth ? (
+                    <Link href={`/app/categories/${c.id}`} className="text-walnut underline">
+                      {c.name}
+                    </Link>
+                  ) : null}
+                </TD>
+                <TD className="tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">{c.productCount}</TD>
+                <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
                   {c.archived ? <StatusBadge>Archived</StatusBadge> : c.isActive ? <StatusBadge tone="success">Visible</StatusBadge> : <StatusBadge tone="warning">Hidden</StatusBadge>}
                 </TD>
               </TR>
@@ -159,8 +177,8 @@ export function CategoriesTable({
       <ConfirmDialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title={`Delete ${ticked.length} ${ticked.length === 1 ? "category" : "categories"}?`}
-        description="This permanently deletes the categories. A category that still has products or categories under it is left alone. This cannot be undone. To hide a category and keep it on record, archive it instead."
+        title={`Delete ${ticked.length} ${ticked.length === 1 ? "item" : "items"}?`}
+        description="This permanently deletes the categories and subcategories you ticked. One that still has products, or subcategories under it, is left alone. This cannot be undone. To hide a category and keep it on record, archive it instead."
         confirmLabel="Delete"
         destructive
         pending={deletePending}

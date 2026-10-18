@@ -46,6 +46,24 @@ export default async function CategoriesPage({
 
   const clearHref = "/app/categories";
 
+  // Numbers follow the whole list, so a row keeps its number whatever the filters show: 1, 2, 3 and 1.1, 1.2 under 1.
+  const numbers = new Map<string, string>();
+  let main = 0;
+  let sub = 0;
+  for (const c of all) {
+    if (c.depth === 0) {
+      main++;
+      sub = 0;
+      numbers.set(c.id, String(main));
+    } else {
+      sub++;
+      numbers.set(c.id, `${main}.${sub}`);
+    }
+  }
+  // A main category's product count includes the products in its subcategories.
+  const subcategories = (id: string) => flat.filter((k) => k.parentId === id && !k.archivedAt);
+  const productTotal = (c: (typeof all)[number]) => c.productCount + (c.depth === 0 ? subcategories(c.id).reduce((n, k) => n + k.productCount, 0) : 0);
+
   return (
     <EditProvider>
       <ModuleHeader
@@ -88,11 +106,15 @@ export default async function CategoriesPage({
         />
       ) : (
         <CategoriesTable
-          rows={rows.map((c) => ({
+          rows={rows.map((c, i) => ({
             id: c.id,
             name: c.name,
+            number: numbers.get(c.id) ?? "",
             depth: c.depth,
-            productCount: c.productCount,
+            groupName: c.groupName,
+            // The group is named on a subcategory only when the row above is not that group or one of its subcategories.
+            showGroup: !(rows[i - 1] && (rows[i - 1]!.id === c.parentId || rows[i - 1]!.parentId === c.parentId)),
+            productCount: productTotal(c),
             isActive: c.isActive,
             archived: c.archivedAt !== null,
           }))}
