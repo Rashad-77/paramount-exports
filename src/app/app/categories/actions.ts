@@ -8,7 +8,8 @@ import { categorySchema } from "@/lib/schemas/catalogue";
 import { reqUuid } from "@/lib/validation";
 import {
   createCategory,
-  setCategoryArchived,
+  deleteCategories,
+  setCategoriesArchived,
   updateCategory,
 } from "@/server/catalogue";
 
@@ -44,20 +45,39 @@ export async function updateCategoryAction(
   );
 }
 
-const archiveSchema = z.object({
-  id: reqUuid("category"),
-  archive: z.enum(["true", "false"]),
-});
-export async function archiveCategoryAction(
+/** One or many category ids submitted under the same field name by the list's edit mode. */
+const idsField = z.preprocess(
+  (v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v : [v]),
+  z.array(reqUuid("category")).min(1, "Select at least one category.").max(200, "Select up to 200 categories at a time."),
+);
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+export async function archiveCategoriesAction(
   _p: ActionState,
   fd: FormData,
 ): Promise<ActionState> {
-  return runAction(fd, archiveSchema, async (input, { actor }) => {
-    await setCategoryArchived(actor!, input.id, input.archive === "true");
+  return runAction(
+    fd,
+    z.object({ ids: idsField, archive: z.enum(["true", "false"]) }),
+    async (input, { actor }) => {
+      const archive = input.archive === "true";
+      const r = await setCategoriesArchived(actor!, input.ids, archive);
+      refresh();
+      const done = archive ? `${plural(r.changed, "category", "categories")} archived and hidden from the website.` : `${plural(r.changed, "category", "categories")} restored.`;
+      return { message: r.skipped.length ? `${done} Not archived because they still have products: ${r.skipped.join(", ")}. Move or archive those products first.` : done };
+    },
+  );
+}
+
+export async function deleteCategoriesAction(
+  _p: ActionState,
+  fd: FormData,
+): Promise<ActionState> {
+  return runAction(fd, z.object({ ids: idsField }), async (input, { actor }) => {
+    const r = await deleteCategories(actor!, input.ids);
     refresh();
-    return {
-      message:
-        input.archive === "true" ? "Category archived." : "Category restored.",
-    };
+    const done = `${plural(r.deleted, "category", "categories")} deleted.`;
+    return { message: r.kept.length ? `${done} Not deleted because they still have products or categories under them: ${r.kept.join(", ")}. Archive them instead, or move what is inside first.` : done };
   });
 }

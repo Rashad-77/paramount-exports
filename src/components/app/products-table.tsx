@@ -2,7 +2,8 @@
 
 import { Crown, Star } from "lucide-react";
 import Link from "next/link";
-import { createContext, useActionState, useContext, useRef, useState, type ReactNode } from "react";
+import { useActionState, useRef, useState } from "react";
+import { useEdit } from "@/components/app/edit-mode";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Alert, StatusBadge } from "@/components/ui/status";
@@ -21,44 +22,6 @@ export interface ProductRow {
 }
 
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
-
-const EditCtx = createContext<{ editing: boolean; selected: Set<string>; setSelected: (s: Set<string>) => void; toggleEditing: () => void } | null>(null);
-const useEdit = () => {
-  const c = useContext(EditCtx);
-  if (!c) throw new Error("Wrap the product list in ProductsEditProvider.");
-  return c;
-};
-
-/** Shares edit mode between the Edit button in the page header and the list below. */
-export function ProductsEditProvider({ children }: { children: ReactNode }) {
-  const [editing, setEditing] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  return (
-    <EditCtx.Provider
-      value={{
-        editing,
-        selected,
-        setSelected,
-        toggleEditing: () => {
-          setEditing((e) => !e);
-          setSelected(new Set());
-        },
-      }}
-    >
-      {children}
-    </EditCtx.Provider>
-  );
-}
-
-/** The Edit / Done button, placed next to Add product. */
-export function EditToggle() {
-  const { editing, toggleEditing } = useEdit();
-  return (
-    <Button type="button" variant={editing ? "primary" : "secondary"} onClick={toggleEditing}>
-      {editing ? "Done" : "Edit"}
-    </Button>
-  );
-}
 
 /**
  * The staff product list. Press Edit to show tick boxes: tick products (or all of them), then Archive (or Restore) or Delete them.

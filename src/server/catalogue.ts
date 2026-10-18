@@ -61,11 +61,23 @@ async function assertParentUsable(tx: DbOrTx, parentId: string | undefined, self
   }
 }
 
+/** A category's web address name: the one typed in, or else made from its name (a second one with the same name gets -2, -3…). */
+async function categorySlugFor(tx: DbOrTx, input: { slug?: string; name: string }): Promise<string> {
+  if (input.slug) return resolveSlug(input.slug, input.name);
+  const base = resolveSlug(undefined, input.name);
+  for (let n = 1; n < 100; n++) {
+    const candidate = n === 1 ? base : `${base.slice(0, 74)}-${n}`;
+    const [hit] = await tx.select({ id: productCategories.id }).from(productCategories).where(eq(productCategories.slug, candidate)).limit(1);
+    if (!hit) return candidate;
+  }
+  return `${base.slice(0, 60)}-${randomBytes(3).toString("hex")}`;
+}
+
 export async function createCategory(actor: Actor, input: CategoryInput): Promise<string> {
   requirePermission(actor, "products:write");
-  const slugValue = resolveSlug(input.slug, input.name);
   try {
     return await withTx(async (tx) => {
+      const slugValue = await categorySlugFor(tx, input);
       await assertParentUsable(tx, input.parentId);
       const [c] = await tx
         .insert(productCategories)
@@ -82,11 +94,12 @@ export async function createCategory(actor: Actor, input: CategoryInput): Promis
 
 export async function updateCategory(actor: Actor, id: string, input: CategoryInput): Promise<void> {
   requirePermission(actor, "products:write");
-  const slugValue = resolveSlug(input.slug, input.name);
   try {
     await withTx(async (tx) => {
       const [before] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
       if (!before) throw notFound("That category could not be found.");
+      // The web address keeps its first value (links already shared must not break) unless one is typed in.
+      const slugValue = input.slug ? resolveSlug(input.slug, input.name) : before.slug;
       await assertParentUsable(tx, input.parentId, id);
       await tx
         .update(productCategories)
@@ -655,4 +668,48 @@ export async function listVariantOptions(actor: Actor): Promise<Array<{ id: stri
     .where(and(eq(productVariants.isActive, true), isNull(products.archivedAt)))
     .orderBy(asc(products.name), asc(productVariants.sortOrder));
   return rows.map((r) => ({ id: r.id, sku: r.sku, price: r.price, name: r.name, label: `${r.name}${r.option !== "Standard" ? ` — ${r.option}` : ""} (${r.sku})` }));
+}
+
+/** Archive or restore several categories at once. A category that still has products in it is skipped when archiving. Returns how many changed. */
+export async function setCategoriesArchived(actor: Actor, ids: string[], archived: boolean): Promise<{ changed: number; skipped: string[] }> {
+  requirePermission(actor, "products:write");
+  const skipped: string[] = [];
+  let changed = 0;
+  for (const id of ids) {
+    try {
+      await setCategoryArchived(actor, id, archived);
+      changed++;
+    } catch (e) {
+      if (e instanceof AppError && e.code === "CONFLICT") {
+        const [c] = await getDb().select({ name: productCategories.name }).from(productCategories).where(eq(productCategories.id, id)).limit(1);
+        skipped.push(c?.name ?? "A category");
+      } else throw e;
+    }
+  }
+  return { changed, skipped };
+}
+
+/** Permanently deletes categories that have no products (archived ones included) and no categories under them. Returns how many were deleted and the names left alone. */
+export async function deleteCategories(actor: Actor, ids: string[]): Promise<{ deleted: number; kept: string[] }> {
+  requirePermission(actor, "products:write");
+  const kept: string[] = [];
+  let deleted = 0;
+  for (const id of ids) {
+    await withTx(async (tx) => {
+      const [c] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
+      if (!c) return;
+      const [{ n: productCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(products).where(eq(products.categoryId, id));
+      const [{ n: kidCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(productCategories).where(eq(productCategories.parentId, id));
+      const [{ n: galleryCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(galleryProjects).where(eq(galleryProjects.categoryId, id));
+      if (productCount > 0 || kidCount > 0) {
+        kept.push(c.name);
+        return;
+      }
+      if (galleryCount > 0) await tx.update(galleryProjects).set({ categoryId: null }).where(eq(galleryProjects.categoryId, id));
+      await tx.delete(productCategories).where(eq(productCategories.id, id));
+      await recordAudit(tx, actor, { action: "category.deleted", entityType: "product_category", entityId: id, before: { name: c.name, slug: c.slug } });
+      deleted++;
+    });
+  }
+  return { deleted, kept };
 }

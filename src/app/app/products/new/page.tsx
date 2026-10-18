@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductForm } from "@/components/app/product-form";
 import { PageHeader, Panel } from "@/components/ui/page-header";
@@ -22,9 +23,9 @@ export default async function NewProductPage() {
         {cats.length === 0 ? (
           <p className="text-sm">
             Create a category first on the{" "}
-            <a className="underline" href="/app/categories">
+            <Link className="underline" href="/app/categories">
               Categories
-            </a>{" "}
+            </Link>{" "}
             page.
           </p>
         ) : (

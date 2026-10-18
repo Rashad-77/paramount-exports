@@ -1,4 +1,5 @@
-import { EditToggle, ProductsEditProvider, ProductsTable } from "@/components/app/products-table";
+import { EditProvider, EditToggle } from "@/components/app/edit-mode";
+import { ProductsTable } from "@/components/app/products-table";
 import { ProductFilters } from "@/components/app/product-filters";
 import { ButtonLink } from "@/components/ui/button";
 import { ModuleHeader } from "@/components/ui/page-header";
@@ -58,7 +59,7 @@ export default async function ProductsAdminPage({
   const canWrite = can(actor, "products:write");
 
   return (
-    <ProductsEditProvider>
+    <EditProvider>
       <ModuleHeader
         href="/app/products"
         actions={
@@ -119,6 +120,6 @@ export default async function ProductsAdminPage({
         pageCount={result.pageCount}
         hrefFor={href}
       />
-    </ProductsEditProvider>
+    </EditProvider>
   );
 }
