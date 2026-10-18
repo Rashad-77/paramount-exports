@@ -135,18 +135,20 @@ export function ProductsTable({
         <Table>
           <THead>
             <tr>
-              {editing ? (
-                <TH className="w-10 px-2 py-1.5 text-center">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all products on this page"
-                    checked={allTicked}
-                    onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())}
-                    className="size-4 accent-[var(--color-walnut)]"
-                  />
-                </TH>
-              ) : null}
-              <TH className="w-12 px-2 py-1.5 text-left">No.</TH>
+              <TH className="w-24 px-2 py-1.5 text-left">
+                <span className="flex items-center justify-between gap-3">
+                  No.
+                  {editing ? (
+                    <input
+                      type="checkbox"
+                      aria-label="Select all products on this page"
+                      checked={allTicked}
+                      onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())}
+                      className="size-4 accent-[var(--color-walnut)]"
+                    />
+                  ) : null}
+                </span>
+              </TH>
               <TH className="px-2 py-1.5 text-left">Product</TH>
               <TH className="px-2 py-1.5 text-left">Category</TH>
               <TH className="px-2 py-1.5 text-left">Status</TH>
@@ -155,18 +157,20 @@ export function ProductsTable({
           <tbody>
             {rows.map((p, i) => (
               <TR key={p.id} className={selected.has(p.id) ? "bg-linen" : undefined}>
-                {editing ? (
-                  <TD className="px-2 py-1 text-center">
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${p.name}`}
-                      checked={selected.has(p.id)}
-                      onChange={(e) => toggle(p.id, e.target.checked)}
-                      className="size-4 accent-[var(--color-walnut)]"
-                    />
-                  </TD>
-                ) : null}
-                <TD className="tabular px-2 py-1 text-left text-text-muted">{startAt + i + 1}</TD>
+                <TD className="tabular px-2 py-1 text-left text-text-muted">
+                  <span className="flex items-center justify-between gap-3">
+                    {startAt + i + 1}
+                    {editing ? (
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${p.name}`}
+                        checked={selected.has(p.id)}
+                        onChange={(e) => toggle(p.id, e.target.checked)}
+                        className="size-4 accent-[var(--color-walnut)]"
+                      />
+                    ) : null}
+                  </span>
+                </TD>
                 <TD className="px-2 py-1 text-left">
                   <Link href={`/app/products/${p.id}`} className="font-medium text-walnut underline">
                     {p.name}

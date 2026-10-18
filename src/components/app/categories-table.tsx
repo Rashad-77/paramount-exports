@@ -168,18 +168,20 @@ export function CategoriesTable({
         <Table>
           <THead>
             <tr>
-              {editing ? (
-                <TH className="w-10 px-2 py-1.5 text-center border-r border-border-strong/50 last:border-r-0">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all categories"
-                    checked={allTicked}
-                    onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())}
-                    className="size-4"
-                  />
-                </TH>
-              ) : null}
-              <TH className="w-16 px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">No.</TH>
+              <TH className="w-24 px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">
+                <span className="flex items-center justify-between gap-3">
+                  No.
+                  {editing ? (
+                    <input
+                      type="checkbox"
+                      aria-label="Select all categories"
+                      checked={allTicked}
+                      onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())}
+                      className="size-4"
+                    />
+                  ) : null}
+                </span>
+              </TH>
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Category</TH>
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Subcategory</TH>
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Products</TH>
@@ -189,12 +191,12 @@ export function CategoriesTable({
           <tbody>
             {rows.map((c, i) => (
               <TR key={c.id} className={(selected.has(c.id) ? "bg-linen " : "") + "border-b border-border-strong/50" + (c.depth === 0 && i > 0 ? " border-t-2 border-t-border-strong" : "")}>
-                {editing ? (
-                  <TD className="px-2 py-1 text-center border-r border-border-strong/50 last:border-r-0">
-                    <input type="checkbox" aria-label={`Select ${c.name}`} checked={selected.has(c.id)} onChange={(e) => toggle(c.id, e.target.checked)} className="size-4" />
-                  </TD>
-                ) : null}
-                <TD className={"tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0 " + (c.depth ? "text-text-muted" : "font-medium")}>{c.number}</TD>
+                <TD className={"tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0 " + (c.depth ? "text-text-muted" : "font-medium")}>
+                  <span className="flex items-center justify-between gap-3">
+                    {c.number}
+                    {editing ? <input type="checkbox" aria-label={`Select ${c.name}`} checked={selected.has(c.id)} onChange={(e) => toggle(c.id, e.target.checked)} className="size-4" /> : null}
+                  </span>
+                </TD>
                 <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
                   {c.depth ? (
                     c.showGroup && c.groupName ? <span className="text-text-muted">{c.groupName}</span> : null
