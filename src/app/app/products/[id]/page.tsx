@@ -73,6 +73,7 @@ export default async function ProductAdminPage({
               currency={business.currency}
               savedTypes={saved.types}
               savedValues={saved.values}
+              savedHidden={saved.hidden}
               categories={cats.filter(
                 (c) => !c.archivedAt || c.id === product.categoryId,
               )}

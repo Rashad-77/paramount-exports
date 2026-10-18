@@ -232,6 +232,13 @@
       "when": 1793289200000,
       "tag": "0032_spec_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793375600000,
+      "tag": "0033_spec_hidden_values",
+      "breakpoints": true
     }
   ]
 }

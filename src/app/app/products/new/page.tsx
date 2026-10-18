@@ -34,6 +34,7 @@ export default async function NewProductPage() {
             currency={business.currency}
             savedTypes={saved.types}
             savedValues={saved.values}
+            savedHidden={saved.hidden}
             submitLabel="Create product"
           />
         )}

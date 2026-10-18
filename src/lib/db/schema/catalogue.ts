@@ -186,3 +186,11 @@ export const specValues = pgTable("spec_values", {
   value: text("value").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Built-in suggestions the staff have removed or renamed: they are no longer offered. */
+export const specHiddenValues = pgTable("spec_hidden_values", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  typeKey: text("type_key").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

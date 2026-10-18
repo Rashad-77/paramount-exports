@@ -35,6 +35,7 @@ export function ProductForm({
   submitLabel,
   savedTypes,
   savedValues,
+  savedHidden,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   categories: Array<{ id: string; name: string; parentId: string | null }>;
@@ -43,6 +44,7 @@ export function ProductForm({
   submitLabel: string;
   savedTypes?: SavedSpecType[];
   savedValues?: Record<string, string[]>;
+  savedHidden?: Record<string, string[]>;
 }) {
   const sorted = treeOrder(categories).map(({ id, name, parentId }) => ({ id, name, parentId }));
   return (
@@ -64,7 +66,7 @@ export function ProductForm({
 
       <fieldset className="space-y-4 border border-border p-4">
         <legend className="px-1 text-sm font-semibold">Specifications</legend>
-        <SpecificationsEditor initial={values.specifications ?? []} kind={values.kind ?? "stocked"} savedTypes={savedTypes} savedValues={savedValues} />
+        <SpecificationsEditor initial={values.specifications ?? []} kind={values.kind ?? "stocked"} savedTypes={savedTypes} savedValues={savedValues} savedHidden={savedHidden} />
       </fieldset>
 
       <fieldset className="space-y-6 border border-border p-4">

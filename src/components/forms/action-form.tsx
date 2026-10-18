@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useActionState, useContext, useEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import { createContext, useActionState, useContext, useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import type { ActionState } from "@/lib/action-state";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
 import { DateField } from "./date-field";
@@ -56,6 +57,49 @@ export function ActionForm({
   const form = useRef<HTMLFormElement>(null);
   const alert = useRef<HTMLDivElement>(null);
 
+  // Unsaved changes: what the form held just before the person first touched it, compared with what it holds now. Leaving the page
+  // (closing the tab, reloading, or following a link) with a difference asks first.
+  const base = useRef<string | null>(null);
+  const busy = useRef(false);
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
+  const snapshot = (f: HTMLFormElement) => JSON.stringify([...new FormData(f).entries()].filter(([k, v]) => typeof v === "string" && !k.startsWith("$ACTION")));
+  const hasUnsaved = () => base.current !== null && !busy.current && form.current !== null && snapshot(form.current) !== base.current;
+  const touch = () => {
+    if (base.current === null && form.current) base.current = snapshot(form.current);
+  };
+  useEffect(() => {
+    busy.current = pending;
+  }, [pending]);
+  useEffect(() => {
+    // A saved form starts again from what it now holds.
+    if (state.ok) base.current = null;
+  }, [state]);
+  useEffect(() => {
+    const beforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasUnsaved()) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    const onLink = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin !== window.location.origin || (url.pathname === window.location.pathname && url.search === window.location.search)) return;
+      if (!hasUnsaved()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setLeaveTo(url.pathname + url.search + url.hash);
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", onLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", onLink, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // After a failed attempt, take the person to the problem: the first field that needs fixing, or else the message at the top.
   useEffect(() => {
     if (state.ok || (!state.error && !state.fieldErrors)) return;
@@ -73,11 +117,14 @@ export function ActionForm({
     );
   }
   return (
+    <>
     <form
       ref={form}
       action={formAction}
       noValidate
       className={cn("space-y-5", className)}
+      onPointerDownCapture={touch}
+      onKeyDownCapture={touch}
       onSubmit={(e) => {
         // A file transfer is still running: do not submit yet (the uploader shows a waiting message).
         // A submit already in flight is never sent twice (a second tap, or Enter pressed again).
@@ -94,6 +141,21 @@ export function ActionForm({
         {children}
       </Ctx.Provider>
     </form>
+    <ConfirmDialog
+      open={leaveTo !== null}
+      onClose={() => setLeaveTo(null)}
+      title="Leave this page?"
+      description="You have changes that are not saved. If you leave now they will be lost."
+      confirmLabel="Leave"
+      destructive
+      onConfirm={() => {
+        const to = leaveTo;
+        setLeaveTo(null);
+        base.current = null;
+        if (to) window.location.assign(to);
+      }}
+    />
+    </>
   );
 }
 

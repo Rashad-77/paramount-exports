@@ -1,9 +1,11 @@
 "use client";
 
-import { Plus, Search, X } from "lucide-react";
+import { Check, Pencil, Plus, Search, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { createSpecTypeAction, saveSpecValueAction } from "@/app/app/products/spec-actions";
+import { createSpecTypeAction, deleteSpecTypeAction, deleteSpecValueAction, renameSpecTypeAction, renameSpecValueAction, saveSpecValueAction } from "@/app/app/products/spec-actions";
 import { PanelSelect } from "@/components/app/panel-select";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
 import { SelectField } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { DIM_UNITS, SPEC_CATALOG, SPEC_GROUPS, isBuiltinSuggestion, parseDimsText, specKeyFor, type DimUnit, type SavedSpecType, type SpecCatalogItem, type SpecEntry } from "@/lib/specifications";
@@ -12,6 +14,20 @@ type Row = SpecEntry & { id: string; legacyText?: string };
 
 const input =
   "block w-full min-h-10 border border-border-strong bg-surface px-3 py-2 text-text placeholder:text-text-muted/70 focus-visible:outline-none aria-[invalid=true]:border-danger";
+
+/** "Material" becomes "materials", "Finish" becomes "finishes". */
+const plural = (label: string) => {
+  const w = label.trim().toLowerCase();
+  if (/(s|sh|ch|x|z)$/.test(w)) return w.endsWith("s") ? w : `${w}es`;
+  if (/[^aeiou]y$/.test(w)) return `${w.slice(0, -1)}ies`;
+  return `${w}s`;
+};
+
+/** Alphabetical, ignoring capital letters. */
+const alpha = (list: string[]) => [...list].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+/** The same list with each value once (ignoring capital letters), in the order first seen. */
+const uniqueValues = (list: string[]) => list.filter((v, i) => list.findIndex((x) => x.toLowerCase() === v.toLowerCase()) === i);
 
 let counter = 0;
 const nextId = () => `spec-${++counter}`;
@@ -42,6 +58,7 @@ export function SpecificationsEditor({
   kindError,
   savedTypes = [],
   savedValues = {},
+  savedHidden = {},
 }: {
   initial: SpecEntry[];
   kind: string;
@@ -49,21 +66,26 @@ export function SpecificationsEditor({
   /** Types the staff created earlier, and the extra values (material names…) they have added. Both are kept for every product. */
   savedTypes?: SavedSpecType[];
   savedValues?: Record<string, string[]>;
+  /** Built-in suggestions the staff have removed. */
+  savedHidden?: Record<string, string[]>;
 }) {
   const [rows, setRows] = useState<Row[]>(() => initial.map(fromEntry));
   const [types, setTypes] = useState<SavedSpecType[]>(savedTypes);
   const [values, setValues] = useState<Record<string, string[]>>(savedValues);
+  const [hidden, setHidden] = useState<Record<string, string[]>>(savedHidden);
   const used = new Set(rows.map((r) => r.key));
+  /** The row whose Edit window is open. */
+  const [editingRow, setEditingRow] = useState<string | null>(null);
 
   // The built-in catalogue, then the staff's own types, each with the values staff have added for it.
   const catalog: SpecCatalogItem[] = useMemo(
     () => [
-      ...SPEC_CATALOG.map((c) => (c.type === "list" ? { ...c, suggestions: [...(values[c.key] ?? []), ...(c.suggestions ?? [])] } : c)),
+      ...SPEC_CATALOG.map((c) => (c.type === "list" ? { ...c, suggestions: uniqueValues([...(values[c.key] ?? []), ...(c.suggestions ?? []).filter((sg) => !(hidden[c.key] ?? []).some((h) => h.toLowerCase() === sg.toLowerCase()))]) } : c)),
       ...types
         .filter((t) => !SPEC_CATALOG.some((c) => c.key === t.key))
-        .map((t) => ({ key: t.key, label: t.label, type: t.type, group: "Your own types", suggestions: values[t.key] ?? [] }) as SpecCatalogItem),
+        .map((t) => ({ key: t.key, label: t.label, type: t.type, group: "Your own types", suggestions: uniqueValues(values[t.key] ?? []) }) as SpecCatalogItem),
     ],
-    [types, values],
+    [types, values, hidden],
   );
   const itemFor = (key: string) => catalog.find((c) => c.key === key);
 
@@ -100,11 +122,53 @@ export function SpecificationsEditor({
     add({ key: type.key, label: type.label, type: type.type, group: "Your own types" });
   };
 
+  const send = (action: (p: object, fd: FormData) => Promise<unknown>, fields: Record<string, string>) => {
+    const fd = new FormData();
+    for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+    void action({}, fd).catch(() => undefined);
+  };
+
+  const lower = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+  /** Renames a value in the suggestions (built in or saved): a built-in one is hidden and the new name saved. */
+  const renameValue = (key: string, from: string, to: string) => {
+    const clean = to.trim();
+    if (!clean || lower(clean, from)) return;
+    if (isBuiltinSuggestion(key, from)) setHidden((cur) => ({ ...cur, [key]: [...(cur[key] ?? []), from] }));
+    setValues((cur) => {
+      const rest = (cur[key] ?? []).filter((v) => !lower(v, from));
+      return { ...cur, [key]: isBuiltinSuggestion(key, clean) || rest.some((v) => lower(v, clean)) ? rest : [clean, ...rest] };
+    });
+    send(renameSpecValueAction, { key, from, to: clean });
+  };
+  const deleteValue = (key: string, value: string) => {
+    if (isBuiltinSuggestion(key, value)) setHidden((cur) => ({ ...cur, [key]: [...(cur[key] ?? []), value] }));
+    setValues((cur) => ({ ...cur, [key]: (cur[key] ?? []).filter((v) => !lower(v, value)) }));
+    send(deleteSpecValueAction, { key, value });
+  };
+  const renameType = (key: string, label: string) => {
+    const clean = label.trim();
+    if (!clean) return;
+    setTypes((cur) => cur.map((t) => (t.key === key ? { ...t, label: clean } : t)));
+    send(renameSpecTypeAction, { key, label: clean });
+  };
+  const deleteType = (key: string) => {
+    setTypes((cur) => cur.filter((t) => t.key !== key));
+    send(deleteSpecTypeAction, { key });
+  };
+
   /** A value typed for a several-value row (a new material name…): remembered for the next product. */
   const rememberValue = (key: string, value: string) => {
     const clean = value.trim();
-    if (!clean || isBuiltinSuggestion(key, clean) || (values[key] ?? []).some((v) => v.toLowerCase() === clean.toLowerCase())) return;
-    setValues((cur) => ({ ...cur, [key]: [...(cur[key] ?? []), clean] }));
+    if (clean && isBuiltinSuggestion(key, clean) && (hidden[key] ?? []).some((h) => lower(h, clean))) {
+      setHidden((cur) => ({ ...cur, [key]: (cur[key] ?? []).filter((h) => !lower(h, clean)) }));
+      const back = new FormData();
+      back.set("key", key);
+      back.set("value", clean);
+      void saveSpecValueAction({}, back).catch(() => undefined);
+      return;
+    }
+    if (!clean || isBuiltinSuggestion(key, clean) || (values[key] ?? []).some((v) => lower(v, clean))) return;
+    setValues((cur) => ((cur[key] ?? []).some((v) => lower(v, clean)) ? cur : { ...cur, [key]: [...(cur[key] ?? []), clean] }));
     const fd = new FormData();
     fd.set("key", key);
     fd.set("value", clean);
@@ -135,8 +199,8 @@ export function SpecificationsEditor({
       </div>
 
       {rows.map((r) => (
-        <div key={r.id} className="grid gap-2 border border-border bg-surface p-3 sm:grid-cols-[10rem_1fr_auto] sm:items-start">
-          <p className="pt-2 text-sm font-medium">{r.label}</p>
+        <div key={r.id} className="grid gap-2 border border-border bg-surface p-3 sm:grid-cols-[10rem_1fr_auto] sm:items-center">
+          <p className="text-sm font-medium">{r.label}</p>
           <div className="min-w-0">
             {r.type === "text" ? (
               <input
@@ -148,27 +212,53 @@ export function SpecificationsEditor({
                 onChange={(e) => patch(r.id, { values: [e.target.value] })}
               />
             ) : null}
-            {r.type === "list" ? <ListValues row={r} item={itemFor(r.key)} onRemember={(v) => rememberValue(r.key, v)} onChange={(vals) => patch(r.id, { values: vals })} /> : null}
+            {r.type === "list" ? <ListValues row={r} item={itemFor(r.key)} editOpen={editingRow === r.id} onEditClose={() => setEditingRow(null)} onRemember={(v) => rememberValue(r.key, v)} onRename={(from, to) => renameValue(r.key, from, to)} onDelete={(v) => deleteValue(r.key, v)} onChange={(vals) => patch(r.id, { values: vals })} /> : null}
             {r.type === "dims" ? <DimsValues row={r} onChange={(dims) => patch(r.id, { dims })} /> : null}
           </div>
-          <button
-            type="button"
-            onClick={() => remove(r.id)}
-            aria-label={`Remove ${r.label}`}
-            className="inline-flex size-10 items-center justify-center text-text-muted hover:bg-linen hover:text-danger"
-          >
-            <X aria-hidden="true" className="size-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            {r.type === "list" ? (
+              <button type="button" onClick={() => setEditingRow(r.id)} className="inline-flex h-7 items-center gap-1 border border-border-strong px-2 text-[0.6875rem] font-medium hover:bg-black/5">
+                <Pencil aria-hidden="true" className="size-3" />
+                Edit
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => remove(r.id)}
+              aria-label={`Remove ${r.label}`}
+              className="inline-flex size-7 items-center justify-center text-text-muted hover:bg-linen hover:text-danger"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          </div>
         </div>
       ))}
 
-      <AddSpecification catalog={catalog} used={used} onAdd={add} onCreate={createType} />
+      <AddSpecification catalog={catalog} used={used} onAdd={add} onCreate={createType} onRename={renameType} onDelete={deleteType} />
     </div>
   );
 }
 
-/** Several values for one type (materials, finishes…): each is a chip; type one and press Enter or comma to add it. */
-function ListValues({ row, item, onRemember, onChange }: { row: Row; item?: SpecCatalogItem; onRemember: (value: string) => void; onChange: (values: string[]) => void }) {
+/** Several values for one type (materials, finishes…): each is a chip; type one and press Enter or comma to add it. "Edit" opens a window to change or remove them all. */
+function ListValues({
+  row,
+  item,
+  editOpen,
+  onEditClose,
+  onRemember,
+  onRename,
+  onDelete,
+  onChange,
+}: {
+  row: Row;
+  item?: SpecCatalogItem;
+  editOpen: boolean;
+  onEditClose: () => void;
+  onRemember: (value: string) => void;
+  onRename: (from: string, to: string) => void;
+  onDelete: (value: string) => void;
+  onChange: (values: string[]) => void;
+}) {
   const [text, setText] = useState("");
   const suggestions = item?.suggestions ?? [];
   const commit = (raw: string) => {
@@ -181,19 +271,23 @@ function ListValues({ row, item, onRemember, onChange }: { row: Row; item?: Spec
     }
     setText("");
   };
+  const typed = text.trim().toLowerCase();
+  const offered = alpha(suggestions.filter((sg) => !row.values.some((v) => v.toLowerCase() === sg.toLowerCase()) && (!typed || sg.toLowerCase().startsWith(typed))));
   return (
     <div>
       {row.values.length > 0 ? (
-        <ul className="mb-2 flex flex-wrap gap-1.5" aria-label={`${row.label} values`}>
-          {row.values.map((v) => (
-            <li key={v} className="inline-flex items-center gap-1 border border-border-strong bg-linen py-0.5 pl-2.5 pr-0.5 text-sm">
-              {v}
-              <button type="button" aria-label={`Remove ${v}`} onClick={() => onChange(row.values.filter((x) => x !== v))} className="inline-flex size-6 items-center justify-center hover:text-danger">
-                <X aria-hidden="true" className="size-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="mb-2">
+          <ul className="flex flex-wrap gap-1.5" aria-label={`${row.label} values`}>
+            {row.values.map((v) => (
+              <li key={v} className="inline-flex items-center gap-1 border border-border-strong bg-linen py-0.5 pl-2.5 pr-0.5 text-sm">
+                {v}
+                <button type="button" aria-label={`Remove ${v}`} onClick={() => onChange(row.values.filter((x) => x !== v))} className="inline-flex size-6 items-center justify-center hover:text-danger">
+                  <X aria-hidden="true" className="size-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
       <input
         aria-label={`Add ${row.label.toLowerCase()}`}
@@ -214,21 +308,113 @@ function ListValues({ row, item, onRemember, onChange }: { row: Row; item?: Spec
         }}
         onBlur={() => commit(text)}
       />
-      {suggestions.filter((sg) => !row.values.some((v) => v.toLowerCase() === sg.toLowerCase()) && (!text.trim() || sg.toLowerCase().includes(text.trim().toLowerCase()))).length > 0 ? (
+      {offered.length > 0 ? (
         <ul className="mt-1.5 flex flex-wrap gap-1" aria-label={`Suggested ${row.label.toLowerCase()}`}>
-          {suggestions
-            .filter((sg) => !row.values.some((v) => v.toLowerCase() === sg.toLowerCase()) && (!text.trim() || sg.toLowerCase().includes(text.trim().toLowerCase())))
-            .slice(0, 8)
-            .map((sg) => (
-              <li key={sg}>
-                <button type="button" onClick={() => commit(sg)} className="border border-dashed border-border-strong px-2 py-0.5 text-xs text-text-muted hover:bg-black/5">
-                  + {sg}
-                </button>
+          {(typed ? offered : offered.slice(0, 8)).map((sg) => (
+            <li key={sg}>
+              <button type="button" onClick={() => commit(sg)} className="border border-dashed border-border-strong px-2 py-0.5 text-xs text-text-muted hover:bg-black/5">
+                + {sg}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <ValuesDialog open={editOpen} onClose={onEditClose} title={`Edit ${plural(row.label)}`} selected={row.values} suggestions={suggestions} onRename={onRename} onDelete={onDelete} onChange={onChange} />
+    </div>
+  );
+}
+
+/** The edit window for one specification's values. It only exists while open, so it always starts from what is current. */
+function ValuesDialog(props: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  selected: string[];
+  suggestions: string[];
+  onRename: (from: string, to: string) => void;
+  onDelete: (value: string) => void;
+  onChange: (values: string[]) => void;
+}) {
+  if (!props.open) return null;
+  return <ValuesDialogBody {...props} />;
+}
+
+interface ValueRow {
+  orig: string;
+  name: string;
+  on: boolean;
+  was: boolean;
+  removed: boolean;
+}
+
+/**
+ * Every value of the specification in one list, in alphabetical order: tick the ones that are on this product, rename any of them, or
+ * remove them. Nothing changes until Save, which appears as soon as something has been changed. Closing with changes asks first.
+ */
+function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onDelete, onChange }: { onClose: () => void; title: string; selected: string[]; suggestions: string[]; onRename: (from: string, to: string) => void; onDelete: (value: string) => void; onChange: (values: string[]) => void }) {
+  const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+  const [rows, setRows] = useState<ValueRow[]>(() => alpha(uniqueValues([...selected, ...suggestions])).map((v) => ({ orig: v, name: v, on: selected.some((x) => same(x, v)), was: selected.some((x) => same(x, v)), removed: false })));
+  const [asking, setAsking] = useState(false);
+  const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig) || r.on !== r.was);
+  const patchRow = (orig: string, p: Partial<ValueRow>) => setRows((cur) => cur.map((r) => (r.orig === orig ? { ...r, ...p } : r)));
+
+  const save = () => {
+    const kept = rows.filter((r) => !r.removed);
+    for (const r of rows.filter((x) => x.removed)) onDelete(r.orig);
+    const finalName = (r: ValueRow) => (r.name.trim() || r.orig).trim();
+    for (const r of kept) if (!same(finalName(r), r.orig)) onRename(r.orig, finalName(r));
+    // Keep the order of the values already on the product, then add newly ticked ones alphabetically.
+    const names = new Map(kept.map((r) => [r.orig.toLowerCase(), r]));
+    const stay = selected.map((v) => names.get(v.toLowerCase())).filter((r): r is ValueRow => Boolean(r?.on));
+    const added = kept.filter((r) => r.on && !stay.includes(r));
+    onChange(uniqueValues([...stay.map(finalName), ...alpha(added.map(finalName))]));
+    onClose();
+  };
+
+  return (
+    <>
+      <Dialog
+        open
+        onClose={() => (dirty ? setAsking(true) : onClose())}
+        title={title}
+        headerActions={
+          dirty ? (
+            <Button size="md" onClick={save}>
+              Save
+            </Button>
+          ) : null
+        }
+      >
+        {rows.filter((r) => !r.removed).length === 0 ? <p className="text-sm text-text-muted">No values.</p> : null}
+        <ul className="space-y-2">
+          {rows
+            .filter((r) => !r.removed)
+            .map((r) => (
+              <li key={r.orig} className="flex items-center gap-2">
+                <input type="checkbox" aria-label={`${r.orig} is on this product`} checked={r.on} onChange={(e) => patchRow(r.orig, { on: e.target.checked })} className="size-5 shrink-0" />
+                <input
+                  aria-label={`Name of ${r.orig}`}
+                  className={input}
+                  value={r.name}
+                  maxLength={200}
+                  onKeyDown={(e) => {
+                    // Enter must not submit the product form behind the window.
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
+                  onChange={(e) => patchRow(r.orig, { name: e.target.value })}
+                />
+                <span className="flex w-16 shrink-0 items-center justify-end gap-1">
+                  {r.on ? <Check aria-label="On this product" role="img" className="size-4 text-walnut" /> : null}
+                  <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.orig, { removed: true })} className="inline-flex size-9 items-center justify-center text-text-muted hover:text-danger">
+                    <X aria-hidden="true" className="size-4" />
+                  </button>
+                </span>
               </li>
             ))}
         </ul>
-      ) : null}
-    </div>
+      </Dialog>
+      <ConfirmDialog open={asking} onClose={() => setAsking(false)} title="Discard your changes?" description="Your changes have not been saved. Press Save in the top right to keep them." confirmLabel="Discard" destructive onConfirm={() => onClose()} />
+    </>
   );
 }
 
@@ -265,12 +451,18 @@ function AddSpecification({
   used,
   onAdd,
   onCreate,
+  onRename,
+  onDelete,
 }: {
   catalog: SpecCatalogItem[];
   used: Set<string>;
   onAdd: (item: SpecCatalogItem) => void;
   onCreate: (label: string, valueType: "text" | "list") => Promise<void>;
+  onRename: (key: string, label: string) => void;
+  onDelete: (key: string) => void;
 }) {
+  const [typesOpen, setTypesOpen] = useState(false);
+  const ownTypes = catalog.filter((c) => c.group === "Your own types");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -298,7 +490,7 @@ function AddSpecification({
   }, [open]);
 
   const q = query.trim().toLowerCase();
-  const matches = useMemo(() => catalog.filter((c) => !used.has(c.key) && (!q || c.label.toLowerCase().includes(q))), [catalog, used, q]);
+  const matches = useMemo(() => catalog.filter((c) => !used.has(c.key) && (!q || c.label.toLowerCase().startsWith(q))).sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" })), [catalog, used, q]);
   const groups = useMemo(() => [...SPEC_GROUPS, "Your own types"].filter((g) => matches.some((m) => m.group === g)), [matches]);
   const ordered = useMemo(() => groups.flatMap((g) => matches.filter((m) => m.group === g)), [groups, matches]);
 
@@ -441,11 +633,72 @@ function AddSpecification({
                   </li>
                 ))}
               </ul>
+              {ownTypes.length > 0 ? (
+                <button type="button" onClick={() => setTypesOpen(true)} className="flex min-h-10 w-full items-center gap-2 border-t border-border px-3 text-left text-[0.8125rem] hover:bg-black/5">
+                  <Pencil aria-hidden="true" className="size-3.5" />
+                  Edit your own types
+                </button>
+              ) : null}
             </>
           )}
         </div>
       ) : null}
+      {typesOpen ? <OwnTypesDialog types={ownTypes} onRename={onRename} onDelete={onDelete} onClose={() => setTypesOpen(false)} /> : null}
       {!open ? <p className="mt-1.5 text-sm text-text-muted">Pick from the list of types, or create your own. Types you do not add are not shown on the product page.</p> : null}
     </div>
+  );
+}
+
+/** The edit window for the staff's own specification types: change names or remove them, then Save. Closing with changes asks first. */
+function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCatalogItem[]; onRename: (key: string, label: string) => void; onDelete: (key: string) => void; onClose: () => void }) {
+  const [rows, setRows] = useState(() => types.map((t) => ({ key: t.key, orig: t.label, name: t.label, removed: false })));
+  const [asking, setAsking] = useState(false);
+  const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig));
+  const patchRow = (key: string, p: Partial<(typeof rows)[number]>) => setRows((cur) => cur.map((r) => (r.key === key ? { ...r, ...p } : r)));
+  const save = () => {
+    for (const r of rows) {
+      if (r.removed) onDelete(r.key);
+      else if (r.name.trim() && r.name.trim() !== r.orig) onRename(r.key, r.name.trim());
+    }
+    onClose();
+  };
+  const shown = rows.filter((r) => !r.removed);
+  return (
+    <>
+      <Dialog
+        open
+        onClose={() => (dirty ? setAsking(true) : onClose())}
+        title="Edit your own types"
+        headerActions={
+          dirty ? (
+            <Button size="md" onClick={save}>
+              Save
+            </Button>
+          ) : null
+        }
+      >
+        {shown.length === 0 ? <p className="text-sm text-text-muted">You have no types of your own.</p> : null}
+        <ul className="space-y-2">
+          {shown.map((r) => (
+            <li key={r.key} className="flex items-center gap-2">
+              <input
+                aria-label={`Name of ${r.orig}`}
+                className={input}
+                value={r.name}
+                maxLength={60}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
+                onChange={(e) => patchRow(r.key, { name: e.target.value })}
+              />
+              <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.key, { removed: true })} className="inline-flex size-9 shrink-0 items-center justify-center text-text-muted hover:text-danger">
+                <X aria-hidden="true" className="size-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Dialog>
+      <ConfirmDialog open={asking} onClose={() => setAsking(false)} title="Discard your changes?" description="Your changes have not been saved. Press Save in the top right to keep them." confirmLabel="Discard" destructive onConfirm={() => onClose()} />
+    </>
   );
 }

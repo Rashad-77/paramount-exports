@@ -15,6 +15,7 @@ export function Dialog({
   description,
   children,
   wide = false,
+  headerActions,
 }: {
   open: boolean;
   onClose: () => void;
@@ -23,6 +24,8 @@ export function Dialog({
   children?: ReactNode;
   /** A larger window, for a preview. */
   wide?: boolean;
+  /** Buttons shown in the top right, next to the close cross (for example Save). */
+  headerActions?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -36,7 +39,11 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      onClose={onClose}
+      onCancel={(e) => {
+        // Escape: the caller decides whether to close (it may ask about unsaved changes first).
+        e.preventDefault();
+        onClose();
+      }}
       onClick={(e) => {
         // Click on the backdrop (the dialog element itself) closes it.
         if (e.target === ref.current) onClose();
@@ -56,14 +63,17 @@ export function Dialog({
             </p>
           ) : null}
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close dialog"
-          className="inline-flex size-10 shrink-0 items-center justify-center hover:bg-linen"
-        >
-          <X aria-hidden="true" className="size-5" />
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {headerActions}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close dialog"
+            className="inline-flex size-10 shrink-0 items-center justify-center hover:bg-linen"
+          >
+            <X aria-hidden="true" className="size-5" />
+          </button>
+        </div>
       </div>
       <div className="p-5">{children}</div>
     </dialog>
