@@ -1,3 +1,5 @@
+import { slugify } from "@/lib/contact";
+
 /**
  * Product specifications: one uniform list of "type → value" rows, shared by the staff form, the server and the public product page.
  * A row is a plain text value, a list of values (several materials, say) or a set of dimensions (W / D / H with a unit).
@@ -77,19 +79,19 @@ export const SPEC_CATALOG: SpecCatalogItem[] = [
 
 export const catalogItem = (key: string) => SPEC_CATALOG.find((c) => c.key === key);
 
-/** "W 180 × D 90 × H 75 cm". Blank sides are left out. */
+/** "W 180 × L 90 × H 75 cm" (width, length, height). Blank sides are left out. The length is stored as `d`, as it was when it was called depth. */
 export function formatDims(d: Dims): string {
-  const parts = [d.w && `W ${d.w}`, d.d && `D ${d.d}`, d.h && `H ${d.h}`].filter(Boolean);
+  const parts = [d.w && `W ${d.w}`, d.d && `L ${d.d}`, d.h && `H ${d.h}`].filter(Boolean);
   return parts.length ? `${parts.join(" × ")} ${d.unit}` : "";
 }
 
-/** Reads "W 180 × D 90 × H 75 cm" back into its parts. Anything it cannot read comes back null and stays as text. */
+/** Reads "W 180 × L 90 × H 75 cm" (or the older "D" for depth) back into its parts. Anything it cannot read comes back null and stays as text. */
 export function parseDimsText(text: string): Dims | null {
   const t = text.trim();
-  if (!/^[WDH]\s*[\d.]+(\s*[×x]\s*[WDH]\s*[\d.]+)*\s*(mm|cm|m|in|ft)?$/i.test(t)) return null;
+  if (!/^[WDLH]\s*[\d.]+(\s*[×x]\s*[WDLH]\s*[\d.]+)*\s*(mm|cm|m|in|ft)?$/i.test(t)) return null;
   const unit = (t.match(/(mm|cm|m|in|ft)\s*$/i)?.[1]?.toLowerCase() ?? "cm") as DimUnit;
   const get = (letter: string) => t.match(new RegExp(`${letter}\\s*([\\d.]+)`, "i"))?.[1] ?? "";
-  return { w: get("W"), d: get("D"), h: get("H"), unit };
+  return { w: get("W"), d: get("L") || get("D"), h: get("H"), unit };
 }
 
 /** Drops empty rows and writes each dimensions row's text, so every row can be shown or searched as plain values. */
@@ -115,3 +117,20 @@ export function legacyColumns(specs: SpecEntry[]) {
 }
 
 export const specText = (e: SpecEntry) => e.values.join(", ");
+
+/** A type the staff created, saved for later products. */
+export interface SavedSpecType {
+  key: string;
+  label: string;
+  type: "text" | "list";
+}
+
+/** The key a created type is stored under: the same name always gives the same key. A name that is already a built-in type uses that type's key. */
+export function specKeyFor(label: string): string {
+  const clean = label.trim();
+  const builtin = SPEC_CATALOG.find((c) => c.label.toLowerCase() === clean.toLowerCase());
+  return builtin ? builtin.key : `custom-${slugify(clean) || "type"}`;
+}
+
+/** True when a value is already one of a built-in type's own suggestions (so it does not need saving). */
+export const isBuiltinSuggestion = (key: string, value: string) => (catalogItem(key)?.suggestions ?? []).some((s) => s.toLowerCase() === value.trim().toLowerCase());

@@ -17,6 +17,7 @@ import {
 } from "@/lib/schemas/catalogue";
 import { slugify } from "@/lib/contact";
 import { legacyColumns, normalizeSpecs, type SpecEntry } from "@/lib/specifications";
+import { persistSpecs } from "./specs";
 import { recordAudit } from "./audit";
 import { linkUploads, publicFileUrl, verifyUploads, type VerifiedFile } from "./files";
 import type { BucketName } from "@/lib/storage";
@@ -301,7 +302,7 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
     return await withTx(async (tx) => {
       await assertCategoryUsable(tx, input.categoryId);
       const slugValue = input.slug ? resolveSlug(input.slug, input.name) : await uniqueProductSlug(tx, input.name);
-      const specs = f.specs ?? specsFromLegacy({ material: input.material, finish: input.finish, dimensions: input.dimensions });
+      const specs = await persistSpecs(tx, f.specs ?? specsFromLegacy({ material: input.material, finish: input.finish, dimensions: input.dimensions }));
       const [p] = await tx
         .insert(products)
         .values({
@@ -361,8 +362,9 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
         if (n === 0) throw validation("Add a price to at least one option, or untick “Show price publicly”.", { showPrice: ["No option has a price yet."] });
       }
       // Without a specification list (the older form) only the fields that were sent change.
-      const specColumns = f.specs
-        ? { specifications: f.specs, material: f.legacy.material, finish: f.legacy.finish, dimensions: f.legacy.dimensions, colour: f.legacy.colour }
+      const savedSpecs = f.specs ? await persistSpecs(tx, f.specs) : null;
+      const specColumns = savedSpecs
+        ? { specifications: savedSpecs, material: f.legacy.material, finish: f.legacy.finish, dimensions: f.legacy.dimensions, colour: f.legacy.colour }
         : { material: f.legacy.material, finish: f.legacy.finish, dimensions: f.legacy.dimensions };
       const wasArchived = before.archivedAt !== null;
       const nowPublished = f.archived ? false : f.isPublished;

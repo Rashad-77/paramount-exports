@@ -7,13 +7,14 @@ const base = { name: "Oak table", categoryId: "4ca1b82b-a149-4bf2-aece-d2558c77a
 
 describe("dimensions", () => {
   it("writes width, depth and height with one unit, leaving blank sides out", () => {
-    expect(formatDims({ w: "180", d: "90", h: "75", unit: "cm" })).toBe("W 180 × D 90 × H 75 cm");
+    expect(formatDims({ w: "180", d: "90", h: "75", unit: "cm" })).toBe("W 180 × L 90 × H 75 cm");
     expect(formatDims({ w: "120", d: "", h: "", unit: "mm" })).toBe("W 120 mm");
     expect(formatDims({ w: "", d: "", h: "", unit: "cm" })).toBe("");
   });
 
-  it("reads earlier free-text dimensions back, and gives up on anything else", () => {
+  it("reads the older depth (D) as length, and gives up on anything else", () => {
     expect(parseDimsText("W 160 × D 45 × H 80 cm")).toEqual({ w: "160", d: "45", h: "80", unit: "cm" });
+    expect(parseDimsText("W 160 × L 45 × H 80 cm")).toEqual({ w: "160", d: "45", h: "80", unit: "cm" });
     expect(parseDimsText("W 2.4 m")).toEqual({ w: "2.4", d: "", h: "", unit: "m" });
     expect(parseDimsText("Ø 35 × H 45 cm")).toBeNull();
     expect(parseDimsText("about a metre")).toBeNull();
@@ -33,7 +34,7 @@ describe("specification rows", () => {
     const out = normalizeSpecs(rows);
     expect(out.map((r) => r.key)).toEqual(["material", "dimensions", "custom-1", "colour"]);
     expect(out[0]!.values).toEqual(["Teak", "Oak"]);
-    expect(out[1]!.values).toEqual(["W 120 × D 60 × H 45 cm"]);
+    expect(out[1]!.values).toEqual(["W 120 × L 60 × H 45 cm"]);
   });
 
   it("keeps older free-text dimensions that have not been filled in yet", () => {
@@ -42,7 +43,7 @@ describe("specification rows", () => {
   });
 
   it("keeps the older single-value columns in step: several materials are joined", () => {
-    expect(legacyColumns(normalizeSpecs(rows))).toEqual({ material: "Teak, Oak", finish: null, dimensions: "W 120 × D 60 × H 45 cm", colour: "Natural" });
+    expect(legacyColumns(normalizeSpecs(rows))).toEqual({ material: "Teak, Oak", finish: null, dimensions: "W 120 × L 60 × H 45 cm", colour: "Natural" });
   });
 });
 

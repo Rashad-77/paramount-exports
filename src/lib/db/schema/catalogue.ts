@@ -164,3 +164,25 @@ export const galleryImages = pgTable(
   },
   (t) => [index("gallery_images_project_idx").on(t.projectId), unique("gallery_images_file_key").on(t.fileId)],
 );
+
+/** Specification types the staff have created (the built-in ones live in code). */
+export const specTypes = pgTable(
+  "spec_types",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    key: text("key").notNull().unique(),
+    label: text("label").notNull(),
+    /** "text" (one value) or "list" (several values). */
+    valueType: text("value_type").notNull().default("text"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [check("spec_types_value_type_known", sql`${t.valueType} IN ('text', 'list')`)],
+);
+
+/** Values staff have typed for a several-value type (material names and the like), offered again next time. */
+export const specValues = pgTable("spec_values", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  typeKey: text("type_key").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -67,7 +67,7 @@ export function PanelSelect({
   };
 
   return (
-    <div ref={root} className="relative flex flex-col gap-1.5">
+    <div ref={root} className={cn("relative flex flex-col", compact ? "gap-1" : "gap-1.5")}>
       <label htmlFor={`${id}-button`} className={compact ? "text-xs font-medium text-text-muted" : "text-sm font-medium tracking-[0.01em] text-text"}>
         {label}
         {required ? (
@@ -86,7 +86,7 @@ export function PanelSelect({
         aria-expanded={open}
         data-invalid={error ? true : undefined}
         onClick={() => setOpen((o) => !o)}
-        className="text-[0.8125rem] flex min-h-11 w-full items-center justify-between gap-2 border border-border-strong bg-surface px-3 py-2 text-left data-[invalid=true]:border-2 data-[invalid=true]:border-danger md:min-h-10"
+        className={cn("flex w-full items-center justify-between gap-2 border border-border-strong bg-surface px-3 text-left text-[0.8125rem] data-[invalid=true]:border-2 data-[invalid=true]:border-danger", compact ? "h-9 py-0" : "min-h-11 py-2 md:min-h-10")}
       >
         <span className={cn("truncate", !chosen && quietPlaceholder && "text-text-muted/70")}>{chosen ? (chosen.display ?? chosen.label) : placeholder}</span>
         <ChevronDown aria-hidden="true" className="size-4 shrink-0" />

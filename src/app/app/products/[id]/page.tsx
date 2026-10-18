@@ -7,6 +7,7 @@ import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { isAppError } from "@/lib/errors";
 import { getBusinessSettings } from "@/lib/settings";
+import { listSpecCatalogExtras } from "@/server/specs";
 import { getProductAdmin, listCategories } from "@/server/catalogue";
 import { updateProductAction } from "../actions";
 
@@ -26,9 +27,10 @@ export default async function ProductAdminPage({
     if (isAppError(e) && e.code === "NOT_FOUND") notFound();
     throw e;
   }
-  const [cats, business] = await Promise.all([
+  const [cats, business, saved] = await Promise.all([
     listCategories(actor),
     getBusinessSettings(),
+    listSpecCatalogExtras(actor),
   ]);
   const canWrite = can(actor, "products:write");
   const { product, variants, images } = data;
@@ -69,6 +71,8 @@ export default async function ProductAdminPage({
             <ProductForm
               action={updateProductAction}
               currency={business.currency}
+              savedTypes={saved.types}
+              savedValues={saved.values}
               categories={cats.filter(
                 (c) => !c.archivedAt || c.id === product.categoryId,
               )}

@@ -4,6 +4,7 @@ import { PageHeader, Panel } from "@/components/ui/page-header";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { getBusinessSettings } from "@/lib/settings";
+import { listSpecCatalogExtras } from "@/server/specs";
 import { listCategories } from "@/server/catalogue";
 import { createProductAction } from "../actions";
 
@@ -12,7 +13,7 @@ export const metadata = { title: "Add product" };
 export default async function NewProductPage() {
   const actor = await requireActor();
   if (!can(actor, "products:write")) redirect("/app/products");
-  const [allCats, business] = await Promise.all([listCategories(actor), getBusinessSettings()]);
+  const [allCats, business, saved] = await Promise.all([listCategories(actor), getBusinessSettings(), listSpecCatalogExtras(actor)]);
   const cats = allCats.filter((c) => !c.archivedAt);
   return (
     <>
@@ -31,6 +32,8 @@ export default async function NewProductPage() {
             action={createProductAction}
             categories={cats}
             currency={business.currency}
+            savedTypes={saved.types}
+            savedValues={saved.values}
             submitLabel="Create product"
           />
         )}

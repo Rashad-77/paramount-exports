@@ -6,7 +6,7 @@ import { ReviewAndSave } from "@/components/app/review-and-save";
 import { SpecificationsEditor } from "@/components/app/spec-editor";
 import type { ActionState } from "@/lib/action-state";
 import { toCascadeGroups, treeLabel, treeOrder } from "@/lib/category-tree";
-import type { SpecEntry } from "@/lib/specifications";
+import type { SavedSpecType, SpecEntry } from "@/lib/specifications";
 
 export interface ProductFormValues {
   id?: string;
@@ -33,12 +33,16 @@ export function ProductForm({
   values = {},
   currency,
   submitLabel,
+  savedTypes,
+  savedValues,
 }: {
   action: (prev: ActionState, fd: FormData) => Promise<ActionState>;
   categories: Array<{ id: string; name: string; parentId: string | null }>;
   values?: ProductFormValues;
   currency: string;
   submitLabel: string;
+  savedTypes?: SavedSpecType[];
+  savedValues?: Record<string, string[]>;
 }) {
   const sorted = treeOrder(categories).map(({ id, name, parentId }) => ({ id, name, parentId }));
   return (
@@ -60,7 +64,7 @@ export function ProductForm({
 
       <fieldset className="space-y-4 border border-border p-4">
         <legend className="px-1 text-sm font-semibold">Specifications</legend>
-        <SpecificationsEditor initial={values.specifications ?? []} kind={values.kind ?? "stocked"} />
+        <SpecificationsEditor initial={values.specifications ?? []} kind={values.kind ?? "stocked"} savedTypes={savedTypes} savedValues={savedValues} />
       </fieldset>
 
       <fieldset className="space-y-6 border border-border p-4">
@@ -69,7 +73,7 @@ export function ProductForm({
           visibility={values.visibility ?? "draft"}
           isFeatured={values.isFeatured}
           isPremium={values.isPremium}
-          availability={values.availability}
+          availability={values.id ? values.availability : (values.availability ?? "in_stock")}
           stockQuantity={values.stockQuantity}
           price={values.listPrice}
           currency={currency}

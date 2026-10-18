@@ -206,8 +206,7 @@ export function CascadeFilter({
           })}
         </ul>
         {active && active.children.length > 0 ? (
-          <div className={cn("absolute top-0 z-30 hidden max-h-80 w-60", flip ? "right-full mr-1" : "left-full ml-1", " overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:block", panel)}>
-            <p className="px-1 pb-0.5 pt-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted">{active.name}</p>
+          <div className={cn("absolute top-0 z-30 hidden w-60", flip ? "right-full mr-1" : "left-full ml-1", " md:block", panel)}>
             <ul>
               {active.children.map((c) =>
                 multiple ? (
