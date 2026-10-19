@@ -130,29 +130,17 @@
   opacity: 1;
 }
 
-/* Scrollbars: slim and quiet everywhere, instead of the browser's wide default bar */
+/* Keep scrollable content usable without showing unnecessary scrollbar chrome. */
 html {
-  scrollbar-width: thin;
-  scrollbar-color: #b9b3aa transparent;
+  scrollbar-width: none;
 }
 html *,
 html *::before,
 html *::after {
-  scrollbar-color: #b9b3aa transparent;
+  scrollbar-width: none;
 }
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #b9b3aa;
-  border: 3px solid transparent;
-  background-clip: content-box;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #8f887e;
-  background-clip: content-box;
+  display: none;
+  width: 0;
+  height: 0;
 }

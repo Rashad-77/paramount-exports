@@ -30,8 +30,9 @@ export function TR({ className, ...props }: HTMLAttributes<HTMLTableRowElement>)
 }
 
 export function TH({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
+  const scope = props.scope ?? "col";
   return (
-    <th scope="col" className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap", className)} {...props} />
+    <th {...props} scope={scope} className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap", className, scope === "row" ? "text-left" : "text-center")} />
   );
 }
 
@@ -56,9 +57,9 @@ export function SortHeader({
     <th
       scope="col"
       aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
-      className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap", className)}
+      className={cn("px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted whitespace-nowrap text-center", className, "text-center")}
     >
-      <Link href={href} className="inline-flex items-center gap-1 hover:text-text">
+      <Link href={href} className="mx-auto inline-flex items-center justify-center gap-1 hover:text-text">
         {label}
         <Icon aria-hidden="true" className="size-3.5" strokeWidth={1.75} />
       </Link>

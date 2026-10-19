@@ -98,7 +98,7 @@ export default async function CustomerPage({
                           </Link>
                         </TD>
                         <TD>
-                          <OrderTag status={o.status} />
+                          <OrderTag status={o.status} isPaid={o.isPaid} fulfilment={o.fulfilment} />
                         </TD>
                         <TD numeric>{formatMoney(o.total, o.currency)}</TD>
                         <TD className="hidden whitespace-nowrap sm:table-cell">

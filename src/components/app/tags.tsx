@@ -1,6 +1,6 @@
-import { Bell, CheckCheck, CircleCheck, CircleX, Hammer, Package, Truck, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, CheckCheck, CircleCheck, CircleX, Package, Truck, Wallet, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import type { OrderStatus } from "@/lib/order-constants";
+import type { Fulfilment, OrderStatus } from "@/lib/order-constants";
 import { STATUS_LABEL } from "@/lib/order-constants";
 import { STAFF_QUOTE_LABEL, type QuoteStatus } from "@/lib/quotation-ui";
 
@@ -19,18 +19,22 @@ export function Tag({ color, icon: Icon, children }: { color: TagColor; icon: Lu
 const ORDER: Record<OrderStatus, { color: TagColor; icon: LucideIcon }> = {
   new: { color: "yellow", icon: Bell },
   confirmed: { color: "teal", icon: CircleCheck },
-  in_progress: { color: "amber", icon: Hammer },
+  in_progress: { color: "teal", icon: CircleCheck },
   ready: { color: "purple", icon: Package },
   out_for_delivery: { color: "orange", icon: Truck },
   delivered: { color: "green", icon: CheckCheck },
   cancelled: { color: "red", icon: CircleX },
 };
 
-export function OrderTag({ status }: { status: OrderStatus }) {
-  const { color, icon } = ORDER[status];
+export function OrderTag({ status, isPaid = false, fulfilment = "delivery" }: { status: OrderStatus; isPaid?: boolean; fulfilment?: Fulfilment }) {
+  const displayStatus = status === "in_progress" ? "confirmed" : status;
+  const { color, icon } = ORDER[displayStatus];
+  const label = status === "delivered" && !isPaid
+    ? fulfilment === "pickup" ? "Collected" : "Delivered"
+    : STATUS_LABEL[displayStatus];
   return (
     <Tag color={color} icon={icon}>
-      {STATUS_LABEL[status]}
+      {label}
     </Tag>
   );
 }

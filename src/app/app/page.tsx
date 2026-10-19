@@ -96,11 +96,6 @@ export default async function DashboardPage() {
           attention={d.pendingQuotations > 0}
         />
         <Figure
-          label="Orders in production"
-          value={d.counts.in_progress}
-          href="/app/orders?view=in_progress"
-        />
-        <Figure
           label="Ready for collection or delivery"
           value={d.counts.ready + d.counts.out_for_delivery}
           href="/app/orders?view=ready"
@@ -148,7 +143,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <OrderTag status={o.status} />
+                      <OrderTag status={o.status} isPaid={o.isPaid} fulfilment={o.fulfilment} />
                       <span className="text-sm font-medium">
                         {formatMoney(o.total, o.currency)}
                       </span>

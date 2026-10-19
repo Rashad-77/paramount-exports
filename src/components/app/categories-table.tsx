@@ -185,12 +185,14 @@ export function CategoriesTable({
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Category</TH>
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Subcategory</TH>
               <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Products</TH>
-              <TH className="px-2 py-1.5 text-left border-r border-border-strong/50 last:border-r-0">Status</TH>
+              <TH className="px-2 py-1.5 border-r border-border-strong/50 last:border-r-0">
+                <span className="flex justify-center">Status</span>
+              </TH>
             </tr>
           </THead>
           <tbody>
-            {rows.map((c, i) => (
-              <TR key={c.id} className={(selected.has(c.id) ? "bg-linen " : "") + "border-b border-border-strong/50" + (c.depth === 0 && i > 0 ? " border-t-2 border-t-border-strong" : "")}>
+            {rows.map((c) => (
+              <TR key={c.id} className={(selected.has(c.id) ? "bg-linen " : "") + "border-b border-border-strong/50" + (c.depth === 0 ? " border-t-2 border-border-strong/50" : "")}>
                 <TD className={"tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0 " + (c.depth ? "text-text-muted" : "font-medium")}>
                   <span className="flex items-center justify-between gap-3">
                     {c.number}
@@ -201,7 +203,7 @@ export function CategoriesTable({
                   {c.depth ? (
                     c.showGroup && c.groupName ? <span className="text-text-muted">{c.groupName}</span> : null
                   ) : (
-                    <Link href={`/app/categories/${c.id}`} className="font-semibold text-walnut underline">
+                    <Link href={`/app/categories/${c.id}`} className="font-normal text-walnut underline">
                       {c.name}
                     </Link>
                   )}
@@ -214,9 +216,15 @@ export function CategoriesTable({
                   ) : null}
                 </TD>
                 <TD className="tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">{c.productCount}</TD>
-                <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
-                  <span title={c.inherited ? `Follows ${c.groupName ?? "its main category"}` : undefined}>
-                    {c.status === "archived" ? <StatusBadge>Archived</StatusBadge> : c.status === "visible" ? <StatusBadge tone="success">Visible</StatusBadge> : <StatusBadge tone="warning">Hidden</StatusBadge>}
+                <TD className="px-2 py-1 border-r border-border-strong/50 last:border-r-0">
+                  <span className="flex justify-center" title={c.inherited ? `Follows ${c.groupName ?? "its main category"}` : undefined}>
+                    {c.status === "archived" ? (
+                      <StatusBadge className="!border-[#475569] !bg-[#475569] !text-white">Archived</StatusBadge>
+                    ) : c.status === "visible" ? (
+                      <StatusBadge tone="success" className="!border-[#15803d] !bg-[#15803d] !text-white">Visible</StatusBadge>
+                    ) : (
+                      <StatusBadge tone="warning" className="!border-[#b45309] !bg-[#b45309] !text-white">Hidden</StatusBadge>
+                    )}
                   </span>
                 </TD>
               </TR>

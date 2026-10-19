@@ -6,7 +6,6 @@ export const ORDER_STATUS_TONE: Record<OrderStatus, Tone> = { new: "info", confi
 /** What each button that moves an order forward says. */
 export const NEXT_STATUS_ACTION: Partial<Record<OrderStatus, string>> = {
   confirmed: "Confirm order",
-  in_progress: "Start production",
   ready: "Mark as ready",
   out_for_delivery: "Send out for delivery",
   delivered: "Mark as completed",

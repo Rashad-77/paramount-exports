@@ -1,6 +1,7 @@
 node_modules
 .next
 .next-e2e
+.next-scrollbar-dev
 out
 coverage
 playwright-report

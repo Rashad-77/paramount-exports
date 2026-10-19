@@ -35,6 +35,21 @@ export async function setStatusAction(
   });
 }
 
+/** Status corrections selected from the orders table can move directly to any tag. */
+export async function setStatusFromListAction(
+  _p: ActionState,
+  fd: FormData,
+): Promise<ActionState> {
+  return runAction(fd, orderStatusSchema, async (input, { actor }) => {
+    await setOrderStatus(actor!, input.id, input.status, input.reason, true);
+    refresh(input.id);
+    return {
+      message:
+        input.status === "cancelled" ? "Order cancelled." : `Order status changed to ${String(input.status).replace(/_/g, " ")}.`,
+    };
+  });
+}
+
 export async function updateDetailsAction(
   _p: ActionState,
   fd: FormData,

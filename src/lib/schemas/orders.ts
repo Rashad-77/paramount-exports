@@ -57,16 +57,12 @@ export const checkoutSchema = z
   });
 export type CheckoutInput = z.output<typeof checkoutSchema>;
 
-/** Staff: move an order to its next status, or cancel it with a reason. */
-export const orderStatusSchema = z
-  .object({
-    id: z.uuid(),
-    status: enumOf(ORDER_STATUSES, "status"),
-    reason: optText("Reason", 400),
-  })
-  .superRefine((v, ctx) => {
-    if (v.status === "cancelled" && !v.reason) ctx.addIssue({ code: "custom", path: ["reason"], message: "Say why the order is being cancelled." });
-  });
+/** Staff: move an order to its next status, with an optional cancellation reason. */
+export const orderStatusSchema = z.object({
+  id: z.uuid(),
+  status: enumOf(ORDER_STATUSES, "status"),
+  reason: optText("Reason", 400),
+});
 
 /** Staff: the delivery charge agreed with the customer, the paid flag, and an internal note. */
 export const orderDetailsSchema = z.object({

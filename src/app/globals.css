@@ -104,6 +104,11 @@
   }
 }
 
+/* Make interactive controls read as clickable throughout both the staff and public areas. */
+:where(a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [role="link"]:not([aria-disabled="true"]), [role="tab"], summary, select:not(:disabled), input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled)) {
+  cursor: pointer;
+}
+
 @layer components {
   .container-page {
     width: 100%;
@@ -723,6 +728,13 @@ html:has(.app-ui) {
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+  transition: transform 120ms ease-out;
+  transform-origin: center;
+}
+.tag:hover {
+  position: relative;
+  z-index: 1;
+  transform: scale(1.02);
 }
 .tag svg {
   width: 0.9rem;
@@ -752,6 +764,18 @@ html:has(.app-ui) {
 .app-ui [role="region"][tabindex="0"] > table {
   min-width: 46rem;
 }
+.app-ui [role="region"][tabindex="0"] > table :is(th, td) + :is(th, td) {
+  border-left: 1px solid var(--color-border);
+}
+.app-ui [role="region"][tabindex="0"] > table thead th[scope="col"],
+.app-ui [role="region"][tabindex="0"] > table thead th[scope="colgroup"] {
+  text-align: center !important;
+}
+.app-ui [role="region"][tabindex="0"] > table thead th[scope="col"] > a {
+  display: flex;
+  justify-content: center;
+  margin-inline: auto;
+}
 .app-ui [role="region"][tabindex="0"] td,
 .app-ui [role="region"][tabindex="0"] th {
   white-space: nowrap;
@@ -763,21 +787,16 @@ html:has(.app-ui) {
   min-width: 12rem;
 }
 
-/* A slim sideways scrollbar under a table that is wider than the screen, so it is clear the table can be scrolled. */
+/* Keep narrow tables touch/trackpad-scrollable without a visible scrollbar. */
 .app-ui [role="region"][tabindex="0"] {
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: #9ca3af #fff;
+  scrollbar-width: none;
 }
 .app-ui [role="region"][tabindex="0"]::-webkit-scrollbar {
-  height: 6px;
-}
-.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar-thumb {
-  background: #9ca3af;
-}
-.app-ui [role="region"][tabindex="0"]::-webkit-scrollbar-track {
-  background: #fff;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Phones: the search box and its button each take the full width. */

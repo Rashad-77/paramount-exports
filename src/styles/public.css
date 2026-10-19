@@ -2772,7 +2772,7 @@ a.acct-row {
   flex-direction: column;
   align-items: center;
   gap: 0.55rem;
-  text-align: center;
+  text-align: center !important;
 }
 .ot-bar li::before {
   content: "";
@@ -4324,6 +4324,7 @@ select:focus {
   text-transform: uppercase;
   color: rgb(28 25 22 / 0.7);
   background: #f7f5f2;
+  text-align: center;
 }
 .acct-table .num {
   width: 8rem;

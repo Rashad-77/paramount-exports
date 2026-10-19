@@ -1,10 +1,10 @@
 import "server-only";
-import { and, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { normaliseEmail, phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
 import { outer } from "@/lib/db/outer";
-import { messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
+import { auditLogs, messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
 import { conflict, invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
 import { hitRateLimit } from "@/lib/rate-limit";
@@ -133,7 +133,10 @@ export interface OrderListFilters {
   fulfilment?: Fulfilment;
   /** Only these statuses (several at once), e.g. everything waiting to be delivered. */
   statuses?: OrderStatus[];
+  statusFilters?: (OrderStatus | "completed")[];
   q?: string;
+  sort?: "total_desc" | "total_asc" | "latest" | "oldest";
+  payments?: ("paid" | "unpaid")[];
   phoneKey?: string;
   page: number;
   pageSize: number;
@@ -145,8 +148,19 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
   if (f.status === "open") where.push(inArray(orders.status, [...OPEN_STATUSES]));
   else if (f.status) where.push(eq(orders.status, f.status));
   if (f.statuses?.length) where.push(inArray(orders.status, f.statuses));
+  if (f.statusFilters?.length) {
+    const statusConditions = f.statusFilters.map((status) =>
+      status === "completed"
+        ? and(eq(orders.status, "delivered"), eq(orders.isPaid, true))!
+        : status === "delivered"
+          ? and(eq(orders.status, "delivered"), eq(orders.isPaid, false))!
+          : eq(orders.status, status),
+    );
+    where.push(or(...statusConditions)!);
+  }
   if (f.payment === "unpaid") where.push(and(eq(orders.isPaid, false), sql`${orders.status} <> 'cancelled'`)!);
   if (f.payment === "paid") where.push(eq(orders.isPaid, true));
+  if (f.payments?.length === 1) where.push(eq(orders.isPaid, f.payments[0] === "paid"));
   if (f.fulfilment) where.push(eq(orders.fulfilment, f.fulfilment));
   if (f.phoneKey) where.push(eq(orders.phoneKey, f.phoneKey));
   if (f.q) {
@@ -171,14 +185,36 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         deliveryCharge: orders.deliveryCharge,
         scheduledFor: orders.scheduledFor,
         address: orders.address,
+        handledBy: orders.handledBy,
+        cancelReason: orders.cancelReason,
         createdAt: orders.createdAt,
+        confirmedAt: orders.confirmedAt,
+        readyAt: orders.readyAt,
+        outForDeliveryAt: orders.outForDeliveryAt,
+        deliveredAt: orders.deliveredAt,
+        cancelledAt: orders.cancelledAt,
+        statusChangedAt: sql<Date | null>`(
+          select max(${auditLogs.createdAt})
+          from ${auditLogs}
+          where ${auditLogs.entityType} = 'order'
+            and ${auditLogs.entityId} = ${orders.id}::text
+            and ${auditLogs.action} = 'order.' || ${orders.status}
+        )`,
         quantities: sql<string>`coalesce((SELECT string_agg(i.quantity::text, E'\n' ORDER BY i.position) FROM online_order_items i WHERE i.order_id = ${outer(orders.id)}), '')`,
         contents: sql<string>`coalesce((SELECT string_agg(i.product_name || coalesce(' · ' || i.variant_label, ''), E'\n' ORDER BY i.position) FROM online_order_items i WHERE i.order_id = ${outer(orders.id)}), '')`,
         itemCount: sql<number>`coalesce((SELECT sum(i.quantity)::int FROM online_order_items i WHERE i.order_id = ${outer(orders.id)}), 0)`,
       })
       .from(orders)
       .where(cond)
-      .orderBy(desc(orders.createdAt))
+      .orderBy(
+        ...(f.sort === "total_desc"
+          ? [desc(orders.total), desc(orders.createdAt)]
+          : f.sort === "total_asc"
+            ? [asc(orders.total), desc(orders.createdAt)]
+            : f.sort === "oldest"
+              ? [asc(orders.createdAt)]
+              : [desc(orders.createdAt)]),
+      )
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: count() }).from(orders).where(cond),
@@ -196,13 +232,14 @@ export async function getOrder(actor: Actor, id: string) {
   return { order, items };
 }
 
-export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number>> {
+export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number }> {
   requirePermission(actor, "orders:view");
-  const rows = await getDb().select({ status: orders.status, n: count() }).from(orders).groupBy(orders.status);
-  const out: Record<OrderStatus | "all", number> = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0 };
+  const rows = await getDb().select({ status: orders.status, isPaid: orders.isPaid, n: count() }).from(orders).groupBy(orders.status, orders.isPaid);
+  const out: Record<OrderStatus | "all", number> & { completed: number } = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
   for (const r of rows) {
-    out[r.status] = r.n;
+    out[r.status] += r.n;
     out.all += r.n;
+    if (r.status === "delivered" && r.isPaid) out.completed += r.n;
   }
   return out;
 }
@@ -211,12 +248,13 @@ export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderSta
 
 const NEXT: Record<OrderStatus, OrderStatus[]> = {
   new: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "ready", "cancelled"],
+  confirmed: ["ready", "cancelled"],
   in_progress: ["ready", "cancelled"],
   ready: ["out_for_delivery", "delivered", "cancelled"],
   out_for_delivery: ["delivered", "cancelled"],
-  delivered: [],
-  cancelled: [],
+  // Staff can correct a finished order from the list if it was tagged incorrectly.
+  delivered: ["new", "confirmed", "ready", "out_for_delivery"],
+  cancelled: ["new", "confirmed", "ready", "out_for_delivery", "delivered"],
 };
 
 /** What an order can become next. A showroom pickup is never "out for delivery". */
@@ -233,25 +271,47 @@ const STATUS_NOTE: Record<OrderStatus, string> = {
   cancelled: "has been cancelled",
 };
 
-export async function setOrderStatus(actor: Actor, id: string, status: OrderStatus, reason?: string): Promise<void> {
+export async function setOrderStatus(actor: Actor, id: string, status: OrderStatus, reason?: string, allowCorrection = false): Promise<void> {
   requirePermission(actor, status === "cancelled" ? "orders:cancel" : "orders:update");
   const business = await getBusinessSettings();
   let heardBy: { email: string | null; reference: string; name: string } | null = null;
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
-    if (!allowedNextStatuses(o.status, o.fulfilment).includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
+    if (!allowCorrection && !allowedNextStatuses(o.status, o.fulfilment).includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
     const now = new Date();
+    if (o.status === "cancelled" && status !== "cancelled") {
+      // Reopening a cancelled order consumes the stock that cancellation restored.
+      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
+      for (const it of items) {
+        if (!it.variantId) continue;
+        const taken = await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} - ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NULL OR ${productVariants.stockQuantity} >= ${it.quantity}`)).returning({ id: productVariants.id });
+        if (!taken.length) throw invalidState("There is not enough stock to reopen this order.");
+      }
+    }
     await tx
       .update(orders)
       .set({
         status,
         handledBy: actor.id,
-        ...(status === "confirmed" ? { confirmedAt: now } : {}),
-        ...(status === "ready" ? { readyAt: now } : {}),
-        ...(status === "out_for_delivery" ? { outForDeliveryAt: now } : {}),
-        ...(status === "delivered" ? { deliveredAt: now, confirmedAt: o.confirmedAt ?? now } : {}),
-        ...(status === "cancelled" ? { cancelledAt: now, cancelReason: reason ?? "Cancelled" } : {}),
+        confirmedAt:
+          status === "new"
+            ? null
+            : status === "confirmed"
+              ? now
+              : status === "delivered"
+                ? o.confirmedAt ?? now
+                : o.confirmedAt,
+        readyAt: status === "new" || status === "confirmed" ? null : status === "ready" ? now : o.readyAt,
+        outForDeliveryAt:
+          status === "new" || status === "confirmed" || status === "ready"
+            ? null
+            : status === "out_for_delivery"
+              ? now
+              : o.outForDeliveryAt,
+        deliveredAt: status === "delivered" ? now : null,
+        cancelledAt: status === "cancelled" ? now : null,
+        cancelReason: status === "cancelled" ? reason ?? "Cancelled" : null,
       })
       .where(eq(orders.id, id));
     if (status === "cancelled") {
@@ -305,13 +365,13 @@ export async function setOrderPaid(actor: Actor, id: string, paid: boolean): Pro
 export async function listCustomers(actor: Actor, f: { q?: string; page: number; pageSize: number }) {
   requirePermission(actor, "customers:view");
   const like = f.q ? `%${escapeLike(f.q)}%` : null;
-  const having = like ? sql`HAVING max(name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like}` : sql``;
+  const having = like ? sql`HAVING max(name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like} OR concat('CUS-', phone_key) ILIKE ${like}` : sql``;
   const db = getDb();
   const source = sql`
     WITH src AS (
-      SELECT phone_key, customer_name AS name, phone, email, created_at, 'order' AS what, total, status::text AS status, currency, account_id FROM online_orders
+      SELECT phone_key, id::text AS id, reference, customer_name AS name, phone, email, created_at, 'order' AS what FROM online_orders
       UNION ALL
-      SELECT phone_key, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END, 0, NULL, NULL, account_id FROM messages
+      SELECT phone_key, id::text AS id, reference, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END FROM messages
     )`;
   const rows = (await db.execute(sql`
     ${source}
@@ -319,19 +379,15 @@ export async function listCustomers(actor: Actor, f: { q?: string; page: number;
            (array_agg(name ORDER BY created_at DESC))[1] AS name,
            (array_agg(phone ORDER BY created_at DESC))[1] AS phone,
            (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
-           (count(*) FILTER (WHERE what = 'order'))::int AS orders,
-           (count(*) FILTER (WHERE what = 'quotation'))::int AS quotations,
-           (count(*) FILTER (WHERE what = 'enquiry'))::int AS enquiries,
-           coalesce(sum(total) FILTER (WHERE what = 'order' AND status <> 'cancelled'), 0)::text AS spent,
-           coalesce(max(currency), 'LKR') AS currency,
-           max(created_at) AS "lastContactAt",
-           bool_or(account_id IS NOT NULL) AS "hasAccount"
+           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'order'), '[]'::json) AS "orderRefs",
+           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'quotation'), '[]'::json) AS "quotationRefs",
+           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'enquiry'), '[]'::json) AS "enquiryRefs"
       FROM src
      GROUP BY phone_key
      ${having}
      ORDER BY max(created_at) DESC
      LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}
-  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orders: number; quotations: number; enquiries: number; spent: string; currency: string; lastContactAt: Date; hasAccount: boolean }[];
+  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orderRefs: { id: string; reference: string }[]; quotationRefs: { id: string; reference: string }[]; enquiryRefs: { id: string; reference: string }[] }[];
   const [{ n }] = (await db.execute(sql`${source} SELECT count(*)::int AS n FROM (SELECT 1 FROM src GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
   return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)) };
 }
@@ -375,7 +431,7 @@ export async function getDashboard(actor: Actor) {
   const [counts, recent, [rev], daily, [unpaid], upcoming, quotes, [quotesPending], enquiries, [enquiriesNew]] = await Promise.all([
     countOrdersByStatus(actor),
     db
-      .select({ id: orders.id, reference: orders.reference, status: orders.status, customerName: orders.customerName, total: orders.total, currency: orders.currency, createdAt: orders.createdAt, isPaid: orders.isPaid })
+      .select({ id: orders.id, reference: orders.reference, status: orders.status, fulfilment: orders.fulfilment, customerName: orders.customerName, total: orders.total, currency: orders.currency, createdAt: orders.createdAt, isPaid: orders.isPaid })
       .from(orders)
       .orderBy(desc(orders.createdAt))
       .limit(6),

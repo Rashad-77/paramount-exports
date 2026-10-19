@@ -13,9 +13,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, pageOf, type SP } from "@/lib/list-params";
-import { formatAmount } from "@/lib/money";
-import { getBusinessSettings } from "@/lib/settings";
-import { formatDate } from "@/lib/time";
+import { quoteRef } from "@/lib/quotation-ui";
 import { listCustomers } from "@/server/orders";
 
 export const metadata = { title: "Customers" };
@@ -30,10 +28,7 @@ export default async function CustomersPage({
   const sp = await searchParams;
   const q = one(sp.q)?.slice(0, 80);
   const page = pageOf(sp);
-  const [business, result] = await Promise.all([
-    getBusinessSettings(),
-    listCustomers(actor, { q, page, pageSize: PAGE_SIZE }),
-  ]);
+  const result = await listCustomers(actor, { q, page, pageSize: PAGE_SIZE });
 
   return (
     <>
@@ -42,7 +37,7 @@ export default async function CustomersPage({
         action="/app/customers"
         params={{}}
         q={q}
-        placeholder="Name, phone or email"
+        placeholder="Name, phone, email or account ID"
       />
       <div className="app-results">
         <p className="mb-3 text-sm text-text-muted" role="status">
@@ -62,39 +57,64 @@ export default async function CustomersPage({
             <Table>
               <THead>
                 <tr>
-                  <TH>Customer</TH>
-                  <TH>Email</TH>
-                  <TH className="text-right">Orders</TH>
-                  <TH className="text-right">Quotations</TH>
-                  <TH className="text-right">Enquiries</TH>
-                  <TH className="text-right">Ordered in total</TH>
-                  <TH>Last contact</TH>
+                  <TH className="w-14">No.</TH>
+                  <TH className="min-w-64 border-r border-border-strong/50 last:border-r-0">Customer</TH>
+                  <TH className="min-w-44 border-r border-border-strong/50 last:border-r-0">Orders</TH>
+                  <TH className="min-w-44 border-r border-border-strong/50 last:border-r-0">Quotations</TH>
+                  <TH className="min-w-44 border-r border-border-strong/50 last:border-r-0">Enquiries</TH>
                 </tr>
               </THead>
               <tbody>
-                {result.rows.map((c) => (
-                  <TR key={c.phoneKey}>
-                    <TD>
+                {result.rows.map((c, index) => (
+                  <TR key={c.phoneKey} className="hover:bg-paper-deep/70">
+                    <TD className="w-14 align-middle py-3 text-text-muted">
+                      {(page - 1) * PAGE_SIZE + index + 1}
+                    </TD>
+                    <TD className="min-w-64 border-r border-border-strong/50 py-3 last:border-r-0">
                       <Link
                         href={`/app/customers/${c.phoneKey}`}
                         className="font-medium text-walnut underline"
                       >
                         {c.name}
                       </Link>
-                      <div className="text-text-muted">{c.phone}</div>
-                      {c.hasAccount ? (
-                        <div className="text-xs font-medium text-text-muted">
-                          Has a website account
-                        </div>
-                      ) : null}
+                      <div className="mt-0.5 text-xs text-text-muted">CUS-{c.phoneKey}</div>
+                      <div className="mt-1 flex flex-col items-start gap-0.5 text-xs text-text-muted">
+                        <a className="hover:text-text" href={`tel:${c.phone.replace(/\s+/g, "")}`}>
+                          {c.phone}
+                        </a>
+                        {c.email ? (
+                          <a className="max-w-full truncate hover:text-text" href={`mailto:${c.email}`} title={c.email}>
+                            {c.email}
+                          </a>
+                        ) : null}
+                      </div>
                     </TD>
-                    <TD>{c.email ?? "—"}</TD>
-                    <TD numeric>{c.orders}</TD>
-                    <TD numeric>{c.quotations}</TD>
-                    <TD numeric>{c.enquiries}</TD>
-                    <TD numeric>{formatAmount(c.spent)}</TD>
-                    <TD className="whitespace-nowrap">
-                      {formatDate(c.lastContactAt, business.timezone)}
+                    <TD className="min-w-44 align-top border-r border-border-strong/50 py-3 last:border-r-0">
+                      <div className="flex flex-col items-start gap-1">
+                        {c.orderRefs.length ? c.orderRefs.map((r) => (
+                          <Link key={r.id} href={`/app/orders/${r.id}`} className="inline-flex w-fit border border-border px-1.5 py-0.5 text-[12.2px] leading-4 text-walnut underline hover:text-brand-dark" title={`Open order ${r.reference}`}>
+                            {r.reference}
+                          </Link>
+                        )) : <span className="px-3 text-text-muted">—</span>}
+                      </div>
+                    </TD>
+                    <TD className="min-w-44 align-top border-r border-border-strong/50 py-3 last:border-r-0">
+                      <div className="flex flex-col items-start gap-1">
+                        {c.quotationRefs.length ? c.quotationRefs.map((r) => (
+                          <Link key={r.id} href={`/app/messages/${r.id}`} className="inline-flex w-fit border border-border px-1.5 py-0.5 text-[12.2px] leading-4 text-walnut underline hover:text-brand-dark" title={`Open quotation ${quoteRef(r.reference)}`}>
+                            {quoteRef(r.reference)}
+                          </Link>
+                        )) : <span className="px-3 text-text-muted">—</span>}
+                      </div>
+                    </TD>
+                    <TD className="min-w-44 align-top border-r border-border-strong/50 py-3 last:border-r-0">
+                      <div className="flex flex-col items-start gap-1">
+                        {c.enquiryRefs.length ? c.enquiryRefs.map((r) => (
+                          <Link key={r.id} href={`/app/messages/${r.id}`} className="inline-flex w-fit border border-border px-1.5 py-0.5 text-[12.2px] leading-4 text-walnut underline hover:text-brand-dark" title={`Open enquiry ${r.reference}`}>
+                            {r.reference}
+                          </Link>
+                        )) : <span className="px-3 text-text-muted">—</span>}
+                      </div>
                     </TD>
                   </TR>
                 ))}

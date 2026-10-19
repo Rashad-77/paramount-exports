@@ -35,6 +35,8 @@ async function main() {
   // Already seeded with the current sample data (orders exist): nothing to do.
   const [{ done }] = (await db.execute(sql`SELECT count(*)::int AS done FROM online_orders WHERE customer_name LIKE '[Sample]%'`)) as unknown as [{ done: number }];
   if (done > 0) {
+    // Keep one clearly labelled sample order as a customer cancellation example.
+    await db.execute(sql`UPDATE online_orders SET status = 'cancelled', cancel_reason = 'Sample: customer changed their mind.', cancelled_at = coalesce(cancelled_at, now()), handled_by = NULL WHERE reference = 'ORD-000011'`);
     console.log("Sample data already present; nothing to do.");
     process.exit(0);
   }
@@ -128,6 +130,7 @@ async function main() {
   await setOrderStatus(owner, delivered.id, "delivered");
   await setOrderPaid(owner, delivered.id, true);
   await setOrderStatus(owner, cancelled.id, "cancelled", "Sample: customer changed their mind.");
+  await db.execute(sql`UPDATE online_orders SET handled_by = NULL WHERE id = ${cancelled.id}`);
 
   console.log("Sample data created: categories, products, a gallery project, messages and orders. All labelled [Sample].");
   process.exit(0);
