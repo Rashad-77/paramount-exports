@@ -1,7 +1,8 @@
-import { Bell, CheckCheck, CircleCheck, CircleX, Package, Truck, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, CheckCheck, CircleCheck, CircleX, Package, Truck, Undo2, Wallet, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Fulfilment, OrderStatus } from "@/lib/order-constants";
 import { STATUS_LABEL } from "@/lib/order-constants";
+import type { PaymentState } from "@/lib/order-flow";
 import { STAFF_QUOTE_LABEL, type QuoteStatus } from "@/lib/quotation-ui";
 
 export type TagColor = "blue" | "yellow" | "teal" | "amber" | "purple" | "orange" | "green" | "red" | "grey";
@@ -39,13 +40,31 @@ export function OrderTag({ status, isPaid = false, fulfilment = "delivery" }: { 
   );
 }
 
+const PAYMENT_TAG: Record<PaymentState, { color: TagColor; icon: LucideIcon; label: string }> = {
+  unpaid: { color: "red", icon: Wallet, label: "Not paid" },
+  part: { color: "amber", icon: Wallet, label: "Part paid" },
+  paid: { color: "green", icon: Wallet, label: "Paid" },
+  refunded: { color: "grey", icon: Undo2, label: "Refunded" },
+  part_refunded: { color: "purple", icon: Undo2, label: "Part refunded" },
+};
+
+/** The payment tag for an order's money: not paid, part paid, paid, refunded or part refunded. */
+export function PaymentTag({ state }: { state: PaymentState }) {
+  const { color, icon, label } = PAYMENT_TAG[state];
+  return (
+    <Tag color={color} icon={icon}>
+      {label}
+    </Tag>
+  );
+}
+
 export function PaidTag({ paid }: { paid: boolean }) {
   return paid ? (
     <Tag color="green" icon={Wallet}>
       Paid
     </Tag>
   ) : (
-    <Tag color="amber" icon={Wallet}>
+    <Tag color="red" icon={Wallet}>
       Not paid
     </Tag>
   );

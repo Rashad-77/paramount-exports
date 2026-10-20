@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { setPaidAction } from "@/app/app/orders/actions";
-import { PaidTag } from "@/components/app/tags";
+import { PaymentTag } from "@/components/app/tags";
+import type { PaymentState } from "@/lib/order-flow";
 import { ActionForm, useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -11,12 +12,14 @@ function Picker({
   id,
   reference,
   paid,
+  state,
   canUpdate,
   disabled,
 }: {
   id: string;
   reference: string;
   paid: boolean;
+  state: PaymentState;
   canUpdate: boolean;
   disabled: boolean;
 }) {
@@ -40,7 +43,7 @@ function Picker({
         }}
         className="appearance-none border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-walnut disabled:cursor-default"
       >
-        <PaidTag paid={paid} />
+        <PaymentTag state={state} />
       </button>
       <Dialog
         open={open}
@@ -84,6 +87,7 @@ export function OrderPaymentPicker(props: {
   id: string;
   reference: string;
   paid: boolean;
+  state: PaymentState;
   canUpdate: boolean;
   disabled?: boolean;
 }) {

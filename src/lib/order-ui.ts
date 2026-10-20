@@ -8,7 +8,10 @@ export const NEXT_STATUS_ACTION: Partial<Record<OrderStatus, string>> = {
   confirmed: "Confirm order",
   ready: "Mark as ready",
   out_for_delivery: "Send out for delivery",
-  delivered: "Mark as completed",
+  delivered: "Mark as delivered",
 };
 
 export const MESSAGE_KIND_LABEL: Record<string, string> = { general: "Message", product_enquiry: "Product enquiry", custom: "Custom furniture request" };
+
+/** The button that finishes the handover: delivered or collected. "Completed" is never pressed: an order shows Completed by itself once it is delivered or collected and paid. */
+export const handoverAction = (fulfilment: "delivery" | "pickup") => (fulfilment === "delivery" ? "Mark as delivered" : "Mark as collected");

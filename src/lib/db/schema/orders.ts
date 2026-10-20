@@ -33,6 +33,16 @@ export const orders = pgTable(
     /** Set by staff when the money has been received offline. Never set by the website. */
     isPaid: boolean("is_paid").notNull().default(false),
     paidAt: timestamp("paid_at", { withTimezone: true }),
+    /** Cached from the payment rows: money received, and money paid back. The balance is total minus (paid minus refunded). */
+    paidAmount: money("paid_amount").notNull().default("0"),
+    refundedAmount: money("refunded_amount").notNull().default("0"),
+    /** A discount staff gave on the order, taken off the items before delivery is added. */
+    discount: money("discount").notNull().default("0"),
+    discountReason: text("discount_reason"),
+    /** Numbered when the order is confirmed (or first paid): INV-000001. */
+    invoiceNumber: text("invoice_number").unique(),
+    /** Staff have entered the delivery charge (0 counts). A delivery cannot be confirmed before this. */
+    deliveryChargeSet: boolean("delivery_charge_set").notNull().default(false),
     currency: text("currency").notNull(),
     subtotal: money("subtotal").notNull().default("0"),
     /** Delivery charge is agreed by staff with the customer; 0 until entered. */
@@ -81,6 +91,8 @@ export const orderItems = pgTable(
     sku: text("sku"),
     unitPrice: money("unit_price").notNull(),
     quantity: integer("quantity").notNull(),
+    /** How many of them came back (a return); those go back on the shelf. */
+    returnedQuantity: integer("returned_quantity").notNull().default(0),
     lineTotal: money("line_total").notNull(),
   },
   (t) => [
@@ -132,4 +144,49 @@ export const messages = pgTable(
     check("messages_quote_status_known", sql`${t.quoteStatus} IS NULL OR ${t.quoteStatus} IN ('requested', 'under_review', 'quoted', 'accepted', 'declined', 'cancelled')`),
     check("messages_quote_amount_nonneg", sql`${t.quotedAmount} IS NULL OR ${t.quotedAmount} >= 0`),
   ],
+);
+
+/** Money in and out of an order: each payment gets a receipt number (RCP-), each refund a credit note number (CRN-). A mistake is voided, never deleted. */
+export const orderPayments = pgTable(
+  "online_order_payments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["payment", "refund"] }).notNull(),
+    amount: money("amount").notNull(),
+    method: text("method", { enum: ["cash", "bank_transfer", "card", "other"] }).notNull(),
+    reference: text("reference"),
+    note: text("note"),
+    number: text("number").notNull().unique(),
+    paidAt: timestamp("paid_at", { withTimezone: true }).notNull().defaultNow(),
+    recordedBy: uuid("recorded_by").references(() => profiles.id, { onDelete: "set null" }),
+    voidedAt: timestamp("voided_at", { withTimezone: true }),
+    voidedBy: uuid("voided_by").references(() => profiles.id, { onDelete: "set null" }),
+    voidReason: text("void_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("online_order_payments_order_idx").on(t.orderId, t.createdAt)],
+);
+
+/** The after-sales log: complaints, repairs and warranty claims against an order. */
+export const orderCases = pgTable(
+  "online_order_cases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["complaint", "repair", "warranty", "other"] }).notNull(),
+    title: text("title").notNull(),
+    details: text("details"),
+    resolution: text("resolution"),
+    status: text("status", { enum: ["open", "resolved"] }).notNull().default("open"),
+    createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolvedBy: uuid("resolved_by").references(() => profiles.id, { onDelete: "set null" }),
+  },
+  (t) => [index("online_order_cases_order_idx").on(t.orderId, t.createdAt)],
 );

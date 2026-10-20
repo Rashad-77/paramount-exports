@@ -129,9 +129,11 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
   it("moves an order through its statuses and refuses impossible moves", async () => {
     const { id } = await place({ phone: "0771110005" }, [[tableVariant, 1]]);
     await expect(setOrderStatus(staff, id, "delivered")).rejects.toMatchObject({ code: "INVALID_STATE" }); // new → delivered is not allowed
+    // a delivery cannot be confirmed until its delivery charge has been entered (0 counts)
+    await expect(setOrderStatus(staff, id, "confirmed")).rejects.toMatchObject({ code: "INVALID_STATE" });
+    await updateOrderDetails(staff, id, { deliveryCharge: "0" });
     await setOrderStatus(staff, id, "confirmed");
-    await expect(setOrderStatus(staff, id, "delivered")).rejects.toMatchObject({ code: "INVALID_STATE" }); // confirmed → delivered skips the making and the ready step
-    await setOrderStatus(staff, id, "in_progress");
+    await expect(setOrderStatus(staff, id, "delivered")).rejects.toMatchObject({ code: "INVALID_STATE" }); // confirmed → delivered skips the ready step
     await setOrderStatus(staff, id, "ready");
     await setOrderStatus(staff, id, "delivered");
     const { order } = await getOrder(staff, id);
@@ -139,9 +141,9 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     expect(order.confirmedAt).toBeInstanceOf(Date);
     expect(order.deliveredAt).toBeInstanceOf(Date);
     await expect(setOrderStatus(staff, id, "cancelled", "too late")).rejects.toMatchObject({ code: "INVALID_STATE" });
-    await expect(setOrderStatus(staff, id, "confirmed")).rejects.toMatchObject({ code: "INVALID_STATE" });
+    // (a delivered order can be moved back to an earlier step to correct a mistake, so that is not refused)
     const actions = (await t.sql`SELECT action FROM audit_logs WHERE entity_id = ${id} ORDER BY created_at`).map((r) => r.action);
-    expect(actions).toEqual(["order.placed_from_website", "order.confirmed", "order.in_progress", "order.ready", "order.delivered"]);
+    expect(actions).toEqual(["order.placed_from_website", "order.details_updated", "order.confirmed", "order.ready", "order.delivered"]);
   });
 
   it("cancelling needs a reason and cannot be undone", async () => {
@@ -164,15 +166,18 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     ({ order } = await getOrder(staff, id));
     expect(order.isPaid).toBe(true);
     expect(order.paidAt).toBeInstanceOf(Date);
-    await expect(setOrderPaid(staff, id, true)).rejects.toMatchObject({ code: "CONFLICT" });
-    await setOrderPaid(staff, id, false);
+    expect(order.paidAmount).toBe("107500.00");
+    await expect(setOrderPaid(staff, id, true)).rejects.toMatchObject({ code: "INVALID_STATE" });
+    await expect(setOrderPaid(staff, id, false)).rejects.toMatchObject({ code: "FORBIDDEN" }); // only the owner can undo a payment
+    await setOrderPaid(owner, id, false);
     expect((await getOrder(staff, id)).order).toMatchObject({ isPaid: false, paidAt: null });
     const actions = (await t.sql`SELECT action FROM audit_logs WHERE entity_id = ${id} ORDER BY created_at`).map((r) => r.action);
-    expect(actions).toEqual(["order.placed_from_website", "order.details_updated", "order.marked_paid", "order.marked_unpaid"]);
+    expect(actions).toEqual(["order.placed_from_website", "order.details_updated", "order.payment_recorded", "order.payment_voided"]);
   });
 
   it("a finished order cannot be edited", async () => {
     const { id } = await place({ phone: "0771110011" }, [[tableVariant, 1]]);
+    await updateOrderDetails(staff, id, { deliveryCharge: "0" });
     await setOrderStatus(staff, id, "confirmed");
     await setOrderStatus(staff, id, "ready");
     await setOrderStatus(staff, id, "delivered");
@@ -249,8 +254,8 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
       expect(text).not.toMatch(/Secret Lane|771119001|staffNote|customerNote|email/i);
       expect(Object.keys(seen)).not.toContain("address");
 
-      await setOrderStatus(staff, id, "confirmed");
       await updateOrderDetails(staff, id, { deliveryCharge: "1500", staffNote: "internal remark" });
+      await setOrderStatus(staff, id, "confirmed");
       await setOrderPaid(staff, id, true);
       const later = await track(reference, "0771119001", "198.51.100.10");
       expect(later).toMatchObject({ status: "confirmed", deliveryCharge: "1500.00", total: "31501.00", isPaid: true });

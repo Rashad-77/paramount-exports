@@ -33,7 +33,7 @@ export const STATUS_GROUPS: Array<{ label: string; items: Array<{ value: string;
  * A drop-down of every status with a tick box each, so several can be chosen at once. The ticked ones are posted with the filter form
  * as repeated `status` fields. Statuses of one group add up (published or draft); different groups narrow each other.
  */
-export function StatusFilter({ selected, onChange, groups = STATUS_GROUPS, emptyLabel = "All statuses" }: { selected: string[]; onChange?: (values: string[]) => void; groups?: typeof STATUS_GROUPS; emptyLabel?: string }) {
+export function StatusFilter({ selected, onChange, groups = STATUS_GROUPS, emptyLabel = "All statuses", label = "Status" }: { label?: string; selected: string[]; onChange?: (values: string[]) => void; groups?: typeof STATUS_GROUPS; emptyLabel?: string }) {
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState(() => new Set(selected));
   const root = useRef<HTMLDivElement>(null);
@@ -59,7 +59,7 @@ export function StatusFilter({ selected, onChange, groups = STATUS_GROUPS, empty
   return (
     <div ref={root} className="relative flex flex-col gap-1.5">
       <label htmlFor={`${id}-button`} className="text-sm font-medium tracking-[0.01em] text-text">
-        Status
+        {label}
       </label>
       <button
         id={`${id}-button`}

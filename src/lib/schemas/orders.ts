@@ -68,12 +68,65 @@ export const orderStatusSchema = z.object({
 export const orderDetailsSchema = z.object({
   id: z.uuid(),
   deliveryCharge: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? "0" : v),
+    (v) => (v === undefined || (typeof v === "string" && v.trim() === "") ? "0" : v),
     z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, "Enter an amount like 1500 or 1500.50."),
   ),
   staffNote: optText("Note", 1000),
   scheduledFor: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
+  discountAmount: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, "Enter an amount like 5000 or 5000.50.").optional()),
+  discountPercent: z.preprocess((v) => (v === "" ? undefined : v), z.string().regex(/^\d{1,3}(\.\d{1,2})?$/, "Enter a percentage like 10 or 12.5.").optional()),
+  discountReason: optText("Reason", 200),
 });
+
+const money = (label: string) => z.string().trim().regex(/^\d{1,10}(\.\d{1,2})?$/, `Enter ${label} like 5000 or 5000.50.`);
+const payMethod = z.enum(["cash", "bank_transfer", "card", "other"], { error: "Choose how it was paid." });
+const jsonList = <T extends z.ZodType>(item: T) =>
+  z.preprocess((v) => {
+    if (typeof v !== "string" || !v) return [];
+    try {
+      return JSON.parse(v);
+    } catch {
+      return [];
+    }
+  }, z.array(item).max(50));
+
+/** Staff: money received for an order. */
+export const paymentSchema = z.object({
+  id: z.uuid(),
+  amount: money("an amount"),
+  method: payMethod,
+  reference: optText("Reference", 120),
+  note: optText("Note", 300),
+  paidOn: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
+});
+
+/** Staff: money paid back and/or items that came back. */
+export const refundSchema = z.object({
+  id: z.uuid(),
+  amount: z.preprocess((v) => (v === "" || v === undefined ? "0" : v), money("an amount")),
+  method: payMethod,
+  reason: reqText("Reason", 300),
+  reference: optText("Reference", 120),
+  returns: jsonList(z.object({ itemId: z.uuid(), quantity: z.number().int().min(0).max(99) })),
+});
+
+export const voidPaymentSchema = z.object({ paymentId: z.uuid(), reason: reqText("Reason", 300) });
+
+/** Staff: change what is on an open order. */
+export const itemsSchema = z.object({
+  id: z.uuid(),
+  changes: jsonList(z.object({ itemId: z.uuid(), quantity: z.number().int().min(0).max(MAX_QTY) })),
+  add: jsonList(z.object({ variantId: z.uuid(), quantity: z.number().int().min(1).max(MAX_QTY) })),
+});
+
+/** Staff: the after-sales log. */
+export const caseSchema = z.object({
+  id: z.uuid(),
+  kind: z.enum(["complaint", "repair", "warranty", "other"], { error: "Choose what kind of case it is." }),
+  title: reqText("Title", 140),
+  details: optText("Details", 1000),
+});
+export const resolveCaseSchema = z.object({ caseId: z.uuid(), orderId: z.uuid(), resolution: optText("Resolution", 600), reopen: checkbox });
 
 export const orderPaidSchema = z.object({ id: z.uuid(), paid: checkbox });
 export const messageHandledSchema = z.object({ id: z.uuid(), handled: checkbox });

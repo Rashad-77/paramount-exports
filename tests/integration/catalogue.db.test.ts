@@ -49,10 +49,12 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     await t?.teardown();
   });
 
-  it("derives a web address from the name and rejects duplicates", async () => {
-    await expect(createCategory(manager, cat("Dining Tables"))).rejects.toMatchObject({ code: "CONFLICT" });
+  it("derives a web address from the name, makes a second one with the same name unique, and rejects a typed address that is taken", async () => {
     const [c] = await t.sql`SELECT slug FROM product_categories WHERE id = ${tablesId}`;
     expect(c!.slug).toBe("dining-tables");
+    const again = await createCategory(manager, cat("Dining Tables"));
+    expect((await t.sql`SELECT slug FROM product_categories WHERE id = ${again}`)[0]!.slug).toBe("dining-tables-2");
+    await expect(createCategory(manager, { ...cat("Another"), slug: "dining-tables" })).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(createCategory(manager, cat("!!!"))).rejects.toMatchObject({ code: "VALIDATION" });
   });
 

@@ -10,8 +10,11 @@ export function PageHeader({
   description,
   actions,
   back,
+  badges,
 }: {
   title: string;
+  /** Status tags shown on the same line as the title. */
+  badges?: ReactNode;
   description?: string;
   actions?: ReactNode;
   back?: { href: string; to: string };
@@ -25,9 +28,16 @@ export function PageHeader({
       ) : null}
       <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">
-            {title}
-          </h1>
+          {badges ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">{title}</h1>
+              {badges}
+            </div>
+          ) : (
+            <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">
+              {title}
+            </h1>
+          )}
           {description ? (
             <p className="mt-0.5 max-w-prose text-[0.8125rem] text-text-muted">
               {description}

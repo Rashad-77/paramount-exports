@@ -239,6 +239,20 @@
       "when": 1793375600000,
       "tag": "0033_spec_hidden_values",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793462000000,
+      "tag": "0034_order_money_and_cases",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793548400000,
+      "tag": "0035_enforce_rls_new_tables",
+      "breakpoints": true
     }
   ]
 }

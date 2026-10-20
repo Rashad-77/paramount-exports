@@ -1,9 +1,8 @@
 import { OrderStatusPicker } from "@/components/app/order-status-picker";
+import { paymentState } from "@/lib/order-flow";
 import { OrderPaymentPicker } from "@/components/app/order-payment-picker";
-import { ListSort } from "@/components/app/list-sort";
 import { OrdersFilter } from "@/components/app/orders-filter";
 import Link from "next/link";
-import { ListSearch } from "@/components/app/list-search";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import {
@@ -21,7 +20,7 @@ import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { formatAmount } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
-import { listOrders } from "@/server/orders";
+import { countOrdersByStatus, listOrders } from "@/server/orders";
 
 export const metadata = { title: "Orders" };
 const PAGE_SIZE = 20;
@@ -67,9 +66,10 @@ export default async function OrdersPage({
     payments: payments.length ? payments : undefined,
   };
 
-  const [business, result] = await Promise.all([
+  const [business, result, counts] = await Promise.all([
     getBusinessSettings(),
     listOrders(actor, { ...filter, q, sort, page, pageSize: PAGE_SIZE }),
+    countOrdersByStatus(actor),
   ]);
   const href = (over: Record<string, string | undefined>) =>
     buildHref("/app/orders", {
@@ -95,40 +95,7 @@ export default async function OrdersPage({
   return (
     <>
       <ModuleHeader href="/app/orders" />
-      <div className="mb-5 flex items-end justify-end gap-3">
-        <OrdersFilter
-          action="/app/orders"
-          q={q}
-          sort={sort}
-          statuses={statuses}
-          payments={payments}
-        />
-        <ListSort
-          action="/app/orders"
-          params={{
-            statuses: statuses.length ? statuses.join(",") : undefined,
-            payments: payments.length ? payments.join(",") : undefined,
-            q,
-          }}
-          value={sort}
-          options={[
-            { value: "total_desc", label: "Total: high to low" },
-            { value: "total_asc", label: "Total: low to high" },
-            { value: "latest", label: "Latest first" },
-            { value: "oldest", label: "Oldest first" },
-          ]}
-        />
-      </div>
-      <ListSearch
-        action="/app/orders"
-        params={{
-          statuses: statuses.length ? statuses.join(",") : undefined,
-          payments: payments.length ? payments.join(",") : undefined,
-          sort,
-        }}
-        q={q}
-        placeholder="Order number, name, phone or email"
-      />
+      <OrdersFilter action="/app/orders" q={q} sort={sort} statuses={statuses} payments={payments} counts={counts} />
       <div className="app-results">
         <p className="mb-3 text-sm text-text-muted" role="status">
           {result.total} {result.total === 1 ? "order" : "orders"}
@@ -245,6 +212,7 @@ export default async function OrdersPage({
                         id={r.id}
                         reference={r.reference}
                         paid={r.isPaid}
+                        state={paymentState(r)}
                         canUpdate={can(actor, "orders:record_payment")}
                         disabled={r.status === "cancelled"}
                       />

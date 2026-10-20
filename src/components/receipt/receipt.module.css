@@ -1,0 +1,352 @@
+/*
+ * The order receipt / invoice. Laid out like a commercial document: seller and document title across the top, the parties and the
+ * document facts below, a ruled line-item table, totals aligned to the right, payment details, and a short footer.
+ * Built for an A4 sheet, and readable on screen as a sheet of paper.
+ */
+.screen {
+  min-height: 100vh;
+  background: #eceae6;
+  padding: 24px 16px 48px;
+  color: #1c1916;
+}
+/* Plain, professional fonts only: Arial (Helvetica where Arial is missing) everywhere on the page, including the buttons. */
+.screen,
+.screen * {
+  font-family: Arial, Helvetica, "Liberation Sans", sans-serif !important;
+}
+.toolbar {
+  max-width: 210mm;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.toolbar a,
+.toolbar button {
+  font: inherit;
+}
+.sheet {
+  position: relative;
+  box-sizing: border-box;
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  padding: 16mm 16mm 14mm;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 8px 30px rgb(0 0 0 / 0.08);
+  font-size: 10.5pt;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top: seller on the left, document title and number on the right */
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #1c1916;
+}
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.brand img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.brandName {
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+.muted {
+  color: #5f5a52;
+}
+.small {
+  font-size: 9pt;
+}
+.docTitle {
+  text-align: right;
+}
+.docTitle h1 {
+  margin: 0;
+  font-size: 22pt;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.docNo {
+  margin-top: 4px;
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Parties and document facts */
+.info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid #cfcac1;
+}
+.label {
+  margin: 0 0 4px;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6f695f;
+}
+.info p {
+  margin: 0;
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 9.5pt;
+}
+.facts dt {
+  color: #6f695f;
+}
+.facts dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+}
+
+/* Line items */
+.items {
+  width: 100%;
+  margin-top: 18px;
+  border-collapse: collapse;
+}
+.items th {
+  padding: 7px 8px;
+  border-top: 1px solid #1c1916;
+  border-bottom: 1px solid #1c1916;
+  background: #f4f2ee;
+  font-size: 8.5pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+}
+.items td {
+  padding: 9px 8px;
+  border-bottom: 1px solid #e2ded6;
+  vertical-align: top;
+}
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.center {
+  text-align: center !important;
+}
+.itemName {
+  font-weight: 600;
+}
+
+/* Totals, on the right */
+.totalsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-top: 14px;
+}
+.totals {
+  width: 78mm;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 8px;
+}
+.totals .grand {
+  margin-top: 4px;
+  padding: 8px;
+  border-top: 1.5px solid #1c1916;
+  border-bottom: 1.5px solid #1c1916;
+  font-size: 12.5pt;
+  font-weight: 700;
+}
+.totals .balance {
+  font-weight: 700;
+}
+
+/* The status stamp, drawn like a rubber stamp */
+.stamp {
+  display: inline-block;
+  padding: 4px 16px;
+  border: 2.5px solid currentColor;
+  border-radius: 3px;
+  font-size: 18pt;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+}
+.paid {
+  color: #1f7a3a;
+}
+.due {
+  color: #b4690e;
+}
+.cancelled {
+  color: #b3261e;
+}
+/* The stamp sits at the bottom right of the sheet, above the footer */
+.stampRow {
+  margin-top: auto;
+  padding: 28px 8px 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+.stampBox {
+  text-align: center;
+}
+.stampDate {
+  display: block;
+  margin-top: 6px;
+  font-size: 9pt;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+/* Payment and notes */
+.boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.box {
+  padding: 10px 12px;
+  border: 1px solid #cfcac1;
+  font-size: 9.5pt;
+}
+.box p {
+  margin: 0;
+}
+.pre {
+  white-space: pre-line;
+}
+
+/* Payments and credit notes listed under the totals */
+.payTable {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+}
+.payTable th {
+  padding: 4px 8px;
+  border-bottom: 1px solid #1c1916;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #6f695f;
+}
+.payTable td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #e2ded6;
+}
+
+/* The delivery note's signature line */
+.signRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  margin-top: 48px;
+}
+.signLine {
+  height: 34px;
+  border-bottom: 1px solid #1c1916;
+}
+
+/* Bottom of the sheet */
+.foot {
+  margin-top: auto;
+  padding-top: 18px;
+}
+.thanks {
+  text-align: center;
+  font-size: 11pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.fine {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #cfcac1;
+  text-align: center;
+  font-size: 8.5pt;
+  color: #6f695f;
+}
+
+@media (max-width: 800px) {
+  .sheet {
+    padding: 20px 16px;
+    min-height: 0;
+  }
+  .head,
+  .totalsRow {
+    flex-direction: column;
+  }
+  .docTitle {
+    text-align: left;
+  }
+  .info,
+  .boxes {
+    grid-template-columns: 1fr;
+  }
+  .totals {
+    width: 100%;
+  }
+}
+
+@media print {
+  .screen {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+  .toolbar {
+    display: none !important;
+  }
+  .sheet {
+    width: auto;
+    min-height: 0;
+    min-height: 265mm;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .items tr {
+    break-inside: avoid;
+  }
+}

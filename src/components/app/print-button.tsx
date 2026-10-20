@@ -1,12 +1,11 @@
-"use client";
-
 import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
-export function PrintButton() {
+/** Opens the order's receipt (a proper document laid out for A4) in a new tab; print or save it as a PDF from there. */
+export function PrintButton({ href }: { href: string }) {
   return (
-    <Button onClick={() => window.print()}>
-      <Printer aria-hidden="true" className="size-4" /> Print / Save as PDF
-    </Button>
+    <ButtonLink href={href} target="_blank" rel="noopener">
+      <Printer aria-hidden="true" className="size-4" /> Receipt
+    </ButtonLink>
   );
 }

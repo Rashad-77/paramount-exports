@@ -5,7 +5,7 @@ import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
 import { outer } from "@/lib/db/outer";
 import { auditLogs, messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
-import { conflict, invalidState, notFound, rateLimited, validation } from "@/lib/errors";
+import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
 import { hitRateLimit } from "@/lib/rate-limit";
 import { getBusinessSettings } from "@/lib/settings";
@@ -13,6 +13,7 @@ import { OPEN_STATUSES, type CheckoutInput, type Fulfilment, type OrderStatus } 
 import { recordAudit } from "./audit";
 import { recordUpdate } from "./account-updates";
 import { emailCustomer } from "./notify";
+import { discountFrom, setOrderPaidShortcut, syncOrderMoney } from "./order-money";
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
@@ -93,6 +94,7 @@ export async function placeOrder(input: CheckoutInput, ctx: { ip: string | null;
         currency,
         subtotal: moneyString(subtotal),
         deliveryCharge: "0.00",
+        deliveryChargeSet: input.fulfilment === "pickup",
         total: moneyString(subtotal),
         customerNote: input.note ?? null,
         accountId: ctx.accountId ?? null,
@@ -165,7 +167,7 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
   if (f.phoneKey) where.push(eq(orders.phoneKey, f.phoneKey));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
-    where.push(or(ilike(orders.reference, like), ilike(orders.customerName, like), ilike(orders.phone, like), ilike(orders.email, like))!);
+    where.push(or(ilike(orders.reference, like), ilike(orders.invoiceNumber, like), ilike(orders.customerName, like), ilike(orders.phone, like), ilike(orders.email, like))!);
   }
   const cond = where.length ? and(...where) : undefined;
   const db = getDb();
@@ -180,6 +182,8 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         fulfilment: orders.fulfilment,
         paymentMethod: orders.paymentMethod,
         isPaid: orders.isPaid,
+        paidAmount: orders.paidAmount,
+        refundedAmount: orders.refundedAmount,
         currency: orders.currency,
         total: orders.total,
         deliveryCharge: orders.deliveryCharge,
@@ -232,13 +236,15 @@ export async function getOrder(actor: Actor, id: string) {
   return { order, items };
 }
 
-export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number }> {
+export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number; paid: number; unpaid: number }> {
   requirePermission(actor, "orders:view");
   const rows = await getDb().select({ status: orders.status, isPaid: orders.isPaid, n: count() }).from(orders).groupBy(orders.status, orders.isPaid);
-  const out: Record<OrderStatus | "all", number> & { completed: number } = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
+  const out: Record<OrderStatus | "all", number> & { completed: number; paid: number; unpaid: number } = { paid: 0, unpaid: 0, all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
   for (const r of rows) {
     out[r.status] += r.n;
     out.all += r.n;
+    if (r.isPaid) out.paid += r.n;
+    else out.unpaid += r.n;
     if (r.status === "delivered" && r.isPaid) out.completed += r.n;
   }
   return out;
@@ -250,11 +256,12 @@ const NEXT: Record<OrderStatus, OrderStatus[]> = {
   new: ["confirmed", "cancelled"],
   confirmed: ["ready", "cancelled"],
   in_progress: ["ready", "cancelled"],
-  ready: ["out_for_delivery", "delivered", "cancelled"],
+  // "Out for delivery" is no longer a step: a delivery goes from ready straight to delivered. Orders already out for delivery can still finish.
+  ready: ["delivered", "cancelled"],
   out_for_delivery: ["delivered", "cancelled"],
   // Staff can correct a finished order from the list if it was tagged incorrectly.
-  delivered: ["new", "confirmed", "ready", "out_for_delivery"],
-  cancelled: ["new", "confirmed", "ready", "out_for_delivery", "delivered"],
+  delivered: ["new", "confirmed", "ready"],
+  cancelled: ["new", "confirmed", "ready", "delivered"],
 };
 
 /** What an order can become next. A showroom pickup is never "out for delivery". */
@@ -278,11 +285,13 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
+    if (status === "confirmed" && o.fulfilment === "delivery" && !o.deliveryChargeSet) throw invalidState("Enter the delivery charge (0 if it is free) and save it before confirming a delivery order.");
     if (!allowCorrection && !allowedNextStatuses(o.status, o.fulfilment).includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
     const now = new Date();
     if (o.status === "cancelled" && status !== "cancelled") {
       // Reopening a cancelled order consumes the stock that cancellation restored.
-      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
+      // Pieces that already came back as a return were put on the shelf then, so only the rest move now.
+      const items = (await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity, returned: orderItems.returnedQuantity }).from(orderItems).where(eq(orderItems.orderId, id))).map((i) => ({ variantId: i.variantId, quantity: i.quantity - i.returned }));
       for (const it of items) {
         if (!it.variantId) continue;
         const taken = await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} - ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NULL OR ${productVariants.stockQuantity} >= ${it.quantity}`)).returning({ id: productVariants.id });
@@ -316,11 +325,16 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
       .where(eq(orders.id, id));
     if (status === "cancelled") {
       // A cancelled order puts its counted pieces back on the shelf.
-      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
+      // Pieces that already came back as a return were put on the shelf then, so only the rest move now.
+      const items = (await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity, returned: orderItems.returnedQuantity }).from(orderItems).where(eq(orderItems.orderId, id))).map((i) => ({ variantId: i.variantId, quantity: i.quantity - i.returned }));
       for (const it of items) {
         if (!it.variantId) continue;
         await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} + ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NOT NULL`));
       }
+    }
+    if (status === "confirmed" && !o.invoiceNumber) {
+      const [{ ref }] = (await tx.execute(sql`SELECT next_reference('invoice') AS ref`)) as unknown as [{ ref: string }];
+      await tx.update(orders).set({ invoiceNumber: ref }).where(eq(orders.id, id));
     }
     await recordAudit(tx, actor, { action: `order.${status}`, entityType: "order", entityId: id, before: { status: o.status }, after: { status }, reason });
     // Tell the customer: a note on their dashboard when they have an account, and an email when we have an address.
@@ -333,31 +347,57 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
   }
 }
 
-export async function updateOrderDetails(actor: Actor, id: string, input: { deliveryCharge: string; staffNote?: string; scheduledFor?: string }): Promise<void> {
+export interface OrderDetailsInput {
+  deliveryCharge: string;
+  staffNote?: string;
+  scheduledFor?: string;
+  /** A discount, either an amount or a percentage of the items. Changing it needs the discount permission. */
+  discountAmount?: string;
+  discountPercent?: string;
+  discountReason?: string;
+}
+
+/** Delivery charge, discount, planned day and internal note. A finished order cannot change. The total follows: items − discount + delivery. */
+export async function updateOrderDetails(actor: Actor, id: string, input: OrderDetailsInput): Promise<void> {
   requirePermission(actor, "orders:update");
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
     if (o.status === "delivered" || o.status === "cancelled") throw invalidState("A finished order cannot be changed.");
-    const charge = moneyString(input.deliveryCharge);
-    const total = moneyString(dec(o.subtotal).plus(charge));
-    await tx.update(orders).set({ deliveryCharge: charge, total, staffNote: input.staffNote ?? null, scheduledFor: input.scheduledFor ?? null, handledBy: actor.id }).where(eq(orders.id, id));
-    await recordAudit(tx, actor, { action: "order.details_updated", entityType: "order", entityId: id, before: { deliveryCharge: o.deliveryCharge, total: o.total }, after: { deliveryCharge: charge, total, scheduledFor: input.scheduledFor ?? null } });
+    const charge = o.fulfilment === "pickup" ? "0.00" : moneyString(input.deliveryCharge);
+    const wantsDiscount = input.discountAmount !== undefined || input.discountPercent !== undefined;
+    let discount = o.discount;
+    let discountReason = o.discountReason;
+    if (wantsDiscount) {
+      const next = discountFrom(o.subtotal, input.discountAmount, input.discountPercent);
+      if (next !== moneyString(o.discount)) {
+        requirePermission(actor, "orders:discount");
+        if (dec(next).gt(0) && !input.discountReason) throw validation("Say why the discount is given.", { discountReason: ["Say why the discount is given."] });
+        discount = next;
+        discountReason = dec(next).gt(0) ? input.discountReason ?? null : null;
+      } else if (input.discountReason !== undefined && dec(next).gt(0)) {
+        discountReason = input.discountReason;
+      }
+    }
+    const total = moneyString(dec(o.subtotal).minus(discount).plus(charge));
+    await tx
+      .update(orders)
+      .set({ deliveryCharge: charge, deliveryChargeSet: true, discount, discountReason, total, staffNote: input.staffNote ?? null, scheduledFor: input.scheduledFor ?? null, handledBy: actor.id })
+      .where(eq(orders.id, id));
+    const money = await syncOrderMoney(tx, id);
+    await recordAudit(tx, actor, {
+      action: moneyString(o.discount) !== moneyString(discount) ? "order.discount_changed" : "order.details_updated",
+      entityType: "order",
+      entityId: id,
+      before: { deliveryCharge: o.deliveryCharge, discount: o.discount, total: o.total },
+      after: { deliveryCharge: charge, discount, total, balance: money.balance, scheduledFor: input.scheduledFor ?? null },
+      reason: discountReason ?? undefined,
+    });
   });
 }
 
-/** Staff record that the money has been received offline (cash, transfer, or at the showroom). */
-export async function setOrderPaid(actor: Actor, id: string, paid: boolean): Promise<void> {
-  requirePermission(actor, "orders:record_payment");
-  await withTx(async (tx) => {
-    const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
-    if (!o) throw notFound("That order could not be found.");
-    if (o.status === "cancelled") throw invalidState("A cancelled order cannot be marked as paid.");
-    if (o.isPaid === paid) throw conflict(paid ? "That order is already marked as paid." : "That order is already marked as not paid.");
-    await tx.update(orders).set({ isPaid: paid, paidAt: paid ? new Date() : null, handledBy: actor.id }).where(eq(orders.id, id));
-    await recordAudit(tx, actor, { action: paid ? "order.marked_paid" : "order.marked_unpaid", entityType: "order", entityId: id, before: { isPaid: o.isPaid }, after: { isPaid: paid } });
-  });
-}
+/** The Paid / Not paid shortcut on the order list. Real payments (part payments, refunds) are recorded from the order page. */
+export const setOrderPaid = setOrderPaidShortcut;
 
 /* ───────────────────────────── customers (built from orders, quotations and enquiries) ───────────────────────────── */
 
@@ -439,7 +479,7 @@ export async function getDashboard(actor: Actor) {
       .select({
         orders: count(),
         value: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.status} <> 'cancelled'), 0)::text`,
-        paid: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.isPaid}), 0)::text`,
+        paid: sql<string>`coalesce(sum(${orders.paidAmount} - ${orders.refundedAmount}) FILTER (WHERE ${orders.status} <> 'cancelled' OR ${orders.paidAmount} > ${orders.refundedAmount}), 0)::text`,
       })
       .from(orders)
       .where(gte(orders.createdAt, since)),

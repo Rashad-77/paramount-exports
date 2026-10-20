@@ -1,131 +1,124 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { PanelSelect } from "@/components/app/panel-select";
+import { StatusFilter } from "@/components/app/status-filter";
+import { TextField } from "@/components/ui/field";
 
-const STATUS_OPTIONS = [
-  ["new", "New"],
-  ["confirmed", "Confirmed"],
-  ["ready", "Ready"],
-  ["out_for_delivery", "Out for delivery"],
-  ["delivered", "Delivered"],
-  ["completed", "Completed"],
-  ["cancelled", "Cancelled"],
-] as const;
-const PAYMENT_OPTIONS = [
-  ["paid", "Paid"],
-  ["unpaid", "Not paid"],
-] as const;
+const orderGroups = (counts: Counts) => [
+  {
+    label: "Order status",
+    items: [
+      { value: "new", label: `New (${counts.new})` },
+      { value: "confirmed", label: `Confirmed (${counts.confirmed + counts.in_progress})` },
+      { value: "ready", label: `Ready (${counts.ready})` },
+      { value: "delivered", label: `Delivered (${counts.delivered - counts.completed})` },
+      { value: "completed", label: `Completed (${counts.completed})` },
+      { value: "cancelled", label: `Cancelled (${counts.cancelled})` },
+    ],
+  },
+  {
+    label: "Payment",
+    items: [
+      { value: "paid", label: `Paid (${counts.paid})` },
+      { value: "unpaid", label: `Not paid (${counts.unpaid})` },
+    ],
+  },
+];
+type Counts = { all: number; new: number; confirmed: number; in_progress: number; ready: number; out_for_delivery: number; delivered: number; completed: number; cancelled: number; paid: number; unpaid: number };
+const PAYMENT_VALUES = new Set(["paid", "unpaid"]);
 
+const SORT_OPTIONS = [
+  { value: "latest", label: "Latest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "total_desc", label: "Total: high to low" },
+  { value: "total_asc", label: "Total: low to high" },
+];
+
+/**
+ * The order list's search, filter and sort, in the same panel as the product and category lists. Changing any of them updates the list in
+ * place (the address changes, the page does not reload), and the search box keeps its focus while you type.
+ */
 export function OrdersFilter({
   action,
   q,
   sort,
   statuses,
   payments,
+  counts,
 }: {
   action: string;
   q?: string;
   sort: string;
   statuses: string[];
   payments: string[];
+  counts: Counts;
 }) {
   const router = useRouter();
-  const [pending, start] = useTransition();
-  const [selectedStatuses, setSelectedStatuses] = useState(statuses);
-  const [selectedPayments, setSelectedPayments] = useState(payments);
+  const [, startTransition] = useTransition();
+  const [text, setText] = useState(q ?? "");
+  const [picked, setPicked] = useState([...statuses, ...payments]);
+  const [order, setOrder] = useState(sort);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // When the address changes from outside (Clear filters, a link), the boxes follow it.
-  const key = JSON.stringify([statuses, payments]);
+  const key = JSON.stringify([q ?? "", statuses, payments, sort]);
   const [seen, setSeen] = useState(key);
   if (key !== seen) {
     setSeen(key);
-    setSelectedStatuses(statuses);
-    setSelectedPayments(payments);
+    setText(q ?? "");
+    setPicked([...statuses, ...payments]);
+    setOrder(sort);
   }
 
-  const toggle = (list: string[], value: string, setter: (next: string[]) => void) => {
-    setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
+  const go = (next: { q: string; picked: string[]; sort: string }) => {
+    const u = new URLSearchParams();
+    if (next.q.trim()) u.set("q", next.q.trim());
+    const st = next.picked.filter((v) => !PAYMENT_VALUES.has(v));
+    const pay = next.picked.filter((v) => PAYMENT_VALUES.has(v));
+    if (st.length) u.set("statuses", st.join(","));
+    if (pay.length) u.set("payments", pay.join(","));
+    if (next.sort && next.sort !== "latest") u.set("sort", next.sort);
+    const qs = u.toString();
+    startTransition(() => router.replace(qs ? `${action}?${qs}` : action, { scroll: false }));
   };
-  const apply = (nextStatuses = selectedStatuses, nextPayments = selectedPayments) => {
-    const query = new URLSearchParams();
-    if (q) query.set("q", q);
-    if (sort) query.set("sort", sort);
-    if (nextStatuses.length) query.set("statuses", nextStatuses.join(","));
-    if (nextPayments.length) query.set("payments", nextPayments.join(","));
-    const search = query.toString();
-    start(() => router.replace(search ? `${action}?${search}` : action, { scroll: false }));
-  };
-  const count = selectedStatuses.length + selectedPayments.length;
 
   return (
-    <div className="relative flex min-w-40 shrink-0 flex-col gap-1 pb-1 text-xs text-text-muted">
-      <span>Filter by</span>
-      <details className="group relative w-full">
-        <summary
-          className="flex min-h-9 w-full cursor-pointer list-none items-center justify-between gap-2 border border-border-strong bg-surface px-2.5 text-sm text-text hover:bg-paper-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-walnut [&::-webkit-details-marker]:hidden"
-          aria-label="Filter orders by status and payment"
-        >
-          <span>{count ? `Selected (${count})` : "All filters"}</span>
-          <span aria-hidden="true" className="text-xs">▾</span>
-        </summary>
-        <div className="absolute right-0 top-full z-30 mt-1 w-64 border border-border bg-surface p-3 shadow-lg">
-        <fieldset className="border-b border-border pb-3">
-          <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">Status</legend>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            {STATUS_OPTIONS.map(([value, label]) => (
-              <label key={value} className="flex cursor-pointer items-center gap-2 text-sm text-text">
-                <input
-                  type="checkbox"
-                  checked={selectedStatuses.includes(value)}
-                  onChange={() => toggle(selectedStatuses, value, setSelectedStatuses)}
-                  className="size-3.5 accent-[var(--color-walnut)]"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset className="pt-3">
-          <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">Payment</legend>
-          <div className="flex gap-4">
-            {PAYMENT_OPTIONS.map(([value, label]) => (
-              <label key={value} className="flex cursor-pointer items-center gap-2 text-sm text-text">
-                <input
-                  type="checkbox"
-                  checked={selectedPayments.includes(value)}
-                  onChange={() => toggle(selectedPayments, value, setSelectedPayments)}
-                  className="size-3.5 accent-[var(--color-walnut)]"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedStatuses([]);
-              setSelectedPayments([]);
-              apply([], []);
-            }}
-            disabled={pending || count === 0}
-            className="text-xs text-text-muted underline hover:text-text disabled:opacity-50"
-          >
-            Clear filters
-          </button>
-          <button
-            type="button"
-            onClick={() => apply()}
-            disabled={pending}
-            className="min-h-8 bg-charcoal px-3 text-xs text-white hover:bg-walnut disabled:opacity-60"
-          >
-            {pending ? "Applying…" : "Apply"}
-          </button>
-        </div>
-        </div>
-      </details>
+    <div role="search" className="app-filter mb-4 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-end">
+      <TextField
+        showOptional={false}
+        label="Search"
+        type="search"
+        value={text}
+        placeholder="Order or invoice number, name, phone or email"
+        onChange={(e) => {
+          setText(e.target.value);
+          clearTimeout(timer.current);
+          const value = e.target.value;
+          timer.current = setTimeout(() => go({ q: value, picked, sort: order }), 300);
+        }}
+      />
+      <StatusFilter
+        selected={picked}
+        groups={orderGroups(counts)}
+        label="Filter by"
+        emptyLabel={`All orders (${counts.all})`}
+        onChange={(v) => {
+          setPicked(v);
+          go({ q: text, picked: v, sort: order });
+        }}
+      />
+      <PanelSelect
+        label="Sort by"
+        quietPlaceholder={false}
+        value={order}
+        options={SORT_OPTIONS}
+        onChange={(v) => {
+          setOrder(v);
+          go({ q: text, picked, sort: v });
+        }}
+      />
     </div>
   );
 }

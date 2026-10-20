@@ -35,7 +35,6 @@ function stepsFor(o: TrackedOrder) {
     },
     { key: "ready", label: "Ready", at: o.readyAt, note: (delivery ? "Your order is ready and will be sent out soon." : "Your order is ready. You can collect it from the showroom.") + planned },
   ];
-  if (delivery) steps.push({ key: "out_for_delivery", label: "Out for delivery", at: o.outForDeliveryAt, note: "Your order is out for delivery." + planned });
   return steps;
 }
 
@@ -96,6 +95,11 @@ export function OrderView({
             <p className="ot-kicker">Order</p>
             <p className="ot-ref">{orderNumber(o.reference)}</p>
             <p className="ot-sub">Placed {when(o.placedAt)}</p>
+            <p className="ot-sub">
+              <a href={o.receiptUrl} target="_blank" rel="noopener" className="underline">
+                {o.isPaid ? "Print or save your receipt" : "Print or save your invoice"}
+              </a>
+            </p>
           </div>
           <OrderStatusPill status={o.status} />
         </div>

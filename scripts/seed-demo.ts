@@ -117,16 +117,14 @@ async function main() {
   const delivered = await order({ name: "[Sample] Kamal Silva", phone: "0771110010", address: "8 Sample Avenue\nGalle" }, [["SMP-ST-01", 4], ["SMP-BK-01", 1]]);
   const cancelled = await order({ name: "[Sample] Anoma Wijesinghe", phone: "0771110004", address: "3 Sample Street\nNegombo" }, [["SMP-CH-01", 2]]);
 
+  // A delivery order needs its delivery charge entered (0 if free) before it can be confirmed.
   await setOrderStatus(owner, confirmed.id, "confirmed");
-  await setOrderStatus(owner, inProgress.id, "confirmed");
   await updateOrderDetails(owner, inProgress.id, { deliveryCharge: "8500", staffNote: "Sample: delivery booked for Friday." });
-  await setOrderStatus(owner, inProgress.id, "in_progress");
+  await setOrderStatus(owner, inProgress.id, "confirmed");
   await setOrderPaid(owner, inProgress.id, true);
-  await setOrderStatus(owner, delivered.id, "confirmed");
-  await setOrderStatus(owner, delivered.id, "in_progress");
-  await setOrderStatus(owner, delivered.id, "ready");
-  await setOrderStatus(owner, delivered.id, "out_for_delivery");
   await updateOrderDetails(owner, delivered.id, { deliveryCharge: "4500" });
+  await setOrderStatus(owner, delivered.id, "confirmed");
+  await setOrderStatus(owner, delivered.id, "ready");
   await setOrderStatus(owner, delivered.id, "delivered");
   await setOrderPaid(owner, delivered.id, true);
   await setOrderStatus(owner, cancelled.id, "cancelled", "Sample: customer changed their mind.");

@@ -1,7 +1,6 @@
 import { EnquiryTag } from "@/components/app/tags";
 import Link from "next/link";
-import { ListSearch } from "@/components/app/list-search";
-import { FilterTabs } from "@/components/app/filter-tabs";
+import { ListFilters } from "@/components/app/list-filters";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import {
@@ -15,7 +14,6 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { MESSAGE_KIND_LABEL } from "@/lib/order-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listEnquiries } from "@/server/messages";
@@ -33,41 +31,30 @@ export default async function EnquiriesPage({
   const sp = await searchParams;
   const state = oneOf(one(sp.state), STATES);
   const q = one(sp.q)?.slice(0, 80);
+  const sort = oneOf(one(sp.sort), ["latest", "oldest"] as const) ?? "latest";
   const page = pageOf(sp);
   const [business, result] = await Promise.all([
     getBusinessSettings(),
-    listEnquiries(actor, { state, q, page, pageSize: PAGE_SIZE }),
+    listEnquiries(actor, { state, q, sort, page, pageSize: PAGE_SIZE }),
   ]);
   const { counts } = result;
   const href = (over: Record<string, string | undefined>) =>
-    buildHref("/app/enquiries", { state, q, ...over });
-  const tab = (
-    key: (typeof STATES)[number] | undefined,
-    label: string,
-    n: number,
-  ) => ({
-    label,
-    count: n,
-    active: state === key,
-    href: buildHref("/app/enquiries", { state: key, q }),
-  });
-
+    buildHref("/app/enquiries", { state, q, sort: sort === "latest" ? undefined : sort, ...over });
   return (
     <>
       <ModuleHeader href="/app/enquiries" />
-      <FilterTabs
-        label="Enquiry state"
-        tabs={[
-          tab(undefined, "All enquiries", counts.all),
-          tab("new", "New", counts.new),
-          tab("responded", "Responded", counts.responded),
-        ]}
-      />
-      <ListSearch
+      <ListFilters
         action="/app/enquiries"
-        params={{ state }}
+        param="state"
         q={q}
+        value={state ?? ""}
+        sort={sort}
         placeholder="Name, phone, email or words in the message"
+        options={[
+          { value: "", label: `All enquiries (${counts.all})` },
+          { value: "new", label: `New (${counts.new})` },
+          { value: "responded", label: `Responded (${counts.responded})` },
+        ]}
       />
       <div className="app-results">
         {result.rows.length === 0 ? (
@@ -84,15 +71,14 @@ export default async function EnquiriesPage({
             <Table>
               <THead>
                 <tr>
+                  <TH className="w-16">No.</TH>
                   <TH>Enquiry</TH>
-                  <TH>From</TH>
-                  <TH>Type</TH>
-                  <TH>State</TH>
-                  <TH>Received</TH>
+                  <TH className="w-52">Customer</TH>
+                  <TH className="w-44">Status</TH>
                 </tr>
               </THead>
               <tbody>
-                {result.rows.map((r) => {
+                {result.rows.map((r, i) => {
                   const badge = r.isHandled ? (
                     <EnquiryTag state="responded" />
                   ) : (
@@ -100,6 +86,7 @@ export default async function EnquiriesPage({
                   );
                   return (
                     <TR key={r.id}>
+                      <TD className="tabular text-center text-text-muted">{(page - 1) * PAGE_SIZE + i + 1}</TD>
                       <TD>
                         <Link
                           href={`/app/messages/${r.id}`}
@@ -111,14 +98,15 @@ export default async function EnquiriesPage({
                           {r.message ?? "—"}
                         </div>
                       </TD>
-                      <TD>
+                      <TD className="text-center">
                         <div className="font-medium">{r.name}</div>
                         <div className="text-text-muted">{r.phone}</div>
                       </TD>
-                      <TD>{MESSAGE_KIND_LABEL[r.kind] ?? r.kind}</TD>
-                      <TD>{badge}</TD>
-                      <TD className="whitespace-nowrap">
-                        {formatDateTime(r.createdAt, business.timezone)}
+                      <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
+                        <div className="relative flex flex-col items-center">
+                          {badge}
+                          <time dateTime={r.createdAt.toISOString()} className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted">{formatDateTime(r.createdAt, business.timezone)}</time>
+                        </div>
                       </TD>
                     </TR>
                   );

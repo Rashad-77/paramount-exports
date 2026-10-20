@@ -57,6 +57,8 @@ export interface TrackedOrder {
   fulfilment: Fulfilment;
   paymentMethod: PaymentMethod;
   isPaid: boolean;
+  /** Where the customer can open and print their receipt (or invoice, until it is paid). */
+  receiptUrl: string;
   currency: string;
   subtotal: string;
   deliveryCharge: string;

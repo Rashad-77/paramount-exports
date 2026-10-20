@@ -1,7 +1,6 @@
 import { QuoteTag } from "@/components/app/tags";
 import Link from "next/link";
-import { ListSearch } from "@/components/app/list-search";
-import { FilterTabs } from "@/components/app/filter-tabs";
+import { ListFilters } from "@/components/app/list-filters";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import {
@@ -33,41 +32,30 @@ export default async function QuotationsPage({
   const sp = await searchParams;
   const status = oneOf(one(sp.status), ["requested", "responded"] as const);
   const q = one(sp.q)?.slice(0, 80);
+  const sort = oneOf(one(sp.sort), ["latest", "oldest"] as const) ?? "latest";
   const page = pageOf(sp);
   const [business, result] = await Promise.all([
     getBusinessSettings(),
-    listQuotations(actor, { status, q, page, pageSize: PAGE_SIZE }),
+    listQuotations(actor, { status, q, sort, page, pageSize: PAGE_SIZE }),
   ]);
   const { counts } = result;
   const href = (over: Record<string, string | undefined>) =>
-    buildHref("/app/quotations", { status, q, ...over });
-  const tab = (
-    key: "requested" | "responded" | undefined,
-    label: string,
-    n: number,
-  ) => ({
-    label,
-    count: n,
-    active: status === key,
-    href: buildHref("/app/quotations", { status: key, q }),
-  });
-
+    buildHref("/app/quotations", { status, q, sort: sort === "latest" ? undefined : sort, ...over });
   return (
     <>
       <ModuleHeader href="/app/quotations" />
-      <FilterTabs
-        label="Quotation status"
-        tabs={[
-          tab(undefined, "All requests", counts.all),
-          tab("requested", "New", counts.requested),
-          tab("responded", "Responded", counts.responded),
-        ]}
-      />
-      <ListSearch
+      <ListFilters
         action="/app/quotations"
-        params={{ status }}
+        param="status"
         q={q}
+        value={status ?? ""}
+        sort={sort}
         placeholder="Reference, name, phone or words in the request"
+        options={[
+          { value: "", label: `All requests (${counts.all})` },
+          { value: "requested", label: `New (${counts.requested})` },
+          { value: "responded", label: `Responded (${counts.responded})` },
+        ]}
       />
       <div className="app-results">
         {result.rows.length === 0 ? (
@@ -86,15 +74,15 @@ export default async function QuotationsPage({
             <Table>
               <THead>
                 <tr>
+                  <TH className="w-16">No.</TH>
                   <TH>Request</TH>
                   <TH>Customer</TH>
-                  <TH>Status</TH>
-                  <TH>Received</TH>
-                  <TH className="text-right">Price sent</TH>
+                  <TH className="w-32">Price sent</TH>
+                  <TH className="w-44">Status</TH>
                 </tr>
               </THead>
               <tbody>
-                {result.rows.map((r) => {
+                {result.rows.map((r, i) => {
                   const st = isQuoteStatus(r.quoteStatus)
                     ? r.quoteStatus
                     : "requested";
@@ -103,6 +91,7 @@ export default async function QuotationsPage({
                   )?.furnitureType;
                   return (
                     <TR key={r.id}>
+                      <TD className="tabular text-center text-text-muted">{(page - 1) * PAGE_SIZE + i + 1}</TD>
                       <TD>
                         <Link
                           href={`/app/messages/${r.id}`}
@@ -118,18 +107,18 @@ export default async function QuotationsPage({
                         <div className="font-medium">{r.name}</div>
                         <div className="text-text-muted">{r.phone}</div>
                       </TD>
-                      <TD>
-                        <QuoteTag status={st} />
-                      </TD>
-                      <TD className="whitespace-nowrap">
-                        {formatDateTime(r.createdAt, business.timezone)}
-                      </TD>
-                      <TD numeric>
+                      <TD className="tabular text-center">
                         {r.quotedAmount ? (
                           formatAmount(r.quotedAmount)
                         ) : (
                           <span className="text-text-muted">—</span>
                         )}
+                      </TD>
+                      <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
+                        <div className="relative flex flex-col items-center">
+                          <QuoteTag status={st} />
+                          <time dateTime={r.createdAt.toISOString()} className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted">{formatDateTime(r.createdAt, business.timezone)}</time>
+                        </div>
                       </TD>
                     </TR>
                   );

@@ -1,6 +1,6 @@
 import "server-only";
 import { quoteRef } from "@/lib/quotation-ui";
-import { and, count, desc, eq, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -297,7 +297,7 @@ const isEnquiry = sql`${messages.kind} <> 'custom'`;
 const enquiryStateCond = (s: EnquiryState): SQL => (s === "responded" ? eq(messages.isHandled, true) : eq(messages.isHandled, false));
 
 /** Made-to-measure requests with their quotation status, newest first. */
-export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?: string; page: number; pageSize: number }) {
+export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?: string; sort?: "latest" | "oldest"; page: number; pageSize: number }) {
   requirePermission(actor, "messages:view");
   const where: SQL[] = [isQuotation];
   if (f.status === "requested") where.push(eq(messages.quoteStatus, "requested"));
@@ -313,7 +313,7 @@ export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?
       .select({ id: messages.id, reference: messages.reference, name: messages.name, phone: messages.phone, message: messages.message, payload: messages.payload, quoteStatus: messages.quoteStatus, quotedAmount: messages.quotedAmount, quotedAt: messages.quotedAt, orderId: messages.orderId, createdAt: messages.createdAt })
       .from(messages)
       .where(cond)
-      .orderBy(desc(messages.createdAt))
+      .orderBy(f.sort === "oldest" ? asc(messages.createdAt) : desc(messages.createdAt))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: count() }).from(messages).where(cond),
@@ -330,7 +330,7 @@ export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?
 }
 
 /** Contact-form messages and product questions, with the state staff have put them in. */
-export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?: string; page: number; pageSize: number }) {
+export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?: string; sort?: "latest" | "oldest"; page: number; pageSize: number }) {
   requirePermission(actor, "messages:view");
   const where: SQL[] = [isEnquiry];
   if (f.state) where.push(enquiryStateCond(f.state));
@@ -345,7 +345,7 @@ export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?:
       .select({ id: messages.id, reference: messages.reference, kind: messages.kind, isHandled: messages.isHandled, inProgress: messages.inProgress, name: messages.name, phone: messages.phone, message: messages.message, createdAt: messages.createdAt })
       .from(messages)
       .where(cond)
-      .orderBy(desc(messages.createdAt))
+      .orderBy(f.sort === "oldest" ? asc(messages.createdAt) : desc(messages.createdAt))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: count() }).from(messages).where(cond),

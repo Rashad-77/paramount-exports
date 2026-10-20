@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db/client";
 import { orderItems, orders } from "@/lib/db/schema";
 import { notFound, rateLimited } from "@/lib/errors";
 import { hitRateLimit } from "@/lib/rate-limit";
+import { receiptPath } from "@/lib/receipt-token";
 import { firstImages } from "@/server/catalogue-public";
 import type { TrackedOrder, TrackInput } from "@/lib/schemas/tracking";
 
@@ -74,6 +75,7 @@ export async function toTrackedOrder(
     fulfilment: order.fulfilment,
     paymentMethod: order.paymentMethod,
     isPaid: order.isPaid,
+    receiptUrl: receiptPath(order),
     currency: order.currency,
     subtotal: order.subtotal,
     deliveryCharge: order.deliveryCharge,

@@ -722,10 +722,10 @@ html:has(.app-ui) {
   align-items: center;
   gap: 0.4rem;
   padding: 0.18rem 0.6rem;
-  background: color-mix(in srgb, var(--c) 13%, #fff);
+  background: color-mix(in srgb, var(--c) 24%, #fff);
   color: #111827;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
   transition: transform 120ms ease-out;
@@ -742,18 +742,18 @@ html:has(.app-ui) {
   flex: none;
   color: var(--c);
 }
-.tag-blue { --c: #2f7fd1; }
+.tag-blue { --c: #1d6fe0; }
 /* New: a solid bright yellow, so anything waiting for a first look stands out */
 .tag-yellow {
   --c: #1c1916;
   background: #ffd400;
 }
-.tag-teal { --c: #14916b; }
-.tag-amber { --c: #b4690e; }
-.tag-purple { --c: #6f66d6; }
-.tag-orange { --c: #d4521f; }
-.tag-green { --c: #4f8a1a; }
-.tag-red { --c: #d03c3b; }
+.tag-teal { --c: #08a574; }
+.tag-amber { --c: #e08000; }
+.tag-purple { --c: #7656f0; }
+.tag-orange { --c: #f2540c; }
+.tag-green { --c: #3f9e0a; }
+.tag-red { --c: #e5202a; }
 .tag-grey { --c: #6b7280; }
 
 /* Tables keep a sensible width and scroll sideways (swipe, trackpad or shift + wheel) when the screen is narrower, instead of squeezing the columns. */

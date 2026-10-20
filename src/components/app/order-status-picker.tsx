@@ -12,7 +12,7 @@ import { ORDER_STATUSES, STATUS_LABEL } from "@/lib/order-constants";
 
 type EditableOrderStatus = Exclude<OrderStatus, "in_progress">;
 const STATUS_OPTIONS = ORDER_STATUSES.filter(
-  (option): option is EditableOrderStatus => option !== "in_progress",
+  (option): option is EditableOrderStatus => option !== "in_progress" && option !== "out_for_delivery",
 );
 const STATUS_BUTTON_COLOR: Record<EditableOrderStatus, string> = {
   new: "tag-yellow",
@@ -60,9 +60,9 @@ function Picker({
 
   if (customerCancelled) {
     return (
-      <div className="flex flex-col items-center gap-1">
+      <div className="relative flex flex-col items-center">
         <Tag color="red" icon={CircleX}>Customer cancelled</Tag>
-        {statusDateLabel ? <time dateTime={statusDate ?? undefined} className="text-[0.65rem] leading-none text-text-muted">{statusDateLabel}</time> : null}
+        {statusDateLabel ? <time dateTime={statusDate ?? undefined} className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted">{statusDateLabel}</time> : null}
       </div>
     );
   }
@@ -71,7 +71,7 @@ function Picker({
     <>
       <input type="hidden" name="id" value={id} />
       <input ref={statusInput} type="hidden" name="status" value={choice} readOnly />
-      <div className="flex flex-col items-center gap-1">
+      <div className="relative flex flex-col items-center">
         <button
           type="button"
           aria-label={`Edit status for order ${reference}`}
@@ -85,7 +85,7 @@ function Picker({
         >
           <OrderTag status={status} isPaid={isPaid} fulfilment={fulfilment} />
         </button>
-        {statusDateLabel ? <time dateTime={statusDate ?? undefined} className="text-[0.65rem] leading-none text-text-muted">{statusDateLabel}</time> : null}
+        {statusDateLabel ? <time dateTime={statusDate ?? undefined} className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted">{statusDateLabel}</time> : null}
       </div>
       <Dialog
         open={open}
