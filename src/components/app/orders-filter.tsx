@@ -6,27 +6,26 @@ import { PanelSelect } from "@/components/app/panel-select";
 import { StatusFilter } from "@/components/app/status-filter";
 import { TextField } from "@/components/ui/field";
 
-const orderGroups = (counts: Counts) => [
+const ORDER_GROUPS = [
   {
     label: "Order status",
     items: [
-      { value: "new", label: `New (${counts.new})` },
-      { value: "confirmed", label: `Confirmed (${counts.confirmed + counts.in_progress})` },
-      { value: "ready", label: `Ready (${counts.ready})` },
-      { value: "delivered", label: `Delivered (${counts.delivered - counts.completed})` },
-      { value: "completed", label: `Completed (${counts.completed})` },
-      { value: "cancelled", label: `Cancelled (${counts.cancelled})` },
+      { value: "new", label: "New" },
+      { value: "confirmed", label: "Confirmed" },
+      { value: "ready", label: "Ready" },
+      { value: "delivered", label: "Delivered" },
+      { value: "completed", label: "Completed" },
+      { value: "cancelled", label: "Cancelled" },
     ],
   },
   {
     label: "Payment",
     items: [
-      { value: "paid", label: `Paid (${counts.paid})` },
-      { value: "unpaid", label: `Not paid (${counts.unpaid})` },
+      { value: "paid", label: "Paid" },
+      { value: "unpaid", label: "Not paid" },
     ],
   },
 ];
-type Counts = { all: number; new: number; confirmed: number; in_progress: number; ready: number; out_for_delivery: number; delivered: number; completed: number; cancelled: number; paid: number; unpaid: number };
 const PAYMENT_VALUES = new Set(["paid", "unpaid"]);
 
 const SORT_OPTIONS = [
@@ -46,14 +45,12 @@ export function OrdersFilter({
   sort,
   statuses,
   payments,
-  counts,
 }: {
   action: string;
   q?: string;
   sort: string;
   statuses: string[];
   payments: string[];
-  counts: Counts;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -101,9 +98,9 @@ export function OrdersFilter({
       />
       <StatusFilter
         selected={picked}
-        groups={orderGroups(counts)}
+        groups={ORDER_GROUPS}
         label="Filter by"
-        emptyLabel={`All orders (${counts.all})`}
+        emptyLabel="All orders"
         onChange={(v) => {
           setPicked(v);
           go({ q: text, picked: v, sort: order });

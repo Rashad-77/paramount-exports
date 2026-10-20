@@ -2,7 +2,6 @@ import Image from "next/image";
 import type { orderItems, orderPayments, orders } from "@/lib/db/schema";
 import { dec, formatMoney } from "@/lib/money";
 import { PAYMENT_LABEL } from "@/lib/order-constants";
-import { orderMoney } from "@/lib/order-money-calc";
 import type { BusinessSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/time";
 import styles from "./receipt.module.css";
@@ -26,48 +25,42 @@ const oneLine = (text: string | null | undefined) =>
 /**
  * An order as a printed document, laid out for A4. Three shapes from one order:
  *  - Invoice: while money is still due. Numbered INV-.
- *  - Receipt: once paid in full. Lists each payment with its receipt number (RCP-), and any refund with its credit note number (CRN-).
+ *  - Receipt: once paid. Shows the payment with its receipt number (RCP-).
  *  - Delivery note: no prices; what is being handed over, where to, and a signature line. Cash to collect is shown for pay-on-delivery orders.
  */
 export function OrderDocument({ order: o, items, payments, business, mode }: { order: Order; items: Item[]; payments: Payment[]; business: BusinessSettings; mode: DocumentMode }) {
   const tz = business.timezone;
   const money = (v: string | number) => formatMoney(v, o.currency);
-  const calc = orderMoney(o);
+  const balance = o.isPaid ? "0" : o.total;
   const cancelled = o.status === "cancelled";
   const delivery = o.fulfilment === "delivery";
   const live = payments.filter((p) => !p.voidedAt);
-  const paid = live.filter((p) => p.kind === "payment");
-  const refunds = live.filter((p) => p.kind === "refund");
   const businessAddress = oneLine(business.address);
   const unitsTotal = items.reduce((n, i) => n + i.quantity, 0);
   const hasDiscount = dec(o.discount).gt(0);
   const note = mode === "delivery_note";
 
-  const isReceipt = !note && !cancelled && calc.isPaid;
+  const isReceipt = !note && !cancelled && o.isPaid;
   const title = note ? (delivery ? "Delivery note" : "Collection note") : cancelled ? "Cancelled order" : isReceipt ? "Receipt" : "Invoice";
-  const docNumber = note ? o.reference : isReceipt ? (paid.length ? paid[paid.length - 1]!.number : o.reference) : (o.invoiceNumber ?? o.reference);
+  const docNumber = note ? o.reference : isReceipt ? (live.length ? live[live.length - 1]!.number : o.reference) : (o.invoiceNumber ?? o.reference);
 
   const stamp = cancelled
     ? { text: "Cancelled", cls: styles.cancelled, note: o.cancelledAt ? formatDate(o.cancelledAt, tz) : null }
-    : calc.state === "refunded"
-      ? { text: "Refunded", cls: styles.due, note: null }
-      : calc.state === "paid" || calc.state === "part_refunded"
-        ? { text: "Paid", cls: styles.paid, note: o.paidAt ? formatDate(o.paidAt, tz) : null }
-        : calc.state === "part"
-          ? { text: "Part paid", cls: styles.due, note: null }
-          : { text: "Unpaid", cls: styles.due, note: null };
+    : o.isPaid
+      ? { text: "Paid", cls: styles.paid, note: o.paidAt ? formatDate(o.paidAt, tz) : null }
+      : { text: "Unpaid", cls: styles.due, note: null };
 
   const paymentNote = (() => {
     if (cancelled) return o.cancelReason ? `This order was cancelled: ${o.cancelReason}` : "This order was cancelled.";
-    if (calc.paidInFull) return `Paid in full${o.paidAt ? ` on ${formatDate(o.paidAt, tz)}` : ""}. Thank you.`;
-    const due = money(calc.balance);
+    if (o.isPaid) return `Paid${o.paidAt ? ` on ${formatDate(o.paidAt, tz)}` : ""}. Thank you.`;
+    const due = money(balance);
     switch (o.paymentMethod) {
       case "on_delivery":
-        return `Balance of ${due} is payable in cash on delivery.`;
+        return `${due} is payable in cash on delivery.`;
       case "at_showroom":
-        return `Balance of ${due} is payable at the showroom when the order is collected.`;
+        return `${due} is payable at the showroom when the order is collected.`;
       case "bank_transfer":
-        return `Balance of ${due} is payable by bank transfer. Please quote ${o.reference} as the payment reference.`;
+        return `${due} is payable by bank transfer. Please quote ${o.reference} as the payment reference.`;
     }
   })();
 
@@ -162,7 +155,6 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
               <td>
                 <div className={styles.itemName}>{i.productName}</div>
                 {i.variantLabel || i.sku ? <div className={`${styles.small} ${styles.muted}`}>{[i.variantLabel, i.sku].filter(Boolean).join(" · ")}</div> : null}
-                {i.returnedQuantity > 0 && !note ? <div className={`${styles.small} ${styles.muted}`}>{i.returnedQuantity} returned</div> : null}
               </td>
               {note ? null : <td className={styles.num}>{money(i.unitPrice)}</td>}
               <td className={styles.center}>{i.quantity}</td>
@@ -177,11 +169,11 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
           <p style={{ marginTop: 12 }} className={styles.small}>
             Total items: {unitsTotal}
           </p>
-          {o.paymentMethod === "on_delivery" && !calc.paidInFull && !cancelled ? (
+          {o.paymentMethod === "on_delivery" && !o.isPaid && !cancelled ? (
             <div className={styles.box} style={{ marginTop: 14 }}>
               <p className={styles.label}>Collect on delivery</p>
               <p>
-                <strong>{money(calc.balance)}</strong> in cash.
+                <strong>{money(balance)}</strong> in cash.
               </p>
             </div>
           ) : null}
@@ -218,7 +210,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
               ) : null}
               <div>
                 <span className={styles.muted}>{delivery ? "Delivery charge" : "Collection"}</span>
-                <span>{!delivery ? "No charge" : Number(o.deliveryCharge) > 0 ? money(o.deliveryCharge) : o.deliveryChargeSet || calc.paidInFull || cancelled ? "No charge" : "To be agreed"}</span>
+                <span>{!delivery ? "No charge" : Number(o.deliveryCharge) > 0 ? money(o.deliveryCharge) : o.deliveryChargeSet || o.isPaid || cancelled ? "No charge" : "To be agreed"}</span>
               </div>
               <div className={styles.grand}>
                 <span>Total</span>
@@ -228,15 +220,9 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
                 <span className={styles.muted}>Amount paid</span>
                 <span>{money(o.paidAmount)}</span>
               </div>
-              {refunds.length > 0 ? (
-                <div>
-                  <span className={styles.muted}>Refunded</span>
-                  <span>− {money(o.refundedAmount)}</span>
-                </div>
-              ) : null}
               <div className={styles.balance}>
                 <span>Balance due</span>
-                <span>{money(cancelled ? 0 : calc.balance)}</span>
+                <span>{money(cancelled ? 0 : balance)}</span>
               </div>
             </div>
           </div>
@@ -245,7 +231,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
             <table className={styles.payTable} aria-label="Payments">
               <thead>
                 <tr>
-                  <th>Number</th>
+                  <th>Receipt</th>
                   <th>Date</th>
                   <th>Method</th>
                   <th className={styles.num}>Amount</th>
@@ -255,7 +241,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
                 {live.map((p) => (
                   <tr key={p.id}>
                     <td>
-                      {p.number} <span className={styles.muted}>{p.kind === "refund" ? "credit note" : "receipt"}</span>
+                      {p.number}
                     </td>
                     <td>{formatDate(p.paidAt, tz)}</td>
                     <td>
@@ -263,7 +249,6 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
                       {p.reference ? <span className={styles.muted}> · {p.reference}</span> : null}
                     </td>
                     <td className={styles.num}>
-                      {p.kind === "refund" ? "− " : ""}
                       {money(p.amount)}
                     </td>
                   </tr>
@@ -279,7 +264,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
                 <strong>{PAYMENT_LABEL[o.paymentMethod]}</strong>
               </p>
               <p>{paymentNote}</p>
-              {!calc.paidInFull && !cancelled && o.paymentMethod === "bank_transfer" && business.bankDetails ? (
+              {!o.isPaid && !cancelled && o.paymentMethod === "bank_transfer" && business.bankDetails ? (
                 <p className={styles.pre} style={{ marginTop: 6 }}>
                   {business.bankDetails}
                 </p>

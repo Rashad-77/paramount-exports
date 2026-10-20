@@ -20,11 +20,8 @@ A unit test fails if this table and the code disagree, so review changes to the 
 | `orders:update` | ✓ | ✓ |
 | `orders:cancel` | ✓ | ✓ |
 | `orders:record_payment` | ✓ | ✓ |
-| `orders:edit_items` | ✓ | ✓ |
 | `orders:discount` | ✓ | — |
-| `orders:refund` | ✓ | — |
 | `orders:void_payment` | ✓ | — |
-| `orders:cases` | ✓ | ✓ |
 | `messages:view` | ✓ | ✓ |
 | `messages:handle` | ✓ | ✓ |
 | `customers:view` | ✓ | ✓ |

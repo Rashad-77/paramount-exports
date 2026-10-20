@@ -33,9 +33,8 @@ export const orders = pgTable(
     /** Set by staff when the money has been received offline. Never set by the website. */
     isPaid: boolean("is_paid").notNull().default(false),
     paidAt: timestamp("paid_at", { withTimezone: true }),
-    /** Cached from the payment rows: money received, and money paid back. The balance is total minus (paid minus refunded). */
+    /** Cached from the payment rows: the money received (the order total once it is paid). */
     paidAmount: money("paid_amount").notNull().default("0"),
-    refundedAmount: money("refunded_amount").notNull().default("0"),
     /** A discount staff gave on the order, taken off the items before delivery is added. */
     discount: money("discount").notNull().default("0"),
     discountReason: text("discount_reason"),
@@ -91,8 +90,6 @@ export const orderItems = pgTable(
     sku: text("sku"),
     unitPrice: money("unit_price").notNull(),
     quantity: integer("quantity").notNull(),
-    /** How many of them came back (a return); those go back on the shelf. */
-    returnedQuantity: integer("returned_quantity").notNull().default(0),
     lineTotal: money("line_total").notNull(),
   },
   (t) => [
@@ -146,7 +143,7 @@ export const messages = pgTable(
   ],
 );
 
-/** Money in and out of an order: each payment gets a receipt number (RCP-), each refund a credit note number (CRN-). A mistake is voided, never deleted. */
+/** The payment record of an order: each payment gets a receipt number (RCP-). A mistake is voided, never deleted. */
 export const orderPayments = pgTable(
   "online_order_payments",
   {
@@ -154,7 +151,7 @@ export const orderPayments = pgTable(
     orderId: uuid("order_id")
       .notNull()
       .references(() => orders.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["payment", "refund"] }).notNull(),
+    kind: text("kind", { enum: ["payment"] }).notNull().default("payment"),
     amount: money("amount").notNull(),
     method: text("method", { enum: ["cash", "bank_transfer", "card", "other"] }).notNull(),
     reference: text("reference"),
@@ -168,25 +165,4 @@ export const orderPayments = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("online_order_payments_order_idx").on(t.orderId, t.createdAt)],
-);
-
-/** The after-sales log: complaints, repairs and warranty claims against an order. */
-export const orderCases = pgTable(
-  "online_order_cases",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => orders.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["complaint", "repair", "warranty", "other"] }).notNull(),
-    title: text("title").notNull(),
-    details: text("details"),
-    resolution: text("resolution"),
-    status: text("status", { enum: ["open", "resolved"] }).notNull().default("open"),
-    createdBy: uuid("created_by").references(() => profiles.id, { onDelete: "set null" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-    resolvedBy: uuid("resolved_by").references(() => profiles.id, { onDelete: "set null" }),
-  },
-  (t) => [index("online_order_cases_order_idx").on(t.orderId, t.createdAt)],
 );

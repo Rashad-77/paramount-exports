@@ -1,9 +1,9 @@
 import { updateDetailsAction } from "@/app/app/orders/actions";
-import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, SubmitButton } from "@/components/forms/action-form";
 
 /**
- * Pricing and planning for an open order: the delivery charge (deliveries only), a discount with its reason (owner only), the planned day
- * and an internal note. The total is items minus discount plus delivery.
+ * Pricing for an open order: the delivery charge (deliveries only) and a discount with its reason (owner only).
+ * The total is items minus discount plus delivery.
  */
 export function OrderPricingForm({
   orderId,
@@ -14,8 +14,6 @@ export function OrderPricingForm({
   discount,
   discountReason,
   canDiscount,
-  scheduledFor,
-  staffNote,
 }: {
   orderId: string;
   currency: string;
@@ -25,8 +23,6 @@ export function OrderPricingForm({
   discount: string;
   discountReason: string | null;
   canDiscount: boolean;
-  scheduledFor: string | null;
-  staffNote: string | null;
 }) {
   return (
     <ActionForm action={updateDetailsAction} className="space-y-4">
@@ -48,10 +44,8 @@ export function OrderPricingForm({
             <FField name="discountReason" label="Why the discount" maxLength={200} defaultValue={discountReason ?? ""} />
           </>
         ) : null}
-        <FField name="scheduledFor" label={delivery ? "Planned delivery day" : "Planned collection day"} type="date" defaultValue={scheduledFor ?? ""} />
       </div>
-      <FTextArea name="staffNote" label="Internal note" rows={2} maxLength={1000} defaultValue={staffNote ?? ""} hint="Only staff see this." />
-      <SubmitButton pendingLabel="Saving…">Save pricing and planning</SubmitButton>
+      <SubmitButton pendingLabel="Saving…">Save pricing</SubmitButton>
     </ActionForm>
   );
 }

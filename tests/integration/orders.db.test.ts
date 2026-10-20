@@ -172,7 +172,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     await setOrderPaid(owner, id, false);
     expect((await getOrder(staff, id)).order).toMatchObject({ isPaid: false, paidAt: null });
     const actions = (await t.sql`SELECT action FROM audit_logs WHERE entity_id = ${id} ORDER BY created_at`).map((r) => r.action);
-    expect(actions).toEqual(["order.placed_from_website", "order.details_updated", "order.payment_recorded", "order.payment_voided"]);
+    expect(actions).toEqual(["order.placed_from_website", "order.details_updated", "order.marked_paid", "order.marked_unpaid"]);
   });
 
   it("a finished order cannot be edited", async () => {

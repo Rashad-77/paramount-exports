@@ -182,8 +182,6 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         fulfilment: orders.fulfilment,
         paymentMethod: orders.paymentMethod,
         isPaid: orders.isPaid,
-        paidAmount: orders.paidAmount,
-        refundedAmount: orders.refundedAmount,
         currency: orders.currency,
         total: orders.total,
         deliveryCharge: orders.deliveryCharge,
@@ -236,15 +234,13 @@ export async function getOrder(actor: Actor, id: string) {
   return { order, items };
 }
 
-export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number; paid: number; unpaid: number }> {
+export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number }> {
   requirePermission(actor, "orders:view");
   const rows = await getDb().select({ status: orders.status, isPaid: orders.isPaid, n: count() }).from(orders).groupBy(orders.status, orders.isPaid);
-  const out: Record<OrderStatus | "all", number> & { completed: number; paid: number; unpaid: number } = { paid: 0, unpaid: 0, all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
+  const out: Record<OrderStatus | "all", number> & { completed: number } = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
   for (const r of rows) {
     out[r.status] += r.n;
     out.all += r.n;
-    if (r.isPaid) out.paid += r.n;
-    else out.unpaid += r.n;
     if (r.status === "delivered" && r.isPaid) out.completed += r.n;
   }
   return out;
@@ -290,8 +286,7 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
     const now = new Date();
     if (o.status === "cancelled" && status !== "cancelled") {
       // Reopening a cancelled order consumes the stock that cancellation restored.
-      // Pieces that already came back as a return were put on the shelf then, so only the rest move now.
-      const items = (await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity, returned: orderItems.returnedQuantity }).from(orderItems).where(eq(orderItems.orderId, id))).map((i) => ({ variantId: i.variantId, quantity: i.quantity - i.returned }));
+      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
       for (const it of items) {
         if (!it.variantId) continue;
         const taken = await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} - ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NULL OR ${productVariants.stockQuantity} >= ${it.quantity}`)).returning({ id: productVariants.id });
@@ -325,8 +320,7 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
       .where(eq(orders.id, id));
     if (status === "cancelled") {
       // A cancelled order puts its counted pieces back on the shelf.
-      // Pieces that already came back as a return were put on the shelf then, so only the rest move now.
-      const items = (await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity, returned: orderItems.returnedQuantity }).from(orderItems).where(eq(orderItems.orderId, id))).map((i) => ({ variantId: i.variantId, quantity: i.quantity - i.returned }));
+      const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
       for (const it of items) {
         if (!it.variantId) continue;
         await tx.update(productVariants).set({ stockQuantity: sql`${productVariants.stockQuantity} + ${it.quantity}` }).where(and(eq(productVariants.id, it.variantId), sql`${productVariants.stockQuantity} IS NOT NULL`));
@@ -382,7 +376,7 @@ export async function updateOrderDetails(actor: Actor, id: string, input: OrderD
     const total = moneyString(dec(o.subtotal).minus(discount).plus(charge));
     await tx
       .update(orders)
-      .set({ deliveryCharge: charge, deliveryChargeSet: true, discount, discountReason, total, staffNote: input.staffNote ?? null, scheduledFor: input.scheduledFor ?? null, handledBy: actor.id })
+      .set({ deliveryCharge: charge, deliveryChargeSet: true, discount, discountReason, total, staffNote: input.staffNote === undefined ? o.staffNote : input.staffNote, scheduledFor: input.scheduledFor === undefined ? o.scheduledFor : input.scheduledFor, handledBy: actor.id })
       .where(eq(orders.id, id));
     const money = await syncOrderMoney(tx, id);
     await recordAudit(tx, actor, {
@@ -390,7 +384,7 @@ export async function updateOrderDetails(actor: Actor, id: string, input: OrderD
       entityType: "order",
       entityId: id,
       before: { deliveryCharge: o.deliveryCharge, discount: o.discount, total: o.total },
-      after: { deliveryCharge: charge, discount, total, balance: money.balance, scheduledFor: input.scheduledFor ?? null },
+      after: { deliveryCharge: charge, discount, total, paid: money.paid },
       reason: discountReason ?? undefined,
     });
   });
@@ -479,7 +473,7 @@ export async function getDashboard(actor: Actor) {
       .select({
         orders: count(),
         value: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.status} <> 'cancelled'), 0)::text`,
-        paid: sql<string>`coalesce(sum(${orders.paidAmount} - ${orders.refundedAmount}) FILTER (WHERE ${orders.status} <> 'cancelled' OR ${orders.paidAmount} > ${orders.refundedAmount}), 0)::text`,
+        paid: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.isPaid}), 0)::text`,
       })
       .from(orders)
       .where(gte(orders.createdAt, since)),

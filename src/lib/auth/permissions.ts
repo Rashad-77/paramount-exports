@@ -36,11 +36,8 @@ export const PERMISSIONS = {
   "orders:update": BOTH,
   "orders:cancel": BOTH,
   "orders:record_payment": BOTH,
-  "orders:edit_items": BOTH,
   "orders:discount": OWNER,
-  "orders:refund": OWNER,
   "orders:void_payment": OWNER,
-  "orders:cases": BOTH,
 
   // Website messages (contact form, product enquiries, custom requests)
   "messages:view": BOTH,

@@ -1,4 +1,3 @@
-import { orderMoney } from "@/lib/order-money-calc";
 import type { Fulfilment, OrderStatus, PaymentMethod } from "@/lib/order-constants";
 
 /** What an order page needs to know to describe the order's journey. Delivery and pickup orders take different roads, and each payment method has its own moment for "paid". */
@@ -79,8 +78,3 @@ export function nextStep(o: FlowOrder): string | null {
       return null;
   }
 }
-
-export type { PaymentState } from "@/lib/order-money-calc";
-
-/** Where an order stands on money, from the amounts: nothing paid, part paid, paid in full, or (partly) paid back. */
-export const paymentState = (o: { total: string; paidAmount: string; refundedAmount: string }) => orderMoney(o).state;
