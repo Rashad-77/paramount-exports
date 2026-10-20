@@ -19,3 +19,6 @@ next-env.d.ts
 
 # Local secrets
 *.local
+
+# Local dev server logs
+dev-server.*.log

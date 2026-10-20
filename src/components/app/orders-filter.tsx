@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 const STATUS_OPTIONS = [
   ["new", "New"],
@@ -35,10 +35,14 @@ export function OrdersFilter({
   const [selectedStatuses, setSelectedStatuses] = useState(statuses);
   const [selectedPayments, setSelectedPayments] = useState(payments);
 
-  useEffect(() => {
+  // When the address changes from outside (Clear filters, a link), the boxes follow it.
+  const key = JSON.stringify([statuses, payments]);
+  const [seen, setSeen] = useState(key);
+  if (key !== seen) {
+    setSeen(key);
     setSelectedStatuses(statuses);
     setSelectedPayments(payments);
-  }, [statuses, payments]);
+  }
 
   const toggle = (list: string[], value: string, setter: (next: string[]) => void) => {
     setter(list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);

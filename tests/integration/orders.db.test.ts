@@ -217,10 +217,10 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     await place({ phone: "+94 77 111 0001", name: "N. Perera" }, [[stoolVariant, 1]]);
     const list = await listCustomers(staff, { page: 1, pageSize: 50 });
     const nimal = list.rows.find((c) => c.phoneKey === "771110001")!;
-    expect(nimal.orders).toBeGreaterThanOrEqual(2);
+    expect(nimal.orderRefs.length).toBeGreaterThanOrEqual(2);
     expect(nimal.name).toBe("N. Perera"); // the most recent order's name
     const detail = await getCustomer(staff, "771110001");
-    expect(detail.orders.length).toBe(nimal.orders);
+    expect(detail.orders.length).toBe(nimal.orderRefs.length);
     await expect(getCustomer(staff, "000000000")).rejects.toMatchObject({ code: "NOT_FOUND" });
     expect((await listCustomers(staff, { q: "perera", page: 1, pageSize: 50 })).rows.length).toBeGreaterThan(0);
   });
