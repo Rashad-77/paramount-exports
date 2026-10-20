@@ -228,7 +228,7 @@ export function OrderView({
       </div>
 
       <p className="ot-help">
-        Need to make adjustments? <Link href="/contact">Contact us</Link>
+        Need to make an adjustment or ask for a refund? <Link href="/contact">Contact us</Link>
       </p>
     </section>
   );

@@ -290,7 +290,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
         <p className={styles.fine}>
           {[business.name, businessAddress, business.phone, business.email].filter(Boolean).join("  ·  ")}
           <br />
-          {note ? "Please check the items on arrival and report any damage the same day." : "This is a computer-generated document and needs no signature. Please keep it as your record of this order."}
+          {note ? "Please check the items on arrival and report any damage the same day." : "This is a computer-generated document and needs no signature. Please keep it as your record of this order. To ask for a refund, please contact us."}
         </p>
       </footer>
     </article>
