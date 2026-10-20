@@ -22,6 +22,7 @@ A unit test fails if this table and the code disagree, so review changes to the 
 | `orders:record_payment` | ✓ | ✓ |
 | `orders:discount` | ✓ | — |
 | `orders:void_payment` | ✓ | — |
+| `orders:refund` | ✓ | — |
 | `messages:view` | ✓ | ✓ |
 | `messages:handle` | ✓ | ✓ |
 | `customers:view` | ✓ | ✓ |

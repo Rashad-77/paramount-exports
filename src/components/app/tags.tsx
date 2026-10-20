@@ -1,4 +1,4 @@
-import { Bell, CheckCheck, CircleCheck, CircleX, Package, Truck, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, CheckCheck, CircleCheck, CircleX, Package, Truck, Undo2, Wallet, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Fulfilment, OrderStatus } from "@/lib/order-constants";
 import { STATUS_LABEL } from "@/lib/order-constants";
@@ -23,6 +23,7 @@ const ORDER: Record<OrderStatus, { color: TagColor; icon: LucideIcon }> = {
   ready: { color: "purple", icon: Package },
   out_for_delivery: { color: "orange", icon: Truck },
   delivered: { color: "green", icon: CheckCheck },
+  refunded: { color: "grey", icon: Undo2 },
   cancelled: { color: "red", icon: CircleX },
 };
 
@@ -39,7 +40,14 @@ export function OrderTag({ status, isPaid = false, fulfilment = "delivery" }: { 
   );
 }
 
-export function PaidTag({ paid }: { paid: boolean }) {
+export function PaidTag({ paid, refunded = false }: { paid: boolean; refunded?: boolean }) {
+  if (refunded) {
+    return (
+      <Tag color="grey" icon={Undo2}>
+        Refunded
+      </Tag>
+    );
+  }
   return paid ? (
     <Tag color="green" icon={Wallet}>
       Paid

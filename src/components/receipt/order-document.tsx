@@ -33,6 +33,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
   const money = (v: string | number) => formatMoney(v, o.currency);
   const balance = o.isPaid ? "0" : o.total;
   const cancelled = o.status === "cancelled";
+  const refunded = o.status === "refunded";
   const delivery = o.fulfilment === "delivery";
   const live = payments.filter((p) => !p.voidedAt);
   const businessAddress = oneLine(business.address);
@@ -40,18 +41,21 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
   const hasDiscount = dec(o.discount).gt(0);
   const note = mode === "delivery_note";
 
-  const isReceipt = !note && !cancelled && o.isPaid;
-  const title = note ? (delivery ? "Delivery note" : "Collection note") : cancelled ? "Cancelled order" : isReceipt ? "Receipt" : "Invoice";
+  const isReceipt = !note && !cancelled && !refunded && o.isPaid;
+  const title = note ? (delivery ? "Delivery note" : "Collection note") : cancelled ? "Cancelled order" : refunded ? "Refunded order" : isReceipt ? "Receipt" : "Invoice";
   const docNumber = note ? o.reference : isReceipt ? (live.length ? live[live.length - 1]!.number : o.reference) : (o.invoiceNumber ?? o.reference);
 
   const stamp = cancelled
     ? { text: "Cancelled", cls: styles.cancelled, note: o.cancelledAt ? formatDate(o.cancelledAt, tz) : null }
-    : o.isPaid
+    : refunded
+      ? { text: "Refunded", cls: styles.due, note: o.refundedAt ? formatDate(o.refundedAt, tz) : null }
+      : o.isPaid
       ? { text: "Paid", cls: styles.paid, note: o.paidAt ? formatDate(o.paidAt, tz) : null }
       : { text: "Unpaid", cls: styles.due, note: null };
 
   const paymentNote = (() => {
     if (cancelled) return o.cancelReason ? `This order was cancelled: ${o.cancelReason}` : "This order was cancelled.";
+    if (refunded) return `This order was refunded${o.refundReason ? `: ${o.refundReason}` : ""}. The money has been returned to the customer.`;
     if (o.isPaid) return `Paid${o.paidAt ? ` on ${formatDate(o.paidAt, tz)}` : ""}. Thank you.`;
     const due = money(balance);
     switch (o.paymentMethod) {
@@ -222,7 +226,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
               </div>
               <div className={styles.balance}>
                 <span>Balance due</span>
-                <span>{money(cancelled ? 0 : balance)}</span>
+                <span>{money(cancelled || refunded ? 0 : balance)}</span>
               </div>
             </div>
           </div>
@@ -264,7 +268,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
                 <strong>{PAYMENT_LABEL[o.paymentMethod]}</strong>
               </p>
               <p>{paymentNote}</p>
-              {!o.isPaid && !cancelled && o.paymentMethod === "bank_transfer" && business.bankDetails ? (
+              {!o.isPaid && !cancelled && !refunded && o.paymentMethod === "bank_transfer" && business.bankDetails ? (
                 <p className={styles.pre} style={{ marginTop: 6 }}>
                   {business.bankDetails}
                 </p>

@@ -16,7 +16,7 @@ export function StatusText({ children }: { children: ReactNode }) {
 export const OrderStatusText = ({ status }: { status: OrderStatus }) => <StatusText>{STATUS_LABEL[status]}</StatusText>;
 
 
-const ORDER_TONE: Record<OrderStatus, "info" | "success" | "warning" | "neutral"> = { new: "info", confirmed: "warning", in_progress: "warning", ready: "info", out_for_delivery: "warning", delivered: "success", cancelled: "neutral" };
+const ORDER_TONE: Record<OrderStatus, "info" | "success" | "warning" | "neutral"> = { new: "info", confirmed: "warning", in_progress: "warning", ready: "info", out_for_delivery: "warning", delivered: "success", refunded: "neutral", cancelled: "neutral" };
 export const OrderStatusPill = ({ status }: { status: OrderStatus }) => <Pill tone={ORDER_TONE[status]}>{STATUS_LABEL[status]}</Pill>;
 
 export function SectionHead({ title, id, link }: { title: string; id?: string; link?: { href: string; label: string } }) {

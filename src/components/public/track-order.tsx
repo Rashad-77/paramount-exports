@@ -104,7 +104,11 @@ export function OrderView({
           <OrderStatusPill status={o.status} />
         </div>
 
-        {o.status === "cancelled" ? (
+        {o.status === "refunded" ? (
+          <Alert tone="info" title="This order was refunded">
+            Your refund has been recorded. If you have a question about it, please contact us and quote {o.reference}.
+          </Alert>
+        ) : o.status === "cancelled" ? (
           <Alert tone="danger" title="This order was cancelled">
             {o.cancelledAt ? `Cancelled ${when(o.cancelledAt)}. ` : null}If you
             have a question about it, please contact us and quote {o.reference}.

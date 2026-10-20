@@ -16,6 +16,7 @@ const base: FlowOrder = {
   deliveredAt: null,
   paidAt: null,
   cancelledAt: null,
+  refundedAt: null,
 };
 
 describe("the order's steps", () => {
@@ -34,6 +35,13 @@ describe("the order's steps", () => {
 
   it("a cancelled order has no current step", () => {
     expect(orderSteps({ ...base, status: "cancelled" }).some((s) => s.state === "current")).toBe(false);
+  });
+
+  it("a refunded order ends with its refund and has no current step", () => {
+    const steps = orderSteps({ ...base, status: "refunded", confirmedAt: new Date(), readyAt: new Date(), deliveredAt: new Date(), refundedAt: new Date() });
+    expect(steps[steps.length - 1]).toMatchObject({ key: "refunded", state: "done" });
+    expect(steps.some((s) => s.state === "current")).toBe(false);
+    expect(nextStep({ ...base, status: "refunded" })).toBeNull();
   });
 
   it("tells staff what to do next, never mentioning the removed out-for-delivery step", () => {

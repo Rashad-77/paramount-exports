@@ -25,6 +25,8 @@ describe.skipIf(!hasTestDb)("order payments, discounts and the delivery charge r
   let tableVariant: string, stoolVariant: string;
   let ip = 0;
 
+  const stockOf = async (variantId: string) => (await t.sql`SELECT stock_quantity FROM product_variants WHERE id = ${variantId}`)[0]!.stock_quantity as number | null;
+
   const place = async (phone: string, lines: Array<[string, number]>, o: Record<string, unknown> = {}) => {
     const r = checkoutSchema.safeParse({ name: "Nimal Perera", phone, fulfilment: "pickup", paymentMethod: "at_showroom", consent: "on", ...o, cart: JSON.stringify(lines.map(([variantId, quantity]) => ({ variantId, quantity }))) });
     if (!r.success) throw new Error(JSON.stringify(r.error.issues));
@@ -96,5 +98,24 @@ describe.skipIf(!hasTestDb)("order payments, discounts and the delivery charge r
     await updateOrderDetails(staff, id, { deliveryCharge: "0" });
     await setOrderStatus(staff, id, "confirmed");
     expect((await getOrder(staff, id)).order.status).toBe("confirmed");
+  });
+
+  it("refunded status: owner only, only after delivery, puts the items back in stock, and can be undone", async () => {
+    const { id } = await place("0771200009", [[stoolVariant, 2]]);
+    const afterOrder = (await stockOf(stoolVariant)) ?? 0;
+    await expect(setOrderStatus(owner, id, "refunded", "Faulty")).rejects.toMatchObject({ code: "INVALID_STATE" }); // not delivered yet
+    await setOrderStatus(staff, id, "confirmed");
+    await setOrderStatus(staff, id, "ready");
+    await setOrderStatus(staff, id, "delivered");
+    await recordPayment(staff, id, { method: "cash" });
+    await expect(setOrderStatus(staff, id, "refunded", "Faulty")).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await setOrderStatus(owner, id, "refunded", "Faulty leg");
+    expect((await getOrder(staff, id)).order).toMatchObject({ status: "refunded", refundReason: "Faulty leg" });
+    expect((await getOrder(staff, id)).order.refundedAt).toBeInstanceOf(Date);
+    expect(await stockOf(stoolVariant)).toBe(afterOrder + 2);
+    await expect(updateOrderDetails(staff, id, { deliveryCharge: "0" })).rejects.toMatchObject({ code: "INVALID_STATE" });
+    await setOrderStatus(owner, id, "delivered"); // marked by mistake: undo takes the pieces out again
+    expect(await stockOf(stoolVariant)).toBe(afterOrder);
+    expect((await getOrder(staff, id)).order).toMatchObject({ status: "delivered", refundedAt: null, refundReason: null });
   });
 });

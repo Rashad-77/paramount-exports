@@ -38,6 +38,7 @@ export const PERMISSIONS = {
   "orders:record_payment": BOTH,
   "orders:discount": OWNER,
   "orders:void_payment": OWNER,
+  "orders:refund": OWNER,
 
   // Website messages (contact form, product enquiries, custom requests)
   "messages:view": BOTH,

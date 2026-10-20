@@ -160,9 +160,9 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
     );
     where.push(or(...statusConditions)!);
   }
-  if (f.payment === "unpaid") where.push(and(eq(orders.isPaid, false), sql`${orders.status} <> 'cancelled'`)!);
-  if (f.payment === "paid") where.push(eq(orders.isPaid, true));
-  if (f.payments?.length === 1) where.push(eq(orders.isPaid, f.payments[0] === "paid"));
+  if (f.payment === "unpaid") where.push(and(eq(orders.isPaid, false), sql`${orders.status} NOT IN ('cancelled', 'refunded')`)!);
+  if (f.payment === "paid") where.push(and(eq(orders.isPaid, true), sql`${orders.status} <> 'refunded'`)!);
+  if (f.payments?.length === 1) where.push(f.payments[0] === "paid" ? and(eq(orders.isPaid, true), sql`${orders.status} <> 'refunded'`)! : eq(orders.isPaid, false));
   if (f.fulfilment) where.push(eq(orders.fulfilment, f.fulfilment));
   if (f.phoneKey) where.push(eq(orders.phoneKey, f.phoneKey));
   if (f.q) {
@@ -195,6 +195,7 @@ export async function listOrders(actor: Actor, f: OrderListFilters) {
         outForDeliveryAt: orders.outForDeliveryAt,
         deliveredAt: orders.deliveredAt,
         cancelledAt: orders.cancelledAt,
+        refundedAt: orders.refundedAt,
         statusChangedAt: sql<Date | null>`(
           select max(${auditLogs.createdAt})
           from ${auditLogs}
@@ -237,7 +238,7 @@ export async function getOrder(actor: Actor, id: string) {
 export async function countOrdersByStatus(actor: Actor): Promise<Record<OrderStatus | "all", number> & { completed: number }> {
   requirePermission(actor, "orders:view");
   const rows = await getDb().select({ status: orders.status, isPaid: orders.isPaid, n: count() }).from(orders).groupBy(orders.status, orders.isPaid);
-  const out: Record<OrderStatus | "all", number> & { completed: number } = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0, completed: 0 };
+  const out: Record<OrderStatus | "all", number> & { completed: number } = { all: 0, new: 0, confirmed: 0, in_progress: 0, ready: 0, out_for_delivery: 0, delivered: 0, refunded: 0, cancelled: 0, completed: 0 };
   for (const r of rows) {
     out[r.status] += r.n;
     out.all += r.n;
@@ -256,7 +257,9 @@ const NEXT: Record<OrderStatus, OrderStatus[]> = {
   ready: ["delivered", "cancelled"],
   out_for_delivery: ["delivered", "cancelled"],
   // Staff can correct a finished order from the list if it was tagged incorrectly.
-  delivered: ["new", "confirmed", "ready"],
+  delivered: ["new", "confirmed", "ready", "refunded"],
+  // A refunded order can be put back to delivered if it was marked by mistake.
+  refunded: ["delivered"],
   cancelled: ["new", "confirmed", "ready", "delivered"],
 };
 
@@ -271,11 +274,12 @@ const STATUS_NOTE: Record<OrderStatus, string> = {
   ready: "is ready",
   out_for_delivery: "is out for delivery",
   delivered: "has been delivered. Thank you for ordering with us",
+  refunded: "has been refunded",
   cancelled: "has been cancelled",
 };
 
 export async function setOrderStatus(actor: Actor, id: string, status: OrderStatus, reason?: string, allowCorrection = false): Promise<void> {
-  requirePermission(actor, status === "cancelled" ? "orders:cancel" : "orders:update");
+  requirePermission(actor, status === "cancelled" ? "orders:cancel" : status === "refunded" ? "orders:refund" : "orders:update");
   const business = await getBusinessSettings();
   let heardBy: { email: string | null; reference: string; name: string } | null = null;
   await withTx(async (tx) => {
@@ -284,8 +288,9 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
     if (status === "confirmed" && o.fulfilment === "delivery" && !o.deliveryChargeSet) throw invalidState("Enter the delivery charge (0 if it is free) and save it before confirming a delivery order.");
     if (!allowCorrection && !allowedNextStatuses(o.status, o.fulfilment).includes(status)) throw invalidState(`An order that is ${o.status.replace("_", " ")} cannot be moved to ${status.replace("_", " ")}.`);
     const now = new Date();
-    if (o.status === "cancelled" && status !== "cancelled") {
-      // Reopening a cancelled order consumes the stock that cancellation restored.
+    // Cancelled and refunded orders have put their pieces back on the shelf; moving back to a live status takes them again.
+    const released = (st: OrderStatus) => st === "cancelled" || st === "refunded";
+    if (released(o.status) && !released(status)) {
       const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
       for (const it of items) {
         if (!it.variantId) continue;
@@ -313,13 +318,15 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
             : status === "out_for_delivery"
               ? now
               : o.outForDeliveryAt,
-        deliveredAt: status === "delivered" ? now : null,
+        deliveredAt: status === "delivered" ? now : status === "refunded" ? o.deliveredAt : null,
         cancelledAt: status === "cancelled" ? now : null,
         cancelReason: status === "cancelled" ? reason ?? "Cancelled" : null,
+        refundedAt: status === "refunded" ? now : null,
+        refundReason: status === "refunded" ? reason ?? null : null,
       })
       .where(eq(orders.id, id));
-    if (status === "cancelled") {
-      // A cancelled order puts its counted pieces back on the shelf.
+    if (released(status) && !released(o.status)) {
+      // A cancelled or refunded order puts its counted pieces back on the shelf.
       const items = await tx.select({ variantId: orderItems.variantId, quantity: orderItems.quantity }).from(orderItems).where(eq(orderItems.orderId, id));
       for (const it of items) {
         if (!it.variantId) continue;
@@ -332,12 +339,12 @@ export async function setOrderStatus(actor: Actor, id: string, status: OrderStat
     }
     await recordAudit(tx, actor, { action: `order.${status}`, entityType: "order", entityId: id, before: { status: o.status }, after: { status }, reason });
     // Tell the customer: a note on their dashboard when they have an account, and an email when we have an address.
-    await recordUpdate(tx, o.accountId, { kind: "order", title: `Order ${o.reference} ${STATUS_NOTE[status]}`, body: status === "cancelled" && reason ? reason : undefined, link: `/account/orders/${o.reference}` });
+    await recordUpdate(tx, o.accountId, { kind: "order", title: `Order ${o.reference} ${STATUS_NOTE[status]}`, body: (status === "cancelled" || status === "refunded") && reason ? reason : undefined, link: `/account/orders/${o.reference}` });
     heardBy = { email: o.email, reference: o.reference, name: o.customerName };
   });
   if (heardBy) {
     const h = heardBy as { email: string | null; reference: string; name: string };
-    emailCustomer(h.email, `Your order ${h.reference} ${STATUS_NOTE[status]} - ${business.name}`, [`Hello ${h.name},`, ``, `Your order ${h.reference} ${STATUS_NOTE[status]}.`, status === "cancelled" && reason ? `Reason: ${reason}` : null, ``, `You can follow it any time on our website with your order number and phone number.`, ``, business.name].filter((l): l is string => l !== null).join("\n"));
+    emailCustomer(h.email, `Your order ${h.reference} ${STATUS_NOTE[status]} - ${business.name}`, [`Hello ${h.name},`, ``, `Your order ${h.reference} ${STATUS_NOTE[status]}.`, (status === "cancelled" || status === "refunded") && reason ? `Reason: ${reason}` : null, ``, `You can follow it any time on our website with your order number and phone number.`, ``, business.name].filter((l): l is string => l !== null).join("\n"));
   }
 }
 
@@ -357,7 +364,7 @@ export async function updateOrderDetails(actor: Actor, id: string, input: OrderD
   await withTx(async (tx) => {
     const [o] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!o) throw notFound("That order could not be found.");
-    if (o.status === "delivered" || o.status === "cancelled") throw invalidState("A finished order cannot be changed.");
+    if (o.status === "delivered" || o.status === "cancelled" || o.status === "refunded") throw invalidState("A finished order cannot be changed.");
     const charge = o.fulfilment === "pickup" ? "0.00" : moneyString(input.deliveryCharge);
     const wantsDiscount = input.discountAmount !== undefined || input.discountPercent !== undefined;
     let discount = o.discount;
@@ -472,18 +479,18 @@ export async function getDashboard(actor: Actor) {
     db
       .select({
         orders: count(),
-        value: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.status} <> 'cancelled'), 0)::text`,
-        paid: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.isPaid}), 0)::text`,
+        value: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.status} NOT IN ('cancelled', 'refunded')), 0)::text`,
+        paid: sql<string>`coalesce(sum(${orders.total}) FILTER (WHERE ${orders.isPaid} AND ${orders.status} <> 'refunded'), 0)::text`,
       })
       .from(orders)
       .where(gte(orders.createdAt, since)),
     db.execute(sql`
       SELECT to_char(d::date, 'YYYY-MM-DD') AS day, coalesce(c.n, 0)::int AS orders
         FROM generate_series(current_date - 29, current_date, interval '1 day') d
-        LEFT JOIN (SELECT created_at::date AS day, count(*) AS n FROM online_orders WHERE created_at >= current_date - 29 AND status <> 'cancelled' GROUP BY 1) c ON c.day = d::date
+        LEFT JOIN (SELECT created_at::date AS day, count(*) AS n FROM online_orders WHERE created_at >= current_date - 29 AND status NOT IN ('cancelled', 'refunded') GROUP BY 1) c ON c.day = d::date
        ORDER BY d
     `) as unknown as Promise<{ day: string; orders: number }[]>,
-    db.select({ n: count() }).from(orders).where(and(eq(orders.isPaid, false), sql`${orders.status} <> 'cancelled'`)),
+    db.select({ n: count() }).from(orders).where(and(eq(orders.isPaid, false), sql`${orders.status} NOT IN ('cancelled', 'refunded')`)),
     db
       .select({ id: orders.id, reference: orders.reference, customerName: orders.customerName, status: orders.status, fulfilment: orders.fulfilment, scheduledFor: orders.scheduledFor })
       .from(orders)

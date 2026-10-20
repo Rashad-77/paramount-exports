@@ -15,6 +15,7 @@ const ORDER_GROUPS = [
       { value: "ready", label: "Ready" },
       { value: "delivered", label: "Delivered" },
       { value: "completed", label: "Completed" },
+      { value: "refunded", label: "Refunded" },
       { value: "cancelled", label: "Cancelled" },
     ],
   },

@@ -15,6 +15,7 @@ export interface FlowOrder {
   deliveredAt: Date | null;
   paidAt: Date | null;
   cancelledAt: Date | null;
+  refundedAt: Date | null;
 }
 
 export interface FlowStep {
@@ -27,7 +28,7 @@ export interface FlowStep {
 /** The stages an order goes through, in order. A pickup has no "out for delivery"; payment is its own last step because staff record it separately. */
 export function orderSteps(o: FlowOrder): FlowStep[] {
   const delivery = o.fulfilment === "delivery";
-  const rank: Record<OrderStatus, number> = { new: 0, confirmed: 1, in_progress: 1, ready: 2, out_for_delivery: 2, delivered: 3, cancelled: -1 };
+  const rank: Record<OrderStatus, number> = { new: 0, confirmed: 1, in_progress: 1, ready: 2, out_for_delivery: 2, delivered: 3, refunded: 3, cancelled: -1 };
   const at = rank[o.status];
   const defs: Array<{ key: string; label: string; at: Date | null; rank: number }> = [
     { key: "placed", label: "Order placed", at: o.createdAt, rank: 0 },
@@ -36,18 +37,21 @@ export function orderSteps(o: FlowOrder): FlowStep[] {
     { key: "done", label: delivery ? "Delivered" : "Collected", at: o.deliveredAt, rank: 3 },
   ];
   // A step is done once the order has reached it; the current step is the first one still to do, the same thing the Next step line says.
+  const closed = o.status === "cancelled" || o.status === "refunded";
   const isDone = (d: (typeof defs)[number]) => d.key === "placed" || d.rank <= at;
   const steps: FlowStep[] = defs.map((d) => ({
     key: d.key,
     label: d.label,
     at: d.at,
     // A cancelled order keeps the steps it reached and shows nothing as current.
-    state: o.status === "cancelled" ? (d.at ? "done" : "todo") : isDone(d) ? "done" : "todo",
+    state: closed ? (d.at ? "done" : "todo") : isDone(d) ? "done" : "todo",
   }));
   // The first step not yet done is where the order is now.
   const now = steps.findIndex((st) => st.state === "todo");
-  if (o.status !== "cancelled" && now >= 0) steps[now]!.state = "current";
-  steps.push({ key: "paid", label: "Payment received", at: o.paidAt, state: o.isPaid ? "done" : o.status === "delivered" ? "current" : "todo" });
+  if (!closed && now >= 0) steps[now]!.state = "current";
+  // A refunded order ends with its refund instead of a payment step.
+  if (o.status === "refunded") steps.push({ key: "refunded", label: "Refunded", at: o.refundedAt, state: "done" });
+  else steps.push({ key: "paid", label: "Payment received", at: o.paidAt, state: o.isPaid ? "done" : o.status === "delivered" ? "current" : "todo" });
   return steps;
 }
 
@@ -74,6 +78,7 @@ export function nextStep(o: FlowOrder): string | null {
         : "When it arrives, press “Mark as delivered”.";
     case "delivered":
       return o.isPaid ? null : "The order has been " + (delivery ? "delivered" : "collected") + ". Press “Mark as paid” when the money has been received.";
+    case "refunded":
     case "cancelled":
       return null;
   }

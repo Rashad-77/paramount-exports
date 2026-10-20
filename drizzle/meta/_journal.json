@@ -253,6 +253,13 @@
       "when": 1793548400000,
       "tag": "0035_enforce_rls_new_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793634800000,
+      "tag": "0036_order_refunded_status",
+      "breakpoints": true
     }
   ]
 }

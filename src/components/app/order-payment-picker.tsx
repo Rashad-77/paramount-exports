@@ -11,12 +11,14 @@ function Picker({
   id,
   reference,
   paid,
+  refunded,
   canUpdate,
   disabled,
 }: {
   id: string;
   reference: string;
   paid: boolean;
+  refunded: boolean;
   canUpdate: boolean;
   disabled: boolean;
 }) {
@@ -40,7 +42,7 @@ function Picker({
         }}
         className="appearance-none border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-walnut disabled:cursor-default"
       >
-        <PaidTag paid={paid} />
+        <PaidTag paid={paid} refunded={refunded} />
       </button>
       <Dialog
         open={open}
@@ -84,12 +86,13 @@ export function OrderPaymentPicker(props: {
   id: string;
   reference: string;
   paid: boolean;
+  refunded?: boolean;
   canUpdate: boolean;
   disabled?: boolean;
 }) {
   return (
     <ActionForm action={setPaidAction} className="!space-y-0">
-      <Picker {...props} disabled={props.disabled ?? false} />
+      <Picker {...props} refunded={props.refunded ?? false} disabled={props.disabled ?? false} />
     </ActionForm>
   );
 }

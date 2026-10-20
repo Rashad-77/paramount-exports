@@ -2,7 +2,7 @@
 
 export const FULFILMENT = ["delivery", "pickup"] as const;
 export const PAYMENT_METHODS = ["on_delivery", "bank_transfer", "at_showroom"] as const;
-export const ORDER_STATUSES = ["new", "confirmed", "in_progress", "ready", "out_for_delivery", "delivered", "cancelled"] as const;
+export const ORDER_STATUSES = ["new", "confirmed", "in_progress", "ready", "out_for_delivery", "delivered", "refunded", "cancelled"] as const;
 
 export type Fulfilment = (typeof FULFILMENT)[number];
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
@@ -17,6 +17,7 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   ready: "Ready",
   out_for_delivery: "Out for delivery",
   delivered: "Completed",
+  refunded: "Refunded",
   cancelled: "Cancelled",
 };
 

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { OrderFlow } from "@/components/app/order-flow";
+import { MarkRefundedDialog } from "@/components/app/mark-refunded-dialog";
 import { VoidPaymentDialog } from "@/components/app/void-payment-dialog";
 import { OrderPricingForm } from "@/components/app/order-pricing-form";
 import { PrintButton } from "@/components/app/print-button";
@@ -38,10 +39,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const business = await getBusinessSettings();
   const { order: o, items } = data;
   const payments = await getOrderPayments(actor, id);
-  const finished = o.status === "delivered" || o.status === "cancelled";
+  const finished = o.status === "delivered" || o.status === "cancelled" || o.status === "refunded";
   const canUpdate = can(actor, "orders:update");
   const canRecord = can(actor, "orders:record_payment");
   const canVoid = can(actor, "orders:void_payment");
+  const canRefund = can(actor, "orders:refund");
   const canDiscount = can(actor, "orders:discount");
   const next = allowedNextStatuses(o.status, o.fulfilment).filter((s) => s !== "cancelled");
   const canCancel = can(actor, "orders:cancel") && allowedNextStatuses(o.status, o.fulfilment).includes("cancelled");
@@ -76,7 +78,17 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           ) : null}
         </>
       ) : null}
-      {canRecord && !o.isPaid && o.status !== "cancelled" ? (
+      {canRefund && o.status === "delivered" ? <MarkRefundedDialog orderId={o.id} /> : null}
+      {canRefund && o.status === "refunded" ? (
+        <ActionForm action={setStatusAction} className="space-y-0">
+          <input type="hidden" name="id" value={o.id} />
+          <input type="hidden" name="status" value="delivered" />
+          <ConfirmSubmit variant="secondary" title="Undo the refund?" description="The order goes back to delivered or collected and its items are taken out of stock again." confirmLabel="Undo refund">
+            Undo refund
+          </ConfirmSubmit>
+        </ActionForm>
+      ) : null}
+      {canRecord && !o.isPaid && o.status !== "cancelled" && o.status !== "refunded" ? (
         <ActionForm action={setPaidAction} className="space-y-0">
           <input type="hidden" name="id" value={o.id} />
           <input type="hidden" name="paid" value="true" />
@@ -95,7 +107,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         badges={
           <>
             <OrderTag status={o.status} isPaid={o.isPaid} fulfilment={o.fulfilment} />
-            <PaidTag paid={o.isPaid} />
+            {o.status === "refunded" ? null : <PaidTag paid={o.isPaid} />}
           </>
         }
         actions={
@@ -288,6 +300,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                   </li>
                 ) : null}
                 {o.paidAt ? <li>Paid {when(o.paidAt)}</li> : null}
+                {o.refundedAt ? <li>Refunded {when(o.refundedAt)}{o.refundReason ? ` · ${o.refundReason}` : ""}</li> : null}
                 {o.cancelledAt ? <li>Cancelled {when(o.cancelledAt)}</li> : null}
               </ul>
             </section>

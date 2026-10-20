@@ -24,7 +24,7 @@ import { listOrders } from "@/server/orders";
 export const metadata = { title: "Orders" };
 const PAGE_SIZE = 20;
 const SORTS = ["total_desc", "total_asc", "latest", "oldest"] as const;
-const STATUS_FILTERS = ["new", "confirmed", "ready", "out_for_delivery", "delivered", "completed", "cancelled"] as const;
+const STATUS_FILTERS = ["new", "confirmed", "ready", "out_for_delivery", "delivered", "completed", "refunded", "cancelled"] as const;
 const PAYMENT_FILTERS = ["paid", "unpaid"] as const;
 
 export default async function OrdersPage({
@@ -86,6 +86,7 @@ export default async function OrdersPage({
       case "ready": return r.readyAt;
       case "out_for_delivery": return r.outForDeliveryAt;
       case "delivered": return r.deliveredAt;
+      case "refunded": return r.refundedAt;
       case "cancelled": return r.cancelledAt;
     }
   };
@@ -198,6 +199,7 @@ export default async function OrdersPage({
                         fulfilment={r.fulfilment}
                         canUpdate={can(actor, "orders:update")}
                         canCancel={can(actor, "orders:cancel")}
+                        canRefund={can(actor, "orders:refund")}
                         customerCancelled={
                           r.status === "cancelled" &&
                           (r.handledBy === null ||
@@ -211,7 +213,8 @@ export default async function OrdersPage({
                         reference={r.reference}
                         paid={r.isPaid}
                         canUpdate={can(actor, "orders:record_payment")}
-                        disabled={r.status === "cancelled"}
+                        refunded={r.status === "refunded"}
+                        disabled={r.status === "cancelled" || r.status === "refunded"}
                       />
                     </TD>
                   </TR>

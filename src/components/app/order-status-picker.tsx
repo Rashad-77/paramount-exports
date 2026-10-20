@@ -20,6 +20,7 @@ const STATUS_BUTTON_COLOR: Record<EditableOrderStatus, string> = {
   ready: "tag-purple",
   out_for_delivery: "tag-orange",
   delivered: "tag-green",
+  refunded: "tag-grey",
   cancelled: "tag-red",
 };
 
@@ -39,6 +40,7 @@ function Picker({
   fulfilment,
   canUpdate,
   canCancel,
+  canRefund,
   customerCancelled,
 }: {
   id: string;
@@ -50,6 +52,7 @@ function Picker({
   fulfilment: Fulfilment;
   canUpdate: boolean;
   canCancel: boolean;
+  canRefund: boolean;
   customerCancelled: boolean;
 }) {
   const { pending } = useFormState();
@@ -99,7 +102,7 @@ function Picker({
               key={option}
               type="button"
               aria-pressed={choice === option}
-              disabled={option === "cancelled" && !canCancel}
+              disabled={(option === "cancelled" && !canCancel) || (option === "refunded" && !canRefund)}
               onClick={() => setChoice(option)}
               className={`tag ${STATUS_BUTTON_COLOR[option]} min-h-9 w-full justify-start border px-3 text-left text-sm font-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-walnut disabled:cursor-not-allowed disabled:opacity-50 ${choice === option ? "ring-1 ring-walnut ring-offset-1" : ""}`}
             >
@@ -117,7 +120,7 @@ function Picker({
               setOpen(false);
               statusInput.current?.form?.requestSubmit();
             }}
-            disabled={pending || choice === selected || (choice === "cancelled" && !canCancel)}
+            disabled={pending || choice === selected || (choice === "cancelled" && !canCancel) || (choice === "refunded" && !canRefund)}
           >
             {choice === "cancelled" ? "Confirm cancellation" : "Confirm"}
           </Button>
@@ -137,6 +140,7 @@ export function OrderStatusPicker(props: {
   fulfilment: Fulfilment;
   canUpdate: boolean;
   canCancel: boolean;
+  canRefund: boolean;
   customerCancelled: boolean;
 }) {
   return (

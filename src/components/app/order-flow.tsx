@@ -39,7 +39,7 @@ export function OrderFlow({ order, timezone }: { order: FlowOrder; timezone: str
 
       <div className="border-t border-border px-4 py-3">
         <h3 className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">Next step</h3>
-        <p className="text-sm">{order.status === "cancelled" ? "This order was cancelled. Nothing more to do unless it is reopened." : next ?? "Completed: the order is finished and paid."}</p>
+        <p className="text-sm">{order.status === "cancelled" ? "This order was cancelled. Nothing more to do unless it is reopened." : order.status === "refunded" ? "This order has been refunded and its items are back in stock. Nothing more to do." : next ?? "Completed: the order is finished and paid."}</p>
       </div>
     </section>
   );

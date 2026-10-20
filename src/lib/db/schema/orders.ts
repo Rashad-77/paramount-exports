@@ -6,7 +6,7 @@ import { profiles } from "./foundation";
 
 /** Online orders: placed on the public website, paid for offline (on delivery, by bank transfer, or at the showroom). No online payments. */
 
-export const orderStatus = pgEnum("online_order_status", ["new", "confirmed", "in_progress", "ready", "out_for_delivery", "delivered", "cancelled"]);
+export const orderStatus = pgEnum("online_order_status", ["new", "confirmed", "in_progress", "ready", "out_for_delivery", "delivered", "refunded", "cancelled"]);
 export const orderPayment = pgEnum("online_order_payment", ["on_delivery", "bank_transfer", "at_showroom"]);
 export const orderFulfilment = pgEnum("online_order_fulfilment", ["delivery", "pickup"]);
 export const contactMethod = pgEnum("contact_method", ["phone", "whatsapp", "email"]);
@@ -57,6 +57,9 @@ export const orders = pgTable(
     outForDeliveryAt: timestamp("out_for_delivery_at", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    /** Set when the owner marks the order refunded; the money goes back outside the system. */
+    refundedAt: timestamp("refunded_at", { withTimezone: true }),
+    refundReason: text("refund_reason"),
     handledBy: uuid("handled_by").references(() => profiles.id, { onDelete: "set null" }),
     /** The signed-in customer who placed it, when there was one. Guests leave this empty. */
     accountId: uuid("account_id").references(() => customerAccounts.id, { onDelete: "set null" }),
