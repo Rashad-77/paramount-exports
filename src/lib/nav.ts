@@ -63,11 +63,6 @@ export const NAV: NavGroup[] = [
   {
     label: "Business",
     modules: [
-      {
-        label: "Website",
-        description: "Page wording, and the photographs and details of the showroom and the workshop.",
-        pages: [page("Pages", "/app/website", "website:manage"), page("Showroom and workshop", "/app/showroom", "website:manage")],
-      },
       { label: "Reviews", description: "Reviews customers write on the website, with their photographs: they show on the homepage straight away, and you can hide or delete any of them.", pages: [page("Reviews", "/app/reviews", "website:manage")] },
     ],
   },

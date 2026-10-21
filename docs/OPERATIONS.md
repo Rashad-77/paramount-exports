@@ -24,7 +24,7 @@ and keep this list beside you.
    choose to pay by transfer), and confirm the **currency and time zone**. The dashboard checklist shows what is still missing.
 6. Add categories and products. **A customer can only order an option that has a price, on a product that is published and has
    "Show price publicly" switched on.** Others show an enquiry form instead.
-7. Page wording (About, Privacy, Terms) is under **Website**.
+7. The wording of the About, Privacy and Terms pages and the showroom and workshop photographs are not edited in the dashboard; they are part of the website itself.
 
 ## 2. Handling orders (daily)
 

@@ -1,4 +1,5 @@
 import { LogOut } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Actor } from "@/lib/auth/permissions";
 import { visibleNav } from "@/lib/nav";
@@ -51,6 +52,14 @@ export function AppShell({
     </form>
   ) : null;
 
+  // Who is signed in; pressing it opens the account page (name, email, password).
+  const account = (
+    <Link href="/app/account" aria-label={`${actor.fullName}, ${roles}: your account`} className="block px-3 py-1.5 transition-colors hover:bg-linen">
+      <span className="block text-sm font-medium">{actor.fullName}</span>
+      <span className="block text-xs text-text-muted">{roles}</span>
+    </Link>
+  );
+
   return (
     <div className="app-ui min-h-dvh bg-white lg:grid lg:grid-cols-[14.5rem_1fr]">
       {/* Desktop sidebar */}
@@ -63,8 +72,7 @@ export function AppShell({
         </div>
         {/* Who is signed in, at the foot of the sidebar */}
         <div className="border-t border-border px-3 pt-3 pb-0">
-          <p className="px-3 text-sm font-medium">{actor.fullName}</p>
-          <p className="px-3 text-xs text-text-muted">{roles}</p>
+          {account}
           <div className="mt-2">{signOut}</div>
         </div>
       </aside>
@@ -82,8 +90,7 @@ export function AppShell({
           <AppNavMobile>
             <NavList actor={actor} currentPath={currentPath} />
             <div className="mt-6 border-t border-border pt-4">
-              <p className="px-3 text-sm font-medium">{actor.fullName}</p>
-              <p className="px-3 text-xs text-text-muted">{roles}</p>
+              {account}
               <div className="mt-2">{signOut}</div>
             </div>
           </AppNavMobile>

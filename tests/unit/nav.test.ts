@@ -20,7 +20,7 @@ describe("navigation visibility", () => {
 
   it("shows the order screens to staff and the owner", () => {
     for (const r of ["owner", "staff"] as Role[]) {
-      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Customers", "Products", "Website", "Settings"]));
+      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Customers", "Products", "Settings"]));
     }
   });
 
@@ -37,10 +37,11 @@ describe("navigation visibility", () => {
   });
 
   it("groups screens into modules and lists a module's other screens as tabs", () => {
-    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Pages", "Showroom and workshop"]));
+    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Reviews"]));
     const products = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Products")!;
     expect(products.href).toBe("/app/products");
     expect(products.pages.map((x) => x.label)).toEqual(["Products"]);
+    expect(visibleNav(actor(["owner"])).flatMap((g) => g.modules).some((m) => m.label === "Website")).toBe(false); // the Website section is gone
     const categories = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Categories")!;
     expect(categories.href).toBe("/app/categories"); // Categories has its own entry under Catalogue
   });

@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   ActionForm,
   FField,
@@ -6,9 +5,10 @@ import {
   FTextArea,
   SubmitButton,
 } from "@/components/forms/action-form";
+import { SettingRow } from "@/components/app/setting-row";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
-import { Table, TableWrap, TD, TH, TR } from "@/components/ui/table";
+import { Table, TableWrap } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { getSettingsForAdmin } from "@/server/settings";
@@ -16,22 +16,6 @@ import { googleKeyIsSet } from "@/server/google-reviews";
 import { updateBusinessAction } from "./actions";
 
 export const metadata = { title: "Settings" };
-
-/**
- * One setting as a row of the table: its name in the shaded cell, the box to fill in beside it. The box keeps its own label for screen
- * readers; the shaded cell is what sighted people read.
- */
-function SettingRow({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
-  return (
-    <TR className="hover:bg-transparent">
-      <TH scope="row" className="w-64 border-r border-border pt-5 align-top text-left">
-        {label}
-        {required ? <span aria-hidden="true"> *</span> : null}
-      </TH>
-      <TD className="py-3 [&_label]:sr-only">{children}</TD>
-    </TR>
-  );
-}
 
 export default async function SettingsPage() {
   const actor = await requireActor();

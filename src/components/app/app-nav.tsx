@@ -9,7 +9,7 @@ export function AppNav({ groups, previewPath }: { groups: VisibleGroup[]; previe
   const livePath = usePathname();
   const pathname = previewPath ?? livePath;
   return (
-    <nav aria-label="Main" className="[&>div:last-child_li:last-child]:border-b-0">
+    <nav aria-label="Main">
       {groups.map((g) => (
         <div key={g.label} className="app-nav-group">
           <ul aria-label={g.label}>

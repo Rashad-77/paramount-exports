@@ -10,42 +10,42 @@ export interface ProcessStep {
 
 /**
  * How a piece is made, from timber to finished piece. Shown briefly on the homepage and in full, with a picture for each
- * step, on the About page. This is a general description; the business should review it against how its workshop really works.
+ * step, on the About page. This is a general description (drying, grit sequence and coating steps follow common furniture-shop practice); the business should review it against how its workshop really works.
  */
 export const PROCESS: ProcessStep[] = [
   {
     title: "Timber selection",
     summary: "Boards picked for the job: the right wood, colour and grain.",
     details:
-      "Every piece begins with the wood. We choose boards for the job in hand: the kind of timber, its colour and grain, and how well it will hold its shape. Boards with faults that would weaken the piece or spoil its look are set aside. For a made-to-measure piece, the wood is agreed with you before any work starts.",
+      "The planks are checked for straightness, sound areas and grain before being set aside for the different parts of the furniture. Wider sections are suited to tabletops, doors and panels, while straighter lengths are used for legs and rails. The timber is kiln-dried for indoor use, which helps limit changes in shape after it has been made into furniture.",
     photo: "Timber boards being selected",
   },
   {
     title: "Cutting",
     summary: "Measured against the drawing and cut with room to plane.",
     details:
-      "Boards are measured against the drawing and cut to length and width, leaving a little extra for planing. Wherever we can, the parts for one piece come from the same boards, so the colour and the grain run together across the finished piece.",
+      "The timber is marked out to the dimensions needed for each part, then cut and trimmed to size. Matching parts, such as legs or cabinet sides, are prepared together so their lengths and edges line up. The cut edges are squared and checked before the parts move on, giving the frame and panels a sound fit when they are brought together.",
     photo: "Boards being measured and cut",
   },
   {
     title: "Joinery and assembly",
     summary: "Joints cut to fit, dry-fitted, then glued and clamped square.",
     details:
-      "The parts are shaped and fitted together with joints cut to fit, because the joints are what keep a table steady and a chair square for years. Every piece is dry-fitted before any glue goes on, so adjustments are made while they are still easy. It is then glued and clamped, and checked until it is square, flat and level. Hinges, runners and other fittings are added at this stage, and the finished frame is stood up and tested for steadiness before it moves on.",
+      "The parts are fitted together to form the frame, cabinet or other main structure. Where rails meet legs, the ends are shaped to sit securely in matching openings; glue and clamps hold the connection while it sets. The frame is checked as it is assembled so its corners remain square and the legs sit evenly. Panels, shelves, drawers and doors are then fitted to the structure and checked for smooth movement and an even fit.",
     photo: "A piece being fitted, glued and clamped",
   },
   {
     title: "Sanding",
     summary: "Sanded smooth through the grades and the edges softened.",
     details:
-      "Every surface is sanded, by machine and by hand, through the grades until it feels smooth to the touch, and the edges are softened. Careful sanding is what lets the wood take the finish evenly.",
+      "Rough areas, saw marks and small blemishes are smoothed in stages, starting with a coarser abrasive and moving to finer ones. The final passes follow the grain to leave an even surface, while edges and shaped areas are sanded by hand so they keep their intended form. Before coating, the surfaces are checked by hand and in good light for scratches or rough spots that might otherwise show through.",
     photo: "A surface being sanded",
   },
   {
     title: "Finishing",
     summary: "Stain and a protective finish in the sheen you choose.",
     details:
-      "The finish is applied in coats: a stain first if you want a deeper tone, then a protective finish in the sheen you chose. Samples can be seen in the showroom before work begins. Last, the piece is checked and cleaned, then made ready for delivery or for collection from the showroom.",
+      "A sample is used to check how the selected coating looks on the timber before it is applied to the furniture. The coating is spread or sprayed in even layers, with time allowed for each layer to dry. Between layers, the surface may be lightly sanded and cleaned to remove small raised spots or dust. The final coats bring an even appearance to the visible surfaces and help protect them during everyday use.",
     photo: "A finished piece being checked",
   },
 ];
