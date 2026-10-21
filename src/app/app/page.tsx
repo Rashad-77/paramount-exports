@@ -1,11 +1,11 @@
-import { OrderTag, QuoteTag, EnquiryTag } from "@/components/app/tags";
+import { OrderTag, EnquiryTag } from "@/components/app/tags";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import { requireActor } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/money";
-import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
+import { quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { getDashboard } from "@/server/orders";
@@ -143,10 +143,11 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <OrderTag status={o.status} isPaid={o.isPaid} fulfilment={o.fulfilment} />
-                      <span className="text-sm font-medium">
-                        {formatMoney(o.total, o.currency)}
-                      </span>
+                      <OrderTag
+                        status={o.status}
+                        isPaid={o.isPaid}
+                        fulfilment={o.fulfilment}
+                      />
                     </div>
                   </li>
                 ))}
@@ -165,9 +166,6 @@ export default async function DashboardPage() {
             ) : (
               <ul className="divide-y divide-border">
                 {d.recentQuotes.map((m) => {
-                  const st = isQuoteStatus(m.quoteStatus)
-                    ? m.quoteStatus
-                    : "requested";
                   const what = (
                     m.payload as { furnitureType?: string | null } | null
                   )?.furnitureType;
@@ -188,7 +186,7 @@ export default async function DashboardPage() {
                           {m.name}
                         </p>
                       </div>
-                      <QuoteTag status={st} />
+                      <EnquiryTag state={m.isHandled ? "responded" : "new"} />
                     </li>
                   );
                 })}

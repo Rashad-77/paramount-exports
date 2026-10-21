@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { publicEnv } from "@/lib/env";
 import { getBusinessSettings, isPlaceholderBusiness } from "@/lib/settings";
+import { NavTrail } from "@/components/nav-trail";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -35,6 +36,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="skip-link">
           Skip to main content
         </a>
+        <Suspense fallback={null}>
+          <NavTrail />
+        </Suspense>
         {children}
         <Toaster />
       </body>

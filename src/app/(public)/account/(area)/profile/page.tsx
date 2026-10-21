@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AddressActions, AddressForm, DeleteForm, PasswordForm, ProfileForm } from "@/components/public/account-forms";
+import { AddressActions, AddressForm, AvatarForm, DeleteForm, PasswordForm, ProfileForm } from "@/components/public/account-forms";
 import { Pill } from "@/components/public/account-ui";
 import { ToastOnMount } from "@/components/ui/toaster";
 import { customerAuthMode, requireCustomer } from "@/lib/auth/customer";
 import { one, type SP } from "@/lib/list-params";
 import { addressRows } from "@/lib/address-lines";
 import { listAddresses } from "@/server/accounts";
+import { avatarsFor } from "@/server/avatars";
 
 export const metadata: Metadata = { title: "Profile Details" };
 
@@ -15,6 +16,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
   const customer = await requireCustomer("/account/profile");
   const sp = await searchParams;
   const addresses = await listAddresses(customer.id);
+  const avatar = (await avatarsFor([customer.id])).get(customer.id) ?? null;
   const editId = one(sp.edit);
   const editing = editId ? addresses.find((a) => a.id === editId) : undefined;
   const notice = one(sp.notice);
@@ -28,6 +30,11 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
         <div className="acct-part">
           <h2 className="acct-part-h">Details</h2>
           <ProfileForm fullName={customer.fullName} email={customer.email} phone={customer.phone} />
+        </div>
+
+        <div className="acct-part">
+          <h2 className="acct-part-h">Profile picture</h2>
+          <AvatarForm current={avatar} />
         </div>
 
         <div className="acct-part" id="address-form">

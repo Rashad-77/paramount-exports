@@ -1,4 +1,6 @@
+import { addressStacked } from "@/lib/address-lines";
 import { notFound } from "next/navigation";
+import { plainPhone } from "@/lib/contact";
 import { OrderFlow } from "@/components/app/order-flow";
 import { MarkRefundedDialog } from "@/components/app/mark-refunded-dialog";
 import { VoidPaymentDialog } from "@/components/app/void-payment-dialog";
@@ -24,9 +26,18 @@ import { setPaidAction, setStatusAction } from "../actions";
 
 export const metadata = { title: "Order" };
 
-const METHOD_LABEL = { cash: "Cash", bank_transfer: "Bank transfer", card: "Card", other: "Other" } as const;
+const METHOD_LABEL = {
+  cash: "Cash",
+  bank_transfer: "Bank transfer",
+  card: "Card",
+  other: "Other",
+} as const;
 
-export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function OrderPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const actor = await requireActor();
   let data;
@@ -39,16 +50,24 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const business = await getBusinessSettings();
   const { order: o, items } = data;
   const payments = await getOrderPayments(actor, id);
-  const finished = o.status === "delivered" || o.status === "cancelled" || o.status === "refunded";
+  const livePayments = payments.filter((p) => !p.voidedAt);
+  const finished =
+    o.status === "delivered" ||
+    o.status === "cancelled" ||
+    o.status === "refunded";
   const canUpdate = can(actor, "orders:update");
   const canRecord = can(actor, "orders:record_payment");
   const canVoid = can(actor, "orders:void_payment");
   const canRefund = can(actor, "orders:refund");
-  const canDiscount = can(actor, "orders:discount");
-  const next = allowedNextStatuses(o.status, o.fulfilment).filter((s) => s !== "cancelled");
-  const canCancel = can(actor, "orders:cancel") && allowedNextStatuses(o.status, o.fulfilment).includes("cancelled");
+  const next = allowedNextStatuses(o.status, o.fulfilment).filter(
+    (s) => s !== "cancelled",
+  );
+  const canCancel =
+    can(actor, "orders:cancel") &&
+    allowedNextStatuses(o.status, o.fulfilment).includes("cancelled");
   const delivery = o.fulfilment === "delivery";
-  const when = (d: Date | null) => (d ? formatDateTime(d, business.timezone) : null);
+  const when = (d: Date | null) =>
+    d ? formatDateTime(d, business.timezone) : null;
   const money = (v: string | number) => formatMoney(v, o.currency);
 
   const actionButtons = (
@@ -59,7 +78,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             <ActionForm key={s} action={setStatusAction} className="space-y-0">
               <input type="hidden" name="id" value={o.id} />
               <input type="hidden" name="status" value={s} />
-              <SubmitButton>{s === "delivered" ? handoverAction(o.fulfilment) : (NEXT_STATUS_ACTION[s] ?? STATUS_LABEL[s])}</SubmitButton>
+              <SubmitButton>
+                {s === "delivered"
+                  ? handoverAction(o.fulfilment)
+                  : (NEXT_STATUS_ACTION[s] ?? STATUS_LABEL[s])}
+              </SubmitButton>
             </ActionForm>
           ))}
           {canCancel ? (
@@ -69,7 +92,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <ConfirmSubmit
                 variant="danger"
                 title="Cancel this order?"
-                description={o.isPaid ? "The order is cancelled and the items go back in stock. It is marked as paid, so remember to return the money to the customer." : "The order is cancelled and the items go back in stock. Tell the customer."}
+                description={
+                  o.isPaid
+                    ? "The order is cancelled and the items go back in stock. It is marked as paid, so remember to return the money to the customer."
+                    : "The order is cancelled and the items go back in stock. Tell the customer."
+                }
                 confirmLabel="Cancel order"
               >
                 Cancel order
@@ -78,17 +105,27 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           ) : null}
         </>
       ) : null}
-      {canRefund && o.status === "delivered" ? <MarkRefundedDialog orderId={o.id} /> : null}
+      {canRefund && o.status === "delivered" ? (
+        <MarkRefundedDialog orderId={o.id} />
+      ) : null}
       {canRefund && o.status === "refunded" ? (
         <ActionForm action={setStatusAction} className="space-y-0">
           <input type="hidden" name="id" value={o.id} />
           <input type="hidden" name="status" value="delivered" />
-          <ConfirmSubmit variant="secondary" title="Undo the refund?" description="The order goes back to delivered or collected and its items are taken out of stock again." confirmLabel="Undo refund">
+          <ConfirmSubmit
+            variant="secondary"
+            title="Undo the refund?"
+            description="The order goes back to delivered or collected and its items are taken out of stock again."
+            confirmLabel="Undo refund"
+          >
             Undo refund
           </ConfirmSubmit>
         </ActionForm>
       ) : null}
-      {canRecord && !o.isPaid && o.status !== "cancelled" && o.status !== "refunded" ? (
+      {canRecord &&
+      !o.isPaid &&
+      o.status !== "cancelled" &&
+      o.status !== "refunded" ? (
         <ActionForm action={setPaidAction} className="space-y-0">
           <input type="hidden" name="id" value={o.id} />
           <input type="hidden" name="paid" value="true" />
@@ -106,7 +143,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         description={`Placed ${formatDateTime(o.createdAt, business.timezone)}${o.invoiceNumber ? ` · Invoice ${o.invoiceNumber}` : ""}`}
         badges={
           <>
-            <OrderTag status={o.status} isPaid={o.isPaid} fulfilment={o.fulfilment} />
+            <OrderTag
+              status={o.status}
+              isPaid={o.isPaid}
+              fulfilment={o.fulfilment}
+            />
             {o.status === "refunded" ? null : <PaidTag paid={o.isPaid} />}
           </>
         }
@@ -139,36 +180,83 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           </div>
           <div className="grid min-w-0 grid-cols-1 gap-8 p-4">
             <section>
-              <h3 className="mb-3 text-sm font-semibold text-walnut">Customer details</h3>
+              <h3 className="mb-3 text-sm font-semibold text-walnut">
+                Customer details
+              </h3>
               <TableWrap label="Customer details">
                 <Table className="table-fixed">
                   <tbody>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">Name</TH>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        Name
+                      </TH>
                       <TD className="font-medium">{o.customerName}</TD>
                     </TR>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">ID</TH>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        ID
+                      </TH>
                       <TD>CUS-{o.phoneKey}</TD>
                     </TR>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">Mobile</TH>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        Mobile
+                      </TH>
                       <TD>
-                        <a className="underline" href={`tel:${o.phone.replace(/\s+/g, "")}`}>
-                          {o.phone}
+                        <a
+                          className="underline"
+                          href={`tel:${o.phone.replace(/\s+/g, "")}`}
+                        >
+                          {plainPhone(o.phone)}
                         </a>
                       </TD>
                     </TR>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">Email</TH>
-                      <TD>{o.email ? <a className="underline" href={`mailto:${o.email}`}>{o.email}</a> : "—"}</TD>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        Email
+                      </TH>
+                      <TD>
+                        {o.email ? (
+                          <a className="underline" href={`mailto:${o.email}`}>
+                            {o.email}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </TD>
                     </TR>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">{delivery ? "Delivery address" : "Collection"}</TH>
-                      <TD className="whitespace-pre-line">{delivery ? o.address : "The customer will collect from the showroom."}</TD>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        {delivery ? "Delivery address" : "Collection"}
+                      </TH>
+                      <TD className="whitespace-pre-line">
+                        {delivery
+                          ? addressStacked(o.address ?? "")
+                          : "The customer will collect from the showroom."}
+                      </TD>
                     </TR>
                     <TR className="hover:bg-transparent">
-                      <TH scope="row" className="w-40 border-r border-border text-left">Payment method</TH>
+                      <TH
+                        scope="row"
+                        className="w-40 border-r border-border text-left"
+                      >
+                        Payment method
+                      </TH>
                       <TD>{PAYMENT_LABEL[o.paymentMethod]}</TD>
                     </TR>
                   </tbody>
@@ -183,7 +271,9 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
             </section>
 
             <section className="border-t-2 border-border-strong pt-6">
-              <h3 className="mb-3 text-sm font-semibold text-walnut">Order content</h3>
+              <h3 className="mb-3 text-sm font-semibold text-walnut">
+                Order content
+              </h3>
               <TableWrap label="Order content">
                 <Table>
                   <THead>
@@ -199,7 +289,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                       <TR key={i.id}>
                         <TD>
                           <div className="font-medium">{i.productName}</div>
-                          <div className="text-text-muted">{[i.variantLabel, i.sku].filter(Boolean).join(" · ")}</div>
+                          <div className="text-text-muted">
+                            {[i.variantLabel, i.sku]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </div>
                         </TD>
                         <TD numeric>{money(i.unitPrice)}</TD>
                         <TD numeric>{i.quantity}</TD>
@@ -216,13 +310,25 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                 </div>
                 {Number(o.discount) > 0 ? (
                   <div className="flex justify-between">
-                    <dt className="text-text-muted">Discount{o.discountReason ? ` (${o.discountReason})` : ""}</dt>
+                    <dt className="text-text-muted">
+                      Discount{o.discountReason ? ` (${o.discountReason})` : ""}
+                    </dt>
                     <dd>− {money(o.discount)}</dd>
                   </div>
                 ) : null}
                 <div className="flex justify-between">
-                  <dt className="text-text-muted">{delivery ? "Delivery" : "Collection"}</dt>
-                  <dd>{!delivery ? "No charge" : o.deliveryChargeSet ? (Number(o.deliveryCharge) > 0 ? money(o.deliveryCharge) : "No charge") : "To be agreed"}</dd>
+                  <dt className="text-text-muted">
+                    {delivery ? "Delivery" : "Collection"}
+                  </dt>
+                  <dd>
+                    {!delivery
+                      ? "No charge"
+                      : o.deliveryChargeSet
+                        ? Number(o.deliveryCharge) > 0
+                          ? money(o.deliveryCharge)
+                          : "No charge"
+                        : "To be agreed"}
+                  </dd>
                 </div>
                 <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
                   <dt>Total</dt>
@@ -231,27 +337,28 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </dl>
             </section>
 
-            {canUpdate && !finished ? (
+            {canUpdate && !finished && delivery ? (
               <section className="border-t-2 border-border-strong pt-6">
-                <h3 className="mb-3 text-sm font-semibold text-walnut">Pricing</h3>
+                <h3 className="mb-3 text-sm font-semibold text-walnut">
+                  Pricing
+                </h3>
                 <OrderPricingForm
                   orderId={o.id}
                   currency={o.currency}
-                  delivery={delivery}
                   deliveryCharge={o.deliveryCharge}
                   deliveryChargeSet={o.deliveryChargeSet}
-                  discount={o.discount}
-                  discountReason={o.discountReason}
-                  canDiscount={canDiscount}
                 />
               </section>
             ) : null}
 
-            <section id="payments" className="scroll-mt-24 border-t-2 border-border-strong pt-6">
-              <h3 className="mb-3 text-sm font-semibold text-walnut">Payment</h3>
-              {payments.length === 0 ? (
-                <p className="text-sm text-text-muted">Not paid yet. {money(o.total)} is due{canRecord && o.status !== "cancelled" ? ": press “Mark as paid” when the money has been received." : "."}</p>
-              ) : (
+            {livePayments.length > 0 ? (
+              <section
+                id="payments"
+                className="scroll-mt-24 border-t-2 border-border-strong pt-6"
+              >
+                <h3 className="mb-3 text-sm font-semibold text-walnut">
+                  Payment
+                </h3>
                 <TableWrap label="Payment">
                   <Table>
                     <THead>
@@ -266,32 +373,45 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                       </tr>
                     </THead>
                     <tbody>
-                      {payments.map((p) => (
-                        <TR key={p.id} className={p.voidedAt ? "text-text-muted line-through" : undefined}>
+                      {livePayments.map((p) => (
+                        <TR key={p.id}>
                           <TD className="whitespace-nowrap">{p.number}</TD>
-                          <TD className="whitespace-nowrap">{formatDate(p.paidAt, business.timezone)}</TD>
+                          <TD className="whitespace-nowrap">
+                            {formatDate(p.paidAt, business.timezone)}
+                          </TD>
                           <TD>{METHOD_LABEL[p.method]}</TD>
                           <TD numeric>{money(p.amount)}</TD>
                           <TD className="whitespace-nowrap text-right">
-                            {p.voidedAt ? <span className="no-underline">Voided{p.voidReason ? `: ${p.voidReason}` : ""}</span> : canVoid ? <VoidPaymentDialog orderId={o.id} paymentId={p.id} number={p.number} /> : null}
+                            {canVoid ? (
+                              <VoidPaymentDialog
+                                orderId={o.id}
+                                paymentId={p.id}
+                                number={p.number}
+                              />
+                            ) : null}
                           </TD>
                         </TR>
                       ))}
                     </tbody>
                   </Table>
                 </TableWrap>
-              )}
-            </section>
+              </section>
+            ) : null}
 
             <section className="border-t-2 border-border-strong pt-5">
-              <h3 className="mb-3 text-sm font-semibold text-walnut">History</h3>
+              <h3 className="mb-3 text-sm font-semibold text-walnut">
+                History
+              </h3>
               <ul className="flex flex-col gap-2 border-l-2 border-border-strong pl-4 text-sm">
                 <li>Placed {when(o.createdAt)}</li>
-                {o.confirmedAt ? <li>Confirmed {when(o.confirmedAt)}</li> : null}
+                {o.confirmedAt ? (
+                  <li>Confirmed {when(o.confirmedAt)}</li>
+                ) : null}
                 {o.readyAt ? <li>Ready {when(o.readyAt)}</li> : null}
                 {o.scheduledFor ? (
                   <li>
-                    {delivery ? "Planned delivery" : "Planned collection"}: {formatDate(o.scheduledFor, "UTC")}
+                    {delivery ? "Planned delivery" : "Planned collection"}:{" "}
+                    {formatDate(o.scheduledFor, "UTC")}
                   </li>
                 ) : null}
                 {o.deliveredAt ? (
@@ -300,8 +420,15 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
                   </li>
                 ) : null}
                 {o.paidAt ? <li>Paid {when(o.paidAt)}</li> : null}
-                {o.refundedAt ? <li>Refunded {when(o.refundedAt)}{o.refundReason ? ` · ${o.refundReason}` : ""}</li> : null}
-                {o.cancelledAt ? <li>Cancelled {when(o.cancelledAt)}</li> : null}
+                {o.refundedAt ? (
+                  <li>
+                    Refunded {when(o.refundedAt)}
+                    {o.refundReason ? ` · ${o.refundReason}` : ""}
+                  </li>
+                ) : null}
+                {o.cancelledAt ? (
+                  <li>Cancelled {when(o.cancelledAt)}</li>
+                ) : null}
               </ul>
             </section>
           </div>

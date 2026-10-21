@@ -137,9 +137,9 @@ export async function updateCategory(actor: Actor, id: string, input: CategoryIn
       await assertParentUsable(tx, input.parentId, id);
       await tx
         .update(productCategories)
-        .set({ name: input.name, slug: slugValue, description: input.description === undefined ? before.description : input.description, parentId: input.parentId ?? null, sortOrder: input.sortOrder ?? before.sortOrder, isActive: input.isActive })
+        .set({ name: input.name, slug: slugValue, description: input.description === undefined ? before.description : input.description, parentId: input.parentId ?? null, sortOrder: input.sortOrder ?? before.sortOrder, isActive: before.archivedAt === null })
         .where(eq(productCategories.id, id));
-      await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { name: before.name, slug: before.slug, isActive: before.isActive }, after: { name: input.name, slug: slugValue, isActive: input.isActive } });
+      await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { name: before.name, slug: before.slug }, after: { name: input.name, slug: slugValue } });
     });
   } catch (e) {
     if (isUniqueViolation(e)) throw conflict("A category with that web address name already exists.");
@@ -224,7 +224,7 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
       .from(products)
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
       .where(cond)
-      .orderBy(desc(products.updatedAt), asc(products.name))
+      .orderBy(sql`lower(${products.name})`, asc(products.name))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: sql<number>`count(*)::int` }).from(products).where(cond),
@@ -477,6 +477,23 @@ export async function setProductsArchived(actor: Actor, ids: string[], archived:
       if (archived === (p.archivedAt !== null)) continue;
       await tx.update(products).set({ archivedAt: archived ? new Date() : null, isPublished: archived ? false : p.isPublished }).where(eq(products.id, p.id));
       await recordAudit(tx, actor, { action: archived ? "product.archived" : "product.restored", entityType: "product", entityId: p.id });
+      changed++;
+    }
+    return changed;
+  });
+}
+
+/** Puts draft products on the website. Archived products are skipped (restore them first); already published ones are left as they are. */
+export async function setProductsPublished(actor: Actor, ids: string[]): Promise<number> {
+  requirePermission(actor, "products:write");
+  if (ids.length === 0) return 0;
+  return withTx(async (tx) => {
+    const rows = await tx.select().from(products).where(inArray(products.id, ids)).for("update");
+    let changed = 0;
+    for (const p of rows) {
+      if (p.isPublished || p.archivedAt) continue;
+      await tx.update(products).set({ isPublished: true }).where(eq(products.id, p.id));
+      await recordAudit(tx, actor, { action: "product.published", entityType: "product", entityId: p.id });
       changed++;
     }
     return changed;
@@ -754,24 +771,6 @@ export async function reorderMainCategories(actor: Actor, ids: string[]): Promis
     await recordAudit(tx, actor, { action: "category.reordered", entityType: "product_category", entityId: ids[0]!, after: { order: ids } });
     return ids.length;
   });
-}
-
-/** Hides categories from the website without archiving them. */
-export async function setCategoriesHidden(actor: Actor, ids: string[]): Promise<{ changed: number; subs: number }> {
-  requirePermission(actor, "products:write");
-  let changed = 0;
-  let subs = 0;
-  await withTx(async (tx) => {
-    for (const id of ids) {
-      const [c] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
-      if (!c || !c.isActive) continue;
-      await tx.update(productCategories).set({ isActive: false }).where(eq(productCategories.id, id));
-      await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { isActive: true }, after: { isActive: false } });
-      changed++;
-      if (c.parentId) subs++;
-    }
-  });
-  return { changed, subs };
 }
 
 /** Permanently deletes categories that have no products (archived ones included) and no categories under them. Returns how many were deleted and the names left alone. */

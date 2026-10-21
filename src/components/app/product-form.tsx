@@ -51,7 +51,7 @@ export function ProductForm({
     <ActionForm action={action}>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       <div className="grid gap-5 md:grid-cols-2">
-        <FField name="name" label="Product name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
+        <FField name="name" kind="title" label="Product name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
         <FCategorySelect
           name="categoryId"
           label="Category"

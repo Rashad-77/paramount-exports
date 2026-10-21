@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import {
   ActionForm,
-  FCheckbox,
   FField,
   FSelect,
   FTextArea,
@@ -8,18 +8,34 @@ import {
 } from "@/components/forms/action-form";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
 import { Alert } from "@/components/ui/status";
+import { Table, TableWrap, TD, TH, TR } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
-import { customerAuthMode } from "@/lib/auth/customer";
 import { requireActor } from "@/lib/auth/session";
 import { getSettingsForAdmin } from "@/server/settings";
-import { updateAccountsAction, updateBusinessAction } from "./actions";
+import { googleKeyIsSet } from "@/server/google-reviews";
+import { updateBusinessAction } from "./actions";
 
 export const metadata = { title: "Settings" };
 
+/**
+ * One setting as a row of the table: its name in the shaded cell, the box to fill in beside it. The box keeps its own label for screen
+ * readers; the shaded cell is what sighted people read.
+ */
+function SettingRow({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
+  return (
+    <TR className="hover:bg-transparent">
+      <TH scope="row" className="w-64 border-r border-border pt-5 align-top text-left">
+        {label}
+        {required ? <span aria-hidden="true"> *</span> : null}
+      </TH>
+      <TD className="py-3 [&_label]:sr-only">{children}</TD>
+    </TR>
+  );
+}
+
 export default async function SettingsPage() {
   const actor = await requireActor();
-  const { business, accounts } = await getSettingsForAdmin(actor);
-  const authMode = customerAuthMode();
+  const { business } = await getSettingsForAdmin(actor);
   const canManage = can(actor, "settings:manage");
   const timezones = Intl.supportedValuesOf("timeZone");
 
@@ -33,112 +49,174 @@ export default async function SettingsPage() {
         >
           {canManage ? (
             <ActionForm action={updateBusinessAction}>
-              <div className="grid gap-5 md:grid-cols-2">
-                <FField
-                  name="name"
-                  label="Business name"
-                  defaultValue={business.name}
-                  required
-                />
-                <FField
-                  name="tagline"
-                  label="Short description"
-                  defaultValue={business.tagline ?? ""}
-                  hint="Shown under the name and in search results."
-                />
-                <FField
-                  name="phone"
-                  label="Telephone"
-                  type="tel"
-                  defaultValue={business.phone ?? ""}
-                />
-                <FField
-                  name="phoneAlt"
-                  label="Second telephone"
-                  type="tel"
-                  defaultValue={business.phoneAlt ?? ""}
-                />
-                <FField
-                  name="whatsapp"
-                  label="WhatsApp number"
-                  type="tel"
-                  defaultValue={business.whatsapp ?? ""}
-                  hint="Visitors can open a chat from the website."
-                />
-                <FField
-                  name="email"
-                  label="Email"
-                  type="email"
-                  defaultValue={business.email ?? ""}
-                />
-                <FField
-                  name="mapUrl"
-                  label="Map link"
-                  defaultValue={business.mapUrl ?? ""}
-                  hint="Only shown once an address is also entered."
-                />
-                <FField
-                  name="notifyEmail"
-                  label="Email for new orders"
-                  type="email"
-                  defaultValue={business.notifyEmail ?? ""}
-                  hint="The website emails this address when an order, quotation request or message arrives. Leave blank to use the business email."
-                />
-                <FField
-                  name="facebook"
-                  label="Facebook link"
-                  defaultValue={business.facebook ?? ""}
-                  hint="The full web address of your Facebook page. Shown in the website footer."
-                />
-                <FField
-                  name="tiktok"
-                  label="TikTok link"
-                  defaultValue={business.tiktok ?? ""}
-                  hint="The full web address of your TikTok page. Shown in the website footer."
-                />
-                <FTextArea
-                  name="address"
-                  label="Showroom address"
-                  rows={3}
-                  defaultValue={business.address ?? ""}
-                />
-                <FTextArea
-                  name="openingHours"
-                  label="Opening hours"
-                  rows={3}
-                  defaultValue={business.openingHours ?? ""}
-                  hint="One line per day or range, e.g. Mon–Sat 9:00–18:00."
-                />
-                <FTextArea
-                  name="bankDetails"
-                  label="Bank details for transfers"
-                  rows={3}
-                  defaultValue={business.bankDetails ?? ""}
-                  hint="Shown to customers who choose to pay by bank transfer: account name, number and bank."
-                />
-                <FField
-                  name="currency"
-                  label="Currency code"
-                  defaultValue={business.currency}
-                  required
-                  hint="Assumed LKR — confirm with the owner."
-                />
-                <FSelect
-                  name="timezone"
-                  label="Timezone"
-                  defaultValue={business.timezone}
-                  options={timezones.map((z) => ({ value: z, label: z }))}
-                  required
-                  hint="Assumed Asia/Colombo — confirm."
-                />
-                <FField
-                  name="phoneCountryCode"
-                  label="Phone country code"
-                  defaultValue={business.phoneCountryCode}
-                  required
-                  hint="Used to build WhatsApp links from numbers starting with 0."
-                />
-              </div>
+              <TableWrap label="Business details">
+                <Table className="table-fixed">
+                  <tbody>
+                    <SettingRow label="Business name" required>
+                      <FField
+                        name="name"
+                        kind="title"
+                        label="Business name"
+                        defaultValue={business.name}
+                        required
+                      />
+                    </SettingRow>
+                    <SettingRow label="Short description">
+                      <FField
+                        name="tagline"
+                        kind="title"
+                        label="Short description"
+                        defaultValue={business.tagline ?? ""}
+                        hint="Shown under the name and in search results."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Telephone">
+                      <FField
+                        name="phone"
+                        label="Telephone"
+                        kind="phone"
+                        defaultValue={business.phone ?? ""}
+                      />
+                    </SettingRow>
+                    <SettingRow label="Second telephone">
+                      <FField
+                        name="phoneAlt"
+                        label="Second telephone"
+                        kind="phone"
+                        defaultValue={business.phoneAlt ?? ""}
+                      />
+                    </SettingRow>
+                    <SettingRow label="WhatsApp number">
+                      <FField
+                        name="whatsapp"
+                        label="WhatsApp number"
+                        kind="phone"
+                        defaultValue={business.whatsapp ?? ""}
+                        hint="Visitors can open a chat from the website."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Email">
+                      <FField
+                        name="email"
+                        kind="email"
+                        label="Email"
+                        type="email"
+                        defaultValue={business.email ?? ""}
+                      />
+                    </SettingRow>
+                    <SettingRow label="Email for new orders">
+                      <FField
+                        name="notifyEmail"
+                        kind="email"
+                        label="Email for new orders"
+                        type="email"
+                        defaultValue={business.notifyEmail ?? ""}
+                        hint="The website emails this address when an order, quotation request or message arrives. Leave blank to use the business email."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Map link">
+                      <FField
+                        name="mapUrl"
+                        kind="url"
+                        label="Map link"
+                        defaultValue={business.mapUrl ?? ""}
+                        hint="Only shown once an address is also entered."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Facebook link">
+                      <FField
+                        name="facebook"
+                        kind="url"
+                        label="Facebook link"
+                        defaultValue={business.facebook ?? ""}
+                        hint="The full web address of your Facebook page. Shown in the website footer."
+                      />
+                    </SettingRow>
+                    <SettingRow label="TikTok link">
+                      <FField
+                        name="tiktok"
+                        kind="url"
+                        label="TikTok link"
+                        defaultValue={business.tiktok ?? ""}
+                        hint="The full web address of your TikTok page. Shown in the website footer."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Google Place ID">
+                      <FField
+                        name="googlePlaceId"
+                        label="Google Place ID"
+                        defaultValue={business.googlePlaceId ?? ""}
+                        placeholder="ChIJ…"
+                        hint={`Makes the Review us on Google button work and finds your Google reviews. Leave blank to switch both off. ${googleKeyIsSet() ? "Reviews are connected." : "To show the reviews as well, the Google API key still has to be added to the website's environment settings."}`}
+                      />
+                    </SettingRow>
+                    <SettingRow label="Google review link">
+                      <FField
+                        name="googleReviewUrl"
+                        kind="url"
+                        label="Google review link"
+                        defaultValue={business.googleReviewUrl ?? ""}
+                        hint="Optional. The review link from your Google Business Profile, used for the button when there is no Place ID."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Showroom address">
+                      <FTextArea
+                        name="address"
+                        kind="address"
+                        label="Showroom address"
+                        rows={3}
+                        defaultValue={business.address ?? ""}
+                      />
+                    </SettingRow>
+                    <SettingRow label="Opening hours">
+                      <FTextArea
+                        name="openingHours"
+                        label="Opening hours"
+                        rows={3}
+                        defaultValue={business.openingHours ?? ""}
+                        hint="One line per day or range, e.g. Mon–Sat 9:00–18:00."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Bank details for transfers">
+                      <FTextArea
+                        name="bankDetails"
+                        label="Bank details for transfers"
+                        rows={3}
+                        defaultValue={business.bankDetails ?? ""}
+                        hint="Shown to customers who choose to pay by bank transfer: account name, number and bank."
+                      />
+                    </SettingRow>
+                    <SettingRow label="Currency code" required>
+                      <FField
+                        name="currency"
+                        kind="currency"
+                        label="Currency code"
+                        defaultValue={business.currency}
+                        required
+                      />
+                    </SettingRow>
+                    <SettingRow label="Timezone" required>
+                      <FSelect
+                        name="timezone"
+                        label="Timezone"
+                        defaultValue={business.timezone}
+                        options={timezones.map((z) => ({ value: z, label: z }))}
+                        required
+                      />
+                    </SettingRow>
+                    <SettingRow label="Phone country code" required>
+                      <FField
+                        name="phoneCountryCode"
+                        kind="countryCode"
+                        label="Phone country code"
+                        defaultValue={`+${business.phoneCountryCode}`}
+                        required
+                        hint="Used to build WhatsApp links from numbers starting with 0."
+                      />
+                    </SettingRow>
+                  </tbody>
+                </Table>
+              </TableWrap>
               <SubmitButton>Save business details</SubmitButton>
             </ActionForm>
           ) : (
@@ -167,63 +245,6 @@ export default async function SettingsPage() {
                 ))}
               </dl>
             </>
-          )}
-        </Panel>
-        <Panel
-          title="Customer accounts"
-          description="Let customers create an account to see their orders and quotation requests, save their details and keep their basket between devices. Guests can always track an order with its number and phone number."
-        >
-          {authMode === "off" ? (
-            <Alert tone="warning" title="Sign-in service not connected">
-              Accounts cannot be turned on until Supabase sign-in is connected
-              to this website (the same service staff sign in with). Until then
-              the website shows no sign-in for customers.
-            </Alert>
-          ) : authMode === "local" ? (
-            <Alert tone="info" title="Development sign-in">
-              This copy of the site uses a built-in test sign-in. The live
-              website uses Supabase.
-            </Alert>
-          ) : (
-            <Alert tone="success" title="Sign-in service connected">
-              In your Supabase project, check that email sign-up is allowed and
-              that the confirmation and password-reset emails are set up, and
-              add this website&apos;s address to the allowed redirect URLs.
-            </Alert>
-          )}
-          {canManage ? (
-            <ActionForm action={updateAccountsAction} className="mt-5">
-              <FCheckbox
-                name="enabled"
-                label="Turn on customer accounts"
-                hint="Shows Sign in in the website header and the account pages."
-                defaultChecked={accounts.enabled}
-              />
-              <FCheckbox
-                name="allowSignUp"
-                label="Let new customers create an account"
-                hint="Turn off to let only existing accounts sign in."
-                defaultChecked={accounts.allowSignUp}
-              />
-              <FCheckbox
-                name="requiredForCheckout"
-                label="Require an account to place an order"
-                hint="Guests are sent to sign in or create an account at checkout. Leave off to keep guest checkout."
-                defaultChecked={accounts.requiredForCheckout}
-              />
-              <FCheckbox
-                name="saveCart"
-                label="Keep a signed-in customer's basket on their account"
-                hint="So it is still there on another phone or computer."
-                defaultChecked={accounts.saveCart}
-              />
-              <SubmitButton>Save account options</SubmitButton>
-            </ActionForm>
-          ) : (
-            <p className="mt-4 text-sm text-text-muted">
-              Only the owner can change these options. Accounts are currently{" "}
-              {accounts.enabled ? "on" : "off"}.
-            </p>
           )}
         </Panel>
       </div>

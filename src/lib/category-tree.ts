@@ -2,13 +2,16 @@
 type Node = { id: string; name: string; parentId: string | null };
 
 /** Groups first-to-last, each followed by its own categories. A category whose group is missing is shown as a group. */
+/** Subcategories are listed alphabetically under their main category. */
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true });
+
 export function treeOrder<T extends Node>(rows: T[]): Array<T & { depth: 0 | 1; groupName: string | null }> {
   const ids = new Set(rows.map((r) => r.id));
   const groups = rows.filter((r) => !r.parentId || !ids.has(r.parentId));
   const out: Array<T & { depth: 0 | 1; groupName: string | null }> = [];
   for (const g of groups) {
     out.push({ ...g, depth: 0, groupName: null });
-    for (const c of rows) if (c.parentId === g.id) out.push({ ...c, depth: 1, groupName: g.name });
+    for (const c of rows.filter((r) => r.parentId === g.id).sort(byName)) out.push({ ...c, depth: 1, groupName: g.name });
   }
   return out;
 }
@@ -18,7 +21,7 @@ export function toGroups<T extends Node & { slug: string }>(rows: T[]): Array<{ 
   const ids = new Set(rows.map((r) => r.id));
   return rows
     .filter((g) => !g.parentId || !ids.has(g.parentId))
-    .map((g) => ({ slug: g.slug, name: g.name, children: rows.filter((c) => c.parentId === g.id).map((c) => ({ slug: c.slug, name: c.name })) }));
+    .map((g) => ({ slug: g.slug, name: g.name, children: rows.filter((c) => c.parentId === g.id).sort(byName).map((c) => ({ slug: c.slug, name: c.name })) }));
 }
 
 /** "Furniture › Tables" for a category, just the name for a group. */
@@ -32,7 +35,7 @@ export function categoryOptions<T extends Node>(rows: T[], opts: { keepId?: stri
   const ids = new Set(rows.map((r) => r.id));
   const out: Array<{ value: string; label: string; heading?: boolean; indent?: boolean; display?: string }> = [];
   for (const g of rows.filter((r) => !r.parentId || !ids.has(r.parentId))) {
-    const kids = rows.filter((c) => c.parentId === g.id);
+    const kids = rows.filter((c) => c.parentId === g.id).sort(byName);
     const pickable = opts.groupsPickable || kids.length === 0 || g.id === opts.keepId;
     out.push(pickable ? { value: g.id, label: g.name } : { value: `group:${g.id}`, label: g.name, heading: true });
     for (const c of kids) out.push({ value: c.id, label: c.name, indent: true, display: `${g.name} › ${c.name}` });
@@ -45,5 +48,5 @@ export function toCascadeGroups<T extends Node>(rows: T[]): Array<{ id: string; 
   const ids = new Set(rows.map((r) => r.id));
   return rows
     .filter((g) => !g.parentId || !ids.has(g.parentId))
-    .map((g) => ({ id: g.id, name: g.name, children: rows.filter((c) => c.parentId === g.id).map((c) => ({ id: c.id, name: c.name })) }));
+    .map((g) => ({ id: g.id, name: g.name, children: rows.filter((c) => c.parentId === g.id).sort(byName).map((c) => ({ id: c.id, name: c.name })) }));
 }

@@ -15,7 +15,7 @@ import { archiveCategoriesAction, createCategoryAction, deleteCategoriesAction, 
 
 export const metadata = { title: "Categories" };
 
-const STATUSES = ["visible", "hidden", "archived"] as const;
+const STATUSES = ["visible", "archived"] as const;
 
 export default async function CategoriesPage({
   searchParams,
@@ -43,25 +43,13 @@ export default async function CategoriesPage({
   const orderItems = mainGroups.map((g) => ({ id: g.id, name: g.name, subcategories: flat.filter((k) => k.parentId === g.id && !k.archivedAt).length }));
   const add = canWrite && one(sp.add) === "1";
 
-  // Visible, hidden and archived: any of those picked. Nothing picked: everything.
-  // A subcategory follows the main category it sits under: archived or hidden there means archived or hidden here.
+  // Visible and archived: either picked. Nothing picked: everything.
+  // A subcategory follows the main category it sits under: archived there means archived here.
   const byId = new Map(flat.map((c) => [c.id, c]));
   const stateOf = (c: (typeof all)[number]) => {
-    const own = c.archivedAt ? "archived" : c.isActive ? "visible" : "hidden";
+    const own = c.archivedAt ? "archived" : "visible";
     const parent = c.parentId ? byId.get(c.parentId) : undefined;
-    const up = parent
-      ? parent.archivedAt
-        ? "archived"
-        : parent.isActive
-          ? "visible"
-          : "hidden"
-      : "visible";
-    const state =
-      own === "archived" || up === "archived"
-        ? "archived"
-        : own === "hidden" || up === "hidden"
-          ? "hidden"
-          : "visible";
+    const state = own === "archived" || parent?.archivedAt ? "archived" : "visible";
     return { state, inherited: state !== own } as const;
   };
   const wanted = (c: (typeof all)[number]) => {

@@ -1,4 +1,6 @@
 import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
+import { ReviewButton } from "@/components/public/review-button";
+import { googleReviewLink } from "@/lib/google-reviews";
 import Image from "next/image";
 import Link from "next/link";
 import type { BusinessSettings } from "@/lib/settings";
@@ -86,6 +88,13 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               <li>
                 <Link href="/track">Track your order</Link>
               </li>
+              {googleReviewLink(business) ? (
+                <li>
+                  <ReviewButton reviewUrl={googleReviewLink(business)!} businessName={business.name} variant="link" className="foot-link">
+                    Review us on Google
+                  </ReviewButton>
+                </li>
+              ) : null}
               <li>
                 <Link href="/help">How ordering works</Link>
               </li>

@@ -23,10 +23,10 @@ export interface CategoryRow {
   /** Whether to name the main category on this row: not when it or a sibling is the row just above. */
   showGroup: boolean;
   productCount: number;
-  /** What shows in the Status column: a subcategory follows its main category when that is hidden or archived. */
-  status: "visible" | "hidden" | "archived";
+  /** What shows in the Status column: a subcategory follows its main category when that is archived. */
+  status: "visible" | "archived";
   inherited: boolean;
-  /** Its own hidden state (not what it inherits). */
+  /** Its own visibility on the website. */
   isActive: boolean;
   /** Its own archived state, which is what Archive and Restore act on. */
   archived: boolean;
@@ -68,12 +68,11 @@ export function CategoriesTable({
   const onPage = new Set(rows.map((r) => r.id));
   const ticked = [...selected].filter((id) => onPage.has(id));
   const allTicked = rows.length > 0 && ticked.length === rows.length;
-  // Which buttons show depends on the state of the ticked rows themselves: visible, hidden or archived.
-  const kinds = new Set<string>(rows.filter((r) => selected.has(r.id)).map((r) => (r.archived ? "archived" : r.isActive ? "visible" : "hidden")));
+  // Which buttons show depends on the state of the ticked rows themselves: visible or archived.
+  const kinds = new Set<string>(rows.filter((r) => selected.has(r.id)).map((r) => (r.archived ? "archived" : "visible")));
   const only = (k: string) => kinds.size === 1 && kinds.has(k);
   const idle = kinds.size === 0; // nothing ticked: every button shows, greyed out
-  const canHide = idle || only("visible");
-  const canRestore = idle || !only("visible");
+  const canRestore = idle || kinds.has("archived");
   const canArchive = !only("archived");
   const tickedSubs = rows.filter((r) => selected.has(r.id) && r.depth === 1).length;
   const tickedMain = ticked.length - tickedSubs;
@@ -125,15 +124,6 @@ export function CategoriesTable({
               <span className="min-w-0 flex-1 truncate text-right text-sm text-danger" title={deleteBlocked} role="status">
                 Cannot delete: {deleteBlocked}
               </span>
-            ) : null}
-            {canHide ? (
-              <form action={archiveForm}>
-                {idInputs}
-                <input type="hidden" name="mode" value="hide" />
-                <Button type="submit" variant="secondary" disabled={idle || busy}>
-                  Hide
-                </Button>
-              </form>
             ) : null}
             {canRestore ? (
               <form action={archiveForm}>
@@ -203,14 +193,14 @@ export function CategoriesTable({
                   {c.depth ? (
                     c.showGroup && c.groupName ? <span className="text-text-muted">{c.groupName}</span> : null
                   ) : (
-                    <Link href={`/app/categories/${c.id}`} className="font-normal text-walnut underline">
+                    <Link href={`/app/categories/${c.id}`} className="inline-block border border-border px-2 py-0.5 text-walnut underline">
                       {c.name}
                     </Link>
                   )}
                 </TD>
                 <TD className="px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0">
                   {c.depth ? (
-                    <Link href={`/app/categories/${c.id}`} className="text-walnut underline">
+                    <Link href={`/app/categories/${c.id}`} className="inline-block border border-border px-2 py-0.5 text-walnut underline">
                       {c.name}
                     </Link>
                   ) : null}
@@ -222,9 +212,7 @@ export function CategoriesTable({
                       <StatusBadge className="!border-[#475569] !bg-[#475569] !text-white">Archived</StatusBadge>
                     ) : c.status === "visible" ? (
                       <StatusBadge tone="success" className="!border-[#15803d] !bg-[#15803d] !text-white">Visible</StatusBadge>
-                    ) : (
-                      <StatusBadge tone="warning" className="!border-[#b45309] !bg-[#b45309] !text-white">Hidden</StatusBadge>
-                    )}
+                    ) : null}
                   </span>
                 </TD>
               </TR>

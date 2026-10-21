@@ -1,10 +1,10 @@
 import "server-only";
 import { quoteRef } from "@/lib/quotation-ui";
-import { and, asc, count, desc, eq, ilike, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
-import { customerAccounts, messages, orderItems, orders, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import { customerAccounts, messageReplies, messages, orderItems, orders, productVariants, products, profiles, uploadedFiles } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { formatMoney, moneyString } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
@@ -167,6 +167,58 @@ export async function setMessageHandled(actor: Actor, id: string, handled: boole
   });
 }
 
+/** The customer to answer: their account if they have one, and the email on the request or the account. */
+export async function replyRoute(m: typeof messages.$inferSelect): Promise<{ accountId: string | null; email: string | null }> {
+  return quoteAudience(getDb(), m);
+}
+
+/**
+ * Staff answer an enquiry or request from the site. The reply reaches the customer by email (when we have an address) and as a notice on
+ * their account (when they have one). Sending it also marks the enquiry as responded. A customer we cannot reach this way is answered by
+ * phone instead, so nothing is sent and the staff member is told.
+ */
+export async function replyToMessage(actor: Actor, id: string, body: string): Promise<{ email: string | null; onAccount: boolean }> {
+  requirePermission(actor, "messages:handle");
+  const business = await getBusinessSettings();
+  let mail: { email: string; subject: string; text: string } | null = null;
+  const result = await withTx(async (tx) => {
+    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
+    if (!m) throw notFound("That message could not be found.");
+    if (m.kind === "custom") throw invalidState("A quotation request is answered by contacting the customer, not from here.");
+    const who = await quoteAudience(tx, m);
+    if (!who.email && !who.accountId) throw invalidState(`${m.name} left no email and has no account, so a reply cannot be sent from here. Call them on ${m.phone}.`);
+    const ref = m.kind === "custom" ? quoteRef(m.reference) : m.reference;
+    await tx.insert(messageReplies).values({ messageId: id, body, sentBy: actor.id, emailedTo: who.email, onAccount: Boolean(who.accountId) });
+    await tx.update(messages).set({ isHandled: true, inProgress: false, handledAt: m.isHandled && m.handledAt ? m.handledAt : new Date(), handledBy: m.isHandled && m.handledBy ? m.handledBy : actor.id }).where(eq(messages.id, id));
+    await recordAudit(tx, actor, { action: "message.replied", entityType: "message", entityId: id, after: { emailed: Boolean(who.email), onAccount: Boolean(who.accountId) } });
+    await recordUpdate(tx, who.accountId, { kind: "message", title: `A reply to your ${m.kind === "custom" ? "request" : "enquiry"} ${ref}`, body, link: `/account/messages/${m.reference}` });
+    if (who.email) {
+      mail = {
+        email: who.email,
+        subject: `Re: your ${m.kind === "custom" ? "request" : "enquiry"} ${ref} - ${business.name}`,
+        text: [`Hello ${m.name},`, ``, body, ``, `If you would like to reply, call us on ${business.phone ?? "the number on our website"}${business.email ? ` or write to ${business.email}` : ""} and quote ${ref}.`, ``, business.name].join("\n"),
+      };
+    }
+    return { email: who.email, onAccount: Boolean(who.accountId) };
+  });
+  if (mail) {
+    const m = mail as { email: string; subject: string; text: string };
+    emailCustomer(m.email, m.subject, m.text);
+  }
+  return result;
+}
+
+/** The replies sent on a message, oldest first, with who sent each. */
+export async function listReplies(actor: Actor, id: string) {
+  requirePermission(actor, "messages:view");
+  return getDb()
+    .select({ id: messageReplies.id, body: messageReplies.body, emailedTo: messageReplies.emailedTo, onAccount: messageReplies.onAccount, createdAt: messageReplies.createdAt, by: profiles.fullName })
+    .from(messageReplies)
+    .leftJoin(profiles, eq(profiles.id, messageReplies.sentBy))
+    .where(eq(messageReplies.messageId, id))
+    .orderBy(asc(messageReplies.createdAt));
+}
+
 /* ───────────────────────────── quotations (made-to-measure requests) ───────────────────────────── */
 
 /** The customer to tell: their account if they have one, else the email on the request. */
@@ -227,7 +279,7 @@ export async function closeQuotation(actor: Actor, id: string, reason?: string):
     await tx.update(messages).set({ quoteStatus: "cancelled", declineReason: reason ?? null, respondedAt: new Date(), isHandled: true, handledAt: new Date(), handledBy: actor.id }).where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: "quotation.closed", entityType: "message", entityId: id, before: { status: m.quoteStatus }, after: { status: "cancelled" }, reason });
     const who = await quoteAudience(tx, m);
-    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Quotation ${m.reference} has been closed`, body: reason ?? "Please contact us if you would like to talk about it." });
+    await recordUpdate(tx, who.accountId, { kind: "quotation", title: `Quotation ${quoteRef(m.reference)} has been closed`, body: reason ?? "Please contact us if you would like to talk about it." });
   });
 }
 
@@ -300,8 +352,9 @@ const enquiryStateCond = (s: EnquiryState): SQL => (s === "responded" ? eq(messa
 export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?: string; sort?: "latest" | "oldest"; page: number; pageSize: number }) {
   requirePermission(actor, "messages:view");
   const where: SQL[] = [isQuotation];
-  if (f.status === "requested") where.push(eq(messages.quoteStatus, "requested"));
-  else if (f.status === "responded") where.push(ne(messages.quoteStatus, "requested"));
+  // Quotations are answered by contacting the customer, so New and Responded follow the handled flag.
+  if (f.status === "requested") where.push(eq(messages.isHandled, false));
+  else if (f.status === "responded") where.push(eq(messages.isHandled, true));
   if (f.q) {
     const like = `%${escapeLike(f.q)}%`;
     where.push(or(ilike(messages.reference, like), ilike(messages.name, like), ilike(messages.phone, like), ilike(messages.email, like), ilike(messages.message, like))!);
@@ -310,20 +363,20 @@ export async function listQuotations(actor: Actor, f: { status?: QuoteFilter; q?
   const db = getDb();
   const [rows, [totalRow], countRows] = await Promise.all([
     db
-      .select({ id: messages.id, reference: messages.reference, name: messages.name, phone: messages.phone, message: messages.message, payload: messages.payload, quoteStatus: messages.quoteStatus, quotedAmount: messages.quotedAmount, quotedAt: messages.quotedAt, orderId: messages.orderId, createdAt: messages.createdAt })
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, phone: messages.phone, message: messages.message, payload: messages.payload, isHandled: messages.isHandled, createdAt: messages.createdAt })
       .from(messages)
       .where(cond)
       .orderBy(f.sort === "oldest" ? asc(messages.createdAt) : desc(messages.createdAt))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: count() }).from(messages).where(cond),
-    db.select({ status: messages.quoteStatus, n: count() }).from(messages).where(isQuotation).groupBy(messages.quoteStatus),
+    db.select({ handled: messages.isHandled, n: count() }).from(messages).where(isQuotation).groupBy(messages.isHandled),
   ]);
   const counts: Record<QuoteFilter | "all", number> = { all: 0, requested: 0, responded: 0 };
   for (const r of countRows) {
     counts.all += r.n;
-    if (r.status === "requested") counts.requested += r.n;
-    else counts.responded += r.n;
+    if (r.handled) counts.responded += r.n;
+    else counts.requested += r.n;
   }
   const total = totalRow?.n ?? 0;
   return { rows, counts, total, pageCount: Math.max(1, Math.ceil(total / f.pageSize)) };
@@ -358,9 +411,10 @@ export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?:
 }
 
 /** Staff move an enquiry between new and responded. */
-export async function setEnquiryState(actor: Actor, id: string, state: EnquiryState): Promise<void> {
+/** Marks an enquiry or a quotation request as responded, or back to new. Returns which kind it was, so the message can name it. */
+export async function setEnquiryState(actor: Actor, id: string, state: EnquiryState): Promise<"request" | "enquiry"> {
   requirePermission(actor, "messages:handle");
-  await withTx(async (tx) => {
+  return withTx(async (tx) => {
     const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
     if (!m) throw notFound("That message could not be found.");
     const responded = state === "responded";
@@ -369,6 +423,7 @@ export async function setEnquiryState(actor: Actor, id: string, state: EnquirySt
       .set({ isHandled: responded, inProgress: false, handledAt: responded ? new Date() : null, handledBy: responded ? actor.id : null })
       .where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: `message.${state}`, entityType: "message", entityId: id, before: { isHandled: m.isHandled, inProgress: m.inProgress }, after: { state } });
+    return m.kind === "custom" ? "request" : "enquiry";
   });
 }
 

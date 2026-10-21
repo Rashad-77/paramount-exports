@@ -66,3 +66,6 @@ export function mapEmbedUrl(mapUrl: string | null | undefined): string | null {
   // Just the position, with no business card: the card is a white box that sits over the top-left of the map.
   return `https://www.google.com/maps?q=${pin[1]},${pin[2]}&z=17&output=embed`;
 }
+
+/** A phone number as staff read it: digits as stored, without the spaces a customer may have typed. */
+export const plainPhone = (phone: string) => phone.replace(/\s+/g, "");

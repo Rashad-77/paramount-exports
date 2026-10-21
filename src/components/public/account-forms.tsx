@@ -17,9 +17,13 @@ import {
   signInAction,
   signOutAction,
   signUpAction,
+  removeAvatarAction,
+  setAvatarAction,
   updateProfileAction,
 } from "@/app/(public)/account/actions";
 import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { FileUploader } from "@/components/forms/file-uploader";
+import { ReviewAvatar } from "@/components/public/review-avatar";
 import { TextField } from "@/components/ui/field";
 import { splitAddress } from "@/lib/address-lines";
 import { ConfirmSubmit } from "@/components/forms/confirm-submit";
@@ -43,7 +47,7 @@ export function SignInForm({ next }: { next?: string }) {
     <ActionForm action={signInAction}>
       <Honeypot />
       <input type="hidden" name="next" value={next ?? ""} />
-      <FField name="email" label="Email" type="email" autoComplete="username" inputMode="email" maxLength={200} required />
+      <FField name="email" kind="email" label="Email" type="email" autoComplete="username" inputMode="email" maxLength={200} required />
       <FField name="password" label="Password" type="password" autoComplete="current-password" maxLength={200} required />
       <SubmitButton size="cta" pendingLabel="Signing in…">
         Sign in
@@ -64,9 +68,9 @@ export function SignUpForm({ next }: { next?: string }) {
       <Honeypot />
       <input type="hidden" name="formToken" value={token} />
       <input type="hidden" name="next" value={next ?? ""} />
-      <FField name="fullName" label="Your name" autoComplete="name" maxLength={120} required />
-      <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} required />
-      <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} />
+      <FField name="fullName" kind="personName" label="Your name" autoComplete="name" maxLength={120} required />
+      <FField name="email" kind="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} required />
+      <FField name="phone" label="Phone number" kind="phone" maxLength={40} />
       <FField name="password" label="Password" type="password" autoComplete="new-password" minLength={PASSWORD_MIN} maxLength={PASSWORD_MAX} required />
       <FField name="confirmPassword" label="Retype password" type="password" autoComplete="new-password" maxLength={PASSWORD_MAX} required />
       <SubmitButton size="cta" pendingLabel="Creating your account…">
@@ -80,7 +84,7 @@ export function ForgotForm() {
   return (
     <ActionForm action={forgotPasswordAction} hideOnSuccess successTitle="Check your email">
       <Honeypot />
-      <FField name="email" label="Email" type="email" autoComplete="username" inputMode="email" maxLength={200} required />
+      <FField name="email" kind="email" label="Email" type="email" autoComplete="username" inputMode="email" maxLength={200} required />
       <SubmitButton size="cta" pendingLabel="Sending…">
         Send the link
       </SubmitButton>
@@ -102,12 +106,34 @@ export function ProfileForm({ fullName, email, phone }: { fullName: string; emai
   return (
     <ActionForm action={updateProfileAction}>
       <div className="grid items-start gap-5 sm:grid-cols-2">
-        <FField name="fullName" label="Full name" autoComplete="name" maxLength={120} defaultValue={fullName} required />
-        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} defaultValue={phone ?? ""} />
+        <FField name="fullName" kind="personName" label="Full name" autoComplete="name" maxLength={120} defaultValue={fullName} required />
+        <FField name="phone" label="Phone number" kind="phone" maxLength={40} defaultValue={phone ?? ""} />
       </div>
       <TextField label="Email address" type="email" value={email} readOnly showOptional={false} />
       <SubmitButton size="cta">Save changes</SubmitButton>
     </ActionForm>
+  );
+}
+
+/** The customer's profile picture: shown beside their name on the reviews they write. */
+export function AvatarForm({ current }: { current: string | null }) {
+  return (
+    <div className="flex flex-wrap items-start gap-5">
+      <ReviewAvatar src={current} className="size-20" />
+      <div className="min-w-0 flex-1 space-y-4">
+        <ActionForm action={setAvatarAction}>
+          <FileUploader name="fileIds" purpose="avatar" label="Choose a picture" hint="JPEG, PNG or WebP, up to 4 MB." maxFiles={1} />
+          <SubmitButton size="cta">Save picture</SubmitButton>
+        </ActionForm>
+        {current ? (
+          <ActionForm action={removeAvatarAction}>
+            <SubmitButton size="cta" variant="secondary">
+              Remove picture
+            </SubmitButton>
+          </ActionForm>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -127,7 +153,7 @@ export function PasswordForm() {
 export function DeleteForm() {
   return (
     <ActionForm action={deleteAccountAction}>
-      <FField name="confirmEmail" label="Type your email address to confirm" type="email" autoComplete="off" inputMode="email" maxLength={200} required />
+      <FField name="confirmEmail" kind="email" label="Type your email address to confirm" type="email" autoComplete="off" inputMode="email" maxLength={200} required />
       <ConfirmSubmit size="cta" variant="danger" title="Delete your account?" description="This removes your account, your saved details and your saved basket. You cannot undo this." confirmLabel="Delete my account">
         Delete my account
       </ConfirmSubmit>
@@ -139,8 +165,8 @@ export function ClaimOrderForm() {
   return (
     <ActionForm action={claimOrderAction}>
       <div className="grid items-start gap-5 sm:grid-cols-2">
-        <FField name="reference" label="Order number" placeholder="482719366" inputMode="numeric" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} required />
-        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required />
+        <FField name="reference" kind="orderNumber" label="Order number" placeholder="482719366" inputMode="numeric" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={30} required />
+        <FField name="phone" label="Phone number" kind="phone" maxLength={40} required />
       </div>
       <SubmitButton size="cta" pendingLabel="Adding…">
         Add this order
@@ -222,12 +248,12 @@ export function AddressForm({ address, cancelHref, inline = false }: { address?:
   return (
     <ActionForm key={address?.id ?? "new"} action={saveAddressAction}>
       {address ? <input type="hidden" name="id" value={address.id} /> : null}
-      <FField name="line1" label="Address line 1" autoComplete="address-line1" maxLength={120} defaultValue={lines?.line1} required />
-      <FField name="line2" label="Address line 2" autoComplete="address-line2" maxLength={120} defaultValue={lines?.line2} />
-      <FField name="line3" label="Address line 3" autoComplete="address-line3" maxLength={120} defaultValue={lines?.line3} />
+      <FField name="line1" kind="address" label="Address line 1" autoComplete="address-line1" maxLength={120} defaultValue={lines?.line1} required />
+      <FField name="line2" kind="address" label="Address line 2" autoComplete="address-line2" maxLength={120} defaultValue={lines?.line2} />
+      <FField name="line3" kind="address" label="Address line 3" autoComplete="address-line3" maxLength={120} defaultValue={lines?.line3} />
       <div className="grid items-start gap-5 sm:grid-cols-2">
-        <FField name="city" label="City" autoComplete="address-level2" maxLength={80} defaultValue={lines?.city} required />
-        <FField name="postalCode" label="Postal code" autoComplete="postal-code" maxLength={20} defaultValue={lines?.postalCode} required />
+        <FField name="city" kind="place" label="City" autoComplete="address-level2" maxLength={80} defaultValue={lines?.city} required />
+        <FField name="postalCode" kind="postal" label="Postal code" autoComplete="postal-code" maxLength={20} defaultValue={lines?.postalCode} required />
       </div>
       <div className={inline ? "acct-actions" : "flex flex-wrap items-center gap-4"}>
         {cancelHref ? (

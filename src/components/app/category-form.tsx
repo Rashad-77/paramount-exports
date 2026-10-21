@@ -1,5 +1,5 @@
 import { FPanelSelect } from "@/components/app/panel-select";
-import { ActionForm, FCheckbox, FField, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, SubmitButton } from "@/components/forms/action-form";
 import type { ActionState } from "@/lib/action-state";
 
 export interface CategoryFormValues {
@@ -28,7 +28,7 @@ export function CategoryForm({
     <ActionForm action={action}>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       <div className="grid gap-5 md:grid-cols-2">
-        <FField name="name" label="Name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
+        <FField name="name" kind="title" label="Name" required defaultValue={values.name} hint="The web address is made from the name automatically." />
         <FPanelSelect
           name="parentId"
           label="Parent category"
@@ -36,10 +36,8 @@ export function CategoryForm({
           placeholder="None (this is a main category)"
           quietPlaceholder={false}
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
-          hint="Choose a main category to make this a subcategory under it, for example Tables under Furniture."
         />
       </div>
-      <FCheckbox name="isActive" label="Visible on the website" defaultChecked={values.isActive ?? true} />
       <SubmitButton>{submitLabel}</SubmitButton>
     </ActionForm>
   );

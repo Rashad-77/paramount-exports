@@ -42,7 +42,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
   const note = mode === "delivery_note";
 
   const isReceipt = !note && !cancelled && !refunded && o.isPaid;
-  const title = note ? (delivery ? "Delivery note" : "Collection note") : cancelled ? "Cancelled order" : refunded ? "Refunded order" : isReceipt ? "Receipt" : "Invoice";
+  const title = note ? "Delivery note" : cancelled ? "Cancelled order" : refunded ? "Refunded order" : isReceipt ? "Receipt" : "Invoice";
   const docNumber = note ? o.reference : isReceipt ? (live.length ? live[live.length - 1]!.number : o.reference) : (o.invoiceNumber ?? o.reference);
 
   const stamp = cancelled

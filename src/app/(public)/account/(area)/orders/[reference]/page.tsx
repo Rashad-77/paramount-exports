@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { googleReviewLink } from "@/lib/google-reviews";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderView } from "@/components/public/track-order";
@@ -30,7 +31,7 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ r
           All your orders
         </Link>
       </p>
-      <OrderView o={order} timezone={business.timezone} />
+      <OrderView o={order} timezone={business.timezone} review={googleReviewLink(business) ? { url: googleReviewLink(business)!, name: business.name } : null} />
     </div>
   );
 }

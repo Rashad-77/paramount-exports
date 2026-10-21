@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { PanelSelect } from "@/components/app/panel-select";
 import { TextField } from "@/components/ui/field";
 
-const SORT_OPTIONS = [
+const DEFAULT_SORT_OPTIONS = [
   { value: "latest", label: "Latest first" },
   { value: "oldest", label: "Oldest first" },
 ];
@@ -23,6 +23,7 @@ export function ListFilters({
   sort,
   placeholder,
   options,
+  sortOptions = DEFAULT_SORT_OPTIONS,
 }: {
   action: string;
   param: string;
@@ -33,6 +34,8 @@ export function ListFilters({
   placeholder: string;
   /** Every state with its count, the first being "all" (value ""). */
   options: Array<{ value: string; label: string }>;
+  /** The sort choices, the first being the default. Latest and oldest first when left out. */
+  sortOptions?: Array<{ value: string; label: string }>;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -55,7 +58,7 @@ export function ListFilters({
     const u = new URLSearchParams();
     if (next.q.trim()) u.set("q", next.q.trim());
     if (next.value) u.set(param, next.value);
-    if (next.sort && next.sort !== "latest") u.set("sort", next.sort);
+    if (next.sort && next.sort !== sortOptions[0]?.value) u.set("sort", next.sort);
     const qs = u.toString();
     startTransition(() => router.replace(qs ? `${action}?${qs}` : action, { scroll: false }));
   };
@@ -66,6 +69,7 @@ export function ListFilters({
         showOptional={false}
         label="Search"
         type="search"
+        maxLength={80}
         value={text}
         placeholder={placeholder}
         onChange={(e) => {
@@ -89,7 +93,7 @@ export function ListFilters({
         label="Sort by"
         quietPlaceholder={false}
         value={order}
-        options={SORT_OPTIONS}
+        options={sortOptions}
         onChange={(v) => {
           setOrder(v);
           go({ q: text, value: chosen, sort: v });

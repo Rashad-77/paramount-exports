@@ -127,14 +127,16 @@ export function notifyNewMessage(messageId: string): void {
   later(async () => {
     const [m] = await getDb().select().from(messages).where(eq(messages.id, messageId)).limit(1);
     if (!m) return;
+    // A quotation request is numbered QUO-… everywhere the staff see it, so the email says the same.
+    const ref = m.kind === "custom" ? quoteRef(m.reference) : m.reference;
     const what = m.kind === "custom" ? "quotation request" : m.kind === "product_enquiry" ? "product enquiry" : "message";
     const details = m.kind === "custom" && m.payload && typeof m.payload === "object" ? Object.entries(m.payload as Record<string, unknown>).filter(([, v]) => v).map(([k, v]) => `  ${k}: ${String(v)}`) : [];
     await sendToOwner(
-      `New ${what} ${m.reference} - ${m.name}`,
+      `New ${what} ${ref} - ${m.name}`,
       [
         `A new ${what} has come in on the website.`,
         ``,
-        `Reference: ${m.reference}`,
+        `Reference: ${ref}`,
         `From: ${m.name}`,
         `Phone: ${m.phone}`,
         m.email ? `Email: ${m.email}` : null,

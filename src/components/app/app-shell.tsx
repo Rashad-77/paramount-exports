@@ -61,21 +61,20 @@ export function AppShell({
         <div className="app-scroll flex-1 overflow-y-auto p-3">
           <NavList actor={actor} currentPath={currentPath} />
         </div>
+        {/* Who is signed in, at the foot of the sidebar */}
+        <div className="border-t border-border px-3 pt-3 pb-0">
+          <p className="px-3 text-sm font-medium">{actor.fullName}</p>
+          <p className="px-3 text-xs text-text-muted">{roles}</p>
+          <div className="mt-2">{signOut}</div>
+        </div>
       </aside>
 
       <div className="min-w-0">
-        {/* Desktop: who is signed in, top right */}
-        <div className="hidden h-[var(--header-height)] items-center justify-between gap-4 border-b border-border px-[var(--gutter)] lg:flex">
+        {/* Desktop top bar */}
+        <div className="hidden h-[var(--header-height)] items-center border-b border-border px-[var(--gutter)] lg:flex">
           <p className="text-sm font-medium tracking-[0.02em] text-text">
             Administration dashboard
           </p>
-          <div className="flex items-center gap-4">
-            <div className="text-right leading-tight">
-              <p className="text-sm font-medium">{actor.fullName}</p>
-              <p className="text-xs text-text-muted">{roles}</p>
-            </div>
-            {signOut}
-          </div>
         </div>
         {/* Mobile / tablet top bar */}
         <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-surface px-[var(--gutter)] text-text lg:hidden">

@@ -63,18 +63,17 @@ export const NAV: NavGroup[] = [
   {
     label: "Business",
     modules: [
-      { label: "Showroom and workshop", description: "Contact details, opening hours, and the photographs of the showroom and the workshop.", pages: [page("Showroom and workshop", "/app/showroom", "website:manage")] },
       {
         label: "Website",
-        description: "Page wording and the gallery of finished projects.",
-        pages: [page("Pages", "/app/website", "website:manage"), page("Gallery", "/app/gallery", "website:manage")],
+        description: "Page wording, and the photographs and details of the showroom and the workshop.",
+        pages: [page("Pages", "/app/website", "website:manage"), page("Showroom and workshop", "/app/showroom", "website:manage")],
       },
+      { label: "Reviews", description: "Reviews customers write on the website, with their photographs: they show on the homepage straight away, and you can hide or delete any of them.", pages: [page("Reviews", "/app/reviews", "website:manage")] },
     ],
   },
   {
     label: "System",
     modules: [
-      { label: "Users", description: "Who can sign in to this area, and whether they are an owner or staff.", pages: [page("Users", "/app/users", "users:manage")] },
       { label: "Settings", description: "Business name, contact details, opening hours and bank details for transfers.", pages: [page("Settings", "/app/settings", "settings:view")] },
     ],
   },

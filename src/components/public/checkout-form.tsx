@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { placeOrderAction } from "@/app/(public)/order-actions";
 import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
+import { SignedInLine, useAccountContact } from "@/components/public/signed-in-contact";
 import { useAccount } from "@/components/public/use-account";
 import { ButtonLink } from "@/components/ui/button";
 import { saveSnapshot, useCart } from "@/lib/cart";
@@ -42,6 +43,10 @@ function Choice({ name, value, checked, onChange, title, help }: { name: string;
 export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireAccount = false }: { currency: string; bankDetails: string | null; turnstileSiteKey?: string; requireAccount?: boolean }) {
   const { items, subtotal } = useCart();
   const me = useAccount(requireAccount);
+  const contact = useAccountContact();
+  const knownName = Boolean(contact?.name);
+  const knownPhone = Boolean(contact?.phone);
+  const knownEmail = Boolean(contact?.email);
   const [fulfilment, setFulfilment] = useState<Fulfilment>("delivery");
   const [payment, setPayment] = useState<PaymentMethod>("on_delivery");
   const [token, setToken] = useState("");
@@ -109,10 +114,11 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
 
         <fieldset className="space-y-5">
           <legend className="font-display text-[1.5rem] leading-tight text-brand">Your details</legend>
+          <SignedInLine me={contact} name={knownName} phone={knownPhone} email={knownEmail} />
           <div className="grid gap-5 sm:grid-cols-2">
-            <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
-            <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required hint="We confirm your order by phone." />
-            <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} className="sm:col-span-2" />
+            {knownName ? null : <FField name="name" kind="personName" label="Your name" autoComplete="name" maxLength={120} required />}
+            {knownPhone ? null : <FField name="phone" label="Phone number" kind="phone" maxLength={40} required hint="We confirm your order by phone." />}
+            {knownEmail ? null : <FField name="email" kind="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} className="sm:col-span-2" />}
           </div>
         </fieldset>
 
@@ -129,7 +135,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
               help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our showroom. No delivery charge."}
             />
           ))}
-          {fulfilment === "delivery" ? <FTextArea name="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
+          {fulfilment === "delivery" ? <FTextArea name="address" kind="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
         </fieldset>
 
         <fieldset className="space-y-3">

@@ -1,4 +1,5 @@
 import { OrderStatusPicker } from "@/components/app/order-status-picker";
+import { plainPhone } from "@/lib/contact";
 import { OrderPaymentPicker } from "@/components/app/order-payment-picker";
 import { OrdersFilter } from "@/components/app/orders-filter";
 import Link from "next/link";
@@ -139,7 +140,7 @@ export default async function OrdersPage({
                     </TD>
                     <TD>
                       <div className="font-medium">{r.customerName}</div>
-                      <div className="text-text-muted">{r.phone}</div>
+                      <div className="text-text-muted">{plainPhone(r.phone)}</div>
                     </TD>
                     <TD className="max-w-[14rem] px-2 py-1 leading-snug">
                       {r.contents ? (

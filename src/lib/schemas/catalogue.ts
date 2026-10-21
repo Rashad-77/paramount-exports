@@ -37,7 +37,8 @@ export const categorySchema = z.object({
   description: optText("Description", 500),
   parentId: optUuid("group"),
   sortOrder: z.preprocess((v) => (v === "" || v === undefined ? undefined : Number(v)), z.number({ error: "Sort order must be a whole number." }).int().min(0).max(9999).optional()),
-  isActive: checkbox,
+  /** Not asked for on the forms: a category shows on the website until it is archived. */
+  isActive: z.boolean().default(true),
 });
 export type CategoryInput = z.output<typeof categorySchema>;
 

@@ -103,7 +103,7 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
           </ButtonLink>
         )}
       </div>
-      {reference ? <p className="mt-6 text-sm text-text-muted">You can check on it at any time: use your order number and the phone number you gave us.</p> : null}
+      {reference ? <p className="mt-6 text-sm text-text-muted">You can check on it at any time: use your order number on the Track your order page.</p> : null}
       <p className="mt-3 text-sm text-text-muted">
         Changed your mind or need to correct something? <Link href="/contact" className="underline">Contact us</Link> and quote your order number.
       </p>

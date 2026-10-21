@@ -1,4 +1,5 @@
-import { QuoteTag } from "@/components/app/tags";
+import { EnquiryTag } from "@/components/app/tags";
+import { plainPhone } from "@/lib/contact";
 import Link from "next/link";
 import { ListFilters } from "@/components/app/list-filters";
 import { ModuleHeader } from "@/components/ui/page-header";
@@ -14,8 +15,7 @@ import {
 } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
-import { formatAmount } from "@/lib/money";
-import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
+import { quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listQuotations } from "@/server/messages";
@@ -77,15 +77,11 @@ export default async function QuotationsPage({
                   <TH className="w-16">No.</TH>
                   <TH>Request</TH>
                   <TH>Customer</TH>
-                  <TH className="w-32">Price sent</TH>
                   <TH className="w-44">Status</TH>
                 </tr>
               </THead>
               <tbody>
                 {result.rows.map((r, i) => {
-                  const st = isQuoteStatus(r.quoteStatus)
-                    ? r.quoteStatus
-                    : "requested";
                   const what = (
                     r.payload as { furnitureType?: string | null } | null
                   )?.furnitureType;
@@ -105,18 +101,11 @@ export default async function QuotationsPage({
                       </TD>
                       <TD>
                         <div className="font-medium">{r.name}</div>
-                        <div className="text-text-muted">{r.phone}</div>
-                      </TD>
-                      <TD className="tabular text-center">
-                        {r.quotedAmount ? (
-                          formatAmount(r.quotedAmount)
-                        ) : (
-                          <span className="text-text-muted">—</span>
-                        )}
+                        <div className="text-text-muted">{plainPhone(r.phone)}</div>
                       </TD>
                       <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
                         <div className="relative flex flex-col items-center">
-                          <QuoteTag status={st} />
+                          <EnquiryTag state={r.isHandled ? "responded" : "new"} />
                           <time dateTime={r.createdAt.toISOString()} className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted">{formatDateTime(r.createdAt, business.timezone)}</time>
                         </div>
                       </TD>

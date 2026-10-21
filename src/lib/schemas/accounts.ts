@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { MAX_LINES, MAX_QTY } from "@/lib/order-constants";
-import { optText, reqPhone, reqText } from "@/lib/validation";
+import { idList, optText, reqPhone, reqText } from "@/lib/validation";
 import { normaliseOrderRef } from "./tracking";
 
 /** Passwords: long enough to resist guessing, short enough for the sign-in service (it ignores anything past 72 characters). */
@@ -53,6 +53,9 @@ export const resetSchema = z
   .superRefine((v, ctx) => {
     if (v.newPassword !== v.confirmPassword) ctx.addIssue({ code: "custom", path: ["confirmPassword"], message: "The two passwords do not match." });
   });
+
+/** One uploaded picture for the profile picture form. */
+export const avatarSchema = z.object({ fileIds: idList(1).refine((a) => a.length === 1, { message: "Choose a picture first." }) });
 
 export const profileSchema = z.object({
   fullName: reqText("Your name", 120),

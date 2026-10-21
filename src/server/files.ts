@@ -33,6 +33,10 @@ export interface UploadPurpose {
 
 export const UPLOAD_PURPOSES = {
   enquiry: { bucket: PRIVATE_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: null },
+  // Photographs a customer adds to a review. Public so the homepage can show them once the review is approved; a review is not listed until then.
+  review: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: null },
+  // A customer's profile picture. Public (it shows beside their reviews); the form action that attaches it needs a signed-in customer.
+  avatar: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 4 * MB, permission: null },
   catalogue: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: "products:write" },
   gallery: { bucket: PUBLIC_BUCKET, types: IMAGE_TYPES, maxBytes: 8 * MB, permission: "website:manage" },
 } as const satisfies Record<string, UploadPurpose>;
@@ -93,7 +97,8 @@ export async function requestUpload(
       sizeBytes: req.size,
       visibility: purpose.bucket === PUBLIC_BUCKET ? "public" : "private",
       status: "quarantined",
-      uploadedBy: ctx.actor?.id ?? null,
+      // A visitor purpose has no owner (the form action that attaches it runs without a signed-in person), even when a staff member is browsing the site.
+      uploadedBy: purpose.permission ? (ctx.actor?.id ?? null) : null,
     })
     .returning({ id: uploadedFiles.id });
   return { fileId: row!.id, signed, maxBytes: purpose.maxBytes };

@@ -53,26 +53,16 @@ export default async function WebsitePage() {
             defaultValue={pages.terms ?? ""}
             placeholder={DEFAULT_TERMS.slice(0, 200) + "…"}
           />
-          <FTextArea
-            name="testimonials"
-            label="Customer reviews (homepage)"
-            rows={10}
-            defaultValue={pages.testimonials ?? ""}
-            placeholder={
-              '"The table is exactly what we asked for."\n— Name, Town\n\n"Another review."\n— Name, Town'
-            }
-            hint="Only add reviews that customers have really given you. One review per block, separated by a blank line; put the quote first and, on the last line, a dash then the name and town. Leave blank to show no reviews."
-          />
           <div className="grid gap-5 md:grid-cols-2">
             <FField
-              name="ownerName"
+              name="ownerName" kind="personName"
               label="Owner: name (About page)"
               maxLength={120}
               defaultValue={pages.ownerName ?? ""}
               placeholder={SAMPLE_OWNER.name}
             />
             <FField
-              name="ownerRole"
+              name="ownerRole" kind="title"
               label="Owner: role"
               maxLength={120}
               defaultValue={pages.ownerRole ?? ""}

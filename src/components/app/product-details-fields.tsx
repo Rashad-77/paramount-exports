@@ -52,11 +52,11 @@ export function DetailsFields({
           hint="Shown to customers on the product page."
         />
         {avail === "in_stock" ? (
-          <FField name="stockQuantity" label="Available amount" required inputMode="numeric" defaultValue={stockQuantity ?? ""} hint="How many are in stock. Orders take from this." />
+          <FField name="stockQuantity" label="Available amount" required kind="integer" defaultValue={stockQuantity ?? ""} hint="How many are in stock. Orders take from this." />
         ) : null}
       </div>
 
-      <FField name="listPrice" label={`Price (${currency})`} inputMode="decimal" defaultValue={price ?? ""} hint="Shown on the website when entered. Leave blank if it is not priced yet; customers can then ask for a quotation." className="max-w-md" />
+      <FField name="listPrice" label={`Price (${currency})`} kind="money" defaultValue={price ?? ""} hint="Shown on the website when entered. Leave blank if it is not priced yet; customers can then ask for a quotation." className="max-w-md" />
     </div>
   );
 }

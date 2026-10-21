@@ -18,12 +18,12 @@ export function GalleryForm({
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       <input type="hidden" name="area" value={values.area ?? "projects"} />
       <div className="grid gap-5 md:grid-cols-2">
-        <FField name="title" label="Project title" required defaultValue={values.title} />
+        <FField name="title" kind="title" label="Project title" required defaultValue={values.title} />
         <FField name="completedOn" label="Completed on" type="date" defaultValue={values.completedOn ?? ""} />
       </div>
       <FSelect name="categoryId" label="Category" defaultValue={values.categoryId ?? ""} placeholder="No category" options={treeOrder(categories).map((c) => ({ value: c.id, label: treeLabel(c) }))} hint="Lets visitors filter the Gallery by kind of furniture." />
       <FTextArea name="description" label="Description" rows={4} defaultValue={values.description ?? ""} />
-      <FField name="sortOrder" label="Display order" type="number" min={0} defaultValue={String(values.sortOrder ?? 0)} hint="Lower numbers come first." />
+      <FField name="sortOrder" label="Display order" kind="integer" defaultValue={String(values.sortOrder ?? 0)} hint="Lower numbers come first." />
       <FCheckbox name="isPublished" label="Published" hint="Visible on the Gallery page." defaultChecked={values.isPublished} />
       <SubmitButton>{submitLabel}</SubmitButton>
     </ActionForm>

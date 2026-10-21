@@ -4877,3 +4877,456 @@ span.cat-pagebtn {
 .acct-add[open] > summary::after {
   transform: rotate(-135deg) translateY(-2px);
 }
+
+/* ===== The Review pop-up (review-button.tsx) =====
+   One entrance, stars that answer the pointer, and a button that settles when pressed. All of it stops under prefers-reduced-motion. */
+.rv-dialog {
+  --rv-ease: cubic-bezier(0.22, 0.9, 0.24, 1);
+}
+.rv-dialog[open] {
+  animation: rv-in 0.42s var(--rv-ease) both;
+}
+.rv-dialog[open]::backdrop {
+  animation: rv-fade 0.35s ease both;
+}
+@keyframes rv-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rv-fade {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+/* the contents settle in one after the other, once, as the window opens */
+.rv-dialog[open] fieldset,
+.rv-dialog[open] .rv-field,
+.rv-dialog[open] .rv-go {
+  animation: rv-rise 0.5s var(--rv-ease) both;
+}
+.rv-dialog[open] fieldset {
+  animation-delay: 0.08s;
+}
+.rv-dialog[open] .rv-field {
+  animation-delay: 0.16s;
+}
+.rv-dialog[open] .rv-go {
+  animation-delay: 0.24s;
+}
+@keyframes rv-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The button itself never moves (so the pointer cannot slip off it and flicker); only the star inside it does. Corners are sharp: mitred joins, no round caps. */
+.rv-star {
+  color: #c9c3ba;
+}
+.rv-star svg {
+  fill: #fff;
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+  transition: transform 0.18s var(--rv-ease);
+}
+.rv-star[data-on="true"] svg {
+  fill: #fbbc04;
+  stroke: #e8a200;
+}
+.rv-star:hover svg {
+  transform: scale(1.12);
+}
+.rv-star:active svg {
+  transform: scale(0.94);
+}
+.rv-star:focus-visible {
+  outline: 2px solid var(--color-walnut);
+  outline-offset: 2px;
+}
+.rv-star[data-picked="true"] svg {
+  animation: rv-pop 0.34s var(--rv-ease);
+}
+@keyframes rv-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.rv-dialog .rv-field {
+  transition: border-color 0.2s ease, box-shadow 0.25s ease;
+}
+.rv-dialog .rv-field:focus-visible {
+  outline: none;
+  border-color: var(--color-walnut);
+  box-shadow: 0 0 0 4px rgb(120 70 30 / 0.14);
+}
+
+.rv-go {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s var(--rv-ease), box-shadow 0.25s ease;
+}
+.rv-go::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.22) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--rv-ease);
+}
+.rv-go:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -10px rgb(40 20 8 / 0.55);
+}
+.rv-go:hover::after {
+  transform: translateX(120%);
+}
+.rv-go:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+}
+
+.rv-ok {
+  animation: rv-rise 0.4s var(--rv-ease) both;
+}
+.rv-ok svg {
+  animation: rv-pop 0.5s var(--rv-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-dialog[open],
+  .rv-dialog[open]::backdrop,
+  .rv-dialog[open] fieldset,
+  .rv-dialog[open] .rv-field,
+  .rv-dialog[open] .rv-go,
+  .rv-star[data-picked="true"] svg,
+  .rv-ok,
+  .rv-ok svg {
+    animation: none;
+  }
+  .rv-star svg,
+  .rv-go,
+  .rv-go::after,
+  .rv-dialog .rv-field {
+    transition: none;
+  }
+  .rv-star:hover svg,
+  .rv-star:active svg,
+  .rv-go:hover {
+    transform: none;
+  }
+}
+
+/* Review pop-up: hairline black borders, and capitals set wide in the display face. What the customer types stays in their own case. */
+.rv-dialog {
+  border: 0.5px solid #000;
+  font-family: var(--font-display, var(--font-sans));
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.rv-dialog > div:first-child {
+  border-bottom: 0.5px solid #000;
+}
+.rv-dialog h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+}
+.rv-dialog #dialog-desc,
+.rv-dialog legend,
+.rv-dialog label,
+.rv-dialog p {
+  font-size: 0.6875rem;
+  line-height: 1.7;
+}
+.rv-dialog legend,
+.rv-dialog label {
+  font-weight: 600;
+}
+.rv-dialog .rv-field {
+  border: 0.5px solid #000;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-family: var(--font-sans);
+}
+.rv-dialog .rv-field::placeholder {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.6875rem;
+}
+.rv-dialog .rv-star {
+  color: #000;
+}
+.rv-dialog .rv-star svg {
+  stroke-width: 0.75;
+}
+.rv-dialog .rv-star[data-on="true"] svg {
+  stroke: #000;
+}
+.rv-dialog .rv-go {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+
+/* Review pop-up: the name and city boxes and the photo chooser take the same hairline black as the review box. */
+.rv-dialog input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]) {
+  border: 0.5px solid #000;
+}
+.rv-dialog [class*="border-dashed"] {
+  border: 0.5px dashed #000;
+}
+.rv-dialog [role="alert"] {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+/* All-reviews pop-up (reviews-viewer.tsx): drops in from the top of the screen, header stays put while the list scrolls. */
+.rv-all.rv-all {
+  margin: 0 auto auto;
+  max-height: 88vh;
+  border: 0.5px solid #000;
+  border-top-width: 0;
+}
+.rv-all[open] {
+  animation: rv-drop 0.55s cubic-bezier(0.22, 0.9, 0.24, 1) both;
+}
+.rv-all[open]::backdrop {
+  animation: rv-fade 0.35s ease both;
+}
+@keyframes rv-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-48px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rv-all > div:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  border-bottom: 0.5px solid #000;
+}
+.rv-all [data-review] {
+  scroll-margin-top: 6.5rem;
+}
+.rv-all [data-review][data-focus="true"] {
+  animation: rv-flash 1.8s ease both;
+}
+@keyframes rv-flash {
+  0%,
+  40% {
+    background: rgb(251 188 4 / 0.2);
+  }
+  100% {
+    background: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-all[open],
+  .rv-all[open]::backdrop,
+  .rv-all [data-review][data-focus="true"] {
+    animation: none;
+  }
+}
+
+/* All-reviews pop-up type: the site's own typeface throughout, set small, with wide-spaced capitals for the title, names and places. */
+.rv-all h2 {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.rv-all #dialog-desc {
+  margin-top: 0.375rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.rv-all .rv-name {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.rv-all .rv-city {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.rv-all .rv-quote {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+}
+
+/* No grey highlight on the close cross of the review pop-ups. */
+.rv-all [aria-label="Close dialog"],
+.rv-dialog [aria-label="Close dialog"] {
+  background: transparent;
+}
+.rv-all [aria-label="Close dialog"]:hover,
+.rv-all [aria-label="Close dialog"]:focus,
+.rv-dialog [aria-label="Close dialog"]:hover,
+.rv-dialog [aria-label="Close dialog"]:focus {
+  background: transparent;
+}
+.rv-all [aria-label="Close dialog"]:focus:not(:focus-visible),
+.rv-dialog [aria-label="Close dialog"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* A review photo at a large size (reviews-viewer.tsx): dark backdrop, no frame of its own. */
+.rv-lightbox {
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+.rv-lightbox::backdrop {
+  background: rgb(0 0 0 / 0.86);
+}
+.rv-lightbox[open] {
+  animation: rv-fade 0.25s ease both;
+}
+.rv-lightbox[open]::backdrop {
+  animation: rv-fade 0.25s ease both;
+}
+.rv-thumb {
+  transition: background-color 0.2s ease;
+}
+.rv-thumb:hover {
+  background: rgb(0 0 0 / 0.12);
+}
+.rv-thumb:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-lightbox[open],
+  .rv-lightbox[open]::backdrop {
+    animation: none;
+  }
+}
+
+/* Review pop-up, set smaller. The page's own form styling (hairline fieldsets, large floated legends, tall fields) reaches into the pop-up now that it holds a form, so the pop-up states its own. */
+.rv-dialog h2 {
+  font-size: 0.8125rem;
+}
+.rv-dialog #dialog-desc,
+.rv-dialog p {
+  font-size: 0.625rem;
+}
+.page-body main .rv-dialog.rv-dialog form fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.page-body main .rv-dialog.rv-dialog form legend {
+  float: none;
+  width: 100%;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1c1916;
+  text-align: center;
+}
+.page-body main .rv-dialog.rv-dialog form label:not(.flex) {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+}
+.page-body main .rv-dialog.rv-dialog form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.page-body main .rv-dialog.rv-dialog form textarea {
+  min-height: 2.25rem;
+  padding-inline: 0.75rem;
+  border: 0.5px solid #000;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.page-body main .rv-dialog.rv-dialog form textarea {
+  min-height: 5.5rem;
+  padding-block: 0.625rem;
+}
+.page-body main .rv-dialog.rv-dialog form input::placeholder,
+.page-body main .rv-dialog.rv-dialog form textarea::placeholder {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.page-body main .rv-dialog.rv-dialog form p[role="alert"],
+.page-body main .rv-dialog.rv-dialog form p[id$="-hint"] {
+  font-size: 0.625rem;
+  font-weight: 400;
+}
+.rv-dialog .rv-go {
+  font-size: 0.625rem;
+}
+
+/* Review pop-up header: the title and line of text are centred across the whole window (the close cross floats at the corner), and set small enough that the line stays on one row. */
+.rv-dialog > div:first-child {
+  position: relative;
+  justify-content: center;
+  padding: 1.125rem 3rem 1rem;
+  text-align: center;
+}
+.rv-dialog > div:first-child > div:last-child {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+.rv-dialog h2 {
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+}
+.rv-dialog #dialog-desc {
+  margin-top: 0.375rem;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+}
+
+/* Header: less empty space to the right of the account icon (the left side keeps the full gutter). */
+@media (min-width: 48rem) {
+  .phead .in {
+    padding-right: 0.75rem;
+  }
+}

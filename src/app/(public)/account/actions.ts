@@ -6,6 +6,7 @@ import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import {
   activeCustomer,
+  customerAuthMode,
   changeCustomerPassword,
   deleteCustomerAccount,
   requestPasswordReset,
@@ -20,8 +21,9 @@ import { checkFormToken, HONEYPOT_FIELD } from "@/lib/form-guard";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { quotationResponseSchema } from "@/lib/schemas/quotations";
 import { joinAddress } from "@/lib/address-lines";
-import { addressIdSchema, addressSchema, claimOrderSchema, deleteAccountSchema, forgotSchema, passwordChangeSchema, profileSchema, resetSchema, savedCartSchema, signInSchema, signUpSchema, type SavedCartItem } from "@/lib/schemas/accounts";
+import { addressIdSchema, addressSchema, avatarSchema, claimOrderSchema, deleteAccountSchema, forgotSchema, passwordChangeSchema, profileSchema, resetSchema, savedCartSchema, signInSchema, signUpSchema, type SavedCartItem } from "@/lib/schemas/accounts";
 import { getAccountSettings } from "@/lib/settings";
+import { removeAvatar, setAvatar } from "@/server/avatars";
 import { claimOrder, deleteAddress, getSavedCart, respondToQuotation, saveAddress, saveCart, setDefaultAddress, toggleWishlist, updateProfile } from "@/server/accounts";
 import { z } from "zod";
 
@@ -32,7 +34,7 @@ export async function safeNext(next: string | undefined, fallback = "/account"):
 
 async function accountsOn() {
   const s = await getAccountSettings();
-  if (!s.enabled) throw validation("Customer accounts are not switched on.");
+  if (!s.enabled || customerAuthMode() === "off") throw validation("Customer accounts are not switched on.");
   return s;
 }
 
@@ -142,6 +144,36 @@ export async function updateProfileAction(_p: ActionState, fd: FormData): Promis
       await updateProfile(customer.id, input);
       revalidatePath("/account", "layout");
       return { message: "Your details are saved." };
+    },
+    { public: true },
+  );
+}
+
+export async function setAvatarAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(
+    fd,
+    avatarSchema,
+    async (input) => {
+      const customer = await signedIn();
+      await setAvatar(customer.id, input.fileIds[0]!);
+      revalidatePath("/account", "layout");
+      revalidatePath("/");
+      return { message: "Your profile picture is saved." };
+    },
+    { public: true },
+  );
+}
+
+export async function removeAvatarAction(_p: ActionState, _fd: FormData): Promise<ActionState> {
+  return runAction(
+    _fd,
+    z.object({}),
+    async () => {
+      const customer = await signedIn();
+      await removeAvatar(customer.id);
+      revalidatePath("/account", "layout");
+      revalidatePath("/");
+      return { message: "Your profile picture is removed." };
     },
     { public: true },
   );

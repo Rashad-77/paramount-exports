@@ -48,7 +48,6 @@ function Picker({
         open={open}
         onClose={() => setOpen(false)}
         title={`Change payment status for order ${reference}`}
-        description="Choose the payment status, then confirm the change."
       >
         <div className="flex w-full flex-col gap-2" role="group" aria-label="Payment statuses">
           {[false, true].map((option) => (

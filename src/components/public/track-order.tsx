@@ -1,5 +1,6 @@
 "use client";
 
+import { ReviewButton } from "@/components/public/review-button";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { trackOrderAction } from "@/app/(public)/track-actions";
@@ -38,7 +39,7 @@ function stepsFor(o: TrackedOrder) {
   return steps;
 }
 
-function Result({ timezone }: { timezone: string }) {
+function Result({ timezone, review }: { timezone: string; review?: { url: string; name: string } | null }) {
   const { state } = useFormState();
   if (!state.ok) return null;
   const o = state.data as TrackedOrder | null | undefined;
@@ -46,16 +47,19 @@ function Result({ timezone }: { timezone: string }) {
     return <ToastOnMount tone="danger" message="We could not find an order with that number. Please check it and try again, or contact us." />;
   }
 
-  return <OrderView o={o} timezone={timezone} />;
+  return <OrderView o={o} timezone={timezone} review={review} />;
 }
 
 /** One order as its own customer sees it. Used by the order-number lookup and by the signed-in account pages. */
 export function OrderView({
   o,
   timezone,
+  review,
 }: {
   o: TrackedOrder;
   timezone: string;
+  /** Where "Review us on Google" goes; with it, a delivered or collected order invites a review. */
+  review?: { url: string; name: string } | null;
 }) {
   const when = (iso: string | null) =>
     iso ? formatDateTime(iso, timezone) : null;
@@ -231,6 +235,15 @@ export function OrderView({
         </div>
       </div>
 
+      {review && o.status === "delivered" ? (
+        <p className="ot-help">
+          Happy with your order? Tell others about it:{" "}
+          <ReviewButton reviewUrl={review.url} businessName={review.name} variant="link" className="underline">
+            review us on Google
+          </ReviewButton>
+          .
+        </p>
+      ) : null}
       <p className="ot-help">
         Need to make an adjustment or ask for a refund? <Link href="/contact">Contact us</Link>
       </p>
@@ -242,9 +255,11 @@ export function OrderView({
 export function TrackOrder({
   initialReference,
   timezone,
+  review,
 }: {
   initialReference?: string;
   timezone: string;
+  review?: { url: string; name: string } | null;
 }) {
   return (
     <ActionForm action={trackOrderAction}>
@@ -266,7 +281,7 @@ export function TrackOrder({
       <div className="soft-card space-y-5">
         <div className="grid gap-5">
           <FField
-            name="reference"
+            name="reference" kind="orderNumber"
             label="Order number"
             placeholder="482719366"
             inputMode="numeric"
@@ -285,7 +300,7 @@ export function TrackOrder({
           </SubmitButton>
         </div>
       </div>
-      <Result timezone={timezone} />
+      <Result timezone={timezone} review={review} />
     </ActionForm>
   );
 }

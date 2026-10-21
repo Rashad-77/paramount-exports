@@ -6,7 +6,9 @@ import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/componen
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
+import { SignedInLine, useAccountContact } from "@/components/public/signed-in-contact";
 import { QuotePrefill } from "@/components/public/quote-prefill";
+import { CONTACT_CHOICE_LABEL, CONTACT_LABELS, CUSTOM_MESSAGE_LABEL, MESSAGE_LABEL, PHOTOS_LABEL, PIECE_FIELDS, PIECE_HEADING } from "@/lib/enquiry-form-labels";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 
 export interface VariantOption {
@@ -14,11 +16,8 @@ export interface VariantOption {
   label: string;
 }
 
-const CONTACT_OPTIONS = [
-  { value: "phone", label: "Phone call" },
-  { value: "whatsapp", label: "WhatsApp" },
-  { value: "email", label: "Email" },
-];
+const CONTACT_OPTIONS = Object.entries(CONTACT_CHOICE_LABEL).map(([value, label]) => ({ value, label }));
+const pieceLabel = (key: (typeof PIECE_FIELDS)[number]["key"]) => PIECE_FIELDS.find((f) => f.key === key)!.label;
 
 /**
  * One form component for the three public enquiry types. Anti-spam: hidden honeypot, a signed time-stamped
@@ -40,6 +39,10 @@ export function EnquiryForm({
   /** Spread across the full width: name, phone and email in one row, the tick and the button on one line. */
   wide?: boolean;
 }) {
+  const me = useAccountContact();
+  const knownName = Boolean(me?.name);
+  const knownPhone = Boolean(me?.phone);
+  const knownEmail = Boolean(me?.email);
   const [token, setToken] = useState("");
   useEffect(() => {
     let alive = true;
@@ -73,11 +76,12 @@ export function EnquiryForm({
         </label>
       </div>
 
+      <SignedInLine me={me} name={knownName} phone={knownPhone} email={knownEmail} />
       <div className={wide ? (variants && variants.length > 1 ? "grid gap-5 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-5 sm:grid-cols-3") : "grid gap-5 sm:grid-cols-2"}>
-        <FField name="name" label="Your name" autoComplete="name" maxLength={120} required />
-        <FField name="phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" maxLength={40} required />
-        <FField name="email" label="Email" type="email" autoComplete="email" inputMode="email" maxLength={200} />
-        {wide ? null : <FSelect name="preferredContact" label="Best way to reach you" options={CONTACT_OPTIONS} placeholder="No preference" />}
+        {knownName ? null : <FField name="name" kind="personName" label={CONTACT_LABELS.name} autoComplete="name" maxLength={120} required />}
+        {knownPhone ? null : <FField name="phone" label={CONTACT_LABELS.phone} kind="phone" maxLength={40} required />}
+        {knownEmail ? null : <FField name="email" kind="email" label={CONTACT_LABELS.email} type="email" autoComplete="email" inputMode="email" maxLength={200} />}
+        {wide ? null : <FSelect name="preferredContact" label={CONTACT_LABELS.preferredContact} options={CONTACT_OPTIONS} placeholder="No preference" />}
         {wide && variants && variants.length > 1 ? <FSelect name="variantId" label="Option" options={variants.map((v) => ({ value: v.id, label: v.label }))} placeholder="Not sure yet" /> : null}
       </div>
 
@@ -89,22 +93,22 @@ export function EnquiryForm({
 
       {kind === "custom" ? (
         <fieldset className="space-y-5">
-          <legend className="font-display text-lg text-walnut">About the piece</legend>
+          <legend className="font-display text-lg text-walnut">{PIECE_HEADING}</legend>
           <div className="grid gap-5 sm:grid-cols-2">
-            <FField name="furnitureType" label="What would you like made?" placeholder="e.g. dining table, wardrobe" maxLength={120} required />
-            <FField name="dimensions" label="Dimensions" placeholder="e.g. 180 × 90 × 75 cm" maxLength={200} />
-            <FField name="material" label="Wood or material" placeholder="If you have a preference" maxLength={120} />
-            <FField name="finish" label="Finish" placeholder="e.g. natural oil, dark stain" maxLength={120} />
-            <FField name="budgetRange" label="Budget range" maxLength={80} />
-            <FField name="targetDate" label="Date you would like it by" type="date" min={new Date().toISOString().slice(0, 10)} />
+            <FField name="furnitureType" kind="title" label={pieceLabel("furnitureType")} placeholder="e.g. dining table, wardrobe" maxLength={120} required />
+            <FField name="dimensions" kind="dimensions" label={pieceLabel("dimensions")} placeholder="e.g. 180 × 90 × 75 cm" maxLength={200} />
+            <FField name="material" kind="title" label={pieceLabel("material")} placeholder="If you have a preference" maxLength={120} />
+            <FField name="finish" kind="title" label={pieceLabel("finish")} placeholder="e.g. natural oil, dark stain" maxLength={120} />
+            <FField name="budgetRange" kind="budget" label={pieceLabel("budgetRange")} maxLength={80} />
+            <FField name="targetDate" label={pieceLabel("targetDate")} type="date" min={new Date().toISOString().slice(0, 10)} />
           </div>
-          <FileUploader purpose="enquiry" label="Reference photos or sketches" hint="JPEG, PNG or WebP, up to 8 MB each, up to 5 files." maxFiles={5} />
+          <FileUploader purpose="enquiry" label={PHOTOS_LABEL} hint="JPEG, PNG or WebP, up to 8 MB each, up to 5 files." maxFiles={5} />
         </fieldset>
       ) : null}
 
       <FTextArea
         name="message"
-        label={kind === "custom" ? "Anything else we should know?" : "Your message"}
+        label={kind === "custom" ? CUSTOM_MESSAGE_LABEL : MESSAGE_LABEL}
         required={kind === "general"}
         rows={kind === "custom" ? 4 : wide ? 3 : 5}
         maxLength={2000}

@@ -70,6 +70,7 @@ export function ListSearch({
         label="Search"
         name="q"
         type="search"
+        maxLength={80}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}

@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
 import { useResultToast } from "@/components/ui/toaster";
+import { cleanInput, KIND_PROPS, type InputKind } from "@/lib/input-kinds";
 import { DateField } from "./date-field";
 
 type Action = (prev: ActionState, formData: FormData) => Promise<ActionState>;
@@ -157,8 +158,27 @@ export function ActionForm({
 
 type Shared = { name: string };
 
-export function FField({ name, defaultValue, ...props }: Shared & Omit<ComponentProps<typeof TextField>, "name" | "error">) {
+export function FField({ name, defaultValue, kind, onInput, ...props }: Shared & Omit<ComponentProps<typeof TextField>, "name" | "error"> & { kind?: InputKind }) {
   const { state } = useFormState();
+  if (kind) {
+    // A box that asks for something specific takes only what can belong in it, however it is typed or pasted.
+    const hint = KIND_PROPS[kind];
+    return (
+      <TextField
+        name={name}
+        defaultValue={state.values?.[name] ?? defaultValue}
+        error={state.fieldErrors?.[name]?.[0]}
+        {...hint}
+        {...props}
+        onInput={(e) => {
+          const el = e.currentTarget;
+          const next = cleanInput(kind, el.value);
+          if (next !== el.value) el.value = next;
+          onInput?.(e);
+        }}
+      />
+    );
+  }
   if (props.type === "date") {
     const { type: _type, min, max, ...rest } = props;
     void _type;
@@ -167,8 +187,24 @@ export function FField({ name, defaultValue, ...props }: Shared & Omit<Component
   return <TextField name={name} defaultValue={state.values?.[name] ?? defaultValue} error={state.fieldErrors?.[name]?.[0]} {...props} />;
 }
 
-export function FTextArea({ name, defaultValue, ...props }: Shared & Omit<ComponentProps<typeof TextAreaField>, "name" | "error">) {
+export function FTextArea({ name, defaultValue, kind, onInput, ...props }: Shared & Omit<ComponentProps<typeof TextAreaField>, "name" | "error"> & { kind?: InputKind }) {
   const { state } = useFormState();
+  if (kind) {
+    return (
+      <TextAreaField
+        name={name}
+        defaultValue={state.values?.[name] ?? defaultValue}
+        error={state.fieldErrors?.[name]?.[0]}
+        {...props}
+        onInput={(e) => {
+          const el = e.currentTarget;
+          const next = cleanInput(kind, el.value);
+          if (next !== el.value) el.value = next;
+          onInput?.(e);
+        }}
+      />
+    );
+  }
   return <TextAreaField name={name} defaultValue={state.values?.[name] ?? defaultValue} error={state.fieldErrors?.[name]?.[0]} {...props} />;
 }
 

@@ -25,17 +25,22 @@ export default async function OrderReceiptPage({ params, searchParams }: { param
     throw e;
   }
   const [business, payments] = await Promise.all([getBusinessSettings(), getOrderPayments(actor, id)]);
-  const mode: DocumentMode = view === "delivery-note" ? "delivery_note" : "receipt";
+  // Only deliveries have a delivery note; a pickup has just the invoice or receipt.
+  const mode: DocumentMode = view === "delivery-note" && data.order.fulfilment === "delivery" ? "delivery_note" : "receipt";
   const base = `/print/orders/${id}`;
   const { order: o } = data;
   return (
     <ReceiptShell
       backHref={`/app/orders/${id}`}
       auto={auto === "1"}
-      links={[
-        { href: base, label: o.isPaid ? "Receipt" : "Invoice", active: mode === "receipt" },
-        { href: `${base}?view=delivery-note`, label: o.fulfilment === "delivery" ? "Delivery note" : "Collection note", active: mode === "delivery_note" },
-      ]}
+      links={
+        o.fulfilment === "delivery"
+          ? [
+              { href: base, label: o.isPaid ? "Receipt" : "Invoice", active: mode === "receipt" },
+              { href: `${base}?view=delivery-note`, label: "Delivery note", active: mode === "delivery_note" },
+            ]
+          : undefined
+      }
     >
       <OrderDocument order={o} items={data.items} payments={payments} business={business} mode={mode} />
     </ReceiptShell>

@@ -260,6 +260,27 @@
       "when": 1793634800000,
       "tag": "0036_order_refunded_status",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793721200000,
+      "tag": "0037_message_replies",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793807600000,
+      "tag": "0038_categories_no_hide",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793894000000,
+      "tag": "0039_customer_reviews",
+      "breakpoints": true
     }
   ]
 }

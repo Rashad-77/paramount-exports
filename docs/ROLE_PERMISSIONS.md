@@ -26,6 +26,7 @@ A unit test fails if this table and the code disagree, so review changes to the 
 | `messages:view` | ✓ | ✓ |
 | `messages:handle` | ✓ | ✓ |
 | `customers:view` | ✓ | ✓ |
+| `customers:delete` | ✓ | — |
 | `products:view` | ✓ | ✓ |
 | `products:write` | ✓ | ✓ |
 | `files:view_customer_private` | ✓ | ✓ |

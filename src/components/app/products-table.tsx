@@ -25,7 +25,7 @@ export interface ProductRow {
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
 /**
- * The staff product list. Press Edit to show tick boxes: tick products (or all of them), then Archive (or Restore) or Delete them.
+ * The staff product list. Press Edit to show tick boxes: tick products (or all of them), then Publish, Unpublish, Archive (or Restore) or Delete them.
  * Deleting asks first. Rows are numbered continuing across pages.
  */
 export function ProductsTable({
@@ -53,17 +53,30 @@ export function ProductsTable({
       if (result.ok) setSelected(new Set());
       return result;
     };
-  const [archiveState, archiveForm, archivePending] = useActionState(clearAfter(archiveAction), {});
-  const [deleteState, deleteForm, deletePending] = useActionState(clearAfter(deleteAction), {});
+  const [archiveState, archiveForm, archivePending] = useActionState(
+    clearAfter(archiveAction),
+    {},
+  );
+  const [deleteState, deleteForm, deletePending] = useActionState(
+    clearAfter(deleteAction),
+    {},
+  );
   const deleteRef = useRef<HTMLFormElement>(null);
   // Only rows still on the page can stay ticked.
   const onPage = new Set(rows.map((r) => r.id));
   const ticked = [...selected].filter((id) => onPage.has(id));
   const allTicked = rows.length > 0 && ticked.length === rows.length;
   // Which buttons show depends on the ticked rows themselves: published, draft or archived.
-  const kinds = new Set<string>(rows.filter((r) => selected.has(r.id)).map((r) => (r.archived ? "archived" : r.isPublished ? "published" : "draft")));
+  const kinds = new Set<string>(
+    rows
+      .filter((r) => selected.has(r.id))
+      .map((r) =>
+        r.archived ? "archived" : r.isPublished ? "published" : "draft",
+      ),
+  );
   const only = (k: string) => kinds.size === 1 && kinds.has(k);
   const idle = kinds.size === 0; // nothing ticked: every button shows, greyed out
+  const canPublish = idle || only("draft");
   const canUnpublish = idle || only("published");
   const canRestore = idle || kinds.has("archived");
   const canArchive = !only("archived");
@@ -78,7 +91,9 @@ export function ProductsTable({
     setSelected(next);
   };
 
-  const idInputs = ticked.map((id) => <input key={id} type="hidden" name="ids" value={id} />);
+  const idInputs = ticked.map((id) => (
+    <input key={id} type="hidden" name="ids" value={id} />
+  ));
 
   return (
     <>
@@ -91,36 +106,50 @@ export function ProductsTable({
           <div className="flex flex-wrap items-center gap-3">
             {editing ? (
               <>
+                {canPublish ? (
+                  <form action={archiveForm}>
+                    {idInputs}
+                    <input type="hidden" name="mode" value="publish" />
+                    <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
+                      Publish
+                    </Button>
+                  </form>
+                ) : null}
                 {canUnpublish ? (
-                <form action={archiveForm}>
-                  {idInputs}
-                  <input type="hidden" name="mode" value="unpublish" />
-                  <Button type="submit" variant="secondary" disabled={idle || busy}>
-                    Unpublish
-                  </Button>
-                </form>
+                  <form action={archiveForm}>
+                    {idInputs}
+                    <input type="hidden" name="mode" value="unpublish" />
+                    <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
+                      Unpublish
+                    </Button>
+                  </form>
                 ) : null}
                 {canRestore ? (
-                <form action={archiveForm}>
-                  {idInputs}
-                  <input type="hidden" name="mode" value="restore" />
-                  <Button type="submit" variant="secondary" disabled={idle || busy}>
-                    Restore
-                  </Button>
-                </form>
+                  <form action={archiveForm}>
+                    {idInputs}
+                    <input type="hidden" name="mode" value="restore" />
+                    <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
+                      Restore
+                    </Button>
+                  </form>
                 ) : null}
                 {canArchive ? (
-                <form action={archiveForm}>
-                  {idInputs}
-                  <input type="hidden" name="mode" value="archive" />
-                  <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
-                    Archive
-                  </Button>
-                </form>
+                  <form action={archiveForm}>
+                    {idInputs}
+                    <input type="hidden" name="mode" value="archive" />
+                    <Button type="submit" variant="secondary" disabled={ticked.length === 0 || busy}>
+                      Archive
+                    </Button>
+                  </form>
                 ) : null}
                 <form ref={deleteRef} action={deleteForm}>
                   {idInputs}
-                  <Button type="button" variant="danger" disabled={ticked.length === 0 || busy} onClick={() => setConfirmDelete(true)}>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    disabled={ticked.length === 0 || busy}
+                    onClick={() => setConfirmDelete(true)}
+                  >
                     Delete
                   </Button>
                 </form>
@@ -129,7 +158,6 @@ export function ProductsTable({
           </div>
         ) : null}
       </div>
-
 
       <TableWrap label="Products">
         <Table>
@@ -143,7 +171,13 @@ export function ProductsTable({
                       type="checkbox"
                       aria-label="Select all products on this page"
                       checked={allTicked}
-                      onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())}
+                      onChange={(e) =>
+                        setSelected(
+                          e.target.checked
+                            ? new Set(rows.map((r) => r.id))
+                            : new Set(),
+                        )
+                      }
                       className="size-4 accent-[var(--color-walnut)]"
                     />
                   ) : null}
@@ -152,11 +186,15 @@ export function ProductsTable({
               <TH className="px-2 py-1.5 text-left">Product</TH>
               <TH className="px-2 py-1.5 text-left">Category</TH>
               <TH className="px-2 py-1.5 text-left">Status</TH>
+              <TH className="px-2 py-1.5 text-left">Highlights</TH>
             </tr>
           </THead>
           <tbody>
             {rows.map((p, i) => (
-              <TR key={p.id} className={selected.has(p.id) ? "bg-linen" : undefined}>
+              <TR
+                key={p.id}
+                className={selected.has(p.id) ? "bg-linen" : undefined}
+              >
                 <TD className="tabular px-2 py-1 text-left text-text-muted">
                   <span className="flex items-center justify-between gap-3">
                     {startAt + i + 1}
@@ -172,22 +210,39 @@ export function ProductsTable({
                   </span>
                 </TD>
                 <TD className="px-2 py-1 text-left">
-                  <Link href={`/app/products/${p.id}`} className="font-medium text-walnut underline">
+                  <Link
+                    href={`/app/products/${p.id}`}
+                    className="inline-block border border-border px-2 py-0.5 text-walnut underline"
+                  >
                     {p.name}
                   </Link>
                 </TD>
                 <TD className="px-2 py-1 text-left">{p.categoryName}</TD>
                 <TD className="px-2 py-1 text-left">
-                  <div className="flex flex-wrap items-center gap-1">
-                    {p.archived ? <StatusBadge>Archived</StatusBadge> : p.isPublished ? <StatusBadge tone="success">Published</StatusBadge> : <StatusBadge tone="warning">Draft</StatusBadge>}
+                  {p.archived ? (
+                    <StatusBadge>Archived</StatusBadge>
+                  ) : p.isPublished ? (
+                    <StatusBadge tone="success">Published</StatusBadge>
+                  ) : (
+                    <StatusBadge tone="warning">Draft</StatusBadge>
+                  )}
+                </TD>
+                <TD className="px-2 py-1 text-left">
+                  <div className="flex items-center gap-1">
                     {p.isFeatured && !p.archived ? (
-                      <span data-tip="Featured" className="inline-flex size-6 items-center justify-center border border-border-strong text-text-muted">
+                      <span
+                        data-tip="Featured"
+                        className="inline-flex size-6 items-center justify-center border border-border-strong text-text-muted"
+                      >
                         <Star aria-hidden="true" className="size-3.5" />
                         <span className="sr-only">Featured</span>
                       </span>
                     ) : null}
                     {p.isPremium && !p.archived ? (
-                      <span data-tip="Premium" className="inline-flex size-6 items-center justify-center border border-border-strong text-text-muted">
+                      <span
+                        data-tip="Premium"
+                        className="inline-flex size-6 items-center justify-center border border-border-strong text-text-muted"
+                      >
                         <Crown aria-hidden="true" className="size-3.5" />
                         <span className="sr-only">Premium</span>
                       </span>

@@ -19,7 +19,9 @@ export function PrefillFromAccount() {
         const form = marker.current?.closest("form");
         if (!alive || !customer || !form) return;
         for (const name of FIELDS) {
-          const value = customer[name];
+          const raw = customer[name];
+          // A saved address keeps an empty line for each line left blank; the box should not show them.
+          const value = name === "address" && raw ? raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).join("\n") : raw;
           const el = form.elements.namedItem(name);
           if (!value || !(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || el.value) continue;
           const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;

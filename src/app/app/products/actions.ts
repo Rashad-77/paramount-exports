@@ -6,7 +6,7 @@ import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { reqUuid } from "@/lib/validation";
-import { createProduct, deleteProducts, setProductsArchived, setProductsUnpublished, updateProduct } from "@/server/catalogue";
+import { createProduct, deleteProducts, setProductsArchived, setProductsPublished, setProductsUnpublished, updateProduct } from "@/server/catalogue";
 
 const refresh = (id?: string) => {
   revalidatePath("/app/products");
@@ -54,8 +54,13 @@ export async function archiveProductsAction(
 ): Promise<ActionState> {
   return runAction(
     fd,
-    z.object({ ids: idsField, mode: z.enum(["archive", "restore", "unpublish"]) }),
+    z.object({ ids: idsField, mode: z.enum(["archive", "restore", "unpublish", "publish"]) }),
     async (input, { actor }) => {
+      if (input.mode === "publish") {
+        const n = await setProductsPublished(actor!, input.ids);
+        refresh();
+        return { message: `${n} ${n === 1 ? "product" : "products"} published on the website.` };
+      }
       if (input.mode === "unpublish") {
         const n = await setProductsUnpublished(actor!, input.ids);
         refresh();

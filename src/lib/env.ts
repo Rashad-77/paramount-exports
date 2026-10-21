@@ -20,6 +20,10 @@ const serverSchema = z.object({
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
   /** Sends the owner an email when an order or message arrives (Resend). Without it, nothing is sent. */
   RESEND_API_KEY: z.string().min(1).optional(),
+  /** Google Places API key, used to show the business's Google reviews on the website. Without it no Google reviews are shown. */
+  GOOGLE_PLACES_API_KEY: z.string().min(10).optional(),
+  /** Where the Places API lives. Only set for tests, to point at a stand-in; Google's address is used when blank. */
+  GOOGLE_PLACES_API_URL: z.string().url().optional(),
   /** The "from" address for those emails, e.g. "Paramount website <orders@yourdomain.lk>". Must be on a domain verified with Resend. */
   MAIL_FROM: z.string().min(3).optional(),
   DEMO_MODE: booleanString,

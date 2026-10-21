@@ -23,3 +23,12 @@ export function addressRows(text: string): string[] {
   const a = splitAddress(text);
   return [a.line1, a.line2, a.line3, a.city, a.postalCode].filter(Boolean);
 }
+
+/** An address for reading on screen, one line per part: street, area, city, postal code. Works on both the five-line form and a one-line "12 Temple Road, Colombo 07". */
+export function addressStacked(text: string): string {
+  return text
+    .split(/\r?\n|,\s*/)
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .join("\n");
+}

@@ -20,7 +20,7 @@ describe("navigation visibility", () => {
 
   it("shows the order screens to staff and the owner", () => {
     for (const r of ["owner", "staff"] as Role[]) {
-      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Customers", "Products", "Showroom and workshop", "Website", "Settings"]));
+      expect(labels(actor([r])), r).toEqual(expect.arrayContaining(["Dashboard", "Orders", "Quotations", "Enquiries", "Customers", "Products", "Website", "Settings"]));
     }
   });
 
@@ -31,13 +31,13 @@ describe("navigation visibility", () => {
     }
   });
 
-  it("shows user management to the owner only", () => {
-    expect(labels(actor(["owner"]))).toContain("Users");
+  it("has no Users menu: the owner is the only person signing in", () => {
+    expect(labels(actor(["owner"]))).not.toContain("Users");
     expect(labels(actor(["staff"]))).not.toContain("Users");
   });
 
   it("groups screens into modules and lists a module's other screens as tabs", () => {
-    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Gallery", "Pages"]));
+    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Pages", "Showroom and workshop"]));
     const products = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Products")!;
     expect(products.href).toBe("/app/products");
     expect(products.pages.map((x) => x.label)).toEqual(["Products"]);

@@ -2,6 +2,7 @@
 
 import { Paperclip, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
+import { useFormState } from "@/components/forms/action-form";
 import { Alert } from "@/components/ui/status";
 
 interface Item {
@@ -78,6 +79,14 @@ export function FileUploader({
   const root = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<Item[]>([]);
   const uploading = items.some((i) => i.state === "uploading");
+  const { state } = useFormState();
+
+  // Once the form has been saved the files are on the record: the list starts empty again, so they are not sent a second time.
+  const [seen, setSeen] = useState(state);
+  if (state !== seen) {
+    setSeen(state);
+    if (state.ok) setItems([]);
+  }
 
   // Tell the surrounding <form> not to submit while a transfer is running.
   const flagForm = (busy: boolean) => {

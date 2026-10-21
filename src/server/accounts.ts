@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { getDb, withTx } from "@/lib/db/client";
-import { customerAccounts, customerAddresses, customerCarts, customerWishlist, messages, orderItems, orders, products, uploadedFiles } from "@/lib/db/schema";
+import { customerAccounts, customerAddresses, customerCarts, customerWishlist, messageReplies, messages, orderItems, orders, products, uploadedFiles } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { isQuoteStatus, QUOTE_DETAIL_LABELS, quoteRef, type QuoteStatus } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
@@ -415,4 +415,13 @@ export async function accountSummary(accountId: string): Promise<{ orders: numbe
     .where(eq(orders.accountId, accountId));
   const [q] = await db.select({ n: sql<number>`count(*)::int` }).from(messages).where(and(eq(messages.accountId, accountId), eq(messages.kind, "custom")));
   return { orders: Number(o?.n ?? 0), open: Number(o?.open ?? 0), quotations: Number(q?.n ?? 0) };
+}
+
+/** One of the customer's own enquiries or requests, with the replies sent to them. Anything that is not theirs is "not found". */
+export async function getAccountMessage(accountId: string, reference: string) {
+  const db = getDb();
+  const [m] = await db.select().from(messages).where(and(eq(messages.reference, reference), eq(messages.accountId, accountId))).limit(1);
+  if (!m) throw notFound("We could not find that message on your account.");
+  const replies = await db.select({ id: messageReplies.id, body: messageReplies.body, createdAt: messageReplies.createdAt }).from(messageReplies).where(eq(messageReplies.messageId, m.id)).orderBy(asc(messageReplies.createdAt));
+  return { reference: m.reference, kind: m.kind, message: m.message, payload: m.payload as Record<string, unknown> | null, createdAt: m.createdAt, answered: m.isHandled, replies };
 }

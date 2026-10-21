@@ -88,6 +88,7 @@ export function OrdersFilter({
         showOptional={false}
         label="Search"
         type="search"
+        maxLength={80}
         value={text}
         placeholder="Order or invoice number, name, phone or email"
         onChange={(e) => {

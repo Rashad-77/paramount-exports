@@ -111,7 +111,7 @@ export default async function GalleryProjectPage({
               maxFiles={10}
             />
             <FField
-              name="altText"
+              name="altText" kind="title"
               label="Description of the photograph"
               required
               hint="Read out by screen readers."

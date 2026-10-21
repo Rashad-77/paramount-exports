@@ -4,7 +4,7 @@ import { normaliseEmail, phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx } from "@/lib/db/client";
 import { outer } from "@/lib/db/outer";
-import { auditLogs, messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
+import { auditLogs, customerAccounts, customerAddresses, messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
 import { hitRateLimit } from "@/lib/rate-limit";
@@ -403,34 +403,113 @@ export const setOrderPaid = setOrderPaidShortcut;
 /* ───────────────────────────── customers (built from orders, quotations and enquiries) ───────────────────────────── */
 
 /** Everyone who has ordered, asked for a quotation or written to the business, grouped by phone number. */
-export async function listCustomers(actor: Actor, f: { q?: string; page: number; pageSize: number }) {
+/** One thing a customer has with us: an order, a quotation request or an enquiry. `open` is true while it waits for staff (a new order, an unanswered message). */
+export interface CustomerItem {
+  id: string;
+  reference: string;
+  at: string;
+  open: boolean;
+}
+
+export const CUSTOMER_FILTERS = ["account", "guest"] as const;
+export type CustomerFilter = (typeof CUSTOMER_FILTERS)[number];
+export const CUSTOMER_SORTS = ["name", "name_desc", "newest", "oldest"] as const;
+export type CustomerSort = (typeof CUSTOMER_SORTS)[number];
+
+export async function listCustomers(actor: Actor, f: { q?: string; filter?: CustomerFilter; sort?: CustomerSort; page: number; pageSize: number }) {
   requirePermission(actor, "customers:view");
   const like = f.q ? `%${escapeLike(f.q)}%` : null;
-  const having = like ? sql`HAVING max(name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like} OR concat('CUS-', phone_key) ILIKE ${like}` : sql``;
+  const conditions: SQL[] = [];
+  if (like) conditions.push(sql`(max(name) ILIKE ${like} OR max(phone) ILIKE ${like} OR coalesce(max(email), '') ILIKE ${like} OR concat('CUS-', phone_key) ILIKE ${like})`);
+  if (f.filter === "account") conditions.push(sql`bool_or(has_account)`);
+  if (f.filter === "guest") conditions.push(sql`NOT bool_or(has_account)`);
+  const having = conditions.length ? sql`HAVING ${sql.join(conditions, sql` AND `)}` : sql``;
+  const latestName = sql`lower((array_agg(name ORDER BY created_at DESC))[1])`;
+  // "Newest" and "oldest" are by when the customer first got in touch (their earliest order or message). Names A to Z is the default.
+  const order =
+    f.sort === "newest" ? sql`min(created_at) DESC` : f.sort === "oldest" ? sql`min(created_at) ASC` : f.sort === "name_desc" ? sql`${latestName} DESC, min(created_at) DESC` : sql`${latestName} ASC, min(created_at) DESC`;
   const db = getDb();
   const source = sql`
     WITH src AS (
-      SELECT phone_key, id::text AS id, reference, customer_name AS name, phone, email, created_at, 'order' AS what FROM online_orders
+      SELECT phone_key, id::text AS id, reference, customer_name AS name, phone, email, created_at, 'order' AS what, (status = 'new') AS open, (account_id IS NOT NULL) AS has_account FROM online_orders
       UNION ALL
-      SELECT phone_key, id::text AS id, reference, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END FROM messages
+      SELECT phone_key, id::text AS id, reference, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END, NOT is_handled, (account_id IS NOT NULL) FROM messages
     )`;
+  const item = sql`json_build_object('id', id, 'reference', reference, 'at', created_at, 'open', open)`;
   const rows = (await db.execute(sql`
     ${source}
     SELECT phone_key AS "phoneKey",
            (array_agg(name ORDER BY created_at DESC))[1] AS name,
            (array_agg(phone ORDER BY created_at DESC))[1] AS phone,
            (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
-           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'order'), '[]'::json) AS "orderRefs",
-           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'quotation'), '[]'::json) AS "quotationRefs",
-           coalesce(json_agg(json_build_object('id', id, 'reference', reference) ORDER BY created_at DESC) FILTER (WHERE what = 'enquiry'), '[]'::json) AS "enquiryRefs"
+           coalesce(json_agg(${item} ORDER BY created_at DESC) FILTER (WHERE what = 'order'), '[]'::json) AS "orderRefs",
+           coalesce(json_agg(${item} ORDER BY created_at DESC) FILTER (WHERE what = 'quotation'), '[]'::json) AS "quotationRefs",
+           coalesce(json_agg(${item} ORDER BY created_at DESC) FILTER (WHERE what = 'enquiry'), '[]'::json) AS "enquiryRefs",
+           (count(*) FILTER (WHERE open))::int AS waiting,
+           bool_or(has_account) AS "hasAccount",
+           max(created_at) AS "lastAt"
       FROM src
      GROUP BY phone_key
      ${having}
-     ORDER BY max(created_at) DESC
+     ORDER BY ${order}
      LIMIT ${f.pageSize} OFFSET ${(f.page - 1) * f.pageSize}
-  `)) as unknown as { phoneKey: string; name: string; phone: string; email: string | null; orderRefs: { id: string; reference: string }[]; quotationRefs: { id: string; reference: string }[]; enquiryRefs: { id: string; reference: string }[] }[];
+  `)) as unknown as {
+    phoneKey: string;
+    name: string;
+    phone: string;
+    email: string | null;
+    orderRefs: CustomerItem[];
+    quotationRefs: CustomerItem[];
+    enquiryRefs: CustomerItem[];
+    waiting: number;
+    hasAccount: boolean;
+    lastAt: string;
+  }[];
   const [{ n }] = (await db.execute(sql`${source} SELECT count(*)::int AS n FROM (SELECT 1 FROM src GROUP BY phone_key ${having}) c`)) as unknown as [{ n: number }];
-  return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)) };
+  // How many customers each choice in the filter would show (ignoring the search words).
+  const [counts] = (await db.execute(sql`
+    ${source}
+    SELECT count(*)::int AS "all",
+           (count(*) FILTER (WHERE acct))::int AS account,
+           (count(*) FILTER (WHERE NOT acct))::int AS guest
+      FROM (SELECT bool_or(has_account) AS acct FROM src GROUP BY phone_key) c
+  `)) as unknown as [{ all: number; account: number; guest: number }];
+  return { rows, total: n, pageCount: Math.max(1, Math.ceil(n / f.pageSize)), counts };
+}
+
+/**
+ * Permanently deletes customers: every order, quotation request and enquiry they made (with the order items, payments and replies
+ * that belong to them) and their website account with its saved addresses, wishlist and basket. Owner only. Customers are told apart by
+ * the phone number key, as in the list. Returns what was removed.
+ */
+export async function deleteCustomers(actor: Actor, keys: string[]): Promise<{ customers: number; orders: number; messages: number; accounts: number }> {
+  requirePermission(actor, "customers:delete");
+  const unique = [...new Set(keys)];
+  const done = { customers: 0, orders: 0, messages: 0, accounts: 0 };
+  if (unique.length === 0) return done;
+  await withTx(async (tx) => {
+    for (const key of unique) {
+      const theirOrders = await tx.select({ id: orders.id, reference: orders.reference, name: orders.customerName, accountId: orders.accountId }).from(orders).where(eq(orders.phoneKey, key)).for("update");
+      const theirMessages = await tx.select({ id: messages.id, name: messages.name, accountId: messages.accountId }).from(messages).where(eq(messages.phoneKey, key)).for("update");
+      if (theirOrders.length === 0 && theirMessages.length === 0) continue;
+      const accountIds = [...new Set([...theirOrders.map((o) => o.accountId), ...theirMessages.map((m) => m.accountId)].filter((a): a is string => a !== null))];
+      const name = theirOrders[0]?.name ?? theirMessages[0]?.name ?? key;
+      if (theirMessages.length) await tx.delete(messages).where(inArray(messages.id, theirMessages.map((m) => m.id)));
+      if (theirOrders.length) await tx.delete(orders).where(inArray(orders.id, theirOrders.map((o) => o.id)));
+      if (accountIds.length) await tx.delete(customerAccounts).where(inArray(customerAccounts.id, accountIds));
+      await recordAudit(tx, actor, {
+        action: "customer.deleted",
+        entityType: "customer",
+        entityId: key,
+        before: { name, orders: theirOrders.map((o) => o.reference), messages: theirMessages.length, accounts: accountIds.length },
+      });
+      done.customers++;
+      done.orders += theirOrders.length;
+      done.messages += theirMessages.length;
+      done.accounts += accountIds.length;
+    }
+  });
+  return done;
 }
 
 export async function getCustomer(actor: Actor, key: string) {
@@ -445,6 +524,11 @@ export async function getCustomer(actor: Actor, key: string) {
       .orderBy(desc(messages.createdAt)),
   ]);
   if (list.length === 0 && notes.length === 0) throw notFound("That customer could not be found.");
+  // Addresses the customer saved on their website account, and those used on their orders.
+  const accountIds = [...new Set([...list.map((o) => o.accountId), ...notes.map((m) => m.accountId)].filter((a): a is string => a !== null))];
+  const saved = accountIds.length
+    ? await db.select({ label: customerAddresses.label, address: customerAddresses.address, isDefault: customerAddresses.isDefault }).from(customerAddresses).where(inArray(customerAddresses.accountId, accountIds)).orderBy(desc(customerAddresses.isDefault), asc(customerAddresses.createdAt))
+    : [];
   const latest = list[0];
   const contact = latest ?? notes[0]!;
   const spent = sum(list.filter((o) => o.status !== "cancelled").map((o) => o.total));
@@ -455,6 +539,7 @@ export async function getCustomer(actor: Actor, key: string) {
     email: list.find((o) => o.email)?.email ?? notes.find((m) => m.email)?.email ?? null,
     hasAccount: list.some((o) => o.accountId !== null) || notes.some((m) => m.accountId !== null),
     addresses: [...new Set(list.map((o) => o.address).filter((a): a is string => Boolean(a)))].slice(0, 3),
+    savedAddresses: saved,
     currency: latest?.currency ?? "LKR",
     spent: moneyString(spent),
     orders: list,
@@ -474,7 +559,8 @@ export async function getDashboard(actor: Actor) {
     db
       .select({ id: orders.id, reference: orders.reference, status: orders.status, fulfilment: orders.fulfilment, customerName: orders.customerName, total: orders.total, currency: orders.currency, createdAt: orders.createdAt, isPaid: orders.isPaid })
       .from(orders)
-      .orderBy(desc(orders.createdAt))
+      // New orders first, then the rest, each group newest first.
+      .orderBy(sql`(${orders.status} = 'new') DESC`, desc(orders.createdAt))
       .limit(6),
     db
       .select({
@@ -498,17 +584,17 @@ export async function getDashboard(actor: Actor) {
       .orderBy(sql`${orders.scheduledFor} ASC NULLS LAST`, orders.createdAt)
       .limit(5),
     db
-      .select({ id: messages.id, reference: messages.reference, name: messages.name, quoteStatus: messages.quoteStatus, payload: messages.payload, createdAt: messages.createdAt })
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, isHandled: messages.isHandled, payload: messages.payload, createdAt: messages.createdAt })
       .from(messages)
       .where(eq(messages.kind, "custom"))
-      .orderBy(desc(messages.createdAt))
+      .orderBy(asc(messages.isHandled), desc(messages.createdAt))
       .limit(4),
-    db.select({ n: count() }).from(messages).where(and(eq(messages.kind, "custom"), inArray(messages.quoteStatus, ["requested", "under_review"]))),
+    db.select({ n: count() }).from(messages).where(and(eq(messages.kind, "custom"), eq(messages.isHandled, false))),
     db
       .select({ id: messages.id, reference: messages.reference, name: messages.name, message: messages.message, isHandled: messages.isHandled, inProgress: messages.inProgress, createdAt: messages.createdAt })
       .from(messages)
       .where(sql`${messages.kind} <> 'custom'`)
-      .orderBy(desc(messages.createdAt))
+      .orderBy(asc(messages.isHandled), desc(messages.createdAt))
       .limit(4),
     db.select({ n: count() }).from(messages).where(and(sql`${messages.kind} <> 'custom'`, eq(messages.isHandled, false))),
   ]);

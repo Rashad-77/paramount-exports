@@ -3,11 +3,12 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { previousPage } from "@/components/nav-trail";
 
 /**
- * A quiet "Back" link: an arrow and one word. It always leads somewhere sensible (`href`), and with `history` it instead steps back
- * to the page the visitor came from on this site (so a search or a filter on the collection is still there), falling back to `href`
- * when they arrived from elsewhere. `to` names the destination for screen readers. Use tone "dark" on light pages.
+ * A quiet "Back" link: an arrow and one word. With `history` it leads back to the page the visitor came from in this tab (a list with its
+ * search and filters, a customer's page, a product's page), and only when there is no such page does it go to `href`, which always leads
+ * somewhere sensible. `to` names the fallback for screen readers. Use tone "dark" on light pages.
  */
 export function BackLink({ href, to, history = false, tone = "light", className }: { href: string; to: string; history?: boolean; tone?: "light" | "dark"; className?: string }) {
   const router = useRouter();
@@ -18,13 +19,10 @@ export function BackLink({ href, to, history = false, tone = "light", className 
       className={"back-link" + (className ? " " + className : "")}
       onClick={(e) => {
         if (!history) return;
-        try {
-          if (document.referrer && new URL(document.referrer).origin === window.location.origin && window.history.length > 1) {
-            e.preventDefault();
-            router.back();
-          }
-        } catch {
-          // Fall through to the link itself.
+        const prev = previousPage();
+        if (prev) {
+          e.preventDefault();
+          router.push(prev);
         }
       }}
     >
@@ -36,7 +34,7 @@ export function BackLink({ href, to, history = false, tone = "light", className 
 }
 
 /** The back link as it sits on a dark banner: pinned at the top left, just under the header. */
-export function BackBar({ href, to, history }: { href: string; to: string; history?: boolean }) {
+export function BackBar({ href, to, history = true }: { href: string; to: string; history?: boolean }) {
   return (
     <div className="back-bar container-page">
       <BackLink href={href} to={to} history={history} />

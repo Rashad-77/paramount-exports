@@ -11,7 +11,7 @@ import {
   createCategoryWithSubs,
   reorderMainCategories,
   deleteCategories,
-  setCategoriesArchived, setCategoriesHidden,
+  setCategoriesArchived,
   updateCategory,
 } from "@/server/catalogue";
 
@@ -74,13 +74,8 @@ export async function archiveCategoriesAction(
 ): Promise<ActionState> {
   return runAction(
     fd,
-    z.object({ ids: idsField, mode: z.enum(["archive", "restore", "hide"]) }),
+    z.object({ ids: idsField, mode: z.enum(["archive", "restore"]) }),
     async (input, { actor }) => {
-      if (input.mode === "hide") {
-        const r = await setCategoriesHidden(actor!, input.ids);
-        refresh();
-        return { message: `${what(r.changed, r.subs)} hidden from the website.` };
-      }
       const archive = input.mode === "archive";
       const r = await setCategoriesArchived(actor!, input.ids, archive);
       refresh();

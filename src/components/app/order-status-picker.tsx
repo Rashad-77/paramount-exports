@@ -94,7 +94,6 @@ function Picker({
         open={open}
         onClose={() => setOpen(false)}
         title={`Change status for order ${reference}`}
-        description="Choose the order status, then confirm the change."
       >
         <div className="flex w-full flex-col gap-2" role="group" aria-label="Order statuses">
           {STATUS_OPTIONS.map((option) => (

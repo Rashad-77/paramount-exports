@@ -1,59 +1,56 @@
-import { QuoteTag, EnquiryTag } from "@/components/app/tags";
+import { addressStacked } from "@/lib/address-lines";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import {
-  ActionForm,
-  FField,
-  FSelect,
-  FTextArea,
-  SubmitButton,
-} from "@/components/forms/action-form";
-import { PageHeader, Panel } from "@/components/ui/page-header";
+import { plainPhone } from "@/lib/contact";
+import type { ReactNode } from "react";
+import { FlowPanel } from "@/components/app/flow-panel";
+import { ReplyForm } from "@/components/app/reply-form";
+import { EnquiryTag } from "@/components/app/tags";
+import { ActionForm, SubmitButton } from "@/components/forms/action-form";
+import { PageHeader } from "@/components/ui/page-header";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import {
+  CONTACT_CHOICE_LABEL,
+  PIECE_FIELDS,
+  STAFF_CONTACT_LABELS,
+  STAFF_CUSTOM_MESSAGE_LABEL,
+  STAFF_MESSAGE_LABEL,
+  STAFF_PHOTOS_LABEL,
+  STAFF_PIECE_HEADING,
+  STAFF_PIECE_LABELS,
+} from "@/lib/enquiry-form-labels";
 import { isAppError } from "@/lib/errors";
 import { MESSAGE_KIND_LABEL } from "@/lib/order-ui";
+import { quoteRef } from "@/lib/quotation-ui";
+import { enquiryNextStep, enquirySteps } from "@/lib/enquiry-flow";
 import { getBusinessSettings } from "@/lib/settings";
-import { formatDateTime } from "@/lib/time";
-import { getMessage } from "@/server/messages";
-import { formatMoney } from "@/lib/money";
-import { FULFILMENT_LABEL, PAYMENT_LABEL } from "@/lib/order-constants";
-import { isQuoteStatus, quoteRef } from "@/lib/quotation-ui";
-import { ButtonLink } from "@/components/ui/button";
-import {
-  closeQuotationAction,
-  createOrderFromQuotationAction,
-  sendQuoteAction,
-  setEnquiryStateAction,
-  setHandledAction,
-  startReviewAction,
-} from "../actions";
-
-const STAFF_QUOTE_LABEL: Record<string, string> = {
-  requested: "Waiting for a price",
-  under_review: "Being reviewed, waiting for a price",
-  quoted: "Price sent, waiting for the customer",
-  accepted: "Accepted by the customer",
-  declined: "Declined by the customer",
-  cancelled: "Closed",
-};
+import { formatDate, formatDateTime } from "@/lib/time";
+import { getMessage, listReplies, replyRoute } from "@/server/messages";
+import { setEnquiryStateAction } from "../actions";
 
 export const metadata = { title: "Message" };
 
-const CUSTOM_LABELS: Record<string, string> = {
-  furnitureType: "What they want made",
-  dimensions: "Dimensions",
-  material: "Wood or material",
-  finish: "Finish",
-  budgetRange: "Budget",
-  targetDate: "Wanted by",
-};
+/** One answer on the form: its question above, the customer's answer below ("Not given" when left blank). */
+function Field({ label, children, wide }: { label: string; children?: ReactNode; wide?: boolean }) {
+  return (
+    <div className={wide ? "sm:col-span-2" : undefined}>
+      <dt className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-text-muted">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-line text-sm">{children ?? <span className="text-text-muted">Not given</span>}</dd>
+    </div>
+  );
+}
 
-export default async function MessagePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+/** A group of answers under a small heading. */
+function Group({ title, children, last }: { title: string; children: ReactNode; last?: boolean }) {
+  return (
+    <fieldset className={"min-w-0 pb-6 " + (last ? "" : "mb-6 border-b border-border")}>
+      <legend className="mb-3 font-display text-base text-walnut">{title}</legend>
+      <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">{children}</dl>
+    </fieldset>
+  );
+}
+
+export default async function MessagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const actor = await requireActor();
   let data;
@@ -64,303 +61,129 @@ export default async function MessagePage({
     throw e;
   }
   const business = await getBusinessSettings();
-  const { message: m, product, files, order, accountAddress } = data;
-  const quote = isQuoteStatus(m.quoteStatus) ? m.quoteStatus : null;
-  const canQuote = can(actor, "messages:handle");
-  const details =
-    m.payload && typeof m.payload === "object"
-      ? Object.entries(m.payload as Record<string, unknown>).filter(
-          ([, v]) => v,
-        )
-      : [];
+  const tz = business.timezone;
+  const { message: m, product, files, accountAddress } = data;
+  const custom = m.kind === "custom";
+  // A quotation request is answered by contacting the customer, so only ordinary enquiries have replies sent from here.
+  const replies = custom ? [] : await listReplies(actor, id);
+  const route = await replyRoute(m);
+  const canHandle = can(actor, "messages:handle");
+  const piece = (m.payload && typeof m.payload === "object" ? m.payload : {}) as Record<string, unknown>;
+  const word = custom ? "request" : "enquiry";
+
+  const respondedButton = canHandle ? (
+    <ActionForm action={setEnquiryStateAction} className="space-y-0">
+      <input type="hidden" name="id" value={m.id} />
+      <input type="hidden" name="state" value={m.isHandled ? "new" : "responded"} />
+      <SubmitButton variant={m.isHandled ? "secondary" : "primary"}>{m.isHandled ? "Move back to new" : "Mark as responded"}</SubmitButton>
+    </ActionForm>
+  ) : null;
 
   return (
     <>
-      <PageHeader back={{ href: "/app/messages", to: "messages" }}
-        title={m.kind === "custom" ? quoteRef(m.reference) : m.reference}
-        description={`${MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · received ${formatDateTime(m.createdAt, business.timezone)}`}
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            {m.kind === "custom" && quote ? (
-              <QuoteTag status={quote} />
-            ) : m.isHandled ? (
-              <EnquiryTag state="responded" />
-            ) : (
-              <EnquiryTag state="new" />
-            )}
-            <ButtonLink
-              href={m.kind === "custom" ? "/app/quotations" : "/app/enquiries"}
-              variant="secondary"
-            >
-              {m.kind === "custom" ? "All quotations" : "All enquiries"}
-            </ButtonLink>
-          </div>
-        }
+      <PageHeader
+        back={{ href: custom ? "/app/quotations" : "/app/enquiries", to: custom ? "quotations" : "enquiries" }}
+        title={custom ? quoteRef(m.reference) : m.reference}
+        description={`${MESSAGE_KIND_LABEL[m.kind] ?? m.kind} · received ${formatDateTime(m.createdAt, tz)}`}
+        badges={<EnquiryTag state={m.isHandled ? "responded" : "new"} />}
+        actions={respondedButton}
       />
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <div className="min-w-0 space-y-6">
-          <Panel title="Message">
-            <p className="whitespace-pre-line text-base">
-              {m.message ?? "No message was written."}
-            </p>
-            {product ? (
-              <p className="mt-4 text-sm text-text-muted">
-                About the product:{" "}
-                <span className="font-medium text-text">{product.name}</span>
-              </p>
-            ) : null}
-          </Panel>
-          {details.length > 0 ? (
-            <Panel title="Custom furniture details">
-              <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                {details.map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="text-text-muted">{CUSTOM_LABELS[k] ?? k}</dt>
-                    <dd className="font-medium">{String(v)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Panel>
+
+      <FlowPanel
+        label={`How this ${word} works`}
+        steps={enquirySteps({ createdAt: m.createdAt, handledAt: m.handledAt, isHandled: m.isHandled }, custom ? "Request received" : "Enquiry received")}
+        note={custom ? (m.isHandled ? "This request has been answered. Nothing more to do." : "Contact the customer by phone or email to discuss the request, then press “Mark as responded”.") : enquiryNextStep(m.isHandled)}
+        timezone={tz}
+      />
+
+      <div className="space-y-6">
+        <section className="min-w-0 border border-border bg-surface p-5">
+          <h3 className="mb-5 text-sm font-semibold text-walnut">{custom ? "Customer request" : "Customer enquiry"}</h3>
+
+          <Group title="Contact">
+            <Field label={STAFF_CONTACT_LABELS.name}>{m.name}</Field>
+            <Field label={STAFF_CONTACT_LABELS.phone}>
+              <a className="underline" href={`tel:${m.phone.replace(/\s+/g, "")}`}>
+                {plainPhone(m.phone)}
+              </a>
+            </Field>
+            <Field label={STAFF_CONTACT_LABELS.email}>{m.email ? <a className="break-all underline" href={`mailto:${m.email}`}>{m.email}</a> : null}</Field>
+            <Field label={STAFF_CONTACT_LABELS.preferredContact}>{m.preferredContact ? (CONTACT_CHOICE_LABEL[m.preferredContact] ?? m.preferredContact) : "No preference"}</Field>
+            {accountAddress ? <Field label="Address saved on their account">{addressStacked(accountAddress)}</Field> : null}
+          </Group>
+
+          {custom ? (
+            <Group title={STAFF_PIECE_HEADING}>
+              {PIECE_FIELDS.map((f) => {
+                const raw = piece[f.key];
+                return (
+                  <Field key={f.key} label={STAFF_PIECE_LABELS[f.key]}>
+                    {raw ? (f.key === "targetDate" ? formatDate(String(raw), "UTC") : String(raw)) : null}
+                  </Field>
+                );
+              })}
+              <Field label={STAFF_PHOTOS_LABEL} wide>
+                {files.length > 0 ? (
+                  <ul className="space-y-1">
+                    {files.map((f) => (
+                      <li key={f.id}>
+                        <a className="underline" href={`/api/files/${f.id}`} target="_blank" rel="noopener noreferrer">
+                          {f.name}
+                          <span className="sr-only"> (opens in a new tab)</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </Field>
+            </Group>
+          ) : product ? (
+            <Group title="Product">
+              <Field label="Enquiry about" wide>
+                {product.name}
+              </Field>
+            </Group>
           ) : null}
-          {m.kind === "custom" && quote ? (
-            <Panel title="Quotation" description={STAFF_QUOTE_LABEL[quote]}>
-              {m.quotedAmount ? (
-                <p className="mb-5 text-sm">
-                  Price sent:{" "}
-                  <span className="font-semibold">
-                    {formatMoney(m.quotedAmount, business.currency)}
-                  </span>
-                  {m.quoteValidUntil ? (
-                    <span className="text-text-muted">
-                      {" "}
-                      · valid until {m.quoteValidUntil}
-                    </span>
-                  ) : null}
-                  {m.quoteNote ? (
-                    <span className="mt-1 block whitespace-pre-line text-text-muted">
-                      {m.quoteNote}
-                    </span>
-                  ) : null}
-                </p>
-              ) : null}
-              {quote === "declined" && m.declineReason ? (
-                <p className="mb-5 text-sm text-text-muted">
-                  Their reason: {m.declineReason}
-                </p>
-              ) : null}
 
-              {canQuote &&
-              (quote === "requested" ||
-                quote === "under_review" ||
-                quote === "quoted" ||
-                quote === "declined") ? (
-                <ActionForm action={sendQuoteAction}>
-                  <input type="hidden" name="id" value={m.id} />
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <FField
-                      name="amount"
-                      label={`Price (${business.currency})`}
-                      inputMode="decimal"
-                      placeholder="e.g. 185000"
-                      required
-                      defaultValue={m.quotedAmount ?? ""}
-                    />
-                    <FField
-                      name="validUntil"
-                      label="Price valid until"
-                      type="date"
-                      defaultValue={m.quoteValidUntil ?? ""}
-                    />
-                  </div>
-                  <FTextArea
-                    name="note"
-                    label="Note to the customer"
-                    rows={3}
-                    maxLength={1500}
-                    defaultValue={m.quoteNote ?? ""}
-                    hint="What the price includes, how long it will take, and so on."
-                  />
-                  <SubmitButton pendingLabel="Sending…">
-                    {quote === "requested" || quote === "under_review"
-                      ? "Send price to customer"
-                      : "Send a new price"}
-                  </SubmitButton>
-                </ActionForm>
-              ) : null}
+          <Group title={custom ? STAFF_CUSTOM_MESSAGE_LABEL : STAFF_MESSAGE_LABEL} last>
+            <p className="col-span-full whitespace-pre-line border border-border bg-linen px-4 py-3 text-base">{m.message ?? <span className="text-text-muted">Not given</span>}</p>
+          </Group>
+        </section>
 
-              {canQuote && quote === "accepted" && !order ? (
-                <ActionForm action={createOrderFromQuotationAction}>
-                  <input type="hidden" name="id" value={m.id} />
-                  <p className="text-sm text-text-muted">
-                    The customer accepted this price. Confirm the order with
-                    them, then make it here.
-                  </p>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <FSelect
-                      name="fulfilment"
-                      label="Delivery or collection"
-                      defaultValue="delivery"
-                      options={Object.entries(FULFILMENT_LABEL).map(
-                        ([value, label]) => ({ value, label }),
-                      )}
-                      required
-                    />
-                    <FSelect
-                      name="paymentMethod"
-                      label="Payment"
-                      defaultValue="on_delivery"
-                      options={Object.entries(PAYMENT_LABEL).map(
-                        ([value, label]) => ({ value, label }),
-                      )}
-                      required
-                    />
-                  </div>
-                  <FTextArea
-                    name="address"
-                    label="Delivery address"
-                    rows={3}
-                    maxLength={400}
-                    defaultValue={accountAddress ?? ""}
-                    hint="Leave blank for collection."
-                  />
-                  <SubmitButton pendingLabel="Making the order…">
-                    Create confirmed order
-                  </SubmitButton>
-                </ActionForm>
-              ) : null}
-
-              {order ? (
-                <p className="text-sm">
-                  Order made from this quotation:{" "}
-                  <Link
-                    href={`/app/orders/${order.id}`}
-                    className="font-medium underline"
-                  >
-                    {order.reference}
-                  </Link>
-                </p>
-              ) : null}
-
-              {canQuote &&
-              (quote === "requested" ||
-                quote === "under_review" ||
-                quote === "quoted") ? (
-                <ActionForm
-                  action={closeQuotationAction}
-                  className="mt-6 border-t border-border pt-5"
-                >
-                  <input type="hidden" name="id" value={m.id} />
-                  <FField
-                    name="reason"
-                    label="Reason for closing (shown to the customer)"
-                    maxLength={500}
-                  />
-                  <SubmitButton variant="secondary" pendingLabel="Closing…">
-                    Close this quotation
-                  </SubmitButton>
-                </ActionForm>
-              ) : null}
-            </Panel>
-          ) : null}
-          {files.length > 0 ? (
-            <Panel title="Pictures">
-              <ul className="space-y-1.5 text-sm">
-                {files.map((f) => (
-                  <li key={f.id}>
-                    <a
-                      className="underline"
-                      href={`/api/files/${f.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {f.name}
-                      <span className="sr-only"> (opens in a new tab)</span>
-                    </a>
+        {!custom ? (
+          <section id="reply" className="min-w-0 scroll-mt-24 border border-border bg-surface p-5">
+            <h3 className="mb-4 text-sm font-semibold text-walnut">Replies</h3>
+            {replies.length > 0 ? (
+              <ul className="mb-5 space-y-3">
+                {replies.map((r) => (
+                  <li key={r.id} className="border border-border px-4 py-3 text-sm">
+                    <p className="whitespace-pre-line">{r.body}</p>
+                    <p className="mt-2 text-[0.8125rem] text-text-muted">
+                      {r.by ?? "Staff"} · {formatDateTime(r.createdAt, tz)}
+                      {r.emailedTo ? ` · emailed to ${r.emailedTo}` : ""}
+                      {r.onAccount ? " · shown on their account" : ""}
+                    </p>
                   </li>
                 ))}
               </ul>
-            </Panel>
-          ) : null}
-        </div>
-
-        <div className="min-w-0 space-y-6">
-          <Panel title="Reply to">
-            <p className="font-medium">{m.name}</p>
-            <p className="mt-1 text-sm">
-              <a
-                className="underline"
-                href={`tel:${m.phone.replace(/\s+/g, "")}`}
-              >
-                {m.phone}
-              </a>
-            </p>
-            {m.email ? (
-              <p className="text-sm">
-                <a className="underline" href={`mailto:${m.email}`}>
-                  {m.email}
-                </a>
-              </p>
+            ) : (
+              <p className="mb-5 text-sm text-text-muted">No reply has been sent from here yet.</p>
+            )}
+            {canHandle ? (
+              route.email || route.accountId ? (
+                <ReplyForm messageId={m.id} to={`It will be ${[route.email ? `emailed to ${route.email}` : "", route.accountId ? "shown on their account" : ""].filter(Boolean).join(" and ")}, and this enquiry will be marked as responded.`} />
+              ) : (
+                <p className="border border-border bg-linen px-3 py-2 text-sm">
+                  {m.name} left no email and has no account, so a reply cannot be sent from here. Call them on{" "}
+                  <a className="underline" href={`tel:${m.phone.replace(/\s+/g, "")}`}>
+                    {plainPhone(m.phone)}
+                  </a>
+                  .
+                </p>
+              )
             ) : null}
-            {m.preferredContact ? (
-              <p className="mt-3 text-sm text-text-muted">
-                Prefers: {m.preferredContact}
-              </p>
-            ) : null}
-          </Panel>
-          {can(actor, "messages:handle") &&
-          m.kind === "custom" &&
-          quote === "requested" ? (
-            <Panel
-              title="Start on this request"
-              description="Move it to under review while you work out the price."
-            >
-              <ActionForm action={startReviewAction} className="space-y-0">
-                <input type="hidden" name="id" value={m.id} />
-                <SubmitButton>Start review</SubmitButton>
-              </ActionForm>
-            </Panel>
-          ) : null}
-          {can(actor, "messages:handle") && m.kind !== "custom" ? (
-            <Panel
-              title="Where this enquiry stands"
-              description="Keep it up to date so the team can see what still needs an answer."
-            >
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    ["new", "New", !m.isHandled],
-                    ["responded", "Responded", m.isHandled],
-                  ] as const
-                ).map(([state, label, current]) => (
-                  <ActionForm
-                    key={state}
-                    action={setEnquiryStateAction}
-                    className="space-y-0"
-                  >
-                    <input type="hidden" name="id" value={m.id} />
-                    <input type="hidden" name="state" value={state} />
-                    <SubmitButton variant={current ? "primary" : "secondary"}>
-                      {label}
-                    </SubmitButton>
-                  </ActionForm>
-                ))}
-              </div>
-            </Panel>
-          ) : null}
-          {can(actor, "messages:handle") && m.kind === "custom" ? (
-            <Panel title={m.isHandled ? "Handled" : "When you have replied"}>
-              <ActionForm action={setHandledAction} className="space-y-0">
-                <input type="hidden" name="id" value={m.id} />
-                {m.isHandled ? null : (
-                  <input type="hidden" name="handled" value="true" />
-                )}
-                <SubmitButton variant={m.isHandled ? "secondary" : "primary"}>
-                  {m.isHandled ? "Move back to open" : "Mark as handled"}
-                </SubmitButton>
-              </ActionForm>
-            </Panel>
-          ) : null}
-        </div>
+          </section>
+        ) : null}
       </div>
     </>
   );

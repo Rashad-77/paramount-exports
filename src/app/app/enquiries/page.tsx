@@ -1,4 +1,5 @@
 import { EnquiryTag } from "@/components/app/tags";
+import { plainPhone } from "@/lib/contact";
 import Link from "next/link";
 import { ListFilters } from "@/components/app/list-filters";
 import { ModuleHeader } from "@/components/ui/page-header";
@@ -100,7 +101,7 @@ export default async function EnquiriesPage({
                       </TD>
                       <TD className="text-center">
                         <div className="font-medium">{r.name}</div>
-                        <div className="text-text-muted">{r.phone}</div>
+                        <div className="text-text-muted">{plainPhone(r.phone)}</div>
                       </TD>
                       <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
                         <div className="relative flex flex-col items-center">

@@ -46,6 +46,7 @@ export const PERMISSIONS = {
 
   // Customers (built from their orders)
   "customers:view": BOTH,
+  "customers:delete": OWNER,
 
   // Catalogue
   "products:view": BOTH,

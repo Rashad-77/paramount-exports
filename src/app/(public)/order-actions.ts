@@ -48,7 +48,7 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
 
       try {
 
-        placed = await placeOrder(input, { ip, accountId: customer?.id ?? null });
+        placed = await placeOrder(customer ? { ...input, name: customer.fullName, email: customer.email ?? input.email, phone: customer.phone ?? input.phone } : input, { ip, accountId: customer?.id ?? null });
 
       } catch (e) {
 

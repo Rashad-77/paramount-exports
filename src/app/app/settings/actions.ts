@@ -4,11 +4,10 @@ import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import {
-  accountsFormSchema,
   businessFormSchema,
   pagesFormSchema,
 } from "@/lib/schemas/settings";
-import { updateAccounts, updateBusiness, updatePages } from "@/server/settings";
+import { updateBusiness, updatePages } from "@/server/settings";
 
 const refresh = () => {
   revalidatePath("/", "layout");
@@ -35,19 +34,10 @@ export async function updatePagesAction(
   fd: FormData,
 ): Promise<ActionState> {
   return runAction(fd, pagesFormSchema, async (input, { actor }) => {
-    await updatePages(actor!, input);
+    // The business history section and the typed-in reviews were removed from the form; their stored text is cleared with every save.
+    await updatePages(actor!, { ...input, history: null, historyIntro: null, testimonials: null });
     refresh();
     return { message: "Website page text saved." };
   });
 }
 
-export async function updateAccountsAction(
-  _p: ActionState,
-  fd: FormData,
-): Promise<ActionState> {
-  return runAction(fd, accountsFormSchema, async (input, { actor }) => {
-    await updateAccounts(actor!, input);
-    revalidatePath("/", "layout");
-    return { message: "Customer account settings saved." };
-  });
-}

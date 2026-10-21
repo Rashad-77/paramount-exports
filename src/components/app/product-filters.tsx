@@ -52,6 +52,7 @@ export function ProductFilters({
         showOptional={false}
         label="Search"
         type="search"
+        maxLength={80}
         value={text}
         placeholder="Product name"
         onChange={(e) => {

@@ -821,12 +821,6 @@ html:has(.app-ui) {
   min-width: 0;
 }
 
-/* A thin line between the groups of the menu */
-.app-nav-group + .app-nav-group {
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border);
-}
-
 /* Filter rows in the staff area: the search box, the drop-downs and the button are exactly the same height, so their tops, bottoms and labels line up. */
 .app-ui .app-filter :is(input:not([type="hidden"], [type="checkbox"], [type="radio"]), .gs-field .gs-button, button[type="submit"], button[data-filter-trigger]) {
   box-sizing: border-box;

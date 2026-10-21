@@ -4,7 +4,6 @@ import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { siteSettings } from "@/lib/db/schema";
 import { validation } from "@/lib/errors";
-import { customerAuthMode } from "@/lib/auth/customer";
 import { DEFAULT_ACCOUNTS, DEFAULT_BUSINESS, DEFAULT_PAGES, accountsSchema, businessSchema, pagesSchema, type AccountSettings, type BusinessSettings, type PageContent } from "@/lib/settings";
 import { recordAudit } from "./audit";
 
@@ -61,16 +60,3 @@ export async function updatePages(actor: Actor, input: PageContent): Promise<voi
   });
 }
 
-/** Customer account options. They cannot be switched on until a sign-in service is connected, so the site never offers a sign-in that cannot work. */
-export async function updateAccounts(actor: Actor, input: AccountSettings): Promise<void> {
-  requirePermission(actor, "settings:manage");
-  const next = accountsSchema.parse(input);
-  if (next.enabled && customerAuthMode() === "off") {
-    throw validation("Customer accounts need a sign-in service (Supabase) to be connected first. Nothing was changed.", { enabled: ["Connect the sign-in service first."] });
-  }
-  await withTx(async (tx) => {
-    const before = await readRow(tx, "accounts");
-    await writeRow(tx, "accounts", next, actor.id);
-    await recordAudit(tx, actor, { action: "settings.accounts_updated", entityType: "site_settings", entityId: "accounts", before, after: next });
-  });
-}

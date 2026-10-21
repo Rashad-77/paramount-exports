@@ -169,3 +169,20 @@ export const orderPayments = pgTable(
   },
   (t) => [index("online_order_payments_order_idx").on(t.orderId, t.createdAt)],
 );
+
+/** Replies staff send to a customer from the enquiry or quotation page: who sent it, and how it reached the customer (email, their account, or both). */
+export const messageReplies = pgTable(
+  "message_replies",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    messageId: uuid("message_id")
+      .notNull()
+      .references(() => messages.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    sentBy: uuid("sent_by").references(() => profiles.id, { onDelete: "set null" }),
+    emailedTo: text("emailed_to"),
+    onAccount: boolean("on_account").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("message_replies_message_idx").on(t.messageId, t.createdAt)],
+);

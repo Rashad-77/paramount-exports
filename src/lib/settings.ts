@@ -28,6 +28,10 @@ export const businessSchema = z.object({
   tiktok: z.string().url().nullable(),
   /** Link to the business Facebook page. */
   facebook: z.string().url().nullable(),
+  /** The business's Google Place ID: finds its Google reviews and builds the "Review us on Google" link. */
+  googlePlaceId: z.string().trim().regex(/^[A-Za-z0-9_-]{10,200}$/).nullable(),
+  /** A review link copied from Google Business Profile, used when there is no Place ID. */
+  googleReviewUrl: z.string().url().nullable(),
   openingHours: z.string().trim().max(600).nullable(),
   /** Shown to customers who choose to pay by bank transfer: account name, number, bank. */
   bankDetails: z.string().trim().max(600).nullable(),
@@ -57,6 +61,8 @@ export const DEFAULT_BUSINESS: BusinessSettings = {
   notifyEmail: null,
   tiktok: "https://www.tiktok.com/@paramountexportindustrie",
   facebook: "https://facebook.com/paramount.export",
+  googlePlaceId: null,
+  googleReviewUrl: null,
   openingHours: "Monday to Saturday: 8:00 am – 5:00 pm\nSunday: Closed",
   bankDetails: null,
   currency: "LKR", // assumption — to be confirmed with the owner
@@ -96,7 +102,7 @@ export const pagesSchema = z.object({
   about: z.string().max(8000).nullable(),
   privacy: z.string().max(12000).nullable(),
   terms: z.string().max(12000).nullable(),
-  /** Customer reviews for the homepage, as plain text; see parseTestimonials. */
+  /** No longer used: the homepage shows Google reviews only. Kept so saved settings still load; always saved empty. */
   testimonials: z.string().max(6000).nullable(),
   /** The business history for the About page, as plain text; see parseHistory. */
   history: z.string().max(6000).nullable(),
@@ -136,7 +142,7 @@ export const accountsSchema = z.object({
   saveCart: z.boolean(),
 });
 export type AccountSettings = z.infer<typeof accountsSchema>;
-export const DEFAULT_ACCOUNTS: AccountSettings = { enabled: false, allowSignUp: true, requiredForCheckout: false, saveCart: true };
+export const DEFAULT_ACCOUNTS: AccountSettings = { enabled: true, allowSignUp: true, requiredForCheckout: false, saveCart: true };
 
 /** Never throws: anything unreadable means "accounts are off", the safe state. */
 export const getAccountSettings = cache(async (): Promise<AccountSettings> => {

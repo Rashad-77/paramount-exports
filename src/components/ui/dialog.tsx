@@ -16,6 +16,7 @@ export function Dialog({
   children,
   wide = false,
   headerActions,
+  className,
 }: {
   open: boolean;
   onClose: () => void;
@@ -26,6 +27,8 @@ export function Dialog({
   wide?: boolean;
   /** Buttons shown in the top right, next to the close cross (for example Save). */
   headerActions?: ReactNode;
+  /** Extra classes on the window itself, for a page that styles its own pop-up. */
+  className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -50,7 +53,7 @@ export function Dialog({
       }}
       aria-labelledby="dialog-title"
       aria-describedby={description ? "dialog-desc" : undefined}
-      className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto" : "m-auto max-h-[92vh] w-[min(34rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm"}
+      className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto" : "m-auto max-h-[92vh] w-[min(34rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm" + (className ? " " + className : "")}
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-5">
         <div>

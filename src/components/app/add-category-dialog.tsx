@@ -3,10 +3,11 @@
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { FPanelSelect } from "@/components/app/panel-select";
-import { ActionForm, FCheckbox, FField, SubmitButton, useFormState } from "@/components/forms/action-form";
+import { ActionForm, FField, SubmitButton, useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import type { ActionState } from "@/lib/action-state";
+import { cleanInput } from "@/lib/input-kinds";
 
 type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
 
@@ -40,7 +41,7 @@ function SubcategoryList({ names, setNames }: { names: string[]; setNames: (n: s
           value={text}
           maxLength={80}
           placeholder="Name of a subcategory"
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => setText(cleanInput("title", e.target.value))}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -110,11 +111,9 @@ function Fields({ groups }: { groups: Array<{ id: string; name: string }> }) {
         />
       ) : null}
 
-      <FField name="name" label={sub ? "Subcategory name" : "Category name"} required maxLength={80} defaultValue={state.values?.name ?? ""} hint="The web address is made from the name automatically." />
+      <FField name="name" kind="title" label={sub ? "Subcategory name" : "Category name"} required maxLength={80} defaultValue={state.values?.name ?? ""} hint="The web address is made from the name automatically." />
 
       {sub ? null : <SubcategoryList names={subs} setNames={setSubs} />}
-
-      <FCheckbox name="isActive" label="Visible on the website" defaultChecked />
     </>
   );
 }

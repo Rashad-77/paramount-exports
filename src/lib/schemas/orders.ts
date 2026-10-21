@@ -83,3 +83,4 @@ export const voidPaymentSchema = z.object({ paymentId: z.uuid(), reason: reqText
 
 export const orderPaidSchema = z.object({ id: z.uuid(), paid: checkbox });
 export const messageHandledSchema = z.object({ id: z.uuid(), handled: checkbox });
+export const replySchema = z.object({ id: z.uuid(), body: reqText("Reply", 3000) });
