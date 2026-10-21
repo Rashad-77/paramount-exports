@@ -489,6 +489,13 @@ export async function setProductsPublished(actor: Actor, ids: string[]): Promise
   if (ids.length === 0) return 0;
   return withTx(async (tx) => {
     const rows = await tx.select().from(products).where(inArray(products.id, ids)).for("update");
+    // Nothing is published if any of these has no picture: customers must never see a product without one.
+    const toPublish = rows.filter((p) => !p.isPublished && !p.archivedAt);
+    if (toPublish.length > 0) {
+      const withPhoto = new Set((await tx.select({ id: productImages.productId }).from(productImages).where(inArray(productImages.productId, toPublish.map((p) => p.id)))).map((r) => r.id));
+      const without = toPublish.filter((p) => !withPhoto.has(p.id)).map((p) => p.name);
+      if (without.length > 0) throw validation(`Nothing was published. Add at least one photo first to: ${without.slice(0, 5).join(", ")}${without.length > 5 ? ` and ${without.length - 5} more` : ""}.`);
+    }
     let changed = 0;
     for (const p of rows) {
       if (p.isPublished || p.archivedAt) continue;

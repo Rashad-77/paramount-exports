@@ -2,6 +2,7 @@
 
 import { ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { useFormState } from "@/components/forms/action-form";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { SelectField } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
@@ -33,6 +34,8 @@ export function PhotosEditor({
   thumbnailId?: string | null;
 }) {
   const inputId = useId();
+  const { state } = useFormState();
+  const missing = state.fieldErrors?.photos?.[0];
   const root = useRef<HTMLDivElement>(null);
   const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, state: "done" as const })));
   const [thumbKey, setThumbKey] = useState<string | undefined>(() => (initial.find((p) => p.id === thumbnailId) ?? initial[0])?.id);
@@ -128,8 +131,8 @@ export function PhotosEditor({
 
   return (
     <div ref={root} className="space-y-4">
-      <div>
-        <label htmlFor={inputId} className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-border-strong bg-surface px-4 py-5 text-center text-sm hover:border-walnut hover:bg-linen">
+      <div aria-invalid={missing ? true : undefined} tabIndex={missing ? -1 : undefined} className="outline-none">
+        <label htmlFor={inputId} className={cn("flex min-h-24 cursor-pointer flex-col items-center justify-center gap-1 border border-dashed bg-surface px-4 py-5 text-center text-sm hover:border-walnut hover:bg-linen", missing ? "border-danger" : "border-border-strong")}>
           <ImagePlus aria-hidden="true" className="size-6 text-stone" />
           <span className="font-medium">Add photos</span>
           <span className="text-text-muted">JPEG, PNG or WebP, up to 8 MB each. You can pick several at once.</span>
@@ -148,6 +151,7 @@ export function PhotosEditor({
         <div aria-live="polite" className="mt-2 text-sm">
           {uploading ? <p className="text-text-muted">Uploading… please wait before saving.</p> : null}
           {notice ? <p className="font-medium text-danger">{notice}</p> : null}
+          {missing ? <p role="alert" className="font-medium text-danger">{missing}</p> : null}
         </div>
       </div>
 

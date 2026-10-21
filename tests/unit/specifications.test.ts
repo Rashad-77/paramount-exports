@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { categoryOptions } from "@/lib/category-tree";
-import { productUpdateSchema } from "@/lib/schemas/catalogue";
+import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { formatDims, legacyColumns, normalizeSpecs, parseDimsText, type SpecEntry } from "@/lib/specifications";
 
 const base = { name: "Oak table", categoryId: "4ca1b82b-a149-4bf2-aece-d2558c77aaaa", kind: "stocked" };
@@ -52,7 +52,7 @@ describe("product form rules", () => {
     const r = productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock" });
     expect(r.success).toBe(false);
     expect(r.error?.issues[0]?.path).toEqual(["stockQuantity"]);
-    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock", stockQuantity: "4" }).success).toBe(true);
+    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock", stockQuantity: "4", photos: ["id:0f043c10-69bf-40e5-8180-df1f73005e47"] }).success).toBe(true);
     expect(productUpdateSchema.safeParse({ ...base, visibility: "draft", availability: "made_to_order" }).success).toBe(true);
   });
 
@@ -73,6 +73,24 @@ describe("product form rules", () => {
     expect(productUpdateSchema.safeParse({ ...base, visibility: "draft", specifications: "{not json" }).success).toBe(false);
     expect(productUpdateSchema.safeParse({ ...base, visibility: "draft", photos: ["../../etc/passwd"] }).success).toBe(false);
     expect(productUpdateSchema.safeParse({ ...base, visibility: "draft", specifications: JSON.stringify([{ key: "dimensions", label: "Dimensions", type: "dims", values: [], dims: { w: "abc", d: "", h: "", unit: "cm" } }]) }).success).toBe(false);
+  });
+});
+
+describe("photos are required", () => {
+  const photo = "file:5f31f04d-9b84-451b-8e2d-45b32a7a292d";
+  it("a new product needs at least one photo, even as a draft", () => {
+    const none = productSchema.safeParse({ ...base, visibility: "draft", sku: "SKU-1" });
+    expect(none.success).toBe(false);
+    expect(none.error?.issues.some((i) => i.path[0] === "photos")).toBe(true);
+    expect(productSchema.safeParse({ ...base, visibility: "draft", sku: "SKU-1", photos: [photo] }).success).toBe(true);
+  });
+
+  it("an existing product may stay a draft without photos, but cannot be published without one", () => {
+    expect(productUpdateSchema.safeParse({ ...base, visibility: "draft" }).success).toBe(true);
+    const published = productUpdateSchema.safeParse({ ...base, visibility: "published" });
+    expect(published.success).toBe(false);
+    expect(published.error?.issues.some((i) => i.path[0] === "photos")).toBe(true);
+    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", photos: [photo] }).success).toBe(true);
   });
 });
 

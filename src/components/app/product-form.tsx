@@ -81,7 +81,10 @@ export function ProductForm({
           currency={currency}
         />
         <div className="space-y-3 border-t border-border pt-5">
-          <h3 className="text-sm font-semibold">Photos</h3>
+          <h3 className="text-sm font-semibold">
+            Photos{submitLabel === "Create product" ? <span aria-hidden="true" className="text-danger"> *</span> : null}
+            {submitLabel === "Create product" ? <span className="ml-2 font-normal text-text-muted">Add at least one.</span> : null}
+          </h3>
           {/* Remounted when the saved photos change, so it always starts from what is stored. */}
           <PhotosEditor key={(values.images ?? []).map((i) => i.id).join(",") + (values.thumbnailImageId ?? "")} initial={values.images ?? []} thumbnailId={values.thumbnailImageId} />
         </div>
@@ -89,6 +92,7 @@ export function ProductForm({
       <ReviewAndSave
         currency={currency}
         confirmLabel={submitLabel === "Create product" ? "Confirm and create" : "Confirm and save"}
+        photosRequired={submitLabel === "Create product"}
         categoryLabels={Object.fromEntries(treeOrder(categories).map((c) => [c.id, treeLabel(c)]))}
       />
     </ActionForm>

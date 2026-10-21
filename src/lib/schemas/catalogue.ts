@@ -134,11 +134,13 @@ const productBase = z.object({
   seoDescription: optText("Page description", 160),
 });
 
-type StaffFormFields = { visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string };
+type StaffFormFields = { visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string; photos: string[] };
 const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
   if (v.visibility !== undefined) {
     // The staff form: in stock needs an amount; what is shown publicly follows what was filled in.
     if (v.availability === "in_stock" && v.stockQuantity === undefined) ctx.addIssue({ code: "custom", path: ["stockQuantity"], message: "Enter how many are available." });
+    // Customers must never see a product with no picture.
+    if (v.visibility === "published" && v.photos.length === 0) ctx.addIssue({ code: "custom", path: ["photos"], message: "A published product needs at least one photo. Add one, or save it as a draft." });
     return;
   }
   if (v.showAvailability && !v.availability) ctx.addIssue({ code: "custom", path: ["availability"], message: "Choose the availability to show, or untick “Show availability”." });
@@ -146,6 +148,8 @@ const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
 
 export const productSchema = productBase.superRefine((v, ctx) => {
   productRules(v, ctx);
+  // A new product starts with at least one photo.
+  if (v.visibility !== undefined && v.photos.length === 0) ctx.addIssue({ code: "custom", path: ["photos"], message: "Add at least one photo of the product." });
   if (v.visibility === undefined && v.showPrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter a price, or untick “Show price publicly”." });
 });
 export type ProductInput = z.output<typeof productSchema>;

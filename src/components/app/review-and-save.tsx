@@ -61,7 +61,7 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
  * saves when the person confirms. If something obviously missing (the name, the category) would stop the save, it goes straight to the
  * form's own messages instead.
  */
-export function ReviewAndSave({ categoryLabels, currency, confirmLabel }: { categoryLabels: Record<string, string>; currency: string; confirmLabel: string }) {
+export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRequired = false }: { categoryLabels: Record<string, string>; currency: string; confirmLabel: string; photosRequired?: boolean }) {
   const { pending } = useFormState();
   const anchor = useRef<HTMLSpanElement>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -71,7 +71,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel }: { cate
     const form = anchor.current?.closest("form");
     if (!form) return;
     const p = readForm(form, categoryLabels);
-    if (!p.name || !p.category || (p.availability === "in_stock" && !p.stock)) {
+    if (!p.name || !p.category || (p.availability === "in_stock" && !p.stock) || (photosRequired && p.photos.length === 0)) {
       form.requestSubmit();
       return;
     }
