@@ -5,7 +5,6 @@ import { CategoryFilters } from "@/components/app/category-filters";
 import { EditProvider, EditToggle } from "@/components/app/edit-mode";
 import { ButtonLink } from "@/components/ui/button";
 import { ModuleHeader } from "@/components/ui/page-header";
-import { EmptyState } from "@/components/ui/states";
 import { toCascadeGroups, treeOrder } from "@/lib/category-tree";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
@@ -125,22 +124,17 @@ export default async function CategoriesPage({
           statuses={statuses}
           categories={toCascadeGroups(flat)}
         />
-        {rows.length === 0 ? (
-          <EmptyState
-            title={filtered ? "No categories match" : "No categories yet"}
-            description={
-              filtered
-                ? "Try clearing a filter."
-                : "Add the first one to start building the catalogue."
-            }
-            action={
-              !filtered && canWrite ? (
-                <AddCategoryDialog action={createCategoryAction} groups={mainGroups} defaultOpen={add} />
-              ) : undefined
-            }
-          />
-        ) : (
           <CategoriesTable
+            empty={{
+              title: filtered ? "No categories match" : "No categories yet",
+              description: filtered
+                ? "Try clearing a filter."
+                : "Add the first one to start building the catalogue.",
+              action:
+                !filtered && canWrite ? (
+                  <AddCategoryDialog action={createCategoryAction} groups={mainGroups} defaultOpen={add} />
+                ) : undefined,
+            }}
             rows={rows.map((c, i) => ({
               id: c.id,
               name: c.name,
@@ -165,7 +159,6 @@ export default async function CategoriesPage({
             archiveAction={archiveCategoriesAction}
             deleteAction={deleteCategoriesAction}
           />
-        )}
       </div>
     </EditProvider>
   );

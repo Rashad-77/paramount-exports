@@ -2,13 +2,13 @@
 
 import { Crown, Star } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import { useEdit } from "@/components/app/edit-mode";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/ui/status";
 import { useResultToast } from "@/components/ui/toaster";
-import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
+import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import type { ActionState } from "@/lib/action-state";
 
 export interface ProductRow {
@@ -35,6 +35,7 @@ export function ProductsTable({
   canWrite,
   archiveAction,
   deleteAction,
+  empty,
 }: {
   rows: ProductRow[];
   startAt: number;
@@ -42,6 +43,7 @@ export function ProductsTable({
   canWrite: boolean;
   archiveAction: Action;
   deleteAction: Action;
+  empty?: { title: string; description?: string; action?: ReactNode };
 }) {
   const { editing, selected, setSelected } = useEdit();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -190,6 +192,7 @@ export function ProductsTable({
             </tr>
           </THead>
           <tbody>
+            {rows.length === 0 && empty ? <EmptyRow colSpan={5} title={empty.title} description={empty.description} action={empty.action} /> : null}
             {rows.map((p, i) => (
               <TR
                 key={p.id}

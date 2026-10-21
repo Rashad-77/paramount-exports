@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
+import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/money";
 import { quoteRef } from "@/lib/quotation-ui";
@@ -119,79 +120,99 @@ export default async function DashboardPage() {
             title="Recent orders"
             actions={<More href="/app/orders">All orders</More>}
           >
-            {d.recent.length === 0 ? (
-              <p className="text-sm text-text-muted">
-                No orders yet. Orders placed on the website will appear here.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {d.recent.map((o) => (
-                  <li
-                    key={o.id}
-                    className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0">
-                      <Link
-                        href={`/app/orders/${o.id}`}
-                        className="font-medium text-walnut underline"
-                      >
-                        {o.reference}
-                      </Link>
-                      <p className="text-sm text-text-muted">
-                        {o.customerName} ·{" "}
+            <TableWrap label="Recent orders">
+              <Table>
+                <THead>
+                  <tr>
+                    <TH>Order</TH>
+                    <TH>Customer</TH>
+                    <TH>Placed</TH>
+                    <TH>Status</TH>
+                  </tr>
+                </THead>
+                <tbody>
+                  {d.recent.length === 0 ? (
+                    <EmptyRow
+                      colSpan={4}
+                      title="No orders yet"
+                      description="Orders placed on the website will appear here."
+                    />
+                  ) : null}
+                  {d.recent.map((o) => (
+                    <TR key={o.id}>
+                      <TD className="text-center">
+                        <Link
+                          href={`/app/orders/${o.id}`}
+                          className="font-medium text-walnut underline"
+                        >
+                          {o.reference}
+                        </Link>
+                      </TD>
+                      <TD className="text-center">{o.customerName}</TD>
+                      <TD className="text-center text-text-muted">
                         {formatDateTime(o.createdAt, business.timezone)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <OrderTag
-                        status={o.status}
-                        isPaid={o.isPaid}
-                        fulfilment={o.fulfilment}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                      </TD>
+                      <TD className="text-center">
+                        <OrderTag
+                          status={o.status}
+                          isPaid={o.isPaid}
+                          fulfilment={o.fulfilment}
+                        />
+                      </TD>
+                    </TR>
+                  ))}
+                </tbody>
+              </Table>
+            </TableWrap>
           </Panel>
 
           <Panel
             title="Recent quotation requests"
             actions={<More href="/app/quotations">All quotations</More>}
           >
-            {d.recentQuotes.length === 0 ? (
-              <p className="text-sm text-text-muted">
-                No quotation requests yet.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {d.recentQuotes.map((m) => {
-                  const what = (
-                    m.payload as { furnitureType?: string | null } | null
-                  )?.furnitureType;
-                  return (
-                    <li
-                      key={m.id}
-                      className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                    >
-                      <div className="min-w-0">
-                        <Link
-                          href={`/app/messages/${m.id}`}
-                          className="font-medium text-walnut underline"
-                        >
-                          {quoteRef(m.reference)}
-                        </Link>
-                        <p className="truncate text-sm text-text-muted">
-                          {what ? `${what} · ` : ""}
-                          {m.name}
-                        </p>
-                      </div>
-                      <EnquiryTag state={m.isHandled ? "responded" : "new"} />
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            <TableWrap label="Recent quotation requests">
+              <Table>
+                <THead>
+                  <tr>
+                    <TH>Request</TH>
+                    <TH>Piece</TH>
+                    <TH>Customer</TH>
+                    <TH>Status</TH>
+                  </tr>
+                </THead>
+                <tbody>
+                  {d.recentQuotes.length === 0 ? (
+                    <EmptyRow
+                      colSpan={4}
+                      title="No quotation requests yet"
+                      description="Made-to-measure requests from the website will appear here."
+                    />
+                  ) : null}
+                  {d.recentQuotes.map((m) => {
+                    const what = (
+                      m.payload as { furnitureType?: string | null } | null
+                    )?.furnitureType;
+                    return (
+                      <TR key={m.id}>
+                        <TD className="text-center">
+                          <Link
+                            href={`/app/messages/${m.id}`}
+                            className="font-medium text-walnut underline"
+                          >
+                            {quoteRef(m.reference)}
+                          </Link>
+                        </TD>
+                        <TD className="text-center">{what ?? "—"}</TD>
+                        <TD className="text-center">{m.name}</TD>
+                        <TD className="text-center">
+                          <EnquiryTag state={m.isHandled ? "responded" : "new"} />
+                        </TD>
+                      </TR>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            </TableWrap>
           </Panel>
 
           <Panel
@@ -230,35 +251,49 @@ export default async function DashboardPage() {
             title="Recent customer enquiries"
             actions={<More href="/app/enquiries">All enquiries</More>}
           >
-            {d.recentEnquiries.length === 0 ? (
-              <p className="text-sm text-text-muted">No enquiries yet.</p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {d.recentEnquiries.map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0">
-                      <Link
-                        href={`/app/messages/${m.id}`}
-                        className="font-medium text-walnut underline"
-                      >
-                        {m.reference}
-                      </Link>
-                      <p className="line-clamp-1 max-w-sm text-sm text-text-muted">
-                        {m.name} · {m.message ?? "No message"}
-                      </p>
-                    </div>
-                    {m.isHandled ? (
-                      <EnquiryTag state="responded" />
-                    ) : (
-                      <EnquiryTag state="new" />
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <TableWrap label="Recent customer enquiries">
+              <Table>
+                <THead>
+                  <tr>
+                    <TH>Enquiry</TH>
+                    <TH>Customer</TH>
+                    <TH>Status</TH>
+                  </tr>
+                </THead>
+                <tbody>
+                  {d.recentEnquiries.length === 0 ? (
+                    <EmptyRow
+                      colSpan={3}
+                      title="No enquiries yet"
+                      description="Messages from the contact form and product pages will appear here."
+                    />
+                  ) : null}
+                  {d.recentEnquiries.map((m) => (
+                    <TR key={m.id}>
+                      <TD className="text-center">
+                        <Link
+                          href={`/app/messages/${m.id}`}
+                          className="font-medium text-walnut underline"
+                        >
+                          {m.reference}
+                        </Link>
+                        <p className="mx-auto line-clamp-1 max-w-[12rem] text-text-muted">
+                          {m.message ?? "No message"}
+                        </p>
+                      </TD>
+                      <TD className="text-center">{m.name}</TD>
+                      <TD className="text-center">
+                        {m.isHandled ? (
+                          <EnquiryTag state="responded" />
+                        ) : (
+                          <EnquiryTag state="new" />
+                        )}
+                      </TD>
+                    </TR>
+                  ))}
+                </tbody>
+              </Table>
+            </TableWrap>
           </Panel>
         </div>
       </div>

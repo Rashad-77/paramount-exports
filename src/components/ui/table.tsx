@@ -40,6 +40,19 @@ export function TD({ className, numeric, ...props }: TdHTMLAttributes<HTMLTableC
   return <td className={cn("px-3 py-2 align-middle", numeric && "tabular text-right", className)} {...props} />;
 }
 
+/** The single row of a table that has nothing in it yet: the table keeps its column headings, and this says what will appear. */
+export function EmptyRow({ colSpan, title, description, action }: { colSpan: number; title: string; description?: string; action?: ReactNode }) {
+  return (
+    <tr>
+      <td colSpan={colSpan} className="px-4 py-10 text-center">
+        <p className="font-medium text-text">{title}</p>
+        {description ? <p className="mt-1 text-sm text-text-muted">{description}</p> : null}
+        {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+      </td>
+    </tr>
+  );
+}
+
 /** Sortable column header: a real link so sorting works without JavaScript and is shareable. */
 export function SortHeader({
   label,

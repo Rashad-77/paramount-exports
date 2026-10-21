@@ -3,7 +3,6 @@ import { ProductsTable } from "@/components/app/products-table";
 import { ProductFilters } from "@/components/app/product-filters";
 import { ButtonLink } from "@/components/ui/button";
 import { ModuleHeader } from "@/components/ui/page-header";
-import { EmptyState } from "@/components/ui/states";
 import { Pagination } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
@@ -83,22 +82,17 @@ export default async function ProductsAdminPage({
         statuses={statuses}
         categories={toCascadeGroups(cats.filter((c) => !c.archivedAt))}
       />
-      {result.rows.length === 0 ? (
-        <EmptyState
-          title={filtered ? "No products match" : "No products yet"}
-          description={
-            filtered
-              ? "Try clearing a filter."
-              : "Add a category, then your first product."
-          }
-          action={
-            !filtered && canWrite ? (
-              <ButtonLink href="/app/products/new">Add product</ButtonLink>
-            ) : undefined
-          }
-        />
-      ) : (
         <ProductsTable
+          empty={{
+            title: filtered ? "No products match" : "No products yet",
+            description: filtered
+              ? "Try clearing a filter."
+              : "Add a category, then your first product.",
+            action:
+              !filtered && canWrite ? (
+                <ButtonLink href="/app/products/new">Add product</ButtonLink>
+              ) : undefined,
+          }}
           rows={result.rows.map((p) => ({
             id: p.id,
             name: p.name,
@@ -115,7 +109,6 @@ export default async function ProductsAdminPage({
           archiveAction={archiveProductsAction}
           deleteAction={deleteProductsAction}
         />
-      )}
       <Pagination
         page={page}
         pageCount={result.pageCount}

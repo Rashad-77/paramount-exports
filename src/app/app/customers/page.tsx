@@ -2,7 +2,6 @@ import { CustomersTable } from "@/components/app/customers-table";
 import { EditProvider, EditToggle } from "@/components/app/edit-mode";
 import { ListFilters } from "@/components/app/list-filters";
 import { ModuleHeader } from "@/components/ui/page-header";
-import { EmptyState } from "@/components/ui/states";
 import { Pagination } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
@@ -48,13 +47,11 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         ]}
       />
       <div className="app-results">
-        {result.rows.length === 0 ? (
-          <EmptyState
-            title={q || filter ? "No customers match" : "No customers yet"}
-            description={q || filter ? "Try a different filter or search." : "Customers appear here once they order, ask for a quotation or write to you."}
-          />
-        ) : (
           <CustomersTable
+            empty={{
+              title: q || filter ? "No customers match" : "No customers yet",
+              description: q || filter ? "Try a different filter or search." : "Customers appear here once they order, ask for a quotation or write to you.",
+            }}
             rows={result.rows.map((c) => ({
               key: c.phoneKey,
               name: c.name,
@@ -69,7 +66,6 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             canDelete={canDelete}
             deleteAction={deleteCustomersAction}
           />
-        )}
         <Pagination page={page} pageCount={result.pageCount} hrefFor={(n) => buildHref("/app/customers", { q, filter, sort: sort === "name" ? undefined : sort, page: String(n) })} />
       </div>
     </EditProvider>

@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import { useEdit } from "@/components/app/edit-mode";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/ui/status";
 import { useResultToast } from "@/components/ui/toaster";
-import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
+import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import type { ActionState } from "@/lib/action-state";
 
 export interface CategoryRow {
@@ -44,12 +44,14 @@ export function CategoriesTable({
   canWrite,
   archiveAction,
   deleteAction,
+  empty,
 }: {
   rows: CategoryRow[];
   total: number;
   canWrite: boolean;
   archiveAction: Action;
   deleteAction: Action;
+  empty?: { title: string; description?: string; action?: ReactNode };
 }) {
   const { editing, selected, setSelected } = useEdit();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -181,6 +183,7 @@ export function CategoriesTable({
             </tr>
           </THead>
           <tbody>
+            {rows.length === 0 && empty ? <EmptyRow colSpan={5} title={empty.title} description={empty.description} action={empty.action} /> : null}
             {rows.map((c) => (
               <TR key={c.id} className={(selected.has(c.id) ? "bg-linen " : "") + "border-b border-border-strong/50" + (c.depth === 0 ? " border-t-2 border-border-strong/50" : "")}>
                 <TD className={"tabular px-2 py-1 text-left border-r border-border-strong/50 last:border-r-0 " + (c.depth ? "text-text-muted" : "font-medium")}>

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import { useEdit } from "@/components/app/edit-mode";
 import type { ActionState } from "@/lib/action-state";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
-import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
+import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { useResultToast } from "@/components/ui/toaster";
 
 export interface CustomerRow {
@@ -25,7 +25,7 @@ type Action = (prev: ActionState, fd: FormData) => Promise<ActionState>;
  * The customer list. Press Edit (owner only) to show tick boxes: tick customers, or all of them, then Delete. Deleting asks first and
  * says what goes with each customer. Rows are numbered continuing across pages.
  */
-export function CustomersTable({ rows, startAt, total, canDelete, deleteAction }: { rows: CustomerRow[]; startAt: number; total: number; canDelete: boolean; deleteAction: Action }) {
+export function CustomersTable({ rows, startAt, total, canDelete, deleteAction, empty }: { rows: CustomerRow[]; startAt: number; total: number; canDelete: boolean; deleteAction: Action; empty?: { title: string; description?: string; action?: ReactNode } }) {
   const { editing, selected, setSelected } = useEdit();
   const [confirm, setConfirm] = useState(false);
   const form = useRef<HTMLFormElement>(null);
@@ -96,6 +96,7 @@ export function CustomersTable({ rows, startAt, total, canDelete, deleteAction }
             </tr>
           </THead>
           <tbody>
+            {rows.length === 0 && empty ? <EmptyRow colSpan={6} title={empty.title} description={empty.description} action={empty.action} /> : null}
             {rows.map((c, i) => (
               <TR key={c.key} className={selected.has(c.key) ? "bg-linen" : undefined}>
                 <TD className="tabular w-24 py-3 align-middle text-text-muted">
