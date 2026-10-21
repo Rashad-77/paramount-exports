@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_ROLE_COOKIE_NAME, demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
-import { OWNER_SEEN_COOKIE, ownerCookieBase, ownerCookieOptions, ownerSessionExpired } from "@/lib/auth/owner-session";
+import { OWNER_SEEN_COOKIE, needsSecondStep, ownerCookieBase, ownerCookieOptions, ownerSessionExpired } from "@/lib/auth/owner-session";
 
 /**
  * Next.js 16 "proxy" (formerly middleware). It does two things only:
@@ -71,6 +71,16 @@ export async function proxy(request: NextRequest) {
       const out = NextResponse.redirect(login);
       for (const c of response.cookies.getAll()) out.cookies.set(c);
       out.cookies.delete(OWNER_SEEN_COOKIE);
+      out.headers.set("Cache-Control", "private, no-store");
+      return out;
+    }
+    // An account with its authenticator code switched on must give the code before any staff page opens.
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (needsSecondStep(aal?.currentLevel, aal?.nextLevel)) {
+      const verify = new URL("/login/verify", request.url);
+      verify.searchParams.set("next", request.nextUrl.pathname);
+      const out = NextResponse.redirect(verify);
+      for (const c of response.cookies.getAll()) out.cookies.set(c);
       out.headers.set("Cache-Control", "private, no-store");
       return out;
     }

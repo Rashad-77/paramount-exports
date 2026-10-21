@@ -23,6 +23,14 @@ export function ownerCookieOptions(value: string, options: CookieOptions = {}): 
   return { ...rest, ...ownerCookieBase() };
 }
 
+/**
+ * Two-step sign-in. An account that has switched on its authenticator code has a "next level" of aal2; a session that has only
+ * entered the password is still at aal1 and must give the code before it may open the staff area.
+ */
+export function needsSecondStep(currentLevel: string | null | undefined, nextLevel: string | null | undefined): boolean {
+  return nextLevel === "aal2" && currentLevel !== "aal2";
+}
+
 /** True when the owner's session has been idle, or open, for longer than allowed. */
 export function ownerSessionExpired(now: number, signedInAt: number | null, lastSeen: number | null): boolean {
   if (signedInAt !== null && now - signedInAt > OWNER_SESSION_MAX_MS) return true;

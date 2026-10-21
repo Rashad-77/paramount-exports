@@ -8,6 +8,7 @@ import { hasDatabase } from "@/lib/env";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
 import { getDemoActor, demoActorEnabled } from "./demo";
 import { demoDeploymentEnabled } from "./demo-deployment";
+import { needsSecondStep } from "./owner-session";
 import { isRole, type Actor } from "./permissions";
 
 /**
@@ -26,6 +27,9 @@ export const getActor = cache(async (): Promise<Actor | null> => {
     error,
   } = await supabase.auth.getUser();
   if (error || !user) return null;
+  // The password alone is not enough once the authenticator code is switched on (the proxy also sends such a visitor to the code page).
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (needsSecondStep(aal?.currentLevel, aal?.nextLevel)) return null;
 
   const db = getDb();
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);

@@ -8,6 +8,7 @@ import { getDb } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
 import { DEMO_ROLE_COOKIE } from "@/lib/auth/demo";
 import { OWNER_SEEN_COOKIE, ownerCookieBase } from "@/lib/auth/owner-session";
+import { secondStepPending } from "@/server/owner-auth";
 import { demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
@@ -80,6 +81,8 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
   }
 
   (await cookies()).set(OWNER_SEEN_COOKIE, String(Date.now()), ownerCookieBase());
+  // An account with its authenticator code switched on has not finished signing in yet: the code comes next.
+  if (await secondStepPending()) redirect(`/login/verify?next=${encodeURIComponent(safeNext(parsed.data.next))}`);
   redirect(safeNext(parsed.data.next));
 }
 

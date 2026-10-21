@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
@@ -31,6 +32,11 @@ export function LoginForm({ next, notice }: { next?: string; notice?: string }) 
       <input type="hidden" name="next" value={next ?? ""} />
       <TextField label="Email" name="email" type="email" autoComplete="username" inputMode="email" maxLength={200} required defaultValue={state.email} error={state.fieldErrors?.email} onInput={(e) => { const el = e.currentTarget; const next = cleanInput("email", el.value); if (next !== el.value) el.value = next; }} />
       <TextField label="Password" name="password" type="password" autoComplete="current-password" required error={state.fieldErrors?.password} />
+      <p className="-mt-2 text-right text-sm">
+        <Link href="/login/forgot" className="underline">
+          Forgot password?
+        </Link>
+      </p>
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? "Signing in…" : "Sign in"}
       </Button>
