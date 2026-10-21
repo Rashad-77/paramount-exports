@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Owner sign in", robots: { index: fal
 
 const NOTICES: Record<string, string> = {
   "no-access": "This sign-in is for the business owner only.",
+  expired: "You were signed out for your security after a period without use. Please sign in again.",
   "not-configured": "Sign-in has not been configured yet. Ask the system administrator to finish setup.",
 };
 

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
 import { DEMO_ROLE_COOKIE } from "@/lib/auth/demo";
+import { OWNER_SEEN_COOKIE, ownerCookieBase } from "@/lib/auth/owner-session";
 import { demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { createSupabaseServerClient, hasSupabaseAuth } from "@/lib/supabase/server";
@@ -61,7 +62,8 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
     return { email: parsed.data.email, error: "Sign-in is temporarily unavailable. Please try again shortly." };
   }
 
-  const supabase = await createSupabaseServerClient();
+  // The owner's sign-in lasts until the browser closes, and ends after 30 minutes without use (see lib/auth/owner-session.ts).
+  const supabase = await createSupabaseServerClient({ ownerSession: true });
   const { data, error } = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
   if (error || !data.user) {
     // One message for every failure so the form cannot be used to discover which emails have accounts.
@@ -77,14 +79,16 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
     return { email: parsed.data.email, error: "This sign-in is for the business owner only." };
   }
 
+  (await cookies()).set(OWNER_SEEN_COOKIE, String(Date.now()), ownerCookieBase());
   redirect(safeNext(parsed.data.next));
 }
 
 export async function signOut(): Promise<void> {
   if (demoDeploymentEnabled()) (await cookies()).delete(DEMO_ROLE_COOKIE);
   if (hasSupabaseAuth()) {
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient({ ownerSession: true });
     await supabase.auth.signOut();
   }
+  (await cookies()).delete(OWNER_SEEN_COOKIE);
   redirect("/login");
 }

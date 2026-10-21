@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_ROLE_COOKIE_NAME, demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
+import { OWNER_SEEN_COOKIE, ownerCookieBase, ownerCookieOptions, ownerSessionExpired } from "@/lib/auth/owner-session";
 
 /**
  * Next.js 16 "proxy" (formerly middleware). It does two things only:
@@ -40,7 +41,8 @@ export async function proxy(request: NextRequest) {
       setAll: (toSet) => {
         for (const { name, value } of toSet) request.cookies.set(name, value);
         response = NextResponse.next({ request });
-        for (const { name, value, options } of toSet) response.cookies.set(name, value, options);
+        // On staff pages the sign-in cookie is a session cookie (gone when the browser closes), HttpOnly and secure.
+        for (const { name, value, options } of toSet) response.cookies.set(name, value, isInternal ? ownerCookieOptions(value, options) : options);
       },
     },
   });
@@ -54,6 +56,25 @@ export async function proxy(request: NextRequest) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(login);
+  }
+
+  if (isInternal && user) {
+    // A staff session ends after a stretch of inactivity, and always after a working day, however it was kept alive.
+    const now = Date.now();
+    const signedIn = user.last_sign_in_at ? Date.parse(user.last_sign_in_at) : NaN;
+    const seenRaw = Number(request.cookies.get(OWNER_SEEN_COOKIE)?.value);
+    if (ownerSessionExpired(now, Number.isFinite(signedIn) ? signedIn : null, seenRaw > 0 ? seenRaw : null)) {
+      await supabase.auth.signOut();
+      const login = new URL("/login", request.url);
+      login.searchParams.set("error", "expired");
+      login.searchParams.set("next", request.nextUrl.pathname);
+      const out = NextResponse.redirect(login);
+      for (const c of response.cookies.getAll()) out.cookies.set(c);
+      out.cookies.delete(OWNER_SEEN_COOKIE);
+      out.headers.set("Cache-Control", "private, no-store");
+      return out;
+    }
+    response.cookies.set(OWNER_SEEN_COOKIE, String(now), ownerCookieBase());
   }
 
   response.headers.set("Cache-Control", "private, no-store");

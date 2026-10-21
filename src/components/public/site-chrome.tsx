@@ -175,7 +175,6 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <p>
             © {new Date().getFullYear()} {business.name}
           </p>
-          <Link href="/login">Owner sign in</Link>
         </div>
       </div>
     </footer>
