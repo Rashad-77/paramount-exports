@@ -21,7 +21,8 @@ export function getDb(): Db {
   if (!globalForDb.__db) {
     const sql = postgres(serverEnv().DATABASE_URL, {
       prepare: false,
-      max: 5,
+      // Each serverless instance keeps only a few connections, so many instances at once cannot use up the pooler's limit.
+      max: 3,
       idle_timeout: 20,
       connect_timeout: 10,
     });

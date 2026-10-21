@@ -19,6 +19,8 @@ export function AppNav({ groups, previewPath }: { groups: VisibleGroup[]; previe
                 <li key={m.label} className="border-b border-border">
                   <Link
                     href={m.href}
+                    // Loaded when pressed, not in advance: otherwise opening the dashboard also loads every other screen at once.
+                    prefetch={false}
                     aria-current={current ? "page" : undefined}
                     className={
                       "flex min-h-10 items-center border-l-2 px-3 text-[0.8125rem] transition-colors duration-[var(--duration-fast)] " +
