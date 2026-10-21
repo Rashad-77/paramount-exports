@@ -3,7 +3,15 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
-import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
+import {
+  EmptyRow,
+  Table,
+  TableWrap,
+  TD,
+  TH,
+  THead,
+  TR,
+} from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/money";
 import { quoteRef } from "@/lib/quotation-ui";
@@ -114,7 +122,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="mt-8 grid min-w-0 items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="mt-8 min-w-0">
         <div className="min-w-0 space-y-6">
           <Panel
             title="Recent orders"
@@ -205,7 +213,9 @@ export default async function DashboardPage() {
                         <TD className="text-center">{what ?? "—"}</TD>
                         <TD className="text-center">{m.name}</TD>
                         <TD className="text-center">
-                          <EnquiryTag state={m.isHandled ? "responded" : "new"} />
+                          <EnquiryTag
+                            state={m.isHandled ? "responded" : "new"}
+                          />
                         </TD>
                       </TR>
                     );
@@ -215,38 +225,6 @@ export default async function DashboardPage() {
             </TableWrap>
           </Panel>
 
-          <Panel
-            title="Orders per day"
-            description="The last 30 days, cancelled orders not counted."
-          >
-            <div
-              role="img"
-              aria-label={`Orders per day over the last 30 days: ${d.last30.orders} in total.`}
-              className="flex h-28 items-end gap-1"
-            >
-              {d.daily.map((x) => (
-                <div
-                  key={x.day}
-                  className="flex h-full flex-1 items-end"
-                  title={`${x.day}: ${x.orders}`}
-                >
-                  <div
-                    className="w-full bg-walnut"
-                    style={{
-                      height: `${x.orders ? Math.max(6, (x.orders / maxDay) * 100) : 2}%`,
-                      opacity: x.orders ? 0.85 : 0.18,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 flex justify-between text-xs text-text-muted">
-              <span>{d.daily[0]?.day}</span>
-              <span>Today</span>
-            </div>
-          </Panel>
-        </div>
-        <div className="min-w-0 space-y-6">
           <Panel
             title="Recent customer enquiries"
             actions={<More href="/app/enquiries">All enquiries</More>}
@@ -294,6 +272,37 @@ export default async function DashboardPage() {
                 </tbody>
               </Table>
             </TableWrap>
+          </Panel>
+
+          <Panel
+            title="Orders per day"
+            description="The last 30 days, cancelled orders not counted."
+          >
+            <div
+              role="img"
+              aria-label={`Orders per day over the last 30 days: ${d.last30.orders} in total.`}
+              className="flex h-28 items-end gap-1"
+            >
+              {d.daily.map((x) => (
+                <div
+                  key={x.day}
+                  className="flex h-full flex-1 items-end"
+                  title={`${x.day}: ${x.orders}`}
+                >
+                  <div
+                    className="w-full bg-walnut"
+                    style={{
+                      height: `${x.orders ? Math.max(6, (x.orders / maxDay) * 100) : 2}%`,
+                      opacity: x.orders ? 0.85 : 0.18,
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 flex justify-between text-xs text-text-muted">
+              <span>{d.daily[0]?.day}</span>
+              <span>Today</span>
+            </div>
           </Panel>
         </div>
       </div>
