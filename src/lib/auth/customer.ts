@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import { customerAccounts } from "@/lib/db/schema";
+import { customerAccounts, profiles } from "@/lib/db/schema";
 import { hasDatabase, publicEnv } from "@/lib/env";
 import { phoneKey } from "@/lib/contact";
 import { validation } from "@/lib/errors";
@@ -48,9 +48,33 @@ const LOCAL_TTL = 60 * 60 * 24 * 30;
 
 const toCustomer = (r: typeof customerAccounts.$inferSelect): Customer => ({ id: r.id, fullName: r.fullName, email: r.email, phone: r.phone, address: r.address });
 
+/** The person signed in on this browser, verified with the sign-in service (null when nobody is). */
+const verifiedUser = cache(async () => {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  return error || !user ? null : user;
+});
+
+/** Staff (the business owner) sign in to the dashboard. They are never customers, and never get a customer account. */
+async function isStaffId(id: string): Promise<boolean> {
+  const [row] = await getDb().select({ id: profiles.id }).from(profiles).where(eq(profiles.id, id)).limit(1);
+  return Boolean(row);
+}
+
+/** True when the person signed in on this browser is a staff member: they belong in the dashboard, not in the customer account pages. */
+export const isStaffSignedIn = cache(async (): Promise<boolean> => {
+  if (customerAuthMode() !== "supabase" || !hasDatabase()) return false;
+  const user = await verifiedUser();
+  return user ? isStaffId(user.id) : false;
+});
+
 /** Make sure a verified sign-in identity has its account row (created on first sign-in, so email confirmation can happen later). */
 async function ensureAccount(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): Promise<Customer | null> {
   if (!user.email) return null;
+  if (await isStaffId(user.id)) return null;
   const db = getDb();
   const [found] = await db.select().from(customerAccounts).where(eq(customerAccounts.id, user.id)).limit(1);
   if (found) return toCustomer(found);
@@ -76,12 +100,8 @@ export const getCustomer = cache(async (): Promise<Customer | null> => {
     const [row] = await getDb().select().from(customerAccounts).where(eq(customerAccounts.id, id)).limit(1);
     return row ? toCustomer(row) : null;
   }
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) return null;
+  const user = await verifiedUser();
+  if (!user) return null;
   return ensureAccount(user);
 });
 
@@ -94,7 +114,10 @@ export async function activeCustomer(): Promise<Customer | null> {
 /** For account pages: send visitors who are not signed in to the sign-in page, then back. */
 export async function requireCustomer(next?: string): Promise<Customer> {
   const customer = await getCustomer();
-  if (!customer) redirect(`/account/sign-in${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+  if (!customer) {
+    if (await isStaffSignedIn()) redirect("/app");
+    redirect(`/account/sign-in${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+  }
   return customer;
 }
 
