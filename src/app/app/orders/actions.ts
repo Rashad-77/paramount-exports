@@ -22,6 +22,8 @@ const refresh = (id: string) => {
   revalidatePath(`/app/orders/${id}`);
   revalidatePath("/app");
   revalidatePath("/app/customers");
+  // Cancelling, refunding or reopening an order puts pieces back on the shelf or takes them again: the stored product pages show the stock.
+  revalidatePath("/products/[slug]", "page");
 };
 
 export async function setStatusAction(

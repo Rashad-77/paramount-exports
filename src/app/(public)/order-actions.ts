@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { validation } from "@/lib/errors";
@@ -59,6 +60,8 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
       }
 
       const { id, reference } = placed;
+      // The order took pieces off the shelf, so the stock shown on the stored product pages is out of date.
+      revalidatePath("/products/[slug]", "page");
       notifyNewOrder(id);
       return { redirectTo: `/order/confirmed?ref=${encodeURIComponent(reference)}&pay=${input.paymentMethod}&how=${input.fulfilment}` };
     },

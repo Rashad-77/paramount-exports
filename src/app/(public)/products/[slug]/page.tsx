@@ -22,6 +22,15 @@ import { getPublicProduct, listRelatedProducts } from "@/server/catalogue-public
 
 export const revalidate = 300;
 
+/**
+ * No product page is built ahead of time, but each one is built the first time it is visited and then kept (for 5 minutes, or until the
+ * dashboard or an order changes it). Without this, Next.js ignores `revalidate` for an address like /products/<name> and rebuilds
+ * the page for every visitor.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
