@@ -24,21 +24,31 @@ export function ProductGallery({
   premium?: boolean;
 }) {
   const [active, setActive] = useState(0);
-  const current = images[active];
   return (
     <div>
       {premium ? <p className="premium-tag">Premium range</p> : null}
       {saleLabel ? <p className="sale-tag">{saleLabel}</p> : null}
       <div className="relative aspect-[4/5] overflow-hidden bg-linen">
-        {current ? (
-          <SiteImage
-            src={current.url}
-            alt={current.alt}
-            fill
-            priority
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-          />
+        {images.length > 0 ? (
+          // Every photograph is stacked here and only the chosen one is visible: the others are fetched quietly once the page has loaded,
+          // so pressing a frame shows its photograph at once instead of waiting for it.
+          images.map((img, i) => (
+            <SiteImage
+              key={img.id}
+              src={img.url}
+              alt={i === active ? img.alt : ""}
+              fill
+              priority={i === 0}
+              loading={i === 0 ? undefined : "eager"}
+              fetchPriority={i === 0 ? undefined : "low"}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              aria-hidden={i === active ? undefined : true}
+              className={cn(
+                "object-cover transition-opacity duration-300 motion-reduce:transition-none",
+                i === active ? "opacity-100" : "opacity-0",
+              )}
+            />
+          ))
         ) : (
           <ImagePlaceholder
             label={`${name} — photograph to be added`}

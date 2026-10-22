@@ -4,6 +4,7 @@ import { Paperclip, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { useFormState } from "@/components/forms/action-form";
 import { Alert } from "@/components/ui/status";
+import { prepareImage } from "@/lib/image-prep";
 
 interface Item {
   key: string;
@@ -29,7 +30,9 @@ interface SignResponse {
  * Sends one file straight to storage and returns the id the form action later verifies and links. Throws an Error with a plain
  * message when the upload cannot start or fails.
  */
-export async function uploadToStorage(file: File, purpose: string): Promise<string> {
+export async function uploadToStorage(picked: File, purpose: string): Promise<string> {
+  // A large photograph is made smaller once, here, so nobody waits for it later.
+  const file = await prepareImage(picked);
   const signRes = await fetch("/api/uploads/sign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
