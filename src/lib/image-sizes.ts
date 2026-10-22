@@ -11,6 +11,16 @@ export const IMAGE_SMALL_SIZES = [96, 256, 384] as const;
  */
 export const WARM_WIDTHS = [640, 1280, 960, 256, 96] as const;
 
+/**
+ * The share of `items` to handle on a given day when only `perRun` can be handled at a time: the same share all day, the next share
+ * tomorrow, wrapping round, so every item is reached within `ceil(items.length / perRun)` days.
+ */
+export function pickWindow<T>(items: T[], dayIndex: number, perRun: number): T[] {
+  if (items.length <= perRun) return items;
+  const start = (dayIndex * perRun) % items.length;
+  return Array.from({ length: perRun }, (_, i) => items[(start + i) % items.length] as T);
+}
+
 /** The addresses that make Next.js prepare each photograph at each warm width, as a browser would ask for them. */
 export function warmTargets(siteUrl: string, photoUrls: string[]): string[] {
   const origin = siteUrl.replace(/\/+$/, "");

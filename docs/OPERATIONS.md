@@ -78,8 +78,10 @@ Orders, customers and messages live only in the Postgres database; uploaded file
 ## 6. Scheduled work
 
 `vercel.json` runs `/api/cron/housekeeping` daily (21:00 UTC). It deletes old rate-limit counters and removes uploads that were never
-attached to anything. It needs `CRON_SECRET`; without it the endpoint refuses every request. If a step fails the other still runs and the
-failure is logged in the Vercel function logs.
+attached to anything. It also refreshes the resized copies of published product photographs: each day it asks for the next 40 photographs
+(wrapping round) at the sizes customers use, so a copy the network has thrown away is made overnight and not by a customer. It stops by
+itself after about 40 seconds. It needs `CRON_SECRET`; without it the endpoint refuses every request. If a step fails the others still run
+and the failure is logged in the Vercel function logs. The response lists what each step did, including `photoSizesRefreshed`.
 
 ## 7. When something looks wrong
 
