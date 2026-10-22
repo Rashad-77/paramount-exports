@@ -1,10 +1,11 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
- * An endless row of cards: the cards are laid out three times and, whenever the row drifts out of the middle copy, it is moved
+ * An endless row of cards: the cards are laid out three times (the real copy in the middle, in the page, and a read-only copy either
+ * side, added once the page has loaded) and, whenever the row drifts out of the middle copy, it is moved
  * back by exactly one copy's width (invisibly, because the copies are identical), so it never reaches an end. The row runs edge to
  * edge under the heading (`header`). Black previous / next arrowheads are always visible, centred on the cards; each press moves
  * about one card. The row also scrolls by touch, trackpad and keyboard. The two extra copies are hidden from assistive
@@ -16,6 +17,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
  */
 export function ScrollRow({ label, children, header, autoplay = false, pxPerSecond = 42, onDark = false, centered = false }: { label: string; children: ReactNode; header: ReactNode; autoplay?: boolean; pxPerSecond?: number; onDark?: boolean; centered?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
+  const main = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const [reduced, setReduced] = useState(false);
@@ -40,11 +42,39 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     else if (el.scrollLeft > w * 1.5) el.scrollTo({ left: el.scrollLeft - w, behavior: "instant" });
   }, [setWidth]);
 
-  // Start on the middle copy so there is room to go either way.
-  useLayoutEffect(() => {
+  // The page carries one copy of the cards (the real one, in the middle). Once the page has loaded, a read-only copy is made before it and
+  // another after it, so the row can run endlessly without the page having to carry and start up three copies. The view is moved along
+  // by one copy's width, so the same cards stay in front of the visitor.
+  useEffect(() => {
     const el = ref.current;
-    const w = setWidth();
-    if (el && w > 0) el.scrollTo({ left: w, behavior: "instant" });
+    const real = main.current;
+    if (!el || !real) return;
+    const made: HTMLElement[] = [];
+    const build = () => {
+      const copy = (n: number) => {
+        const c = real.cloneNode(true) as HTMLElement;
+        c.dataset.copy = String(n);
+        c.setAttribute("aria-hidden", "true");
+        c.setAttribute("inert", "");
+        c.querySelectorAll("[id]").forEach((x) => x.removeAttribute("id"));
+        made.push(c);
+        return c;
+      };
+      const left = el.scrollLeft;
+      el.insertBefore(copy(0), real);
+      el.appendChild(copy(2));
+      const w = setWidth();
+      if (w > 0) el.scrollTo({ left: left + w, behavior: "instant" });
+    };
+    // Safari has no idle callback: a short wait does the same job there.
+    const hasIdle = typeof window.requestIdleCallback === "function";
+    const handle = hasIdle ? window.requestIdleCallback(build, { timeout: 1200 }) : window.setTimeout(build, 300);
+    return () => {
+      if (hasIdle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
+      if (made.length) el.scrollTo({ left: 0, behavior: "instant" });
+      made.forEach((c) => c.remove());
+    };
   }, [setWidth]);
 
   useEffect(() => {
@@ -151,14 +181,11 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
           role="group"
           aria-label={label}
           tabIndex={0}
-          className={"relative flex gap-5 overflow-x-auto pb-2 " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
+          className={"relative flex gap-5 overflow-x-auto pb-2 [overflow-anchor:none] " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
         >
-          {[0, 1, 2].map((copy) => (
-            // The two extra copies are only there to make the row endless.
-            <div key={copy} data-copy={copy} className="contents" aria-hidden={copy === 0 ? undefined : true} inert={copy === 0 ? undefined : true}>
-              {children}
-            </div>
-          ))}
+          <div ref={main} data-copy="1" className="contents">
+            {children}
+          </div>
         </div>
         <button type="button" className={btn + " left-2"} onClick={() => go(-1)} aria-label={`Previous: ${label}`}>
           <ChevronLeft aria-hidden="true" className="size-7" strokeWidth={1.75} />
