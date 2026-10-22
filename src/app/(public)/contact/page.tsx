@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
@@ -31,7 +31,7 @@ function Channel({ icon: Icon, title, value, href, cta, external = false }: { ic
       {href ? (
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">
           {cta}
-          <ArrowRight aria-hidden="true" className="ct-arrow size-4" />
+
           {external ? <span className="sr-only"> (opens in a new tab)</span> : null}
         </span>
       ) : null}
@@ -147,7 +147,7 @@ export default async function ContactPage() {
             ) : null}
           </Reveal>
           <Link href="/gallery#gallery" className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
-            See the gallery <ArrowRight aria-hidden="true" className="size-4" />
+            See the gallery
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-px bg-white md:grid-cols-4">

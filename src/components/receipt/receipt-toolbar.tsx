@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ export function ReceiptToolbar({ backHref, backLabel = "Back to the order", link
     <div className={styles.toolbar}>
       {backHref ? (
         <Link href={backHref} className="inline-flex items-center gap-1.5 underline">
-          <ArrowLeft aria-hidden="true" className="size-4" /> {backLabel}
+{backLabel}
         </Link>
       ) : (
         <span />

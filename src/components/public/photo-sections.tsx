@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ImagePlaceholder } from "./image-placeholder";
 import { Reveal } from "./reveal";
@@ -31,7 +30,7 @@ function MosaicSection({ id, anchor, eyebrow, title, tiles, link }: MosaicProps)
           </div>
           {link ? (
             <Link href={link.href} className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
-              {link.label} <ArrowRight aria-hidden="true" className="size-4" />
+              {link.label}
             </Link>
           ) : null}
         </Reveal>

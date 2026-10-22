@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { previousPage } from "@/components/nav-trail";
@@ -26,7 +25,7 @@ export function BackLink({ href, to, history = false, tone = "light", className 
         }
       }}
     >
-      <ArrowLeft aria-hidden="true" className="size-3.5" />
+
       Back
       <span className="sr-only"> to {to}</span>
     </Link>

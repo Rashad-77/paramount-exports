@@ -1,17 +1,4 @@
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Clock,
-  Hammer,
-  Handshake,
-  Mail,
-  MapPin,
-  Phone,
-  Quote,
-  Ruler,
-  Star,
-  TreeDeciduous,
-} from "lucide-react";
+import { Clock, Hammer, Handshake, Mail, MapPin, Phone, Quote, Ruler, Star, TreeDeciduous } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
@@ -368,7 +355,7 @@ export default async function HomePage() {
             <Reveal variant="up" className="shrink-0 pb-1">
               <Link href="/products" className="link-arrow text-text">
                 See the full collection{" "}
-                <ArrowRight aria-hidden="true" className="size-3.5" />
+
               </Link>
             </Reveal>
           </div>
@@ -394,11 +381,7 @@ export default async function HomePage() {
                           : r.all || r.note}
                       </span>
                     </span>
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="size-5 shrink-0 text-text transition-transform duration-300 group-hover:translate-x-1.5"
-                      strokeWidth={1.5}
-                    />
+
                   </span>
                 </Link>
               </Reveal>
@@ -451,7 +434,7 @@ export default async function HomePage() {
                   className="link-arrow mt-6 self-start text-[var(--leaf)]"
                 >
                   See the full process{" "}
-                  <ArrowRight aria-hidden="true" className="size-3.5" />
+
                 </Link>
               </div>
             </Reveal>
@@ -530,7 +513,7 @@ export default async function HomePage() {
           <div className="mt-10">
             <Link href="/products" className="link-arrow text-text">
               See the full collection{" "}
-              <ArrowRight aria-hidden="true" className="size-3.5" />
+
             </Link>
           </div>
         </div>
@@ -563,7 +546,7 @@ export default async function HomePage() {
               </p>
               <Link href="/about" className="link-arrow mt-6 text-text">
                 Read our story{" "}
-                <ArrowRight aria-hidden="true" className="size-3.5" />
+
               </Link>
             </Reveal>
             <dl className="mt-12 grid sm:grid-cols-3">
@@ -866,7 +849,7 @@ export default async function HomePage() {
                       className="pill absolute left-3 top-3"
                     >
                       Open in maps{" "}
-                      <ArrowUpRight aria-hidden="true" className="size-3.5" />
+
                       <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   ) : null}

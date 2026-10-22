@@ -182,7 +182,7 @@ export function GlassCascade({ label, allLabel, groups, value, onChange }: { lab
           {sideGroup ? (
             <ul role="listbox" aria-label={sideGroup.name} className="gs-panel gc-side" style={{ "--gc-top": `${sideTop}px` } as CSSProperties}>
               <li role="presentation" className="gc-back" onClick={closeSide}>
-                <ChevronLeft aria-hidden="true" className="gc-chev" strokeWidth={1.75} /> Back
+                Back
               </li>
               {sideOptions.map((o, j) => (
                 <li

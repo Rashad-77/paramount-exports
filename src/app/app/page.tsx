@@ -1,6 +1,5 @@
 import { OrderTag, EnquiryTag } from "@/components/app/tags";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageHeader, Panel } from "@/components/ui/page-header";
 import {
@@ -62,7 +61,7 @@ function More({ href, children }: { href: string; children: ReactNode }) {
       className="inline-flex items-center gap-1 text-sm underline"
       href={href}
     >
-      {children} <ArrowRight aria-hidden="true" className="size-3.5" />
+      {children}
     </Link>
   );
 }

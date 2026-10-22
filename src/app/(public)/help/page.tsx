@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageIntro } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
@@ -57,7 +56,7 @@ export default async function HelpPage() {
               </ol>
               <p className="mt-6">
                 <Link href="/track" className="link-arrow text-text">
-                  Track your order <ArrowRight aria-hidden="true" className="size-3.5" />
+                  Track your order
                 </Link>
               </p>
             </section>
@@ -103,7 +102,7 @@ export default async function HelpPage() {
               </p>
               <p className="mt-4">
                 <Link href="/custom#quotation" className="link-arrow text-text">
-                  Request quotation <ArrowRight aria-hidden="true" className="size-3.5" />
+                  Request quotation
                 </Link>
               </p>
             </section>

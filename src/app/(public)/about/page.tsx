@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
@@ -116,7 +115,7 @@ export default async function AboutPage() {
                   <span className="font-display mt-3 block text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold leading-tight text-brand">{c.title}</span>
                   <span className="mt-2 block max-w-sm text-base leading-relaxed text-text-muted">{c.body}</span>
                   <span className="go mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
-                    {c.cta} <ArrowRight aria-hidden="true" className="size-4" />
+                    {c.cta}
                   </span>
                 </Link>
               </Reveal>
