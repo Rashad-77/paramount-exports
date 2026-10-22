@@ -6,6 +6,7 @@ import { PanelSelect } from "@/components/app/panel-select";
 import { useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { AvailabilityTag, type AvailabilityState } from "@/components/public/availability-tag";
 import { Alert, StatusBadge } from "@/components/ui/status";
 import { formatMoney } from "@/lib/money";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
@@ -233,7 +234,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                 {preview.shortDescription ? <p className="mt-1 text-sm">{preview.shortDescription}</p> : null}
                 <p className="mt-3 text-lg font-medium">{preview.price ? formatMoney(preview.price, currency) : <span className="text-sm font-normal text-text-muted">No price: customers can ask for a quotation</span>}</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {preview.availability ? <StatusBadge tone={preview.availability === "sold" ? "warning" : "success"}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}{preview.availability === "in_stock" && preview.stock ? `: ${preview.stock} available` : ""}</StatusBadge> : null}
+                  {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}{preview.availability === "in_stock" && preview.stock ? `: ${preview.stock} available` : ""}</AvailabilityTag> : null}
                   {preview.featured ? <StatusBadge tone="info">Featured on the homepage</StatusBadge> : null}
                   {preview.premium ? <span className="inline-flex items-center border border-walnut-dark bg-walnut-dark px-2 py-0.5 text-xs font-medium text-ivory">Premium range</span> : null}
                 </div>
