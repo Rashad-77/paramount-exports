@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+// The staff area's typeface; the public site does not use it, so only this area downloads it.
+import "@fontsource-variable/inter";
 import { signOut } from "@/app/(auth)/login/actions";
 import { AppShell } from "@/components/app/app-shell";
 import { demoDeploymentEnabled } from "@/lib/auth/demo-deployment";

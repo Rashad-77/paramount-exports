@@ -27,7 +27,7 @@ export default async function PremiumPage() {
         <BackBar href="/" to="home" />
         <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} />
         <div className="container-page w-full pt-24 pb-[clamp(2.5rem,6vw,4.5rem)]">
-          <h1 id="premium-page-title" className="prem-title prem-title-xl rise-in">
+          <h1 id="premium-page-title" className="prem-title prem-title-xl">
             Premium range
           </h1>
         </div>

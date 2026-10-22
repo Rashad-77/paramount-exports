@@ -1,8 +1,4 @@
 @import "tailwindcss";
-@import "@fontsource-variable/urbanist";
-@import "@fontsource-variable/epilogue";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/cormorant";
 @import "../styles/tokens.css";
 @import "../styles/wood.css";
 @import "../styles/public.css";
@@ -226,27 +222,6 @@
     }
   }
 
-  /* One gentle entrance for the hero copy */
-  .rise-in {
-    animation: rise-in 900ms var(--ease-out) both;
-  }
-  .rise-in-2 {
-    animation-delay: 120ms;
-  }
-  .rise-in-3 {
-    animation-delay: 240ms;
-  }
-  @keyframes rise-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
   .skip-link {
     position: absolute;
     left: 0.5rem;
@@ -337,16 +312,6 @@
     .js [data-reveal="wipe"] > * {
       clip-path: none !important;
       transition: none !important;
-    }
-    .rise-in,
-    .rise-in-2,
-    .rise-in-3 {
-      animation-name: rise-fade !important;
-    }
-    @keyframes rise-fade {
-      from {
-        opacity: 0;
-      }
     }
   }
 

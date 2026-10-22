@@ -271,13 +271,13 @@ export default async function HomePage() {
         />
         <div className="container-page w-full pt-28 pb-16">
           <div className="max-w-xl">
-            <h1 id="hero-title" className="font-display rise-in mt-4">
+            <h1 id="hero-title" className="font-display mt-4">
               Expertise in woodworking, readymade or custom-built
             </h1>
-            <p className="rise-in rise-in-2 mt-5 max-w-md text-[1.0625rem] leading-relaxed text-white/80">
+            <p className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-white/80">
               Visit our showroom or order online.
             </p>
-            <div className="rise-in rise-in-3 mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink href="/products" size="cta" variant="light">
                 Browse collection
               </ButtonLink>

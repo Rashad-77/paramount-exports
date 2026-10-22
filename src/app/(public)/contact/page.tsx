@@ -60,9 +60,9 @@ export default async function ContactPage() {
       <header className="plain-band on-wood relative text-center">
         <BackBar href="/" to="home" />
         <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
-          <p className="eyebrow rise-in">Contact us</p>
-          <h1 className="font-display rise-in rise-in-2 mx-auto mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>
-          <p className="rise-in rise-in-3 mx-auto mt-5 max-w-lg text-base leading-relaxed on-wood-muted">Call, message or visit. Or write to us below.</p>
+          <p className="eyebrow">Contact us</p>
+          <h1 className="font-display mx-auto mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>
+          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed on-wood-muted">Call, message or visit. Or write to us below.</p>
         </div>
       </header>
 

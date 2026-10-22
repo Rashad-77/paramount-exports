@@ -19,15 +19,15 @@ export function AuthFrame({ name, heading, sub, children }: { name: string; head
   return (
     <main id="main" className="app-ui grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
       <div className="relative isolate hidden bg-walnut-dark overflow-hidden p-14 text-ivory lg:flex lg:flex-col lg:justify-between">
-        <p className="eyebrow rise-in relative !text-linen-dark">Owner area</p>
+        <p className="eyebrow relative !text-linen-dark">Owner area</p>
         <div className="relative">
-          <BrandLockup name={name} large className="rise-in rise-in-2" />
-          <div className="rise-in rise-in-3 mt-8 h-px w-24 bg-brand" />
+          <BrandLockup name={name} large />
+          <div className="mt-8 h-px w-24 bg-brand" />
         </div>
         <div aria-hidden="true" />
       </div>
       <div className="flex items-center justify-center px-[var(--gutter)] py-14">
-        <div className="rise-in w-full max-w-sm">
+        <div className="w-full max-w-sm">
           <BrandLockup name={name} dark className="lg:hidden" />
           <h1 className={"font-display mt-6 text-[2.25rem] leading-tight text-walnut lg:mt-0" + (sub ? "" : " mb-8")}>{heading}</h1>
           {sub ? <p className="mt-2 mb-8 text-sm text-text-muted">{sub}</p> : null}

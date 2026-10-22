@@ -44,11 +44,11 @@ export function PageIntro({ title, lead, eyebrow, action, brand, back }: { title
       {back ? <BackBar href={back.href} to={back.to} /> : null}
       <div className="container-page flex items-end justify-between gap-10 pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
         <div className="min-w-0">
-        {eyebrow === null ? null : <p className="eyebrow rise-in">{eyebrow ?? "Showroom and workshop"}</p>}
-        <h1 className={"font-display rise-in rise-in-2 max-w-3xl text-display text-white" + (eyebrow === null ? "" : " mt-4")}>{title}</h1>
-        {lead ? <p className="rise-in rise-in-3 mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
+        {eyebrow === null ? null : <p className="eyebrow">{eyebrow ?? "Showroom and workshop"}</p>}
+        <h1 className={"font-display max-w-3xl text-display text-white" + (eyebrow === null ? "" : " mt-4")}>{title}</h1>
+        {lead ? <p className="mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
         {action ? (
-          <div className="rise-in rise-in-3 mt-8">
+          <div className="mt-8">
             <ButtonLink href={action.href} size="cta" variant="light">
               {action.label}
             </ButtonLink>
@@ -57,7 +57,7 @@ export function PageIntro({ title, lead, eyebrow, action, brand, back }: { title
         </div>
         {brand ? (
           // The brand as in the header: the logo mark, then the name in two lines, left-aligned beside it, centred against the heading.
-          <div aria-hidden="true" className="rise-in rise-in-3 hidden shrink-0 items-center gap-[clamp(0.9rem,0.5rem+0.9vw,1.4rem)] self-center lg:flex">
+          <div aria-hidden="true" className="hidden shrink-0 items-center gap-[clamp(0.9rem,0.5rem+0.9vw,1.4rem)] self-center lg:flex">
             <Image src="/logo-mark.png" alt="" width={72} height={72} className="size-[clamp(2.6rem,1.6rem+2.2vw,3.6rem)] shrink-0 brightness-0 invert" />
             <p className="grid gap-[0.55rem] text-left leading-none">
               <span className="block whitespace-nowrap text-[clamp(1.5rem,0.9rem+1.6vw,2.25rem)] font-semibold uppercase tracking-[0.26em] text-white">{brandFirst}</span>

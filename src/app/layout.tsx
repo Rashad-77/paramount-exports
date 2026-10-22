@@ -4,6 +4,7 @@ import { publicEnv } from "@/lib/env";
 import { getBusinessSettings, isPlaceholderBusiness } from "@/lib/settings";
 import { NavTrail } from "@/components/nav-trail";
 import { Toaster } from "@/components/ui/toaster";
+import { cormorant, epilogue, urbanist } from "./fonts";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -27,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className={`${epilogue.variable} ${urbanist.variable} ${cormorant.variable}`} suppressHydrationWarning>
       <head>
         {/* Marks that scripting is available, so scroll-reveal content may start hidden (see Reveal). */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
