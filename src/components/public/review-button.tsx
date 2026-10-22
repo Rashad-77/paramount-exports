@@ -56,7 +56,7 @@ function useSavedWho(): { name: string; city: string } | null {
  * already tells us) their name and city. That is saved on our website and shown on the homepage once approved. Google does not let
  * another website post a review for someone, so a second step copies the words and opens Google's own review box.
  */
-function ReviewForm({ reviewUrl, onDone }: { reviewUrl: string; onDone: () => void }) {
+function ReviewForm({ reviewUrl, onDone }: { reviewUrl: string | null; onDone: () => void }) {
   const { state } = useFormState();
   const me = useAccountContact();
   const saved = useSavedWho();
@@ -100,6 +100,7 @@ function ReviewForm({ reviewUrl, onDone }: { reviewUrl: string; onDone: () => vo
   const stored = Boolean(remembered) && !accountCity;
 
   const postOnGoogle = async () => {
+    if (!reviewUrl) return;
     const words = text.trim();
     let result: "yes" | "blocked" = "yes";
     if (words) {
@@ -236,13 +237,17 @@ function ReviewForm({ reviewUrl, onDone }: { reviewUrl: string; onDone: () => vo
             <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
             {state.message}
           </p>
-          <p className="text-sm">Want it on Google too? We will copy your words so you can paste them there.</p>
-          <div className="flex justify-center">
-            <button type="button" onClick={postOnGoogle} className={buttonClasses("secondary", "md", "min-w-40")}>
-              Post on Google
-            </button>
-          </div>
-          {copied ? (
+          {reviewUrl ? (
+            <>
+              <p className="text-sm">Want it on Google too? We will copy your words so you can paste them there.</p>
+              <div className="flex justify-center">
+                <button type="button" onClick={postOnGoogle} className={buttonClasses("secondary", "md", "min-w-40")}>
+                  Post on Google
+                </button>
+              </div>
+            </>
+          ) : null}
+          {reviewUrl && copied ? (
             <p role="status" className="rv-ok flex items-start justify-center gap-2 text-center text-sm text-success">
               {copied === "yes" ? <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0" /> : <Copy aria-hidden="true" className="mt-0.5 size-4 shrink-0" />}
               {copied === "yes" ? "Google has opened in a new tab. Paste your words there." : "Google has opened in a new tab. Select and copy your words from your review above, then paste them there."}
@@ -259,9 +264,10 @@ export function ReviewButton({
   businessName,
   variant = "button",
   className,
-  children = "Review us on Google",
+  children = "Review us",
 }: {
-  reviewUrl: string;
+  /** Google's own review box. Without it the review is still saved on the website; only the "Post on Google" step is left out. */
+  reviewUrl: string | null;
   businessName: string;
   variant?: "button" | "link";
   className?: string;

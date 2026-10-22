@@ -39,7 +39,7 @@ function stepsFor(o: TrackedOrder) {
   return steps;
 }
 
-function Result({ timezone, review }: { timezone: string; review?: { url: string; name: string } | null }) {
+function Result({ timezone, review }: { timezone: string; review?: { url: string | null; name: string } | null }) {
   const { state } = useFormState();
   if (!state.ok) return null;
   const o = state.data as TrackedOrder | null | undefined;
@@ -58,8 +58,8 @@ export function OrderView({
 }: {
   o: TrackedOrder;
   timezone: string;
-  /** Where "Review us on Google" goes; with it, a delivered or collected order invites a review. */
-  review?: { url: string; name: string } | null;
+  /** A delivered or collected order invites a review. `url` is where "Post on Google" goes, when the business has set it up. */
+  review?: { url: string | null; name: string } | null;
 }) {
   const when = (iso: string | null) =>
     iso ? formatDateTime(iso, timezone) : null;
@@ -239,7 +239,7 @@ export function OrderView({
         <p className="ot-help">
           Happy with your order? Tell others about it:{" "}
           <ReviewButton reviewUrl={review.url} businessName={review.name} variant="link" className="underline">
-            review us on Google
+            {review.url ? "review us on Google" : "review us"}
           </ReviewButton>
           .
         </p>
@@ -259,7 +259,7 @@ export function TrackOrder({
 }: {
   initialReference?: string;
   timezone: string;
-  review?: { url: string; name: string } | null;
+  review?: { url: string | null; name: string } | null;
 }) {
   return (
     <ActionForm action={trackOrderAction}>

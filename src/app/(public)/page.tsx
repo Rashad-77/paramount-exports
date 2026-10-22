@@ -694,11 +694,9 @@ export default async function HomePage() {
                 </p>
               ) : null}
               {reviews.length > 0 ? <ViewAllButton /> : null}
-              {reviewLink ? (
-                <ReviewButton reviewUrl={reviewLink} businessName={business.name}>
-                  Review us
-                </ReviewButton>
-              ) : null}
+              <ReviewButton reviewUrl={reviewLink} businessName={business.name}>
+                Review us
+              </ReviewButton>
             </div>
           ) : null}
           </ReviewsViewer>

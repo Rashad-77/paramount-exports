@@ -17,7 +17,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
     <>
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Order" title="Track your order" lead="Enter your order number and we will show you where your order is." />
       <div className="container-page max-w-3xl py-[var(--section-space)]">
-        <TrackOrder initialReference={ref ? (normaliseOrderRef(ref) ?? undefined) : undefined} timezone={business.timezone} review={googleReviewLink(business) ? { url: googleReviewLink(business)!, name: business.name } : null} />
+        <TrackOrder initialReference={ref ? (normaliseOrderRef(ref) ?? undefined) : undefined} timezone={business.timezone} review={{ url: googleReviewLink(business), name: business.name }} />
       </div>
     </>
   );

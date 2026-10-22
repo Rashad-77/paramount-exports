@@ -31,7 +31,7 @@ export default async function AccountOrderPage({ params }: { params: Promise<{ r
           All your orders
         </Link>
       </p>
-      <OrderView o={order} timezone={business.timezone} review={googleReviewLink(business) ? { url: googleReviewLink(business)!, name: business.name } : null} />
+      <OrderView o={order} timezone={business.timezone} review={{ url: googleReviewLink(business), name: business.name }} />
     </div>
   );
 }

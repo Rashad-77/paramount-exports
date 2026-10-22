@@ -22,7 +22,7 @@ export default async function AboutPage() {
   const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
   return (
     <>
-      <PageIntro back={{ href: "/", to: "home" }} eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
+      <PageIntro back={{ href: "/", to: "home" }} eyebrow={null} title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />
 
       {/* Who we are: editable text beside a portrait photograph */}
       <section aria-labelledby="story-title" className="section-y">
