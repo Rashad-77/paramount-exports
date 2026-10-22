@@ -28,7 +28,12 @@ html:has(.page-body) {
 
   /* ── Header: a full-width bar fixed to the top of every page, clear frosted glass with black type ──────── */
   :root {
-    --head-h: 4.5rem;
+    --head-h: 3.5rem; /* 56px on a phone, 68px on a computer */
+  }
+  @media (min-width: 64rem) {
+    :root {
+      --head-h: 4.25rem;
+    }
   }
   .phead {
     position: fixed;
@@ -107,7 +112,7 @@ html:has(.page-body) {
   .phead .logo i,
   .foot .brand i {
     font-style: normal;
-    font-size: 0.66rem;
+    font-size: 0.75rem;
     font-weight: 400;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -129,7 +134,7 @@ html:has(.page-body) {
   .phead nav a {
     padding: 0.7rem 0.95rem;
     border: 1px solid transparent;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -150,9 +155,9 @@ html:has(.page-body) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.25rem;
+    width: 1.75rem;
     min-height: 2.75rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -175,7 +180,7 @@ html:has(.page-body) {
   }
   .phead .toggle {
     display: none;
-    width: 1.25rem;
+    width: 1.75rem;
     height: 2.75rem;
     align-items: center;
     justify-content: center;
@@ -219,7 +224,7 @@ html:has(.page-body) {
     }
     .phead nav a {
       padding: 0.95rem 0.5rem;
-      font-size: max(0.6875rem, 10.4px);
+      font-size: 0.75rem;
       border-width: 0 0 1px;
       border-color: rgb(28 25 22 / 0.1);
     }
@@ -785,7 +790,7 @@ html:has(.page-body) {
     }
   }
   .gal-cat {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -849,7 +854,7 @@ html:has(.page-body) {
     color: rgb(255 255 255 / 0.65);
   }
   .gal-ph {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -976,7 +981,7 @@ html:has(.page-body) {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1061,7 +1066,7 @@ html:has(.page-body) {
   }
   .process-box li > span:first-child {
     min-width: 1.25rem;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: var(--leaf);
   }
 
@@ -1202,7 +1207,7 @@ html:has(.page-body) {
     border-radius: 999px;
     background: #f1ece4;
     color: #1c1916;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1243,7 +1248,7 @@ html:has(.page-body) {
     background-position: right 0.9rem center;
     box-shadow: inset 0 1px 3px rgb(28 25 22 / 0.14);
     font-family: inherit;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1342,7 +1347,7 @@ html:has(.page-body) {
   }
   .gs-opt {
     padding: calc(0.65rem + 1px) 2.75rem calc(0.65rem - 1px) 1.1rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1567,7 +1572,7 @@ html:has(.page-body) {
       align-items: center;
       gap: 0.5rem;
       padding: 0.65rem 1.1rem;
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -1638,7 +1643,7 @@ html:has(.page-body) {
     font-size: 0.95rem;
   }
   .foot .brand i {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .foot-grid {
     display: grid;
@@ -1679,7 +1684,7 @@ html:has(.page-body) {
     color: rgb(255 255 255 / 0.65);
   }
   .foot-head {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -1719,7 +1724,7 @@ html:has(.page-body) {
     gap: 0.6rem;
     padding-block: 1.1rem 1.4rem;
     border-top: 1px solid rgb(255 255 255 / 0.15);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgb(255 255 255 / 0.55);
@@ -1800,14 +1805,14 @@ html:has(.page-body) {
   --pf-ring: rgb(51 28 17 / 0.12);
 }
 .page-body main form:not(.cat-bar) label:not(.flex) {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #1c1916;
 }
 .page-body main form:not(.cat-bar) label:not(.flex) span:not([aria-hidden]) {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.04em;
   text-transform: none;
@@ -1963,7 +1968,7 @@ html:has(.page-body) {
   border: 1px solid #331c11;
   border-radius: 0;
   background: #fff;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2017,7 +2022,7 @@ html:has(.page-body) {
   border: 1px solid rgb(28 25 22 / 0.14);
   border-radius: 0;
   background: #fff;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2113,7 +2118,7 @@ html:has(.page-body) {
   color: #331c11;
 }
 .acct-h a {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2157,7 +2162,7 @@ html:has(.page-body) {
 }
 .acct-stat-l {
   display: block;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2237,7 +2242,7 @@ a.acct-row {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2313,7 +2318,7 @@ a.acct-row {
 .acct-feed time {
   display: block;
   margin-top: 0.3rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(28 25 22 / 0.62);
@@ -2350,7 +2355,7 @@ a.acct-row {
   color: #fff;
 }
 .acct-price span {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2382,7 +2387,7 @@ a.acct-row {
 .acct-steps li {
   position: relative;
   padding: 0 0 1rem 1.75rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2444,7 +2449,7 @@ a.acct-row {
   }
 }
 .acct-details dt {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2498,7 +2503,7 @@ a.acct-row {
   padding: 0;
   border: 0;
   background: none;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2538,7 +2543,7 @@ a.acct-row {
   border: 1px solid rgb(28 25 22 / 0.3);
   border-radius: 0;
   background: #fff;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2608,7 +2613,7 @@ a.acct-row {
 .wish::before {
   content: "";
   position: absolute;
-  inset: -0.5625rem;
+  inset: -0.625rem;
 }
 @media (hover: hover) {
   .wish:hover {
@@ -2669,7 +2674,7 @@ a.acct-row {
   .sale-badge {
     height: 2.1em;
     padding: 0 0.7em;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
   }
 }
@@ -2740,7 +2745,7 @@ a.acct-row {
   margin-bottom: 1.75rem;
 }
 .ot-kicker {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2812,7 +2817,7 @@ a.acct-row {
   box-shadow: 0 0 0 4px rgb(51 28 17 / 0.15);
 }
 .ot-step {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   line-height: 1.35;
@@ -2837,11 +2842,11 @@ a.acct-row {
 }
 @media (max-width: 30rem) {
   .ot-step {
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
   }
   .ot-when {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
   }
 }
 /* The three facts under the bar */
@@ -2859,7 +2864,7 @@ a.acct-row {
 }
 .ot-facts dt,
 .ot-sum dt {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2970,7 +2975,7 @@ a.acct-row {
   padding: 0.25rem 0.5rem;
   background: #ffd400;
   font-family: var(--font-sans);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -2980,7 +2985,7 @@ a.acct-row {
 }
 .pp-code {
   margin-top: 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3001,7 +3006,7 @@ a.acct-row {
   display: block;
   margin-bottom: 0.6rem;
   padding: 0;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3050,7 +3055,7 @@ a.acct-row {
 }
 .pp-lead span {
   margin-right: 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3136,7 +3141,7 @@ a.acct-row {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   background: transparent;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3177,7 +3182,7 @@ a.acct-row {
 }
 .pdp-prose h3 {
   margin: 1.75rem 0 0.6rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -3225,7 +3230,7 @@ a.acct-row {
   }
 }
 .pdp-specs dt {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3298,7 +3303,7 @@ a.acct-row {
   border: 1px solid #331c11;
   border-radius: 0;
   background: transparent;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -3583,7 +3588,7 @@ a.acct-row {
   }
   .pcard .pcard-body p {
     margin-top: 0.25rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     line-height: 1.4;
   }
   .pcard .pcard-body p:last-child {
@@ -3600,7 +3605,7 @@ a.acct-row {
   font-size: 0.85rem;
 }
 .foot-head {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 .foot-list a,
 .foot-list .plain,
@@ -3613,16 +3618,16 @@ a.acct-row {
 .foot-list a,
 .foot-list .plain,
 .foot-tag {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 .foot .brand b {
   font-size: 0.78rem;
 }
 .foot-head {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
 }
 .foot-bottom {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
 }
 
 /* Footer: tighter spacing. */
@@ -3687,7 +3692,7 @@ a.acct-row {
 /* The sale strip across the top of a product page: slimmer. */
 .pdp-page .sale-bar {
   padding: 0.45rem 1rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -3765,26 +3770,18 @@ a.acct-row {
 .ot-facts dt,
 .ot-sum dt,
 .ot-sum-total dt {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
 }
 .ot-step {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
 }
 .ot-when {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 .ot-thumb {
   width: 3rem;
   height: 3rem;
 }
-
-/* Text size changes smoothly with the screen width, with no steps: 70% on a 375px phone, growing evenly to 93.75% (15px) at 1024px and wider.
-   Everything sized in rem follows it (the staff area sets its own). A tablet lands at about 80% (12.8px) at 640px. */
-html:not(:has(.app-ui)) {
-  font-size: clamp(70%, calc(70% + (100vw - 23.4375rem) * 0.005855), 93.75%);
-}
-
-
 
 /* No underline appears when something is hovered or highlighted, anywhere on the site (links that are always underlined stay as they are). */
 .foot a:hover {
@@ -3872,7 +3869,7 @@ html:not(:has(.app-ui)) {
 
 .acct-nav a,
 .acct-nav button {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 /* Account figures: every tile the same height, with the number on the same line whatever the label length. */
@@ -4013,7 +4010,7 @@ html:not(:has(.app-ui)) {
   margin-top: 0.1rem;
 }
 
-/* Footer sizes in rem, so it follows the same 0.7 / 0.8 / 1 steps as the rest of the site: 9.8px on phones, 11.2px on tablets, 14px on desktop. */
+/* Footer text is 14px at every screen size. */
 .foot,
 .foot .foot-list a,
 .foot .foot-list li.plain,
@@ -4024,12 +4021,12 @@ html:not(:has(.app-ui)) {
   font-size: 1.05rem;
 }
 .foot .brand i {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
 }
 .foot .foot-head,
 .foot .foot-bottom,
 .foot .foot-bottom a {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 /* Profile: one container, with the parts divided by thin lines. */
@@ -4075,7 +4072,7 @@ html:not(:has(.app-ui)) {
   min-height: 2.5rem;
   padding: 0 1.1rem;
   border: 1px solid rgb(28 25 22 / 0.3);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4132,7 +4129,7 @@ select:focus {
   padding: 0 !important;
   border: 0 !important;
   background: none !important;
-  font-size: 0.6875rem !important;
+  font-size: 0.75rem !important;
   font-weight: 600 !important;
   letter-spacing: 0.14em !important;
   line-height: 1.4 !important;
@@ -4150,7 +4147,7 @@ select:focus {
 .acct-addr-no {
   margin: 0;
   text-align: right;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgb(28 25 22 / 0.55);
@@ -4318,7 +4315,7 @@ select:focus {
   vertical-align: middle;
 }
 .acct-table thead th {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4421,7 +4418,7 @@ select:focus {
     font-size: 0.78rem;
   }
   .acct-table thead th {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   .acct-table .pic {
     width: 0;
@@ -4443,7 +4440,7 @@ select:focus {
   margin-bottom: 0.9rem;
 }
 .acct-sort > span {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4511,7 +4508,7 @@ select:focus {
 .acct-search-wrap .acct-search,
 .acct-search-wrap .acct-search::placeholder,
 .acct-sort .gs-button {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -4544,7 +4541,7 @@ select:focus {
 
 /* Status as plain text in the account tables and lists. */
 .acct-status {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -4587,11 +4584,11 @@ select:focus {
     width: 5.5rem;
   }
   .acct-status {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
   }
   .acct-cell-note {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -4604,7 +4601,7 @@ select:focus {
 .sale-badge {
   height: 2.4em;
   padding: 0 0.8em;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 /* A card's price line wraps instead of running past the card: old price, then the new one. */
@@ -4639,7 +4636,7 @@ select:focus {
   border-radius: 2px;
   background: #ffd400;
   color: #1c1916;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
@@ -4679,7 +4676,7 @@ select:focus {
 }
 .cat-pagebtn {
   padding: 0 0.875rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4721,11 +4718,11 @@ span.cat-pagebtn {
 /* ── Smooth type: every size below grows steadily from a 375px phone to a 1024px screen (no jumps at 480, 640, 768 or 1152px) ── */
 .fl-a { font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00289), 0.9375rem); }
 .fl-b { font-size: clamp(1.35rem, calc(1.35rem + (100vw - 375px) * 0.01271), 1.9rem); }
-.fl-c { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00289), 0.8125rem); }
+.fl-c { font-size: clamp(0.75rem, calc(0.75rem + (100vw - 375px) * 0.00289), 0.8125rem); }
 .fl-d { font-size: clamp(0.75rem, calc(0.75rem + (100vw - 375px) * 0.00289), 0.875rem); }
 .fl-e { font-size: clamp(1rem, calc(1rem + (100vw - 375px) * 0.00289), 1.125rem); }
-.fl-g { font-size: clamp(0.625rem, calc(0.625rem + (100vw - 375px) * 0.00144), 0.6875rem); }
-.fl-input { font-size: clamp(0.875rem, calc(1rem + (100vw - 375px) * -0.00289), 1rem); }
+.fl-g { font-size: 0.75rem; }
+.fl-input { font-size: 1rem; }
 .phead .logo b,
 .foot .brand b {
   font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00347), 1.05rem);
@@ -4733,20 +4730,20 @@ span.cat-pagebtn {
 }
 .phead .logo i,
 .foot .brand i {
-  font-size: clamp(0.56rem, calc(0.56rem + (100vw - 375px) * 0.00231), 0.66rem);
+  font-size: 0.75rem;
   letter-spacing: clamp(0.22em, calc(0.22em + (100vw - 375px) * 0.0012), 0.3em);
 }
-.gs-field .gs-button { font-size: clamp(0.875rem, calc(1rem + (100vw - 375px) * -0.00289), 1rem); }
+.gs-field .gs-button { font-size: 1rem; }
 .page-body main form:not(.cat-bar) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
 .page-body main form:not(.cat-bar) textarea,
-.page-body main form:not(.cat-bar) .gs-field .gs-button { font-size: clamp(0.8125rem, calc(1rem + (100vw - 375px) * -0.00433), 1rem); }
+.page-body main form:not(.cat-bar) .gs-field .gs-button { font-size: 1rem; }
 .acct-table { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00220), 0.875rem); }
 .acct-table-order a small { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00075), 0.8125rem); }
 .acct-table-order a span,
 .acct-table .acct-table-total td { font-size: clamp(0.78rem, calc(0.78rem + (100vw - 375px) * 0.00220), 0.875rem); }
-.acct-table thead th { font-size: clamp(0.62rem, calc(0.62rem + (100vw - 375px) * 0.00156), 0.6875rem); }
-.acct-status { font-size: clamp(0.62rem, calc(0.62rem + (100vw - 375px) * 0.00156), 0.6875rem); }
-.acct-cell-note { font-size: clamp(0.72rem, calc(0.72rem + (100vw - 375px) * 0.00214), 0.8125rem); }
+.acct-table thead th { font-size: 0.75rem; }
+.acct-status { font-size: 0.75rem; }
+.acct-cell-note { font-size: clamp(0.75rem, calc(0.75rem + (100vw - 375px) * 0.00214), 0.8125rem); }
 .ptabs-bar { font-size: clamp(0.9375rem, calc(0.9375rem + (100vw - 375px) * 0.00144), 1rem); }
 
 /* Product card: the text part is built from the card's own width, so the photo and the text keep the same proportion at every screen size.
@@ -4766,7 +4763,7 @@ span.cat-pagebtn {
 }
 .pcard .pcard-body h3 {
   margin-top: 0;
-  font-size: clamp(9.5px, 7.2cqw, 17px);
+  font-size: clamp(12px, 7.2cqw, 17px);
   line-height: 1.25;
 }
 .pcard .pcard-body p.pcard-price {
@@ -4778,7 +4775,7 @@ span.cat-pagebtn {
   row-gap: 0.1rem;
   min-width: 0;
   margin-top: 2.2cqw;
-  font-size: clamp(9px, 5.6cqw, 14px);
+  font-size: clamp(12px, 5.6cqw, 14px);
   line-height: 1.4;
 }
 .pcard .pcard-body p.pcard-price .price-was {
@@ -4820,7 +4817,7 @@ span.cat-pagebtn {
   align-items: center;
   gap: 0.3rem;
   padding-block: 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.16em;
@@ -5054,7 +5051,7 @@ span.cat-pagebtn {
 .rv-dialog legend,
 .rv-dialog label,
 .rv-dialog p {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.7;
 }
 .rv-dialog legend,
@@ -5070,7 +5067,7 @@ span.cat-pagebtn {
 .rv-dialog .rv-field::placeholder {
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 .rv-dialog .rv-star {
   color: #000;
@@ -5082,7 +5079,7 @@ span.cat-pagebtn {
   stroke: #000;
 }
 .rv-dialog .rv-go {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -5164,19 +5161,19 @@ span.cat-pagebtn {
 }
 .rv-all #dialog-desc {
   margin-top: 0.375rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .rv-all .rv-name {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 .rv-all .rv-city {
   margin-top: 0.125rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
@@ -5246,7 +5243,7 @@ span.cat-pagebtn {
 }
 .rv-dialog #dialog-desc,
 .rv-dialog p {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 .page-body main .rv-dialog.rv-dialog form fieldset {
   margin: 0;
@@ -5259,7 +5256,7 @@ span.cat-pagebtn {
   margin: 0 0 0.5rem;
   padding: 0;
   font-family: var(--font-sans);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0.18em;
@@ -5268,7 +5265,7 @@ span.cat-pagebtn {
   text-align: center;
 }
 .page-body main .rv-dialog.rv-dialog form label:not(.flex) {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.16em;
 }
 .page-body main .rv-dialog.rv-dialog form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
@@ -5288,17 +5285,17 @@ span.cat-pagebtn {
 .page-body main .rv-dialog.rv-dialog form input::placeholder,
 .page-body main .rv-dialog.rv-dialog form textarea::placeholder {
   font-family: var(--font-sans);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .page-body main .rv-dialog.rv-dialog form p[role="alert"],
 .page-body main .rv-dialog.rv-dialog form p[id$="-hint"] {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 400;
 }
 .rv-dialog .rv-go {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 /* Review pop-up header: the title and line of text are centred across the whole window (the close cross floats at the corner), and set small enough that the line stays on one row. */
@@ -5319,7 +5316,7 @@ span.cat-pagebtn {
 }
 .rv-dialog #dialog-desc {
   margin-top: 0.375rem;
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   line-height: 1.6;
 }
@@ -5328,5 +5325,54 @@ span.cat-pagebtn {
 @media (min-width: 48rem) {
   .phead .in {
     padding-right: 0.75rem;
+  }
+}
+
+/* ── Tap targets: at least 44px tall on touch screens and phones (WCAG 2.5.5 / Apple HIG). The look is the same, the pressable area is larger. ── */
+@media (pointer: coarse), (max-width: 63.99rem) {
+  .foot .foot-list a,
+  .foot .foot-link,
+  .foot .foot-bottom a {
+    min-height: 2.75rem;
+    padding-block: 0;
+    align-items: center;
+  }
+  .foot .foot-link {
+    display: inline-flex;
+  }
+  .foot .foot-list {
+    gap: 0;
+  }
+  .foot .foot-list li:has(> a, > button) {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  .link-arrow,
+  .back-link,
+  .cat-clear,
+  .prem-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  .cat-control {
+    min-height: 2.75rem;
+  }
+  .pill {
+    min-height: 2.75rem;
+  }
+  .btn {
+    min-height: 2.75rem;
+  }
+}
+
+/* Two footer columns side by side on a phone: the headings take the same height, so both lists start level even when one heading wraps. */
+@media (max-width: 47.99rem) {
+  .foot nav > .foot-head,
+  .foot .foot-grid > div > .foot-head {
+    display: flex;
+    align-items: flex-end;
+    min-height: 3.4em;
   }
 }

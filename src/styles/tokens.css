@@ -72,10 +72,10 @@
   --text-4xl: 3rem;
   --text-5xl: 3.75rem;
   /* Fluid display sizes for the public site (use with font-display) */
-  --text-headline: clamp(1.625rem, 1.2rem + 1.9vw, 2.75rem);
+  --text-headline: clamp(1.75rem, 1.3rem + 1.6vw, 2.75rem); /* 28px phone, 33px tablet, 41px desktop */
   --text-headline--line-height: 1.08;
   --text-headline--letter-spacing: -0.03em;
-  --text-display: clamp(2rem, 1.2rem + 3.6vw, 4.25rem);
+  --text-display: clamp(2rem, 1.2rem + 3.6vw, 4.25rem); /* 33px phone, 47px tablet, 65px desktop */
   --text-display--line-height: 1.02;
   --text-display--letter-spacing: -0.035em;
 
@@ -108,7 +108,18 @@
   --section-space: clamp(4rem, 2.5rem + 6vw, 8rem);
 }
 
+/* Side margins grow with the screen: 20px on a phone, 24px, 32px, then 40px (the usual 16-24 / 24-32 / 32-64 steps). */
+@media (min-width: 40rem) {
+  :root {
+    --gutter: 1.5rem;
+  }
+}
 @media (min-width: 48rem) {
+  :root {
+    --gutter: 2rem;
+  }
+}
+@media (min-width: 64rem) {
   :root {
     --gutter: 2.5rem;
   }

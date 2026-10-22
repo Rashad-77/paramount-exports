@@ -309,7 +309,7 @@ export default async function HomePage() {
               <p className="font-display text-[clamp(3.5rem,2.4rem+4vw,5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
                 <CountUp to={20} suffix="+" />
               </p>
-              <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text">
+              <p className="mt-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text">
                 Years of woodwork
               </p>
               <p className="mt-1.5 text-[0.8125rem] text-text-muted">
@@ -409,7 +409,7 @@ export default async function HomePage() {
           <div className="mt-12">
             <Reveal variant="up">
               <div className="process-box">
-                <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <p className="text-[0.75rem] font-semibold uppercase tracking-[0.22em] text-white/60">
                   Process
                 </p>
                 <ol>

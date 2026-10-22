@@ -159,7 +159,7 @@
   .eyebrow {
     display: inline-flex;
     align-items: center;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.22em;
     text-transform: uppercase;
@@ -538,7 +538,7 @@ a.dash-figure:hover {
   font-weight: 500;
 }
 .app-tabs a span {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -611,7 +611,7 @@ body:has(.app-ui) {
 }
 .staff-brand-name i {
   margin-top: 0.15rem;
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   font-style: normal;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -847,7 +847,7 @@ html:has(.app-ui) {
 }
 .app-ui .gs-field .gs-opt[data-heading] {
   padding: 0.5rem 0.25rem 0.1rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

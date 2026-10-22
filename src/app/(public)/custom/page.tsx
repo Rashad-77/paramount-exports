@@ -28,7 +28,7 @@ export default function CustomPage() {
           <Reveal
             as="section"
             aria-labelledby="process-title"
-            className="relative isolate bg-walnut p-8 text-ivory md:p-12 lg:-mr-px"
+            className="relative isolate bg-walnut p-5 text-ivory sm:p-8 md:p-12 lg:-mr-px"
           >
             <h2
               id="process-title"
@@ -38,7 +38,7 @@ export default function CustomPage() {
             </h2>
             <ol className="mt-7 space-y-9">
               {CUSTOM_STEPS.map((s, i) => (
-                <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-4">
+                <li key={s.title} className="grid grid-cols-[2rem_1fr] gap-3 sm:grid-cols-[3rem_1fr] sm:gap-4">
                   <span
                     aria-hidden="true"
                     className="text-[2rem] font-bold leading-none text-ivory/95"

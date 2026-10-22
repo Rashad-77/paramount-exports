@@ -56,7 +56,7 @@ export default async function AboutPage() {
               <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
                 {ownerName}
               </h2>
-              {ownerRole ? <p className="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
+              {ownerRole ? <p className="mt-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
               <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
                 {ownerBio.split(/\n{2,}/).map((para, i) => (
                   <p key={i}>{para.trim()}</p>

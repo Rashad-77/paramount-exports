@@ -111,7 +111,7 @@ export function DateField({
               <ChevronRight aria-hidden="true" className="size-4" />
             </button>
           </div>
-          <div className="grid grid-cols-7 text-center text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-text-muted">
+          <div className="grid grid-cols-7 text-center text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-text-muted">
             {DAYS.map((d) => (
               <span key={d} className="py-1">
                 {d}

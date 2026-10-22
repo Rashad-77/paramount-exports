@@ -12,5 +12,5 @@ const FILL: Record<AvailabilityState, string> = {
 
 /** The availability label on a product page: a solid, square-cornered tag in capitals, coloured by state. */
 export function AvailabilityTag({ state, children, className }: { state: AvailabilityState; children: ReactNode; className?: string }) {
-  return <span className={cn("inline-flex items-center px-[11px] py-[7px] text-[11px] font-medium uppercase leading-none tracking-[0.16em] text-white", FILL[state], className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center px-[11px] py-[7px] text-[12px] font-medium uppercase leading-none tracking-[0.16em] text-white", FILL[state], className)}>{children}</span>;
 }

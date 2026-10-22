@@ -90,7 +90,7 @@ export default async function ContactPage() {
                 <span className="ct-pin" aria-hidden="true">
                   <MapPin className="size-6" strokeWidth={1.5} />
                 </span>
-                {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
+                {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[0.75rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
               </>
             )}
           </div>
@@ -105,7 +105,7 @@ export default async function ContactPage() {
               <p className="mt-3 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.address ?? "Showroom address to be added."}</p>
             </div>
             <div className="md:border-l md:border-[var(--leaf)] md:pl-8">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-text-muted">Opening hours</p>
+              <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-muted">Opening hours</p>
               <p className="mt-2 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.openingHours ?? "Opening hours to be added."}</p>
             </div>
             {mapped ? (
