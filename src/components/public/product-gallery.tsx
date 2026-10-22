@@ -5,11 +5,9 @@ import { SiteImage } from "./site-image";
 import { ImagePlaceholder } from "./image-placeholder";
 import { cn } from "@/lib/cn";
 
-const SLOTS = 5;
-
 /**
- * The main photograph with a row of square frames under it. Every frame can be pressed: a frame holding a photograph shows it large,
- * and a frame still waiting for a photograph shows the placeholder, so the row always shows where more pictures go.
+ * The main photograph with a row of square frames under it, one per photograph. Pressing a frame shows that photograph large. Each frame
+ * is a fifth of the row wide, and the frames are centred, so fewer than five photographs leave no empty frames.
  */
 export function ProductGallery({
   images,
@@ -26,7 +24,6 @@ export function ProductGallery({
   premium?: boolean;
 }) {
   const [active, setActive] = useState(0);
-  const total = Math.max(SLOTS, images.length);
   const current = images[active];
   return (
     <div>
@@ -50,46 +47,37 @@ export function ProductGallery({
         )}
         {heart}
       </div>
-      <ul
-        className="mt-3 grid grid-cols-5 gap-2"
-        aria-label="Product photographs"
-      >
-        {Array.from({ length: total }, (_, i) => {
-          const img = images[i];
-          return (
-            <li key={img?.id ?? `empty-${i}`}>
+      {images.length > 0 ? (
+        <ul
+          className="mt-3 flex flex-wrap justify-center gap-2"
+          aria-label="Product photographs"
+        >
+          {images.map((img, i) => (
+            <li key={img.id} className="w-[calc((100%-2rem)/5)]">
               <button
                 type="button"
                 onClick={() => setActive(i)}
-                aria-label={
-                  img
-                    ? `Show photograph ${i + 1} of ${images.length}`
-                    : `Photograph ${i + 1}: not added yet`
-                }
+                aria-label={`Show photograph ${i + 1} of ${images.length}`}
                 aria-pressed={i === active}
                 className={cn(
-                  "relative block aspect-square w-full cursor-pointer overflow-hidden border",
-                  img ? "bg-linen" : "bg-linen/60",
-                  !img && i !== active && "border-dashed",
+                  "relative block aspect-square w-full cursor-pointer overflow-hidden border bg-linen",
                   i === active
                     ? "border-walnut border-2"
                     : "border-border hover:border-walnut",
                 )}
               >
-                {img ? (
-                  <SiteImage
-                    src={img.url}
-                    alt=""
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                  />
-                ) : null}
+                <SiteImage
+                  src={img.url}
+                  alt=""
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                />
               </button>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }

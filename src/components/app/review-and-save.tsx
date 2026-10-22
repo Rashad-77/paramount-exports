@@ -129,24 +129,23 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                             </span>
                           ) : null}
                         </div>
-                        <ul className="pg-thumbs" aria-label="Photographs">
-                          {Array.from({ length: Math.max(5, preview.photos.length) }, (_, i) => {
-                            const ph = preview.photos[i];
-                            return (
-                              <li key={ph?.key ?? `empty-${i}`}>
+                        {preview.photos.length > 0 ? (
+                          <ul className="pg-thumbs" aria-label="Photographs">
+                            {preview.photos.map((ph, i) => (
+                              <li key={ph.key}>
                                 <button
                                   type="button"
-                                  onClick={() => (ph ? setShowroomPhoto(i) : undefined)}
-                                  aria-label={ph ? `Show photograph ${i + 1}` : `Photograph ${i + 1}: not added yet`}
-                                  className={"pg-thumb" + (ph ? "" : " is-empty") + (ph && i === Math.min(showroomPhoto, preview.photos.length - 1) ? " is-on" : "")}
+                                  onClick={() => setShowroomPhoto(i)}
+                                  aria-label={`Show photograph ${i + 1}`}
+                                  className={"pg-thumb" + (i === Math.min(showroomPhoto, preview.photos.length - 1) ? " is-on" : "")}
                                 >
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  {ph ? <img src={ph.url} alt="" className="size-full object-cover" /> : null}
+                                  <img src={ph.url} alt="" className="size-full object-cover" />
                                 </button>
                               </li>
-                            );
-                          })}
-                        </ul>
+                            ))}
+                          </ul>
+                        ) : null}
                       </div>
                     </div>
                     <div className="prem-info">

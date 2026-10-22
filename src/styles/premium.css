@@ -352,11 +352,15 @@
 }
 .pg-thumbs {
   margin-top: 0.75rem;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
   list-style: none;
   padding: 0;
+}
+.pg-thumbs li {
+  width: calc((100% - 2rem) / 5);
 }
 .pg-thumb {
   position: relative;
@@ -393,11 +397,6 @@
 }
 .pg-thumb.is-on img {
   opacity: 1;
-}
-.pg-thumb.is-empty {
-  cursor: default;
-  background: transparent;
-  border-style: dashed;
 }
 
 /* The words beside it */

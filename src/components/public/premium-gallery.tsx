@@ -5,12 +5,11 @@ import { cn } from "@/lib/cn";
 import { ImagePlaceholder } from "./image-placeholder";
 import { SiteImage } from "./site-image";
 
-const SLOTS = 5;
-const pad = (n: number) => String(n).padStart(2, "0");
+const pad =(n: number) => String(n).padStart(2, "0");
 
 /**
  * A large rectangular photograph with the row of square frames under it, as on the product pages: pressing a frame cross-fades to that
- * photograph. Frames still waiting for a photograph stay as dashed outlines, so the row always shows where more pictures go.
+ * photograph. There is one frame per photograph, a fifth of the row wide and centred, so fewer than five leave no empty frames.
  */
 export function PremiumGallery({ images, name, priority = false }: { images: Array<{ id: string; url: string; alt: string }>; name: string; priority?: boolean }) {
   const [active, setActive] = useState(0);
@@ -21,7 +20,6 @@ export function PremiumGallery({ images, name, priority = false }: { images: Arr
     setPrev(active);
     setActive(i);
   };
-  const total = Math.max(SLOTS, images.length);
   return (
     <div className="pg">
       <div className="pg-main">
@@ -49,25 +47,23 @@ export function PremiumGallery({ images, name, priority = false }: { images: Arr
           </span>
         ) : null}
       </div>
-      <ul className="pg-thumbs" aria-label={`${name} photographs`}>
-        {Array.from({ length: total }, (_, i) => {
-          const img = images[i];
-          return (
-            <li key={img?.id ?? `empty-${i}`}>
+      {images.length > 0 ? (
+        <ul className="pg-thumbs" aria-label={`${name} photographs`}>
+          {images.map((img, i) => (
+            <li key={img.id}>
               <button
                 type="button"
-                onClick={() => (img ? show(i) : undefined)}
-                aria-label={img ? `Show photograph ${i + 1} of ${images.length}` : `Photograph ${i + 1}: not added yet`}
+                onClick={() => show(i)}
+                aria-label={`Show photograph ${i + 1} of ${images.length}`}
                 aria-pressed={i === active}
-                aria-disabled={img ? undefined : true}
-                className={cn("pg-thumb", !img && "is-empty", i === active && "is-on")}
+                className={cn("pg-thumb", i === active && "is-on")}
               >
-                {img ? <SiteImage src={img.url} alt="" fill sizes="96px" className="object-cover" /> : null}
+                <SiteImage src={img.url} alt="" fill sizes="96px" className="object-cover" />
               </button>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
