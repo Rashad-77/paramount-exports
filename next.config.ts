@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    // Few sizes, so most phones and computers share the same stored copies of a photograph (the list is mirrored in src/lib/image-sizes.ts).
+    deviceSizes: [640, 960, 1280, 1920],
+    imageSizes: [96, 256, 384],
     // A resized photograph is kept for 31 days (the default is 4 hours), so a visitor rarely waits for one to be made. Every upload gets a new
     // address, so a replaced photograph is never served from an old copy.
     minimumCacheTTL: 2678400,
