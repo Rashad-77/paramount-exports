@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/products" },
 };
 
-// Search results are per-request; the underlying pages stay fast through the database indexes.
+// The page itself is built per request (it follows the search and filters in the address), but the catalogue reads it makes are shared and
+// kept for a few minutes (see catalogue-public.ts), so a visitor rarely waits on the database. Searches are always read fresh.
 export const dynamic = "force-dynamic";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() || undefined;

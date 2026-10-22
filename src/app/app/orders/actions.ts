@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
+import { clearCatalogueCache } from "@/server/catalogue-cache";
 import {
   orderDetailsSchema,
   orderPaidSchema,
@@ -18,6 +19,7 @@ import {
 } from "@/server/orders";
 
 const refresh = (id: string) => {
+  clearCatalogueCache();
   revalidatePath("/app/orders");
   revalidatePath(`/app/orders/${id}`);
   revalidatePath("/app");

@@ -1,5 +1,6 @@
 import { outer } from "@/lib/db/outer";
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
@@ -9,6 +10,7 @@ import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { moneyString } from "@/lib/money";
 import { alias } from "drizzle-orm/pg-core";
 import { publicFileUrl } from "./files";
+import { CATALOGUE_REVALIDATE, CATALOGUE_TAG } from "./catalogue-cache";
 
 /**
  * Read-only queries behind the public website. They take no actor because they expose ONLY published,
@@ -131,7 +133,7 @@ function orderFor(sort: CatalogueSort | undefined): SQL[] {
   return [desc(products.createdAt)];
 }
 
-export async function listPublicProducts(query: CatalogueQuery) {
+async function listPublicProductsImpl(query: CatalogueQuery) {
   if (!hasDatabase()) return { items: [] as PublicCard[], total: 0, page: 1, pageCount: 1 };
   const db = getDb();
   const page = Math.max(1, query.page ?? 1);
@@ -285,7 +287,7 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
   return rows.map((r) => ({ ...r, count: r.count + rows.filter((c) => c.parentId === r.id).reduce((n, c) => n + c.count, 0) }));
 }
 
-export async function listPublicMaterials(): Promise<string[]> {
+async function listPublicMaterialsImpl(): Promise<string[]> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .selectDistinct({ material: products.material })
@@ -386,10 +388,30 @@ async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; up
   return rows;
 }
 
+/**
+ * The catalogue reads below are kept for a few minutes and shared by every visitor, so the collection page does not query the database
+ * for each one. Anything that changes what they show clears them at once (see clearCatalogueCache); the time limit is only a safety net.
+ * Results are plain data, so they survive being stored. A failed read throws and is therefore never stored.
+ */
+const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: string) =>
+  unstable_cache(read, ["catalogue", name], { tags: [CATALOGUE_TAG], revalidate: CATALOGUE_REVALIDATE });
+
+const listPublicProductsKept = kept(listPublicProductsImpl, "products");
+const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");
+const listPublicMaterialsKept = kept(listPublicMaterialsImpl, "materials");
+const listPremiumProductsKept = kept(listPremiumProductsImpl, "premium");
+
+/** A search is typed by the visitor and could be anything, so searches are never stored; neither are oddly long filters or far-off pages. */
+export const listPublicProducts = (query: CatalogueQuery) =>
+  query.q || (query.category?.length ?? 0) > 80 || (query.material?.length ?? 0) > 80 || (query.page ?? 1) > 50
+    ? listPublicProductsImpl(query)
+    : listPublicProductsKept(query);
+export const listPublicMaterials = () => listPublicMaterialsKept();
+
 /* Build-safe public readers (see duringBuildSafe). */
 export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
-export const listPremiumProducts = (...args: Parameters<typeof listPremiumProductsImpl>) => duringBuildSafe("listPremiumProducts", [] as Awaited<ReturnType<typeof listPremiumProductsImpl>>, () => listPremiumProductsImpl(...args));
-export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesImpl(...args));
+export const listPremiumProducts = (...args: Parameters<typeof listPremiumProductsImpl>) => duringBuildSafe("listPremiumProducts", [] as Awaited<ReturnType<typeof listPremiumProductsImpl>>, () => listPremiumProductsKept(...args));
+export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesKept(...args));
 export const getPublicProduct = (...args: Parameters<typeof getPublicProductImpl>) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(...args));
 export const listGalleryProjects = (...args: Parameters<typeof listGalleryProjectsImpl>) => duringBuildSafe("listGalleryProjects", [] as Awaited<ReturnType<typeof listGalleryProjectsImpl>>, () => listGalleryProjectsImpl(...args));
 export const listPublishedProductSlugs = (...args: Parameters<typeof listPublishedProductSlugsImpl>) => duringBuildSafe("listPublishedProductSlugs", [] as Awaited<ReturnType<typeof listPublishedProductSlugsImpl>>, () => listPublishedProductSlugsImpl(...args));

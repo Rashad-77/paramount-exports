@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
+import { clearCatalogueCache } from "@/server/catalogue-cache";
 import { categoryCreateSchema, categorySchema } from "@/lib/schemas/catalogue";
 import { validation } from "@/lib/errors";
 import { reqUuid } from "@/lib/validation";
@@ -16,6 +17,7 @@ import {
 } from "@/server/catalogue";
 
 const refresh = () => {
+  clearCatalogueCache();
   revalidatePath("/app/categories");
   revalidatePath("/products");
   revalidatePath("/", "layout");

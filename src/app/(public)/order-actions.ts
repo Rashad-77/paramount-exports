@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
+import { clearCatalogueCache } from "@/server/catalogue-cache";
 import { validation } from "@/lib/errors";
 import { activeCustomer } from "@/lib/auth/customer";
 import { getAccountSettings } from "@/lib/settings";
@@ -62,6 +63,7 @@ export async function placeOrderAction(_prev: ActionState, formData: FormData): 
       const { id, reference } = placed;
       // The order took pieces off the shelf, so the stock shown on the stored product pages is out of date.
       revalidatePath("/products/[slug]", "page");
+      clearCatalogueCache();
       notifyNewOrder(id);
       return { redirectTo: `/order/confirmed?ref=${encodeURIComponent(reference)}&pay=${input.paymentMethod}&how=${input.fulfilment}` };
     },

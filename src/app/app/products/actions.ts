@@ -6,10 +6,12 @@ import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { reqUuid } from "@/lib/validation";
+import { clearCatalogueCache } from "@/server/catalogue-cache";
 import { warmProductPhotos } from "@/server/image-warm";
 import { createProduct, deleteProducts, setProductsArchived, setProductsPublished, setProductsUnpublished, updateProduct } from "@/server/catalogue";
 
 const refresh = (id?: string) => {
+  clearCatalogueCache();
   revalidatePath("/app/products");
   if (id) revalidatePath(`/app/products/${id}`);
   revalidatePath("/products");
