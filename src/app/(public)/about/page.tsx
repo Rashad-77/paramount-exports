@@ -5,6 +5,7 @@ import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
 import { DEFAULT_ABOUT } from "@/lib/default-pages";
+import { SAMPLE_OWNER } from "@/lib/history";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 
@@ -16,10 +17,10 @@ const STEP = 80;
 
 export default async function AboutPage() {
   const [pages, business] = await Promise.all([getPageContent(), getBusinessSettings()]);
-  // The owner section appears once the owner has written their name and introduction in Website content; nothing is made up before then.
-  const ownerName = pages.ownerName?.trim() || null;
+  // The owner's name and introduction are written in src/lib/history.ts (SAMPLE_OWNER); the dashboard no longer edits them.
+  const ownerName = pages.ownerName?.trim() || SAMPLE_OWNER.name;
   const ownerRole = pages.ownerRole?.trim() || null;
-  const ownerBio = pages.ownerBio?.trim() || null;
+  const ownerBio = pages.ownerBio?.trim() || SAMPLE_OWNER.bio;
   return (
     <>
       <PageIntro back={{ href: "/", to: "home" }} eyebrow="About us" title="About us" lead="A woodworking business making ready-made and custom-built furniture. Here is who we are, how we work, and what you can expect from us." brand={business.name} />

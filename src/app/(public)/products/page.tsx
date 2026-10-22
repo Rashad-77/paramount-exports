@@ -49,7 +49,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         action={{ href: "/custom#quotation", label: "Request quotation" }}
       />
       <div className="bg-white pt-10 pb-16">
-        {premium[0] ? <PremiumBanner image={premium[0].images[0] ?? null} /> : null}
+        {premium[0] ? <PremiumBanner /> : null}
         <CatalogueBrowser
           wishlist={(await getAccountSettings()).enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}
