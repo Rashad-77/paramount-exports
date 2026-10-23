@@ -10,7 +10,7 @@ The flows the system must keep working, and the automated test behind each. Data
 | 3 | The order is stored as `new`, unpaid, with the price **read from the database** | `orders.db` `places an order priced from the database…`; e2e |
 | 4 | A price changed in the browser is ignored | `orders.db` `never trusts a price…`; e2e `price tampered with…` |
 | 5 | Hidden, unpublished, unpriced or unknown items cannot be ordered; repeated lines merge | `orders.db` |
-| 6 | The checkout requires an address for delivery, sensible payment choices, consent, and quantities 1 to 99 | `orders.db` `validates the checkout…`; e2e `checkout refuses an incomplete form` |
+| 6 | The checkout requires an address for delivery, sensible payment choices, and quantities 1 to 99 | `orders.db` `validates the checkout…`; e2e `checkout refuses an incomplete form` |
 | 7 | An order keeps its names and prices when the catalogue changes later | `orders.db` `keeps its prices and names…` |
 | 8 | Orders from one address or phone number are rate limited | `orders.db` `limits how many orders…` |
 | 9 | Staff move an order new → confirmed → in progress → delivered; impossible moves are refused; every step is audited | `orders.db` `moves an order through its statuses…` |

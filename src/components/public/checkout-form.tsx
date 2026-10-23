@@ -4,7 +4,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { placeOrderAction } from "@/app/(public)/order-actions";
-import { ActionForm, FCheckbox, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
 import { SignedInLine, useAccountContact } from "@/components/public/signed-in-contact";
 import { useAccount } from "@/components/public/use-account";
@@ -161,7 +161,6 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
 
         <FTextArea name="note" label="Anything we should know?" rows={3} maxLength={1000} hint="For example the best time to call, or access to your building." />
         {turnstileSiteKey ? <div className="cf-turnstile" data-sitekey={turnstileSiteKey} /> : null}
-        <FCheckbox name="consent" label="I agree to be contacted about this order." hint="We use your details only for this order. See the Privacy notice." />
         <SubmitButton size="cta" pendingLabel="Placing your order…">
           Place order
         </SubmitButton>

@@ -8,6 +8,7 @@ import { isUniqueViolation } from "@/lib/db/errors";
 import { galleryImages, galleryProjects, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
 import { AppError, conflict, notFound, validation } from "@/lib/errors";
 import {
+  MAX_PHOTOS,
   resolveSlug,
   type CategoryInput,
   type GalleryProjectInput,
@@ -599,7 +600,11 @@ export async function attachProductImages(actor: Actor, productId: string, fileI
   await withTx(async (tx) => {
     const [p] = await tx.select({ id: products.id }).from(products).where(eq(products.id, productId)).for("update");
     if (!p) throw notFound("That product could not be found.");
-    const [{ m } = { m: -1 }] = await tx.select({ m: sql<number>`coalesce(max(${productImages.position}), -1)::int` }).from(productImages).where(eq(productImages.productId, productId));
+    const [{ m, n } = { m: -1, n: 0 }] = await tx
+      .select({ m: sql<number>`coalesce(max(${productImages.position}), -1)::int`, n: sql<number>`count(*)::int` })
+      .from(productImages)
+      .where(eq(productImages.productId, productId));
+    if (n + verified.length > MAX_PHOTOS) throw validation(`A product can have up to ${MAX_PHOTOS} photos.`, { fileIds: [`A product can have up to ${MAX_PHOTOS} photos.`] });
     let pos = m + 1;
     await linkUploads(tx, verified, { type: "product", id: productId });
     for (const f of verified) await tx.insert(productImages).values({ productId, fileId: f.id, altText, position: pos++ });

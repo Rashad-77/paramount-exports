@@ -393,7 +393,6 @@
 }
 .pg-thumb.is-on {
   border-color: var(--prem-gold);
-  box-shadow: inset 0 0 0 1px var(--prem-gold);
 }
 .pg-thumb.is-on img {
   opacity: 1;

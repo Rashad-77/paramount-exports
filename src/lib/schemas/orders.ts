@@ -39,14 +39,12 @@ export const checkoutSchema = z
     paymentMethod: enumOf(PAYMENT_METHODS, "payment option"),
     note: optText("Note", 1000),
     cart: cartField,
-    consent: checkbox,
     // Anti-spam fields (not stored)
     [HONEYPOT_FIELD]: z.string().optional(),
     formToken: z.string().optional(),
     "cf-turnstile-response": z.string().optional(),
   })
   .superRefine((v, ctx) => {
-    if (!v.consent) ctx.addIssue({ code: "custom", path: ["consent"], message: "Please agree to be contacted about this order." });
     if (v.fulfilment === "delivery" && !v.address) ctx.addIssue({ code: "custom", path: ["address"], message: "Enter the address we should deliver to." });
     if (v.fulfilment === "pickup" && v.paymentMethod === "on_delivery") {
       ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose bank transfer or pay at the showroom for a showroom pickup." });

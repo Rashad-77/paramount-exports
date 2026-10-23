@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, FileText, Minus, Plus, ShoppingBag } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -183,12 +182,9 @@ export function PurchasePanel({
         ) : null}
       </div>
 
-      <p className="pp-status" role="status">
-        {added ? (
-          <>
-            <Link href="/cart">View your cart</Link> or keep browsing.
-          </>
-        ) : null}
+      {/* The button itself says "Added to cart"; this is only for screen readers. */}
+      <p className="sr-only" role="status">
+        {added ? "Added to your cart." : ""}
       </p>
       {orderable.length === 0 && mode === "direct" ? <p className="pp-note">Ask us for the price. We reply within one working day.</p> : null}
     </section>

@@ -3109,16 +3109,6 @@ a.acct-row {
   flex: 1 1 11rem;
   justify-content: center;
 }
-.pp-status {
-  min-height: 1.5rem;
-  margin-top: 0.9rem;
-  font-size: 0.875rem;
-}
-.pp-status a {
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
 .pp-note {
   font-size: 0.875rem;
   color: var(--color-text-muted);
@@ -3691,12 +3681,6 @@ a.acct-row {
 }
 
 /* Phones: the line under the buttons takes less room. */
-@media (max-width: 47.99rem) {
-  .pp-status {
-    min-height: 1.25rem;
-    margin-top: 0.5rem;
-  }
-}
 
 /* The sale strip across the top of a product page: slimmer. */
 .pdp-page .sale-bar {
@@ -4852,13 +4836,15 @@ span.cat-pagebtn {
     stroke-width: 2.75;
   }
 }
-/* On a dark banner it is pinned under the header, level with the left edge of the page content */
+/* On a dark banner it is pinned under the header, a little lower than the header's edge and closer to the left edge of the screen than the page content */
 .back-bar {
   position: absolute;
   z-index: 5;
   left: 0;
   right: 0;
-  top: calc(var(--head-h) + 0.1rem + 0.2cm);
+  top: calc(var(--head-h) + 0.1rem + 0.2cm + 0.6rem);
+  max-width: none;
+  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 /* The open/close arrow on "Add another address": ours, not the browser's triangle */

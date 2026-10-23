@@ -61,7 +61,8 @@ export type CategoryCreateInput = z.output<typeof categoryCreateSchema>;
 
 export const VISIBILITY = ["draft", "published", "archived"] as const;
 export const VISIBILITY_LABEL: Record<(typeof VISIBILITY)[number], string> = { draft: "Draft: hidden from the website", published: "Published: shown on the website", archived: "Archived: hidden and kept on record" };
-export const MAX_PHOTOS = 20;
+/** A product shows up to five photos: the thumbnail row under the main photo holds five. */
+export const MAX_PHOTOS = 5;
 
 const dimPart = z.preprocess((v) => (typeof v === "string" ? v.trim() : ""), z.string().regex(/^(\d+(\.\d+)?)?$/, "Enter dimensions as numbers, like 180 or 7.5."));
 const specEntrySchema = z.object({

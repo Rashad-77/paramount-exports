@@ -72,8 +72,8 @@ export function ProductGallery({
                 className={cn(
                   "relative block aspect-square w-full cursor-pointer overflow-hidden border bg-linen",
                   i === active
-                    ? "border-walnut border-2"
-                    : "border-border hover:border-walnut",
+                    ? "border-walnut"
+                    : "border-border hover:border-border-strong",
                 )}
               >
                 <SiteImage

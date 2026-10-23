@@ -95,13 +95,13 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     expect(parsed.success && Object.keys(parsed.data.cart[0]!)).toEqual(["variantId", "quantity"]);
   });
 
-  it("validates the checkout: address for delivery, sensible payment choices, consent, quantities", () => {
+  it("validates the checkout: address for delivery, sensible payment choices, quantities", () => {
     const base = { name: "A B", phone: "0771110009", consent: "on", cart: JSON.stringify([{ variantId: tableVariant, quantity: 1 }]) };
     expect(checkoutSchema.safeParse({ ...base, fulfilment: "delivery", paymentMethod: "on_delivery" }).success).toBe(false); // no address
     expect(checkoutSchema.safeParse({ ...base, fulfilment: "delivery", address: "1 Road", paymentMethod: "at_showroom" }).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...base, fulfilment: "pickup", paymentMethod: "on_delivery" }).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...base, fulfilment: "pickup", paymentMethod: "at_showroom" }).success).toBe(true);
-    expect(checkoutSchema.safeParse({ ...base, fulfilment: "pickup", paymentMethod: "bank_transfer", consent: undefined }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, fulfilment: "pickup", paymentMethod: "bank_transfer" }).success).toBe(true);
     for (const bad of ["[]", "not json", JSON.stringify([{ variantId: tableVariant, quantity: 0 }]), JSON.stringify([{ variantId: tableVariant, quantity: 100 }])]) {
       expect(checkoutSchema.safeParse({ ...base, fulfilment: "pickup", paymentMethod: "at_showroom", cart: bad }).success, bad).toBe(false);
     }
