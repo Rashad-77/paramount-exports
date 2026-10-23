@@ -4836,15 +4836,19 @@ span.cat-pagebtn {
     stroke-width: 2.75;
   }
 }
-/* On a dark banner it is pinned under the header, a little lower than the header's edge and closer to the left edge of the screen than the page content */
+/* On a dark banner it sits exactly where it sits on a product page: the same distance under the header and the same distance from the left (the page content's edge). */
 .back-bar {
   position: absolute;
   z-index: 5;
   left: 0;
   right: 0;
-  top: calc(var(--head-h) + 0.1rem + 0.2cm + 0.6rem);
-  max-width: none;
-  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
+  top: calc(var(--head-h) + 1px + 0.5rem);
+  text-align: left;
+}
+@media (min-width: 48rem) {
+  .back-bar {
+    top: calc(var(--head-h) + 1px + 0.75rem);
+  }
 }
 
 /* The open/close arrow on "Add another address": ours, not the browser's triangle */

@@ -15,17 +15,19 @@ export default async function OrderConfirmedPage({ searchParams }: { searchParam
   const how = one(sp.how);
   const business = await getBusinessSettings();
   return (
-    <div className="container-page pb-[var(--section-space)] pt-3">
-      <div className="mb-6">
-        <BackLink href="/" to="home" tone="dark" />
+    <div className="pdp-page">
+      <div className="container-page pb-[var(--section-space)] pt-2 md:pt-3">
+        <div className="mb-6">
+          <BackLink href="/" to="home" tone="dark" />
+        </div>
+        <OrderConfirmed
+          reference={ref && /^(ORD-\d{6}|[1-9]\d{8})$/.test(ref) ? ref : null}
+          payment={pay && (PAYMENT_METHODS as readonly string[]).includes(pay) ? (pay as PaymentMethod) : null}
+          fulfilment={how && (FULFILMENT as readonly string[]).includes(how) ? (how as Fulfilment) : null}
+          bankDetails={business.bankDetails}
+          phone={business.phone}
+        />
       </div>
-      <OrderConfirmed
-        reference={ref && /^(ORD-\d{6}|[1-9]\d{8})$/.test(ref) ? ref : null}
-        payment={pay && (PAYMENT_METHODS as readonly string[]).includes(pay) ? (pay as PaymentMethod) : null}
-        fulfilment={how && (FULFILMENT as readonly string[]).includes(how) ? (how as Fulfilment) : null}
-        bankDetails={business.bankDetails}
-        phone={business.phone}
-      />
     </div>
   );
 }
