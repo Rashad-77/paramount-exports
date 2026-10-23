@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
-import { GalleryBrowser, type GalleryItem } from "@/components/public/gallery-browser";
 import { BackBar } from "@/components/public/back-link";
+import { GallerySections } from "@/components/public/gallery-sections";
 import { HeroVideo } from "@/components/public/hero-video";
 import { ButtonLink } from "@/components/ui/button";
 import { GALLERY_VIDEO } from "@/lib/home-media";
-import { toGroups } from "@/lib/category-tree";
-import { listGalleryProjects, listPublicCategories } from "@/server/catalogue-public";
+import { listGalleryPhotos } from "@/server/catalogue-public";
 
-export const metadata: Metadata = { title: "Gallery", description: "Completed furniture projects.", alternates: { canonical: "/gallery" } };
+export const metadata: Metadata = { title: "Gallery", description: "Photographs of our showroom and our workshop.", alternates: { canonical: "/gallery" } };
 export const revalidate = 300;
 
 export default async function GalleryPage() {
-  const [projects, categories] = await Promise.all([listGalleryProjects(), listPublicCategories()]);
-  const items = buildItems(projects, categories);
+  const photos = await listGalleryPhotos();
   return (
     <>
       {/* Video hero, like the homepage: a silent looping clip under a dark gradient */}
@@ -21,19 +19,26 @@ export default async function GalleryPage() {
         <HeroVideo desktop={GALLERY_VIDEO.desktop} mobile={GALLERY_VIDEO.mobile} poster={GALLERY_VIDEO.poster} />
         <div className="container-page w-full pt-24 pb-[clamp(2.5rem,6vw,4.5rem)]">
           <div className="max-w-2xl">
-            <p className="eyebrow">Our work</p>
+            <p className="eyebrow">Our place</p>
             <h1 id="gallery-title" className="mt-4">
               Gallery
             </h1>
-            <p className="mt-5 max-w-lg fl-e leading-relaxed text-white/90">A selection of our completed projects.</p>
+            <p className="mt-5 max-w-lg fl-e leading-relaxed text-white/90">Our showroom and our workshop.</p>
           </div>
         </div>
       </section>
-      <section id="gallery" aria-label="Photographs" className="scroll-mt-20 bg-white section-y">
+      <div id="gallery">
+        <GallerySections
+          sections={[
+            { id: "showroom-title", anchor: "showroom", eyebrow: "The showroom", title: "Inside the showroom.", label: "Showroom photograph", photos: photos.showroom },
+            { id: "workshop-title", anchor: "workshop", eyebrow: "The workshop", title: "Inside the workshop.", label: "Workshop photograph", photos: photos.workshop },
+          ]}
+        />
+      </div>
+      <section aria-label="Next steps" className="border-t border-border bg-white pb-16 pt-12">
         <div className="container-page">
-          <GalleryBrowser items={items} categories={toGroups(categories)} />
-          <div className="mt-16 flex flex-col items-start gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-md text-base leading-relaxed text-text-muted">Want something like this made for you? Tell us the piece you have in mind.</p>
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-md text-base leading-relaxed text-text-muted">Want something made for you? Tell us the piece you have in mind, or come and see us.</p>
             <div className="flex flex-wrap gap-3">
               <ButtonLink href="/custom#quotation" size="cta">
                 Request quotation
@@ -47,20 +52,4 @@ export default async function GalleryPage() {
       </section>
     </>
   );
-}
-
-/** Every frame is the same shape, so the grid stays tidy. */
-const RATIO = 4 / 3;
-const PROJECT_FRAMES = 12;
-
-/** Real project photographs when there are any; grey stand-ins make up the rest so the page is never empty. */
-function buildItems(projects: Awaited<ReturnType<typeof listGalleryProjects>>, categories: Awaited<ReturnType<typeof listPublicCategories>>): GalleryItem[] {
-  const slugById = new Map(categories.map((c) => [c.id, c.slug]));
-  const groupOf = new Map(categories.map((c) => [c.slug, c.parentId ? (slugById.get(c.parentId) ?? null) : null]));
-  const real: GalleryItem[] = projects.flatMap((p) => p.images.map((img) => ({ id: img.id, category: "projects" as const, src: img.url, alt: img.alt || p.title, caption: p.title, ratio: RATIO, categorySlug: p.categorySlug, groupSlug: groupOf.get(p.categorySlug ?? "") ?? null })));
-  const spare: GalleryItem[] = Array.from({ length: Math.max(0, PROJECT_FRAMES - real.length) }, (_, i) => {
-    const caption = `Project ${real.length + i + 1}`;
-    return { id: `projects-${i}`, category: "projects" as const, src: null, alt: caption, caption, ratio: RATIO, categorySlug: null };
-  });
-  return [...real, ...spare];
 }

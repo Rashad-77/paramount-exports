@@ -9,13 +9,11 @@ import { ProductCard } from "@/components/public/product-card";
 import { ProductGallery } from "@/components/public/product-gallery";
 import { ProductTabs, type ProductTab } from "@/components/public/product-tabs";
 import { PurchasePanel } from "@/components/public/purchase-panel";
-import { quoteHref } from "@/lib/quote-link";
 import { WishlistButton } from "@/components/public/wishlist-button";
-import { ButtonLink } from "@/components/ui/button";
 import { customerAuthMode } from "@/lib/auth/customer";
 import { publicEnv } from "@/lib/env";
-import { percentOff } from "@/lib/sale";
-import { CUSTOMIZATIONS, CUSTOMIZATION_LABEL } from "@/lib/schemas/catalogue";
+import { formatMoney } from "@/lib/money";
+import { saleLabel } from "@/lib/sale";
 import { specText } from "@/lib/specifications";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct, listRelatedProducts } from "@/server/catalogue-public";
@@ -45,14 +43,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const List = ({ items }: { items: string[] }) => (
-  <ul className="pdp-list">
-    {items.map((t) => (
-      <li key={t}>{t}</li>
-    ))}
-  </ul>
-);
-
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const [p, business, accounts] = await Promise.all([getPublicProduct(slug), getBusinessSettings(), getAccountSettings()]);
@@ -61,7 +51,9 @@ export default async function ProductPage({ params }: Props) {
   const related = await listRelatedProducts(p.id, p.categoryId, 4);
 
   const site = publicEnv().NEXT_PUBLIC_SITE_URL;
-  const prices = p.variants.map((v) => v.price).filter((x): x is string => Boolean(x));
+  // A product has one price line (the first), which is what is sold.
+  const line = p.variants[0] ?? null;
+  const prices = line?.price ? [line.price] : [];
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -75,25 +67,18 @@ export default async function ProductPage({ params }: Props) {
     ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0] } } : {}),
   };
 
-  // A sale: the best discount among the options that are on sale.
-  const bestOff = p.variants.reduce<number | null>((best, v) => {
-    const off = percentOff(v.price, v.compare);
-    return off && (!best || off > best) ? off : best;
-  }, null);
+  // A sale: the label says the amount or the percentage, as the owner entered the discount.
+  const sale = saleLabel({ kind: p.discountKind, value: p.discountValue }, line?.price, line?.compare, (a) => formatMoney(a, business.currency));
 
   // The line under the name: the short description, or else the opening of the detailed one.
   // Under the name: only the short description. The long one, with the features and uses, is the first bar below.
   const lead = p.shortDescription;
-
-  const quote = { productId: p.id, name: p.name, wood: p.material, finish: p.finish, size: p.dimensions };
 
   // Only what applies to this piece is shown: an empty section never appears. The type comes first, then the rows staff added.
   const specs: Array<{ label: string; value: string }> = [
     { label: "Type", value: p.kind === "made_to_order" ? "Made to order" : "Ready-made" },
     ...p.specifications.map((s) => ({ label: s.label, value: specText(s) })),
   ].filter((s) => s.value);
-
-  const customs = CUSTOMIZATIONS.filter((c) => p.customization.includes(c));
 
   const tabs: ProductTab[] = [];
   if (p.description) {
@@ -120,22 +105,6 @@ export default async function ProductPage({ params }: Props) {
             </div>
           ))}
         </dl>
-      ),
-    });
-  }
-  if (customs.length) {
-    tabs.push({
-      id: "customization",
-      label: "Customization",
-      content: (
-        <div className="pdp-prose">
-          <p>This piece can be made to suit you. You can ask us for:</p>
-          <List items={customs.map((c) => CUSTOMIZATION_LABEL[c])} />
-          <p>Tell us what you need and we will send a price. There is no obligation.</p>
-          <ButtonLink href={quoteHref(quote)} size="cta">
-            Request a quote to customize
-          </ButtonLink>
-        </div>
       ),
     });
   }
@@ -192,7 +161,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="pdp-page">
-      {bestOff ? <p className="sale-bar">Sale · save up to {bestOff}%</p> : null}
+      {sale ? <p className="sale-bar">{sale}</p> : null}
       <div className="container-page pb-8 pt-2 md:pb-14 md:pt-3">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         <div className="mb-3">
@@ -222,10 +191,8 @@ export default async function ProductPage({ params }: Props) {
               productSlug={p.slug}
               image={p.images[0]?.url ?? null}
               currency={business.currency}
-              mode={p.purchaseMode}
               madeToOrder={p.kind === "made_to_order"}
-              quote={quote}
-              options={p.variants.map((v) => ({ id: v.id, label: v.label, sku: v.sku, price: v.price, compare: v.compare, stock: v.stock }))}
+              option={line ? { id: line.id, label: line.label, sku: line.sku, price: line.price, compare: line.compare, stock: line.stock } : null}
             />
           </div>
         </div>
@@ -239,7 +206,6 @@ export default async function ProductPage({ params }: Props) {
             kind="product_enquiry"
             wide
             productId={p.id}
-            variants={p.variants.map((v) => ({ id: v.id, label: v.label }))}
             turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
             submitLabel="Send enquiry"
           />

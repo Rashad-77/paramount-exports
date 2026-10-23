@@ -281,6 +281,20 @@
       "when": 1793894000000,
       "tag": "0039_customer_reviews",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793980400000,
+      "tag": "0040_product_discount",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794066800000,
+      "tag": "0041_gallery_showroom_workshop",
+      "breakpoints": true
     }
   ]
 }

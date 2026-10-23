@@ -54,6 +54,11 @@ export const NAV: NavGroup[] = [
         description: "The categories and subcategories the furniture is filed under, which visitors use to browse the collection.",
         pages: [page("Categories", "/app/categories", "products:view")],
       },
+      {
+        label: "Gallery",
+        description: "The photos on the Gallery page, in two sections: the showroom and the workshop.",
+        pages: [page("Gallery", "/app/gallery", "website:manage")],
+      },
     ],
   },
   {

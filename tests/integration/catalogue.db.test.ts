@@ -1,12 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Actor } from "@/lib/auth/permissions";
-import { productSchema, productUpdateSchema, variantSchema } from "@/lib/schemas/catalogue";
+import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import {
-  addVariant,
-  attachGalleryImages,
+  addGalleryPhotos,
   attachProductImages,
   createCategory,
-  createGalleryProject,
   createProduct,
   listProductsAdmin,
   makeMainImage,
@@ -14,20 +12,19 @@ import {
   setCategoryArchived,
   setProductArchived,
   updateProduct,
-  updateVariant,
 } from "@/server/catalogue";
-import { getPublicProduct, listGalleryProjects, listPremiumProducts, listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
+import { getPublicProduct, listGalleryPhotos, listPremiumProducts, listPublicCategories, listPublicProducts } from "@/server/catalogue-public";
 import { hasTestDb } from "../helpers/db";
 import { JPEG, makeActor, setupApp, uploadTestFile } from "../helpers/app";
 
 const cat = (name: string, extra = {}) => ({ name, slug: undefined, description: undefined, sortOrder: 0, isActive: true, ...extra });
 const upd = (o: Record<string, unknown>) => {
-  const r = productUpdateSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
+  const r = productUpdateSchema.safeParse({ kind: "stocked", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
 const prod = (o: Record<string, unknown>) => {
-  const r = productSchema.safeParse({ kind: "stocked", purchaseMode: "direct", sku: "SKU-1", ...o });
+  const r = productSchema.safeParse({ kind: "stocked", sku: "SKU-1", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
@@ -88,7 +85,7 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
   it("refuses to show a price publicly when no option has one", async () => {
     const id = await createProduct(manager, prod({ name: "Unpriced Stool", categoryId: tablesId, sku: "US-1" }));
     await expect(updateProduct(manager, id, upd({ name: "Unpriced Stool", categoryId: tablesId, showPrice: "on" }))).rejects.toMatchObject({ code: "VALIDATION", fieldErrors: { showPrice: expect.any(Array) } });
-    expect(productSchema.safeParse({ kind: "stocked", purchaseMode: "direct", sku: "S", name: "S", categoryId: tablesId, showPrice: "on" }).success).toBe(false);
+    expect(productSchema.safeParse({ kind: "stocked", sku: "S", name: "S", categoryId: tablesId, showPrice: "on" }).success).toBe(false);
   });
 
   it("never exposes archived products or those in archived categories", async () => {
@@ -106,32 +103,32 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     expect((await listPublicCategories()).map((c) => c.slug)).not.toContain("test-chairs");
   });
 
-  it("enforces unique SKUs across products and options", async () => {
+  it("enforces unique SKUs across products", async () => {
     await expect(createProduct(manager, prod({ name: "Another", categoryId: tablesId, sku: "TDT-180" }))).rejects.toMatchObject({ code: "CONFLICT", fieldErrors: { sku: expect.any(Array) } });
-    const id = await createProduct(manager, prod({ name: "Coffee Table", categoryId: tablesId, sku: "CT-1", isPublished: "on" }));
-    await addVariant(manager, id, { sku: "CT-1-DK", label: "Dark finish", listPrice: undefined, isActive: true });
-    await expect(addVariant(manager, id, { sku: "CT-1-DK", label: "Dup", listPrice: undefined, isActive: true })).rejects.toMatchObject({ code: "CONFLICT" });
-    expect((await getPublicProduct("coffee-table"))!.variants.map((v) => v.label)).toEqual(["Standard", "Dark finish"]);
+    await createProduct(manager, prod({ name: "Coffee Table", categoryId: tablesId, sku: "CT-1", isPublished: "on" }));
+    expect((await getPublicProduct("coffee-table"))!.variants.map((v) => v.label)).toEqual(["Standard"]);
   });
 
-  it("shows an original price only above the price now, and only when prices are public", async () => {
-    const id = await createProduct(manager, prod({ name: "Sale Stool", categoryId: tablesId, sku: "SS-1", listPrice: "750", isPublished: "on", showPrice: "on" }));
-    const [v] = await t.sql`SELECT id FROM product_variants WHERE product_id = ${id}`;
-    const base = { sku: "SS-1", label: "Standard", listPrice: "750", isActive: "on" };
-    expect(variantSchema.safeParse({ ...base, comparePrice: "750" }).success).toBe(false);
-    expect(variantSchema.safeParse({ ...base, listPrice: "", comparePrice: "1000" }).success).toBe(false);
-    const ok = variantSchema.parse({ ...base, comparePrice: "1000" });
-    await updateVariant(manager, v!.id, ok);
-    const card = (await listPublicProducts({ q: "Sale Stool" })).items[0]!;
-    expect([card.fromPrice, card.fromCompare]).toEqual(["750.00", "1000.00"]);
-    expect((await getPublicProduct("sale-stool"))!.variants[0]!.compare).toBe("1000.00");
-    // The database refuses an original price that is not above the price now, whatever the caller sends.
-    await expect(updateVariant(manager, v!.id, { ...ok, comparePrice: "500.00" })).rejects.toThrow();
+  it("takes a discount off the price: an amount or a percentage, shown as the regular price struck through", async () => {
+    const base = { name: "Sale Stool", categoryId: tablesId, sku: "SS-1", listPrice: "1000", isPublished: "on", showPrice: "on" };
+    // The form checks the discount before anything is saved.
+    expect(productSchema.safeParse({ kind: "stocked", sku: "SS-0", name: "X", categoryId: tablesId, visibility: "published", listPrice: "1000", discountKind: "percent", discountValue: "100", photos: [] }).success).toBe(false);
+    expect(productSchema.safeParse({ kind: "stocked", sku: "SS-0", name: "X", categoryId: tablesId, visibility: "published", listPrice: "1000", discountKind: "amount", discountValue: "1000", photos: [] }).success).toBe(false);
+    expect(productSchema.safeParse({ kind: "stocked", sku: "SS-0", name: "X", categoryId: tablesId, visibility: "published", listPrice: "1000", discountKind: "percent", photos: [] }).success).toBe(false);
+    await createProduct(manager, prod({ ...base, discountKind: "percent", discountValue: "25" }));
+    let card = (await listPublicProducts({ q: "Sale Stool" })).items[0]!;
+    expect([card.fromPrice, card.fromCompare, card.discountKind, card.discountValue]).toEqual(["750.00", "1000.00", "percent", "25.00"]);
+    await createProduct(manager, prod({ ...base, name: "Amount Stool", sku: "SS-2", discountKind: "amount", discountValue: "200" }));
+    card = (await listPublicProducts({ q: "Amount Stool" })).items[0]!;
+    expect([card.fromPrice, card.fromCompare, card.discountKind, card.discountValue]).toEqual(["800.00", "1000.00", "amount", "200.00"]);
+    await createProduct(manager, prod({ ...base, name: "Plain Stool", sku: "SS-3" }));
+    card = (await listPublicProducts({ q: "Plain Stool" })).items[0]!;
+    expect([card.fromPrice, card.fromCompare, card.discountKind]).toEqual(["1000.00", null, null]);
   });
 
   it("searches by name, material and SKU, treating % and _ literally", async () => {
     expect((await listPublicProducts({ q: "teak" })).items.map((i) => i.slug)).toContain("teak-dining-table");
-    expect((await listPublicProducts({ q: "CT-1-DK" })).items.map((i) => i.slug)).toEqual(["coffee-table"]);
+    expect((await listPublicProducts({ q: "CT-1" })).items.map((i) => i.slug)).toEqual(["coffee-table"]);
     expect((await listPublicProducts({ q: "%" })).items).toHaveLength(0);
     expect((await listPublicProducts({ q: "_" })).items).toHaveLength(0);
     expect((await listPublicProducts({ material: "Teak" })).items).toHaveLength(1);
@@ -161,15 +158,16 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     await expect(uploadTestFile("catalogue", JPEG, "image/jpeg", { actor: outsider })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
-  it("shows only published gallery projects", async () => {
-    const draft = await createGalleryProject(manager, { title: "Draft project", description: undefined, completedOn: undefined, isPublished: false, sortOrder: 0 });
-    const live = await createGalleryProject(manager, { title: "Live project", description: "Built for a client", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
-    const f = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
-    await attachGalleryImages(manager, live, [f], "Finished sideboard");
-    await attachGalleryImages(manager, draft, [], "x").catch((e) => expect(e.code).toBe("VALIDATION"));
-    const list = await listGalleryProjects();
-    expect(list.map((p) => p.title)).toEqual(["Live project"]);
-    expect(list[0]!.images[0]!.alt).toBe("Finished sideboard");
+  it("keeps showroom and workshop photos apart, in the order they were added, at most 30 to a section", async () => {
+    const one = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
+    const two = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
+    const three = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
+    await addGalleryPhotos(manager, "showroom", [one, two]);
+    await addGalleryPhotos(manager, "workshop", [three]);
+    await expect(addGalleryPhotos(manager, "showroom", [])).rejects.toMatchObject({ code: "VALIDATION" });
+    const list = await listGalleryPhotos();
+    expect([list.showroom.length, list.workshop.length]).toEqual([2, 1]);
+    expect(list.showroom[0]!.alt).toMatch(/showroom/i);
   });
 
   it("paginates the public list", async () => {

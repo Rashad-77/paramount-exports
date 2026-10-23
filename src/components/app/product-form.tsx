@@ -23,6 +23,8 @@ export interface ProductFormValues {
   availability?: string | null;
   stockQuantity?: number | null;
   listPrice?: string | null;
+  discountKind?: string | null;
+  discountValue?: string | null;
   images?: Array<{ id: string; url: string }>;
   thumbnailImageId?: string | null;
 }
@@ -78,6 +80,8 @@ export function ProductForm({
           availability={values.id ? values.availability : (values.availability ?? "in_stock")}
           stockQuantity={values.stockQuantity}
           price={values.listPrice}
+          discountKind={values.discountKind}
+          discountValue={values.discountValue}
           currency={currency}
         />
         <div className="space-y-3 border-t border-border pt-5">

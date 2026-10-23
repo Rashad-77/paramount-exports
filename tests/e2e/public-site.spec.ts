@@ -32,31 +32,12 @@ async function waitForFormReady(page: Page) {
   await page.waitForTimeout(3300);
 }
 
-test.describe("gallery category chooser", () => {
-  test("sits beside the heading, and a category with no projects says so", async ({ page }) => {
+test.describe("gallery", () => {
+  test("has a showroom section and a workshop section, with empty frames until photos are added", async ({ page }) => {
     await page.goto("/gallery");
-    await page.waitForLoadState("networkidle");
-    const chooser = page.getByRole("combobox", { name: /^category/i });
-    await expect(chooser).toBeVisible();
-    await chooser.click();
-    // a group opens its own list to the side; its chevron points right, then left once open
-    await page.getByRole("option", { name: "Furniture" }).click();
-    await expect(page.getByRole("listbox", { name: "Furniture" })).toBeVisible();
-    await page.getByRole("option", { name: "Tables", exact: true }).click();
-    await expect(page.getByText(/no projects match/i)).toBeVisible();
-    await chooser.click();
-    await page.getByRole("option", { name: "All categories" }).click();
-    await expect(page.getByText(/no projects match/i)).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /view larger/i }).first()).toBeVisible();
-
-    // the search box narrows the grid as you type
-    const search = page.getByLabel("Search the gallery");
-    await search.fill("project 3");
-    await expect(page.getByRole("button", { name: /view larger/i })).toHaveCount(1);
-    await search.fill("zzzz");
-    await expect(page.getByText(/no projects match/i)).toBeVisible();
-    await search.fill("");
-    await expect(page.getByRole("button", { name: /view larger/i }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Inside the showroom." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Inside the workshop." })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: /^category/i })).toHaveCount(0);
   });
 });
 

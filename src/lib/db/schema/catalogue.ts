@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { type AnyPgColumn, boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, unique, uuid, date } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import type { SpecEntry } from "@/lib/specifications";
 import { profiles, uploadedFiles } from "./foundation";
 
@@ -65,6 +65,9 @@ export const products = pgTable(
     customization: text("customization").array().notNull().default(sql`'{}'::text[]`),
     /** How it is sold: "direct" (add to cart), "quote" (request a quotation), or "both". */
     purchaseMode: text("purchase_mode").notNull().default("direct"),
+    /** The discount as the owner entered it: "amount" (money off) or "percent". The price line already has it taken off. */
+    discountKind: text("discount_kind"),
+    discountValue: numeric("discount_value", { precision: 14, scale: 2 }),
     isPublished: boolean("is_published").notNull().default(false),
     /** Shown in the homepage "featured" section. */
     isFeatured: boolean("is_featured").notNull().default(false),
@@ -85,6 +88,7 @@ export const products = pgTable(
     index("products_category_idx").on(t.categoryId),
     index("products_published_idx").on(t.isPublished),
     check("products_wood_treatment_known", sql`${t.woodTreatment} IS NULL OR ${t.woodTreatment} IN ('treated', 'untreated')`),
+    check("products_discount_known", sql`(${t.discountKind} IS NULL AND ${t.discountValue} IS NULL) OR (${t.discountKind} IN ('amount', 'percent') AND ${t.discountValue} > 0)`),
     check("products_purchase_mode_known", sql`${t.purchaseMode} IN ('direct', 'quote', 'both')`),
     check("products_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
   ],
@@ -133,28 +137,13 @@ export const productImages = pgTable(
   (t) => [index("product_images_product_idx").on(t.productId), unique("product_images_file_key").on(t.fileId)],
 );
 
-export const galleryProjects = pgTable("gallery_projects", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  description: text("description"),
-  completedOn: date("completed_on"),
-  isPublished: boolean("is_published").notNull().default(false),
-  sortOrder: integer("sort_order").notNull().default(0),
-  /** The kind of furniture this project shows, so the Gallery can be filtered like the Collection. */
-  categoryId: uuid("category_id").references(() => productCategories.id, { onDelete: "set null" }),
-  /** Where the photographs belong: the public project gallery, or the showroom and workshop pictures staff keep here. */
-  area: text("area").notNull().default("projects"),
-  archivedAt: timestamp("archived_at", { withTimezone: true }),
-  ...timestamps,
-});
 
-export const galleryImages = pgTable(
-  "gallery_images",
+/** The photographs of the two gallery sections: the showroom and the workshop. */
+export const galleryPhotos = pgTable(
+  "gallery_photos",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
-      .notNull()
-      .references(() => galleryProjects.id, { onDelete: "restrict" }),
+    area: text("area").notNull(),
     fileId: uuid("file_id")
       .notNull()
       .references(() => uploadedFiles.id, { onDelete: "restrict" }),
@@ -162,7 +151,7 @@ export const galleryImages = pgTable(
     position: integer("position").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("gallery_images_project_idx").on(t.projectId), unique("gallery_images_file_key").on(t.fileId)],
+  (t) => [index("gallery_photos_area_idx").on(t.area, t.position), unique("gallery_photos_file_key").on(t.fileId), check("gallery_photos_area_known", sql`${t.area} IN ('showroom', 'workshop')`)],
 );
 
 /** Specification types the staff have created (the built-in ones live in code). */

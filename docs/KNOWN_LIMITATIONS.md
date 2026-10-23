@@ -27,7 +27,7 @@ given `owner` or `staff` again afterwards. The Drizzle snapshot files were not r
 |---|---|
 | Currency **LKR**, time zone **Asia/Colombo**, phone country code **94** | Settings → Business details (the dashboard checklist reminds until the business name is set) |
 | A customer can order only an option that has a **price** and whose product has **"show price publicly"** on; otherwise the product page offers an enquiry only | `placeOrder`, product page |
-| **Stock is not tracked.** Any published, priced option can be ordered in any quantity (1 to 99 per line, up to 20 lines) | `src/server/orders.ts` |
+| **Stock** is counted when the owner enters an available amount: an order takes from it and a cancelled order puts it back. A piece with no amount can be ordered in any quantity (1 to 99 per line, up to 20 lines) | `src/server/orders.ts` |
 | The **delivery charge starts at zero** and is agreed with the customer by staff; the total shown to the customer says it excludes delivery | Order screen |
 | Showroom **pickup** pairs with "pay at the showroom" or bank transfer; **delivery** pairs with "pay on delivery" or bank transfer | `checkoutSchema` |
 | Orders are grouped into a **customer by phone number** (last 9 digits). The same person with two numbers is two customers; two people sharing a number are one | Customers screen |
@@ -37,13 +37,12 @@ given `owner` or `staff` again afterwards. The Drizzle snapshot files were not r
 ## 4. Deliberate limits of this version
 
 - **No online payment of any kind.** "Paid" is a flag staff set by hand; the website never reads or stores card or bank details.
-- **No notifications.** The customer is not emailed or texted, and staff are not alerted: they see new orders on the dashboard. Customers are told on the confirmation page that staff will call or message them.
+- **Notifications:** the customer is not emailed or texted. The owner is emailed about new orders, quotation requests and enquiries when the email service (Resend) is set up; otherwise they see them on the dashboard. Customers are told on the confirmation page that staff will call or message them.
 - **Order tracking is read-only.** Customers look up an order on `/track` with its number and the phone number they gave (no account). They see the status, items, totals and payment state, never the address or notes. Changing or cancelling an order still means contacting the business and quoting the order number. Lookups are rate limited (15 per address per 10 minutes, 8 per order number per hour).
 - **No order editing** after it is placed (items, quantities). Staff cancel it and the customer orders again, or staff note changes in the staff note.
 - **No printable invoice or order slip** beyond the browser's Print on the order page.
-- **No stock counts**, so nothing stops two customers ordering the last piece. Staff catch this when they confirm.
 - **Invites:** people are created by the owner with a script (`pnpm create-user`), not through the app; no password-reset screen beyond what Supabase offers.
-- **Gallery, showroom and workshop pictures** on the public pages (the grey frames on the About page, the Gallery filters for showroom and workshop) are fixed in code until real photographs are supplied; only the "Projects" frames come from the admin Gallery.
+- **Gallery:** two sections, showroom and workshop, each filled from Gallery in the dashboard. Until photos are added the page shows empty frames. There are no projects.
 - **The map** on the Contact page is a stand-in: a map link in Settings makes it clickable; there is no embedded map.
 - **The hero videos** (home and gallery) are placeholders until files are set in `src/lib/home-media.ts`.
 - **Search** uses simple case-insensitive matching on the main fields; no full-text search.

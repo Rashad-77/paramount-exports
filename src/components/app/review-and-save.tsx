@@ -9,6 +9,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { AvailabilityTag, type AvailabilityState } from "@/components/public/availability-tag";
 import { Alert, StatusBadge } from "@/components/ui/status";
 import { formatMoney } from "@/lib/money";
+import { priceAfterDiscount, saleLabel } from "@/lib/sale";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { normalizeSpecs, specText, type SpecEntry } from "@/lib/specifications";
 
@@ -23,6 +24,8 @@ interface Preview {
   availability: string;
   stock: string;
   price: string;
+  discountKind: string;
+  discountValue: string;
   kind: string;
   specs: Array<{ label: string; value: string }>;
   photos: Array<{ key: string; url: string }>;
@@ -50,6 +53,8 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
     availability: text("availability"),
     stock: text("stockQuantity"),
     price: text("listPrice"),
+    discountKind: text("discountKind"),
+    discountValue: text("discountValue"),
     kind: text("kind"),
     specs: specs.map((s) => ({ label: s.label, value: specText(s) })),
     photos,
@@ -231,7 +236,19 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                 <p className="text-sm text-text-muted">{preview.category}</p>
                 <h3 className="mt-0.5 text-xl font-semibold">{preview.name}</h3>
                 {preview.shortDescription ? <p className="mt-1 text-sm">{preview.shortDescription}</p> : null}
-                <p className="mt-3 text-lg font-medium">{preview.price ? formatMoney(preview.price, currency) : <span className="text-sm font-normal text-text-muted">No price: customers can ask for a quotation</span>}</p>
+                {(() => {
+                  const now = priceAfterDiscount(preview.price, preview.discountKind, preview.discountValue);
+                  const label = now ? saleLabel({ kind: preview.discountKind as "amount" | "percent", value: preview.discountValue }, now, preview.price, (a) => formatMoney(a, currency)) : null;
+                  if (!preview.price) return <p className="mt-3 text-lg font-medium"><span className="text-sm font-normal text-text-muted">No price: customers are asked to contact you</span></p>;
+                  if (!now) return <p className="mt-3 text-lg font-medium">{formatMoney(preview.price, currency)}</p>;
+                  return (
+                    <p className="mt-3 text-lg font-medium">
+                      <del className="mr-2 text-text-muted">{formatMoney(preview.price, currency)}</del>
+                      {formatMoney(now, currency)}
+                      {label ? <span className="ml-2 inline-flex bg-[#f4d03f] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-black">{label}</span> : null}
+                    </p>
+                  );
+                })()}
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}{preview.availability === "in_stock" && preview.stock ? `: ${preview.stock} available` : ""}</AvailabilityTag> : null}
                   {preview.featured ? <StatusBadge tone="info">Featured on the homepage</StatusBadge> : null}

@@ -70,7 +70,7 @@ Without any environment variables the **public site still runs** (with placehold
 | `pnpm test:e2e` | Playwright browser tests against the production build (`pnpm build` first): ordering, enquiries, access control, accessibility |
 | `pnpm db:generate` | Generate a SQL migration from schema changes (`pnpm drizzle-kit generate --custom --name x` for hand-written SQL) |
 | `pnpm db:migrate` | Apply migrations |
-| `pnpm db:seed` | **Sample** data for local development (everything labelled `[Sample]`: products, a gallery project, messages, orders). Needs `DEMO_MODE=true` and a localhost `DATABASE_URL`; refuses otherwise |
+| `pnpm db:seed` | **Sample** data for local development (everything labelled `[Sample]`: products, gallery photos, messages, orders). Needs `DEMO_MODE=true` and a localhost `DATABASE_URL`; refuses otherwise |
 | `pnpm docs:permissions` | Regenerate the permission table in `docs/ROLE_PERMISSIONS.md` from code |
 
 ### Running the tests

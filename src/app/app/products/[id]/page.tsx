@@ -94,7 +94,10 @@ export default async function ProductAdminPage({
                 isPremium: product.isPremium,
                 availability: product.availability,
                 stockQuantity: variants[0]?.stockQuantity ?? null,
-                listPrice: variants[0]?.listPrice ?? null,
+                // With a discount the form shows the regular price (the price line's original price) and the discount on its own.
+                listPrice: product.discountKind ? (variants[0]?.comparePrice ?? variants[0]?.listPrice ?? null) : (variants[0]?.listPrice ?? null),
+                discountKind: product.discountKind,
+                discountValue: product.discountValue,
                 images,
                 thumbnailImageId: product.thumbnailImageId,
               }}

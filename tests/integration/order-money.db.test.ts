@@ -2,19 +2,19 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Actor } from "@/lib/auth/permissions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { checkoutSchema } from "@/lib/schemas/orders";
-import { addVariant, createCategory, createProduct, updateProduct } from "@/server/catalogue";
+import { createCategory, createProduct, updateProduct } from "@/server/catalogue";
 import { getOrderPayments, recordPayment, voidPayment } from "@/server/order-money";
 import { getOrder, placeOrder, setOrderStatus, updateOrderDetails } from "@/server/orders";
 import { hasTestDb } from "../helpers/db";
 import { makeActor, setupApp } from "../helpers/app";
 
 const prod = (o: Record<string, unknown>) => {
-  const r = productSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
+  const r = productSchema.safeParse({ kind: "stocked", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
 const upd = (o: Record<string, unknown>) => {
-  const r = productUpdateSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
+  const r = productUpdateSchema.safeParse({ kind: "stocked", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
@@ -41,7 +41,7 @@ describe.skipIf(!hasTestDb)("order payments, discounts and the delivery charge r
     const live = { categoryId: cat, isPublished: "on", showPrice: "on" };
     const tableId = await createProduct(owner, prod({ name: "Teak Table", sku: "TBL-1", listPrice: "100000", ...live }));
     await updateProduct(owner, tableId, upd({ name: "Teak Table", categoryId: cat, isPublished: "on", showPrice: "on" }));
-    await addVariant(owner, tableId, { sku: "TBL-1-DK", label: "Dark finish", listPrice: "110000", isActive: true });
+    await t.sql`INSERT INTO product_variants (product_id, sku, label, list_price, sort_order) VALUES (${tableId}, 'TBL-1-DK', 'Dark finish', 110000, 1)`;
     await createProduct(owner, prod({ name: "Stool", sku: "STL-1", listPrice: "15000", ...live }));
     tableVariant = (await t.sql`SELECT id FROM product_variants WHERE sku = 'TBL-1'`)[0]!.id as string;
     stoolVariant = (await t.sql`SELECT id FROM product_variants WHERE sku = 'STL-1'`)[0]!.id as string;

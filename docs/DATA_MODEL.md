@@ -22,7 +22,7 @@ the API roles. SQL migrations are in `drizzle/` (hand-written parts are marked i
 | `products` | slug, name, description, category, material, finish, dimensions, `is_published`, `is_featured`, `show_price`, `show_availability`, archived |
 | `product_variants` | the **options** of a product: SKU (unique), label, `list_price` (nullable), active, order |
 | `product_images` | product ↔ uploaded file, alt text, position |
-| `gallery_projects` / `gallery_images` | finished projects and their photographs |
+| `gallery_photos` | the photographs of the two Gallery sections: showroom and workshop |
 
 A customer can order an option only if the product is published, not archived, `show_price` is on, the option is active and has a price.
 

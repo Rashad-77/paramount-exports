@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
-import { galleryImages, galleryProjects, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import { galleryPhotos, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
 import type { CatalogueSort } from "@/lib/catalogue-sort";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { moneyString } from "@/lib/money";
@@ -36,8 +36,11 @@ export interface PublicCard {
   imageUrl: string | null;
   imageAlt: string | null;
   fromPrice: string | null;
-  /** The price before the sale, when the lowest-priced option is on sale. */
+  /** The regular price, when the piece is on sale (the price above is then the price after the discount). */
   fromCompare: string | null;
+  /** How the discount was entered: money off or a percentage off. Null with no sale. */
+  discountKind: "amount" | "percent" | null;
+  discountValue: string | null;
   availability: string | null;
   /** Added to the catalogue within the last month. */
   isNew: boolean;
@@ -94,6 +97,8 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     imageAlt: images.get(r.id)?.alt ?? null,
     fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!.price) : null,
     fromCompare: r.showPrice && priceBy.get(r.id)?.compare ? moneyString(priceBy.get(r.id)!.compare!) : null,
+    discountKind: r.showPrice && priceBy.get(r.id)?.compare ? (r.discountKind as "amount" | "percent" | null) : null,
+    discountValue: r.showPrice && priceBy.get(r.id)?.compare && r.discountKind ? (r.discountValue ? moneyString(r.discountValue) : null) : null,
     availability: r.showAvailability && r.availability ? AVAILABILITY_LABEL[r.availability] : null,
     isNew: Date.now() - r.createdAt.getTime() < NEW_FOR_DAYS * 86400000,
   }));
@@ -335,8 +340,8 @@ async function getPublicProductImpl(slugValue: string) {
     categoryId: p.categoryId,
     shortDescription: p.shortDescription,
     specifications: p.specifications,
-    customization: p.customization,
-    purchaseMode: p.purchaseMode as "direct" | "quote" | "both",
+    discountKind: p.discountKind as "amount" | "percent" | null,
+    discountValue: p.discountValue ? moneyString(p.discountValue) : null,
     isPremium: p.isPremium,
     priceShown: p.showPrice,
     categoryName: row.categoryName,
@@ -351,31 +356,19 @@ async function getPublicProductImpl(slugValue: string) {
   };
 }
 
-async function listGalleryProjectsImpl() {
-  if (!hasDatabase()) return [];
-  const db = getDb();
-  const projects = await db
-    .select({ p: galleryProjects, categorySlug: productCategories.slug })
-    .from(galleryProjects)
-    .leftJoin(productCategories, eq(productCategories.id, galleryProjects.categoryId))
-    .where(and(eq(galleryProjects.isPublished, true), eq(galleryProjects.area, "projects"), isNull(galleryProjects.archivedAt)))
-    .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.completedOn), desc(galleryProjects.createdAt));
-  if (projects.length === 0) return [];
-  const rows = projects.map((r) => ({ ...r.p, categorySlug: r.categorySlug }));
-  const imgs = await db
-    .select({ projectId: galleryImages.projectId, id: galleryImages.id, alt: galleryImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: galleryImages.position })
-    .from(galleryImages)
-    .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryImages.fileId))
-    .where(and(inArray(galleryImages.projectId, rows.map((p) => p.id)), eq(uploadedFiles.status, "linked")))
-    .orderBy(asc(galleryImages.position));
-  return rows.map((p) => ({
-    id: p.id,
-    categorySlug: p.categorySlug,
-    title: p.title,
-    description: p.description,
-    completedOn: p.completedOn,
-    images: imgs.filter((i) => i.projectId === p.id).map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
-  }));
+/** The photographs of the two gallery sections, each in the order the owner arranged them. */
+async function listGalleryPhotosImpl(): Promise<Record<"showroom" | "workshop", Array<{ id: string; alt: string; url: string }>>> {
+  const out = { showroom: [] as Array<{ id: string; alt: string; url: string }>, workshop: [] as Array<{ id: string; alt: string; url: string }> };
+  if (!hasDatabase()) return out;
+  const rows = await getDb()
+    .select({ id: galleryPhotos.id, area: galleryPhotos.area, alt: galleryPhotos.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+    .from(galleryPhotos)
+    .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryPhotos.fileId))
+    .where(eq(uploadedFiles.status, "linked"))
+    .orderBy(asc(galleryPhotos.position), asc(galleryPhotos.createdAt));
+  for (const r of rows) if (r.area === "showroom" || r.area === "workshop") out[r.area].push({ id: r.id, alt: r.alt, url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }) });
+  return out;
+
 }
 
 async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; updatedAt: Date }>> {
@@ -393,8 +386,18 @@ async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; up
  * for each one. Anything that changes what they show clears them at once (see clearCatalogueCache); the time limit is only a safety net.
  * Results are plain data, so they survive being stored. A failed read throws and is therefore never stored.
  */
-const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: string) =>
-  unstable_cache(read, ["catalogue", name], { tags: [CATALOGUE_TAG], revalidate: CATALOGUE_REVALIDATE });
+const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: string) => {
+  const stored = unstable_cache(read, ["catalogue", name], { tags: [CATALOGUE_TAG], revalidate: CATALOGUE_REVALIDATE });
+  return async (...args: A): Promise<R> => {
+    try {
+      return await stored(...args);
+    } catch (e) {
+      // Outside the web server (the database tests, scripts) there is no cache to keep things in: read straight from the database.
+      if (e instanceof Error && /incrementalCache missing/.test(e.message)) return read(...args);
+      throw e;
+    }
+  };
+};
 
 const listPublicProductsKept = kept(listPublicProductsImpl, "products");
 const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");
@@ -413,5 +416,5 @@ export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProd
 export const listPremiumProducts = (...args: Parameters<typeof listPremiumProductsImpl>) => duringBuildSafe("listPremiumProducts", [] as Awaited<ReturnType<typeof listPremiumProductsImpl>>, () => listPremiumProductsKept(...args));
 export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesKept(...args));
 export const getPublicProduct = (...args: Parameters<typeof getPublicProductImpl>) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(...args));
-export const listGalleryProjects = (...args: Parameters<typeof listGalleryProjectsImpl>) => duringBuildSafe("listGalleryProjects", [] as Awaited<ReturnType<typeof listGalleryProjectsImpl>>, () => listGalleryProjectsImpl(...args));
+export const listGalleryPhotos = (...args: Parameters<typeof listGalleryPhotosImpl>) => duringBuildSafe("listGalleryPhotos", { showroom: [], workshop: [] } as Awaited<ReturnType<typeof listGalleryPhotosImpl>>, () => listGalleryPhotosImpl(...args));
 export const listPublishedProductSlugs = (...args: Parameters<typeof listPublishedProductSlugsImpl>) => duringBuildSafe("listPublishedProductSlugs", [] as Awaited<ReturnType<typeof listPublishedProductSlugsImpl>>, () => listPublishedProductSlugsImpl(...args));

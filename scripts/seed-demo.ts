@@ -46,13 +46,11 @@ async function main() {
   await db.execute(sql`DELETE FROM product_variants WHERE product_id IN (SELECT id FROM products WHERE name LIKE '[Sample]%')`);
   await db.execute(sql`DELETE FROM products WHERE name LIKE '[Sample]%'`);
   await db.execute(sql`DELETE FROM product_categories WHERE name LIKE '[Sample]%'`);
-  await db.execute(sql`DELETE FROM gallery_images WHERE project_id IN (SELECT id FROM gallery_projects WHERE title LIKE '[Sample]%')`);
-  await db.execute(sql`DELETE FROM gallery_projects WHERE title LIKE '[Sample]%'`);
   await db.execute(sql`DELETE FROM messages WHERE name LIKE '[Sample]%'`);
 
   const owner: Actor = { id: DEMO_STAFF.owner, fullName: DEMO_STAFF_NAMES.owner, roles: ["owner"], isActive: true };
 
-  const { createCategory, createProduct, attachProductImages, createGalleryProject, attachGalleryImages, addVariant } = await import("../src/server/catalogue");
+  const { createCategory, createProduct, attachProductImages, addGalleryPhotos } = await import("../src/server/catalogue");
   const { requestUpload } = await import("../src/server/files");
   const { writeLocalObject } = await import("../src/lib/storage/local");
   const { submitEnquiry } = await import("../src/server/messages");
@@ -84,10 +82,9 @@ async function main() {
       name: p.name, slug: undefined, categoryId: p.cat, kind: "stocked", description: "Sample data for development and demos only. Not a real product.",
       material: "Sample timber", finish: "Sample finish", dimensions: p.dims, sku: p.sku, listPrice: p.price,
       isPublished: true, isFeatured: p.featured, isPremium: false, showAvailability: false, availability: undefined, showPrice: true, seoTitle: undefined, seoDescription: undefined,
-      customization: [], purchaseMode: "direct", photos: [],
+      photos: [],
     });
     if (withImages) await attachProductImages(owner, id, [await upload("catalogue")], `${p.name} (sample image)`);
-    if (p.sku === "SMP-DT-180") await addVariant(owner, id, { sku: "SMP-DT-180-DK", label: "Dark finish", listPrice: "192000", isActive: true });
   }
 
   // Proper sample descriptions, features and care notes: the same text the 0024 migration puts on a demo database that already exists.
@@ -97,8 +94,10 @@ async function main() {
     if (statement.trim()) await db.execute(sql.raw(statement));
   }
 
-  const g = await createGalleryProject(owner, { title: "[Sample] Completed project", description: "Sample project for development and demos only.", completedOn: "2026-05-01", isPublished: true, sortOrder: 0 });
-  if (withImages) await attachGalleryImages(owner, g, [await upload("gallery", 800, 600), await upload("gallery", 800, 600)], "Sample project photograph");
+  if (withImages) {
+    await addGalleryPhotos(owner, "showroom", [await upload("gallery", 800, 600), await upload("gallery", 800, 600)]);
+    await addGalleryPhotos(owner, "workshop", [await upload("gallery", 800, 600)]);
+  }
 
   // Messages from the website
   const message = (m: Record<string, string>) => submitEnquiry(enquirySchema.parse({ consent: "on", fileIds: [], ...m }), { ip: null });
@@ -130,7 +129,7 @@ async function main() {
   await setOrderStatus(owner, cancelled.id, "cancelled", "Sample: customer changed their mind.");
   await db.execute(sql`UPDATE online_orders SET handled_by = NULL WHERE id = ${cancelled.id}`);
 
-  console.log("Sample data created: categories, products, a gallery project, messages and orders. All labelled [Sample].");
+  console.log("Sample data created: categories, products, gallery photos, messages and orders. All labelled [Sample].");
   process.exit(0);
 }
 

@@ -1,20 +1,22 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { outer } from "@/lib/db/outer";
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import Decimal from "decimal.js";
+import { priceAfterDiscount } from "@/lib/sale";
+import { and, asc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { isUniqueViolation } from "@/lib/db/errors";
-import { galleryImages, galleryProjects, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import { galleryPhotos, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
 import { AppError, conflict, notFound, validation } from "@/lib/errors";
 import {
   MAX_PHOTOS,
   resolveSlug,
   type CategoryInput,
-  type GalleryProjectInput,
+  GALLERY_AREAS,
+  MAX_GALLERY_PHOTOS,
+  type GalleryArea,
   type ProductInput,
   type ProductUpdateInput,
-  type VariantInput,
 } from "@/lib/schemas/catalogue";
 import { slugify } from "@/lib/contact";
 import { legacyColumns, normalizeSpecs, type SpecEntry } from "@/lib/specifications";
@@ -290,6 +292,15 @@ function specsFromLegacy(input: { material?: string; finish?: string; dimensions
 type ProductFormInput = ProductInput | ProductUpdateInput;
 
 /** What the form's fields mean for the product row. The staff form's visibility, availability and price decide what shows publicly. */
+/** The price line from what the form sent: the regular price, or that price less the discount, with the regular price kept as the "original price". */
+function priceLine(input: { listPrice?: string; discountKind?: string; discountValue?: string }) {
+  const regular = input.listPrice ?? null;
+  if (!regular || !input.discountKind || !input.discountValue) return { list: regular, compare: null as string | null, kind: null as string | null, value: null as string | null };
+  const after = priceAfterDiscount(regular, input.discountKind, input.discountValue);
+  if (!after) return { list: regular, compare: null as string | null, kind: null as string | null, value: null as string | null };
+  return { list: after, compare: new Decimal(regular).toFixed(2), kind: input.discountKind, value: new Decimal(input.discountValue).toFixed(2) };
+}
+
 function resolveFields(input: ProductFormInput) {
   const staff = input.visibility !== undefined;
   const specs = input.specifications ? normalizeSpecs(input.specifications as SpecEntry[]) : null;
@@ -345,6 +356,7 @@ const photoFileIds = (items: string[]) => items.filter((i) => i.startsWith("file
 export async function createProduct(actor: Actor, input: ProductInput): Promise<string> {
   requirePermission(actor, "products:write");
   const f = resolveFields(input);
+  const line = priceLine(input);
   const verified = f.staff ? await verifyUploads(photoFileIds(input.photos), "catalogue", actor) : [];
   try {
     return await withTx(async (tx) => {
@@ -365,8 +377,8 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
           colour: f.legacy.colour,
           specifications: specs,
           shortDescription: input.shortDescription ?? null,
-          customization: input.customization ?? [],
-          purchaseMode: input.purchaseMode ?? "direct",
+          discountKind: line.kind,
+          discountValue: line.value,
           isPublished: f.isPublished && !f.archived,
           isFeatured: input.isFeatured,
           isPremium: input.isPremium,
@@ -380,7 +392,7 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
         })
         .returning({ id: products.id });
       const sku = input.sku ?? (await newSku(tx, slugValue));
-      await tx.insert(productVariants).values({ productId: p!.id, sku, label: "Standard", listPrice: input.listPrice ?? null, stockQuantity: f.staff ? f.stock : (input.stockQuantity ?? null) });
+      await tx.insert(productVariants).values({ productId: p!.id, sku, label: "Standard", listPrice: line.list, comparePrice: line.compare, stockQuantity: f.staff ? f.stock : (input.stockQuantity ?? null) });
       if (f.staff) await syncPhotos(tx, p!.id, input.name, input.photos, input.thumbnail, verified);
       await recordAudit(tx, actor, { action: "product.created", entityType: "product", entityId: p!.id, after: { name: input.name, slug: slugValue, sku, isPublished: f.isPublished } });
       return p!.id;
@@ -396,6 +408,7 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
   requirePermission(actor, "products:write");
   const f = resolveFields(input);
   const verified = f.staff ? await verifyUploads(photoFileIds(input.photos), "catalogue", actor) : [];
+  const line = priceLine(input);
   let removedFiles: string[] = [];
   try {
     await withTx(async (tx) => {
@@ -427,8 +440,7 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
           kind: input.kind,
           ...specColumns,
           shortDescription: input.shortDescription ?? null,
-          ...(input.customization ? { customization: input.customization } : {}),
-          ...(input.purchaseMode ? { purchaseMode: input.purchaseMode } : {}),
+          ...(f.staff ? { discountKind: line.kind, discountValue: line.value } : {}),
           isPublished: nowPublished,
           isFeatured: input.isFeatured,
           isPremium: input.isPremium,
@@ -442,12 +454,10 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
       if (f.staff) {
         // The product's one price line: the first option. Further options made earlier are left as they are.
         const [first] = await tx.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.createdAt)).limit(1);
-        const price = input.listPrice ?? null;
         if (first) {
-          const compare = price && first.comparePrice && Number(first.comparePrice) > Number(price) ? first.comparePrice : null;
-          await tx.update(productVariants).set({ listPrice: price, comparePrice: compare, stockQuantity: f.stock }).where(eq(productVariants.id, first.id));
+          await tx.update(productVariants).set({ listPrice: line.list, comparePrice: line.compare, stockQuantity: f.stock }).where(eq(productVariants.id, first.id));
         } else {
-          await tx.insert(productVariants).values({ productId: id, sku: await newSku(tx, before.slug), label: "Standard", listPrice: price, stockQuantity: f.stock });
+          await tx.insert(productVariants).values({ productId: id, sku: await newSku(tx, before.slug), label: "Standard", listPrice: line.list, comparePrice: line.compare, stockQuantity: f.stock });
         }
         removedFiles = await syncPhotos(tx, id, input.name, input.photos, input.thumbnail, verified);
       }
@@ -553,46 +563,6 @@ export async function setProductArchived(actor: Actor, id: string, archived: boo
   await setProductsArchived(actor, [id], archived);
 }
 
-export async function addVariant(actor: Actor, productId: string, input: VariantInput): Promise<void> {
-  requirePermission(actor, "products:write");
-  try {
-    await withTx(async (tx) => {
-      const [p] = await tx.select({ id: products.id }).from(products).where(eq(products.id, productId)).for("update");
-      if (!p) throw notFound("That product could not be found.");
-      const [{ m } = { m: 0 }] = await tx.select({ m: sql<number>`coalesce(max(${productVariants.sortOrder}), 0)::int` }).from(productVariants).where(eq(productVariants.productId, productId));
-      const [v] = await tx
-        .insert(productVariants)
-        .values({ productId, sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive, sortOrder: m + 1 })
-        .returning({ id: productVariants.id });
-      await recordAudit(tx, actor, { action: "variant.created", entityType: "product_variant", entityId: v!.id, after: { productId, sku: input.sku, label: input.label } });
-    });
-  } catch (e) {
-    if (isUniqueViolation(e)) throw conflict("That SKU is already used by another product option.");
-    throw e;
-  }
-}
-
-export async function updateVariant(actor: Actor, variantId: string, input: VariantInput): Promise<void> {
-  requirePermission(actor, "products:write");
-  try {
-    await withTx(async (tx) => {
-      const [before] = await tx.select().from(productVariants).where(eq(productVariants.id, variantId)).for("update");
-      if (!before) throw notFound("That product option could not be found.");
-      await tx.update(productVariants).set({ sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive }).where(eq(productVariants.id, variantId));
-      await recordAudit(tx, actor, {
-        action: "variant.updated",
-        entityType: "product_variant",
-        entityId: variantId,
-        before: { sku: before.sku, label: before.label, listPrice: before.listPrice, comparePrice: before.comparePrice, stockQuantity: before.stockQuantity, isActive: before.isActive },
-        after: { sku: input.sku, label: input.label, listPrice: input.listPrice ?? null, comparePrice: input.comparePrice ?? null, stockQuantity: input.stockQuantity ?? null, isActive: input.isActive },
-      });
-    });
-  } catch (e) {
-    if (isUniqueViolation(e)) throw conflict("That SKU is already used by another product option.");
-    throw e;
-  }
-}
-
 export async function attachProductImages(actor: Actor, productId: string, fileIds: string[], altText: string): Promise<void> {
   requirePermission(actor, "products:write");
   if (fileIds.length === 0) throw validation("Choose at least one image to add.", { fileIds: ["Upload at least one image."] });
@@ -645,95 +615,45 @@ export async function makeMainImage(actor: Actor, imageId: string): Promise<void
 
 /* ───────────────────────────── gallery ───────────────────────────── */
 
-export async function listGalleryAdmin(actor: Actor, areas: readonly string[] = ["projects"]) {
+/** Both gallery sections with their photographs, in the order they are shown. */
+export async function listGalleryPhotosAdmin(actor: Actor): Promise<Record<GalleryArea, Array<{ id: string; alt: string; url: string }>>> {
   requirePermission(actor, "website:manage");
-  return getDb()
-    .select({
-      id: galleryProjects.id,
-      area: galleryProjects.area,
-      title: galleryProjects.title,
-      isPublished: galleryProjects.isPublished,
-      completedOn: galleryProjects.completedOn,
-      archivedAt: galleryProjects.archivedAt,
-      imageCount: sql<number>`(SELECT count(*)::int FROM gallery_images g WHERE g.project_id = ${outer(galleryProjects.id)})`,
-    })
-    .from(galleryProjects)
-    .where(inArray(galleryProjects.area, [...areas]))
-    .orderBy(asc(galleryProjects.sortOrder), desc(galleryProjects.createdAt));
+  const rows = await getDb()
+    .select({ id: galleryPhotos.id, area: galleryPhotos.area, alt: galleryPhotos.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+    .from(galleryPhotos)
+    .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryPhotos.fileId))
+    .orderBy(asc(galleryPhotos.position), asc(galleryPhotos.createdAt));
+  const out = Object.fromEntries(GALLERY_AREAS.map((a) => [a, [] as Array<{ id: string; alt: string; url: string }>])) as Record<GalleryArea, Array<{ id: string; alt: string; url: string }>>;
+  for (const r of rows) if ((GALLERY_AREAS as readonly string[]).includes(r.area)) out[r.area as GalleryArea].push({ id: r.id, alt: r.alt, url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }) });
+  return out;
 }
 
-export async function getGalleryProjectAdmin(actor: Actor, id: string) {
+export async function addGalleryPhotos(actor: Actor, area: GalleryArea, fileIds: string[]): Promise<void> {
   requirePermission(actor, "website:manage");
-  const db = getDb();
-  const [project] = await db.select().from(galleryProjects).where(eq(galleryProjects.id, id)).limit(1);
-  if (!project) throw notFound("That project could not be found.");
-  const imgs = await db
-    .select({ id: galleryImages.id, alt: galleryImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
-    .from(galleryImages)
-    .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryImages.fileId))
-    .where(eq(galleryImages.projectId, id))
-    .orderBy(asc(galleryImages.position));
-  return { project, images: imgs.map((i) => ({ id: i.id, alt: i.alt, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })) };
-}
-
-export async function createGalleryProject(actor: Actor, input: GalleryProjectInput): Promise<string> {
-  requirePermission(actor, "website:manage");
-  return withTx(async (tx) => {
-    const [g] = await tx
-      .insert(galleryProjects)
-      .values({ area: input.area ?? "projects", title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
-      .returning({ id: galleryProjects.id });
-    await recordAudit(tx, actor, { action: "gallery.created", entityType: "gallery_project", entityId: g!.id, after: { title: input.title } });
-    return g!.id;
-  });
-}
-
-export async function updateGalleryProject(actor: Actor, id: string, input: GalleryProjectInput): Promise<void> {
-  requirePermission(actor, "website:manage");
-  await withTx(async (tx) => {
-    const [before] = await tx.select().from(galleryProjects).where(eq(galleryProjects.id, id)).for("update");
-    if (!before) throw notFound("That project could not be found.");
-    await tx
-      .update(galleryProjects)
-      .set({ title: input.title, description: input.description ?? null, completedOn: input.completedOn ?? null, isPublished: input.isPublished, sortOrder: input.sortOrder, categoryId: input.categoryId ?? null })
-      .where(eq(galleryProjects.id, id));
-    await recordAudit(tx, actor, { action: "gallery.updated", entityType: "gallery_project", entityId: id, before: { title: before.title, isPublished: before.isPublished }, after: { title: input.title, isPublished: input.isPublished } });
-  });
-}
-
-export async function setGalleryArchived(actor: Actor, id: string, archived: boolean): Promise<void> {
-  requirePermission(actor, "website:manage");
-  await withTx(async (tx) => {
-    const [g] = await tx.select().from(galleryProjects).where(eq(galleryProjects.id, id)).for("update");
-    if (!g) throw notFound("That project could not be found.");
-    await tx.update(galleryProjects).set({ archivedAt: archived ? new Date() : null, isPublished: archived ? false : g.isPublished }).where(eq(galleryProjects.id, id));
-    await recordAudit(tx, actor, { action: archived ? "gallery.archived" : "gallery.restored", entityType: "gallery_project", entityId: id });
-  });
-}
-
-export async function attachGalleryImages(actor: Actor, projectId: string, fileIds: string[], altText: string): Promise<void> {
-  requirePermission(actor, "website:manage");
-  if (fileIds.length === 0) throw validation("Choose at least one image to add.", { fileIds: ["Upload at least one image."] });
+  if (fileIds.length === 0) throw validation("Choose at least one photo to add.", { fileIds: ["Upload at least one photo."] });
   const verified = await verifyUploads(fileIds, "gallery", actor);
   await withTx(async (tx) => {
-    const [g] = await tx.select({ id: galleryProjects.id }).from(galleryProjects).where(eq(galleryProjects.id, projectId)).for("update");
-    if (!g) throw notFound("That project could not be found.");
-    const [{ m } = { m: -1 }] = await tx.select({ m: sql<number>`coalesce(max(${galleryImages.position}), -1)::int` }).from(galleryImages).where(eq(galleryImages.projectId, projectId));
+    const [{ m, n } = { m: -1, n: 0 }] = await tx
+      .select({ m: sql<number>`coalesce(max(${galleryPhotos.position}), -1)::int`, n: sql<number>`count(*)::int` })
+      .from(galleryPhotos)
+      .where(eq(galleryPhotos.area, area));
+    if (n + verified.length > MAX_GALLERY_PHOTOS) throw validation(`A section can hold up to ${MAX_GALLERY_PHOTOS} photos.`, { fileIds: [`A section can hold up to ${MAX_GALLERY_PHOTOS} photos.`] });
     let pos = m + 1;
-    await linkUploads(tx, verified, { type: "gallery_project", id: projectId });
-    for (const f of verified) await tx.insert(galleryImages).values({ projectId, fileId: f.id, altText, position: pos++ });
-    await recordAudit(tx, actor, { action: "gallery.images_added", entityType: "gallery_project", entityId: projectId, after: { count: verified.length } });
+    const alt = area === "showroom" ? "Photograph of our showroom" : "Photograph of our workshop";
+    await linkUploads(tx, verified, { type: "gallery", id: area });
+    for (const f of verified) await tx.insert(galleryPhotos).values({ area, fileId: f.id, altText: alt, position: pos++ });
+    await recordAudit(tx, actor, { action: "gallery.photos_added", entityType: "gallery", entityId: area, after: { count: verified.length } });
   });
 }
 
-export async function removeGalleryImage(actor: Actor, imageId: string): Promise<void> {
+export async function removeGalleryPhoto(actor: Actor, photoId: string): Promise<void> {
   requirePermission(actor, "website:manage");
   const fileId = await withTx(async (tx) => {
-    const [img] = await tx.select().from(galleryImages).where(eq(galleryImages.id, imageId)).for("update");
-    if (!img) throw notFound("That image could not be found.");
-    await tx.delete(galleryImages).where(eq(galleryImages.id, imageId));
-    await recordAudit(tx, actor, { action: "gallery.image_removed", entityType: "gallery_project", entityId: img.projectId });
-    return img.fileId;
+    const [photo] = await tx.select().from(galleryPhotos).where(eq(galleryPhotos.id, photoId)).for("update");
+    if (!photo) throw notFound("That photo could not be found.");
+    await tx.delete(galleryPhotos).where(eq(galleryPhotos.id, photoId));
+    await recordAudit(tx, actor, { action: "gallery.photo_removed", entityType: "gallery", entityId: photo.area });
+    return photo.fileId;
   });
   await removeFileObject(fileId);
 }
@@ -800,12 +720,10 @@ export async function deleteCategories(actor: Actor, ids: string[]): Promise<{ d
       if (!c) return;
       const [{ n: productCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(products).where(eq(products.categoryId, id));
       const [{ n: kidCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(productCategories).where(eq(productCategories.parentId, id));
-      const [{ n: galleryCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(galleryProjects).where(eq(galleryProjects.categoryId, id));
       if (productCount > 0 || kidCount > 0) {
         kept.push(c.name);
         return;
       }
-      if (galleryCount > 0) await tx.update(galleryProjects).set({ categoryId: null }).where(eq(galleryProjects.categoryId, id));
       await tx.delete(productCategories).where(eq(productCategories.id, id));
       await recordAudit(tx, actor, { action: "category.deleted", entityType: "product_category", entityId: id, before: { name: c.name, slug: c.slug } });
       deleted++;

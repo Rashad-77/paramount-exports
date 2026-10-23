@@ -3,7 +3,7 @@ import type { Actor } from "@/lib/auth/permissions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
 import { enquirySchema } from "@/lib/schemas/enquiry";
 import { checkoutSchema } from "@/lib/schemas/orders";
-import { addVariant, createCategory, createProduct, updateProduct } from "@/server/catalogue";
+import { createCategory, createProduct, updateProduct } from "@/server/catalogue";
 import { getMessage, listMessages, setMessageHandled, submitEnquiry } from "@/server/messages";
 import { trackSchema } from "@/lib/schemas/tracking";
 import { trackOrder } from "@/server/tracking";
@@ -12,12 +12,12 @@ import { hasTestDb } from "../helpers/db";
 import { makeActor, setupApp } from "../helpers/app";
 
 const prod = (o: Record<string, unknown>) => {
-  const r = productSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
+  const r = productSchema.safeParse({ kind: "stocked", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
 const upd = (o: Record<string, unknown>) => {
-  const r = productUpdateSchema.safeParse({ kind: "stocked", purchaseMode: "direct", ...o });
+  const r = productUpdateSchema.safeParse({ kind: "stocked", ...o });
   if (!r.success) throw new Error(JSON.stringify(r.error.issues));
   return r.data;
 };
@@ -55,7 +55,7 @@ describe.skipIf(!hasTestDb)("online orders (real Postgres)", () => {
     const live = { categoryId: cat, isPublished: "on", showPrice: "on" };
     tableId = await createProduct(owner, prod({ name: "Teak Table", sku: "TBL-1", listPrice: "100000", ...live }));
     await updateProduct(owner, tableId, upd({ name: "Teak Table", categoryId: cat, isPublished: "on", showPrice: "on" }));
-    await addVariant(owner, tableId, { sku: "TBL-1-DK", label: "Dark finish", listPrice: "110000", isActive: true });
+    await t.sql`INSERT INTO product_variants (product_id, sku, label, list_price, sort_order) VALUES (${tableId}, 'TBL-1-DK', 'Dark finish', 110000, 1)`;
     stoolId = await createProduct(owner, prod({ name: "Stool", sku: "STL-1", listPrice: "15000.50", ...live }));
     hiddenId = await createProduct(owner, prod({ name: "Hidden Chair", sku: "HID-1", listPrice: "20000", categoryId: cat, showPrice: "on" })); // not published
     unpricedId = await createProduct(owner, prod({ name: "Unpriced Bench", sku: "UNP-1", categoryId: cat, isPublished: "on" })); // no price

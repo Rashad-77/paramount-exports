@@ -5,20 +5,9 @@ import { DIM_UNITS } from "@/lib/specifications";
 import { checkbox, enumOf, idList, optEnum, optMoney, optText, optUuid, reqText, reqUuid, slug } from "@/lib/validation";
 
 export const PRODUCT_KINDS = ["stocked", "made_to_order"] as const;
-export const PURCHASE_MODES = ["direct", "quote", "both"] as const;
-export const PURCHASE_MODE_LABEL: Record<(typeof PURCHASE_MODES)[number], string> = {
-  direct: "Buy now: add to cart",
-  quote: "Quotation only: request a quote",
-  both: "Both: add to cart or request a quote",
-};
 export const WOOD_TREATMENTS = ["treated", "untreated"] as const;
-export const CUSTOMIZATIONS = ["dimensions", "wood", "finish", "requirements"] as const;
-export const CUSTOMIZATION_LABEL: Record<(typeof CUSTOMIZATIONS)[number], string> = {
-  dimensions: "Custom dimensions",
-  wood: "Choice of wood",
-  finish: "Choice of finish and colour",
-  requirements: "Additional requirements",
-};
+/** A discount is entered as money off or as a percentage off. */
+export const DISCOUNT_KINDS = ["amount", "percent"] as const;
 /** What staff can choose. The database enum still holds "on_request" from before it was merged into made to order. */
 export const AVAILABILITY = ["in_stock", "made_to_order", "sold"] as const;
 export const AVAILABILITY_LABEL: Record<(typeof AVAILABILITY)[number] | "on_request", string> = {
@@ -108,8 +97,6 @@ const productBase = z.object({
   material: optText("Wood / material", 120),
   finish: optText("Finish", 120),
   dimensions: optText("Dimensions", 200),
-  customization: z.preprocess((v) => (v === undefined ? undefined : v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(CUSTOMIZATIONS)).max(4).optional()),
-  purchaseMode: optEnum(PURCHASE_MODES, "way of selling"),
   sku: z
     .string()
     .trim()
@@ -117,7 +104,11 @@ const productBase = z.object({
     .regex(/^[A-Za-z0-9._-]*$/, "Use letters, numbers, dots, hyphens and underscores only.")
     .optional()
     .transform((v) => v || undefined),
+  /** The regular price. With a discount, customers see this struck through and the price after the discount. */
   listPrice: optMoney("Price"),
+  /** Money off ("amount") or a percentage off ("percent"), with its value. Both blank: no discount. */
+  discountKind: optEnum(DISCOUNT_KINDS, "discount type"),
+  discountValue: optMoney("Discount"),
   /** How many are in stock; needed when the availability is "In stock". */
   stockQuantity: optInt("Available amount", 1000000),
   /** Draft, published or archived. Present only on the staff form, where it takes the place of the older tick boxes below. */
@@ -135,8 +126,15 @@ const productBase = z.object({
   seoDescription: optText("Page description", 160),
 });
 
-type StaffFormFields = { visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string; photos: string[] };
+type StaffFormFields = { discountKind?: string; discountValue?: string; visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string; photos: string[] };
 const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
+  if (v.discountKind || v.discountValue) {
+    if (!v.discountKind) ctx.addIssue({ code: "custom", path: ["discountKind"], message: "Choose whether the discount is an amount or a percentage." });
+    else if (!v.discountValue) ctx.addIssue({ code: "custom", path: ["discountValue"], message: v.discountKind === "percent" ? "Enter the percentage." : "Enter the amount." });
+    else if (!v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter the price first, then the discount." });
+    else if (v.discountKind === "percent" && (Number(v.discountValue) < 1 || Number(v.discountValue) >= 100)) ctx.addIssue({ code: "custom", path: ["discountValue"], message: "Enter a percentage from 1 to 99." });
+    else if (v.discountKind === "amount" && Number(v.discountValue) >= Number(v.listPrice)) ctx.addIssue({ code: "custom", path: ["discountValue"], message: "The discount must be less than the price." });
+  }
   if (v.visibility !== undefined) {
     // The staff form: in stock needs an amount; what is shown publicly follows what was filled in.
     if (v.availability === "in_stock" && v.stockQuantity === undefined) ctx.addIssue({ code: "custom", path: ["stockQuantity"], message: "Enter how many are available." });
@@ -159,40 +157,16 @@ export type ProductInput = z.output<typeof productSchema>;
 export const productUpdateSchema = productBase.omit({ sku: true }).superRefine(productRules);
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
-export const variantSchema = z
-  .object({
-    sku: z.string({ error: "SKU is required." }).trim().min(1, "SKU is required.").max(60).regex(/^[A-Za-z0-9._-]+$/, "Use letters, numbers, dots, hyphens and underscores only."),
-    label: reqText("Option name", 80),
-    listPrice: optMoney("Price"),
-    comparePrice: optMoney("Original price"),
-    stockQuantity: z.preprocess((v) => (v === "" || v === null || v === undefined ? undefined : v), z.coerce.number({ error: "Enter a whole number." }).int("Enter a whole number.").min(0, "Stock cannot be negative.").max(1000000).optional()),
-    isActive: checkbox,
-  })
-  .superRefine((v, ctx) => {
-  if (v.comparePrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter the sale price too, or clear the original price." });
-  else if (v.comparePrice && v.listPrice && Number(v.comparePrice) <= Number(v.listPrice)) ctx.addIssue({ code: "custom", path: ["comparePrice"], message: "The original price must be higher than the price now." });
-});
-export type VariantInput = z.output<typeof variantSchema>;
-
-export const imagesSchema = z.object({
-  fileIds: idList(10),
-  altText: reqText("Image description", 200),
-});
-
-export const GALLERY_AREAS = ["projects", "showroom", "workshop", "workshop_gallery"] as const;
+/** The gallery has two sections, each a set of photographs: the showroom and the workshop. */
+export const GALLERY_AREAS = ["showroom", "workshop"] as const;
 export type GalleryArea = (typeof GALLERY_AREAS)[number];
-export const GALLERY_AREA_LABEL: Record<GalleryArea, string> = { projects: "Project gallery", showroom: "Showroom images", workshop: "Workshop images", workshop_gallery: "Workshop gallery" };
-
-export const galleryProjectSchema = z.object({
-  area: z.preprocess((v) => (v === "" || v === undefined ? "projects" : v), z.enum(GALLERY_AREAS)),
-  title: reqText("Project title", 120),
-  description: optText("Description", 2000),
-  completedOn: z.preprocess((v) => (v === "" ? undefined : v), z.iso.date("Enter a valid date.").optional()),
-  isPublished: checkbox,
-  sortOrder: z.preprocess((v) => (v === "" || v === undefined ? 0 : Number(v)), z.number().int().min(0).max(9999)),
-  categoryId: optUuid("category"),
+export const GALLERY_AREA_LABEL: Record<GalleryArea, string> = { showroom: "Showroom photos", workshop: "Workshop photos" };
+/** Photographs in one section. */
+export const MAX_GALLERY_PHOTOS = 30;
+export const galleryAddSchema = z.object({
+  area: z.enum(GALLERY_AREAS),
+  fileIds: idList(10),
 });
-export type GalleryProjectInput = Omit<z.output<typeof galleryProjectSchema>, "area"> & { area?: GalleryArea };
 
 export const resolveSlug = (explicit: string | undefined, name: string): string => {
   const candidate = explicit && explicit.length > 0 ? explicit : slugify(name);

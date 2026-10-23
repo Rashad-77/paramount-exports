@@ -13,7 +13,7 @@ describe.skipIf(!hasTestDb)("foundation schema (real Postgres)", () => {
 
   it("applies all migrations to a clean database, leaving the order tables and none of the retired CRM or ERP tables", async () => {
     const names = (await t.sql`SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT LIKE '\_\_drizzle%'`).map((r) => r.tablename as string);
-    for (const kept of ["online_orders", "online_order_items", "messages", "products", "product_variants", "gallery_projects", "profiles", "user_roles", "audit_logs", "uploaded_files", "site_settings"]) {
+    for (const kept of ["online_orders", "online_order_items", "messages", "products", "product_variants", "gallery_photos", "profiles", "user_roles", "audit_logs", "uploaded_files", "site_settings"]) {
       expect(names, kept).toContain(kept);
     }
     for (const gone of ["leads", "customers", "quotations", "sales_orders", "payments", "inventory_items", "production_jobs", "suppliers", "purchase_orders", "deliveries", "expenses", "after_sales_cases", "locations"]) {
