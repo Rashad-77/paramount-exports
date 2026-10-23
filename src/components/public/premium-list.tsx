@@ -26,7 +26,7 @@ export function PremiumList({ pieces }: { pieces: PremiumPiece[] }) {
             <div className="cat-right">
               <div className="cat-searchwrap">
                 <Search aria-hidden="true" className="cat-searchicon" strokeWidth={1.75} />
-                <input name="q" type="search" aria-label="Search the premium range" className="cat-control cat-search" maxLength={80} autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input name="q" type="search" aria-label="Search the premium range" placeholder="Search the premium range" className="cat-control cat-search" maxLength={80} autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} />
               </div>
             </div>
           </form>
