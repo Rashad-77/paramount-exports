@@ -1285,9 +1285,18 @@ html:has(.page-body) {
     padding-right: 0.9rem;
     background-image: none;
   }
+  /* What the visitor types is 16px (a smaller size makes iPhones zoom in on tapping the box); the hint keeps the small capitals of the other boxes. */
+  .cat-search {
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    text-transform: none;
+  }
   .cat-search::placeholder {
     color: var(--color-text-muted);
     opacity: 1;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
   .cat-search::-webkit-search-cancel-button {
     -webkit-appearance: none;
@@ -4597,7 +4606,7 @@ select:focus {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* Sale strip: sized in rem so it follows the phone / tablet / desktop steps like the rest of the text. */
+/* Sale strip: sized in rem, like the rest of the text. */
 .sale-badge {
   height: 2.4em;
   padding: 0 0.8em;
@@ -4843,16 +4852,13 @@ span.cat-pagebtn {
     stroke-width: 2.75;
   }
 }
-/* On a dark banner it is pinned under the header, at the left edge of the content */
+/* On a dark banner it is pinned under the header, level with the left edge of the page content */
 .back-bar {
   position: absolute;
   z-index: 5;
   left: 0;
   right: 0;
   top: calc(var(--head-h) + 0.1rem + 0.2cm);
-  /* Closer to the edge of the screen than the page content, whatever the screen width */
-  max-width: none;
-  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 /* The open/close arrow on "Add another address": ours, not the browser's triangle */
@@ -5083,6 +5089,20 @@ span.cat-pagebtn {
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.2em;
+}
+
+/* What the customer types is 16px (a smaller size makes iPhones zoom in), and each star is a 44px tap target. */
+.rv-dialog input:not([type="hidden"]):not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+.rv-dialog textarea,
+.rv-dialog .rv-field {
+  font-size: 1rem;
+  min-height: 2.75rem;
+}
+.rv-dialog .rv-star {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
 }
 
 /* Review pop-up: the name and city boxes and the photo chooser take the same hairline black as the review box. */

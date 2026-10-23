@@ -198,8 +198,8 @@ export default async function ProductPage({ params }: Props) {
         <div className="mb-3">
           <BackLink href="/products" to="the collection" tone="dark" history />
         </div>
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-          <div className="lg:sticky lg:top-24 lg:self-start">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-8 lg:gap-14">
+          <div className="md:sticky md:top-24 md:self-start">
             <ProductGallery
               images={p.images}
               name={p.name}

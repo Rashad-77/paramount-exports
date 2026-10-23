@@ -72,7 +72,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="inline-flex size-10 shrink-0 items-center justify-center hover:bg-linen"
+            className="inline-flex size-11 shrink-0 items-center justify-center hover:bg-linen"
           >
             <X aria-hidden="true" className="size-5" />
           </button>

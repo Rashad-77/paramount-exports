@@ -101,13 +101,13 @@ export function DateField({
       {open ? (
         <div role="dialog" aria-label="Choose a date" className="absolute left-0 top-full z-40 mt-1 w-[17rem] border border-border-strong bg-surface p-3 text-sm shadow-lg">
           <div className="mb-2 flex items-center justify-between">
-            <button type="button" aria-label="Previous month" onClick={() => step(-1)} className="inline-flex size-8 items-center justify-center hover:bg-black/5">
+            <button type="button" aria-label="Previous month" onClick={() => step(-1)} className="inline-flex size-8 items-center justify-center pointer-coarse:size-11 hover:bg-black/5">
               <ChevronLeft aria-hidden="true" className="size-4" />
             </button>
             <p className="font-medium" aria-live="polite">
               {MONTHS[view.m]} {view.y}
             </p>
-            <button type="button" aria-label="Next month" onClick={() => step(1)} className="inline-flex size-8 items-center justify-center hover:bg-black/5">
+            <button type="button" aria-label="Next month" onClick={() => step(1)} className="inline-flex size-8 items-center justify-center pointer-coarse:size-11 hover:bg-black/5">
               <ChevronRight aria-hidden="true" className="size-4" />
             </button>
           </div>

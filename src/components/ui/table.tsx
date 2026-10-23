@@ -92,7 +92,7 @@ export function Pagination({
 }) {
   if (pageCount <= 1) return null;
   const linkClass =
-    "inline-flex min-h-10 items-center border border-border-strong px-3 text-sm hover:bg-linen";
+    "inline-flex min-h-10 items-center border border-border-strong px-3 text-sm pointer-coarse:min-h-11 hover:bg-linen";
   const disabledClass = "inline-flex min-h-10 items-center border border-border px-3 text-sm text-text-muted opacity-60";
   return (
     <nav aria-label="Pagination" className="mt-4 flex items-center justify-between gap-3">

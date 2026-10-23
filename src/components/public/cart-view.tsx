@@ -48,19 +48,19 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
                   </Link>
                   <p className="text-sm text-text-muted">{i.variantLabel}</p>
                 </div>
-                <button type="button" onClick={() => remove(i.variantId)} aria-label={`Remove ${i.productName}`} className="grid size-9 shrink-0 place-items-center text-text-muted hover:text-text">
+                <button type="button" onClick={() => remove(i.variantId)} aria-label={`Remove ${i.productName}`} className="grid size-11 shrink-0 place-items-center text-text-muted hover:text-text">
                   <X aria-hidden="true" className="size-5" strokeWidth={1.5} />
                 </button>
               </div>
               <div className="mt-auto flex items-end justify-between gap-3 pt-3">
                 <div className="inline-flex items-center border border-border-strong" role="group" aria-label={`Quantity of ${i.productName}`}>
-                  <button type="button" onClick={() => setQuantity(i.variantId, i.quantity - 1)} disabled={i.quantity <= 1} aria-label="One fewer" className="grid size-10 place-items-center hover:bg-linen disabled:opacity-40">
+                  <button type="button" onClick={() => setQuantity(i.variantId, i.quantity - 1)} disabled={i.quantity <= 1} aria-label="One fewer" className="grid size-11 place-items-center hover:bg-linen disabled:opacity-40">
                     <Minus aria-hidden="true" className="size-4" />
                   </button>
                   <span className="min-w-9 text-center text-sm font-medium tabular-nums" aria-live="polite">
                     {i.quantity}
                   </span>
-                  <button type="button" onClick={() => setQuantity(i.variantId, i.quantity + 1)} disabled={i.quantity >= MAX_QTY} aria-label="One more" className="grid size-10 place-items-center hover:bg-linen disabled:opacity-40">
+                  <button type="button" onClick={() => setQuantity(i.variantId, i.quantity + 1)} disabled={i.quantity >= MAX_QTY} aria-label="One more" className="grid size-11 place-items-center hover:bg-linen disabled:opacity-40">
                     <Plus aria-hidden="true" className="size-4" />
                   </button>
                 </div>
