@@ -418,9 +418,13 @@
 }
 .prem-piece-text {
   margin-top: 1.1rem;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.75;
   color: var(--prem-text);
+}
+/* A line break the owner typed inside a paragraph (a short list, for instance) stays a line break. */
+.prem-piece-text p {
+  white-space: pre-line;
 }
 .prem-piece-text p + p {
   margin-top: 1rem;
