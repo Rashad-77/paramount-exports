@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { activeCustomer } from "@/lib/auth/customer";
 import { wishlistIds } from "@/server/accounts";
+import { avatarsFor } from "@/server/avatars";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,8 @@ export async function GET() {
   try {
     const c = await activeCustomer();
     if (!c) return NextResponse.json({ customer: null }, { headers });
-    const wishlist = await wishlistIds(c.id).catch(() => [] as string[]);
-    return NextResponse.json({ customer: { name: c.fullName, email: c.email, phone: c.phone, address: c.address, wishlist } }, { headers });
+    const [wishlist, pics] = await Promise.all([wishlistIds(c.id).catch(() => [] as string[]), avatarsFor([c.id]).catch(() => new Map<string, string>())]);
+    return NextResponse.json({ customer: { name: c.fullName, email: c.email, phone: c.phone, address: c.address, avatar: pics.get(c.id) ?? null, wishlist } }, { headers });
   } catch {
     return NextResponse.json({ customer: null }, { headers });
   }

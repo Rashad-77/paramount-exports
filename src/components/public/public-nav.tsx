@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { CartLink } from "./cart-link";
+import { useAccount } from "./use-account";
 
 export interface NavLink {
   label: string;
@@ -21,6 +22,8 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
   const [scrolled, setScrolled] = useState(false);
   const path = usePathname();
   const id = useId();
+  // When a customer is signed in and has a picture (uploaded, or from Google), it replaces the plain account icon.
+  const me = useAccount(accountHref === "/account");
   const [first = name, ...others] = name.trim().split(/\s+/);
   const rest = others.join(" ");
 
@@ -69,7 +72,12 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
         </nav>
         <CartLink onClick={() => setOpen(false)} />
         <Link href={accountHref} className="cart acct" aria-label="Account" onClick={() => setOpen(false)}>
-          <User aria-hidden="true" className="size-4" strokeWidth={1.5} />
+          {me?.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={me.avatar} alt="" referrerPolicy="no-referrer" className="acct-pic" />
+          ) : (
+            <User aria-hidden="true" className="size-4" strokeWidth={1.5} />
+          )}
         </Link>
       </div>
     </header>

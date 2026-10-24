@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb, withTx } from "@/lib/db/client";
-import { uploadedFiles } from "@/lib/db/schema";
+import { customerAccounts, uploadedFiles } from "@/lib/db/schema";
 import { getStorage, type BucketName } from "@/lib/storage";
 import { linkUploads, publicFileUrl, verifyUploads } from "./files";
 
@@ -70,5 +70,11 @@ export async function avatarsFor(
   for (const r of rows)
     if (r.entityId && !out.has(r.entityId))
       out.set(r.entityId, publicFileUrl(r));
+  // Anyone without an uploaded picture shows the one Google gave them, if they signed in with Google.
+  const missing = ids.filter((id) => !out.has(id));
+  if (missing.length > 0) {
+    const g = await getDb().select({ id: customerAccounts.id, url: customerAccounts.avatarUrl }).from(customerAccounts).where(inArray(customerAccounts.id, missing));
+    for (const r of g) if (r.url) out.set(r.id, r.url);
+  }
   return out;
 }

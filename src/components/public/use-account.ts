@@ -7,6 +7,8 @@ export interface AccountMe {
   email: string;
   phone: string | null;
   address: string | null;
+  /** Their profile picture (uploaded, or the one from Google), if any. */
+  avatar?: string | null;
   /** Ids of the products they have saved. */
   wishlist: string[];
 }

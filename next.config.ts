@@ -39,7 +39,8 @@ const nextConfig: NextConfig = {
     // A resized photograph is kept for 31 days (the default is 4 hours), so a visitor rarely waits for one to be made. Every upload gets a new
     // address, so a replaced photograph is never served from an old copy.
     minimumCacheTTL: 2678400,
-    remotePatterns: supabaseHost ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/public-media/**" }] : [],
+    // Supabase Storage (our uploads) and Google profile pictures (customers who signed in with Google).
+    remotePatterns: [...(supabaseHost ? [{ protocol: "https" as const, hostname: supabaseHost, pathname: "/storage/v1/object/public/public-media/**" }] : []), { protocol: "https" as const, hostname: "*.googleusercontent.com", pathname: "/**" }],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

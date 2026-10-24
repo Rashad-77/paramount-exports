@@ -71,18 +71,34 @@ export const isStaffSignedIn = cache(async (): Promise<boolean> => {
   return user ? isStaffId(user.id) : false;
 });
 
+/** Google’s profile picture from the sign-in details, only when it really is a Google-hosted address. */
+function googlePicture(meta: Record<string, unknown> | undefined): string | null {
+  const raw = meta?.avatar_url ?? meta?.picture;
+  if (typeof raw !== "string" || raw.length > 500) return null;
+  try {
+    const u = new URL(raw);
+    return u.protocol === "https:" && /(^|.)googleusercontent.com$/.test(u.hostname) ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Make sure a verified sign-in identity has its account row (created on first sign-in, so email confirmation can happen later). */
 async function ensureAccount(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): Promise<Customer | null> {
   if (!user.email) return null;
   if (await isStaffId(user.id)) return null;
   const db = getDb();
   const [found] = await db.select().from(customerAccounts).where(eq(customerAccounts.id, user.id)).limit(1);
-  if (found) return toCustomer(found);
+  const picture = googlePicture(user.user_metadata);
+  if (found) {
+    if (picture && found.avatarUrl !== picture) await db.update(customerAccounts).set({ avatarUrl: picture }).where(eq(customerAccounts.id, user.id));
+    return toCustomer(found);
+  }
   const meta = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
   const fullName = meta || user.email.split("@")[0]!;
   const [created] = await db
     .insert(customerAccounts)
-    .values({ id: user.id, fullName: fullName.slice(0, 120), email: user.email, emailLower: user.email.toLowerCase() })
+    .values({ id: user.id, fullName: fullName.slice(0, 120), email: user.email, emailLower: user.email.toLowerCase(), avatarUrl: picture })
     .onConflictDoNothing()
     .returning();
   if (created) return toCustomer(created);

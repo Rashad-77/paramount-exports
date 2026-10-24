@@ -18,6 +18,8 @@ export const customerAccounts = pgTable(
     phoneKey: text("phone_key"),
     /** Default delivery address, offered at checkout. */
     address: text("address"),
+    /** The picture Google supplies on a Google sign-in (an uploaded picture takes priority; see server/avatars.ts). */
+    avatarUrl: text("avatar_url"),
     /** Development-only sign-in (scrypt hash). Always null when real sign-in (Supabase) is used. */
     localPasswordHash: text("local_password_hash"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

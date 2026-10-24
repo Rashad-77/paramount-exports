@@ -6143,3 +6143,11 @@ span.cat-pagebtn {
   text-transform: uppercase;
   cursor: pointer;
 }
+
+/* The customer's own picture in the header's account button: a small circle in place of the icon. */
+.phead .cart .acct-pic {
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 999px;
+  object-fit: cover;
+}
