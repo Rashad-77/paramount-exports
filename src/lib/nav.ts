@@ -66,12 +66,6 @@ export const NAV: NavGroup[] = [
     modules: [{ label: "Customers", description: "People who have ordered, asked for a quotation or written to you, with their contact details and history.", pages: [page("Customers", "/app/customers", "customers:view")] }],
   },
   {
-    label: "Business",
-    modules: [
-      { label: "Reviews", description: "Reviews customers write on the website, with their photographs: they show on the homepage straight away, and you can hide or delete any of them.", pages: [page("Reviews", "/app/reviews", "website:manage")] },
-    ],
-  },
-  {
     label: "System",
     modules: [
       { label: "Settings", description: "Business name, contact details, opening hours and bank details for transfers.", pages: [page("Settings", "/app/settings", "settings:view")] },

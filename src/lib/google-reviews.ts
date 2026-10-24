@@ -27,9 +27,15 @@ export interface GoogleReviews {
 }
 
 /** The link that opens Google's "write a review" box for the business: from the Place ID, else the link typed in Settings, else none. */
-export function googleReviewLink(b: { googlePlaceId: string | null; googleReviewUrl: string | null }): string | null {
+export function googleReviewLink(b: { googlePlaceId: string | null; googleReviewUrl: string | null; name?: string; address?: string | null }): string | null {
   if (b.googlePlaceId) return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(b.googlePlaceId)}`;
-  return b.googleReviewUrl ?? null;
+  if (b.googleReviewUrl) return b.googleReviewUrl;
+  // Nothing set in Settings yet: open the business's listing on Google Maps (found by name and place), where the visitor can write a review.
+  if (b.name) {
+    const where = (b.address ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(-3).join(", ");
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([b.name, where].filter(Boolean).join(" "))}`;
+  }
+  return null;
 }
 
 /** dd/mm/yyyy in Sri Lanka time, from the moment Google gives (an ISO timestamp). No time of day. */

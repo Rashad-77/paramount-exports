@@ -37,7 +37,7 @@ describe("navigation visibility", () => {
   });
 
   it("groups screens into modules and lists a module's other screens as tabs", () => {
-    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Reviews"]));
+    expect(pageLabels(actor(["owner"]))).toEqual(expect.arrayContaining(["Categories", "Gallery"]));
     const products = visibleNav(actor(["owner"])).flatMap((g) => g.modules).find((m) => m.label === "Products")!;
     expect(products.href).toBe("/app/products");
     expect(products.pages.map((x) => x.label)).toEqual(["Products"]);
