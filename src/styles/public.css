@@ -5430,3 +5430,11 @@ span.cat-pagebtn {
     font-size: 0.6875rem;
   }
 }
+
+/* Footer on a tablet: brand across the top, then every column in one row (it reflows 2 on a phone, as many as fit on a tablet, 5 on a computer). */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .foot .foot-grid {
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1.75rem 1.5rem;
+  }
+}
