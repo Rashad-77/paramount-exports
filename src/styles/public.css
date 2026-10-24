@@ -4875,7 +4875,8 @@ span.cat-pagebtn {
     stroke-width: 2.75;
   }
 }
-/* On a dark banner it is pinned to the screen's left edge (a small margin in), not to the page content's edge, so it sits clear of the logo and title. */
+/* On a dark banner: on a phone it lines up on the left with the banner's own content (the title and text); from tablet width up it is pinned
+   near the screen's left edge, clear of the logo and title. */
 .back-bar {
   position: absolute;
   z-index: 5;
@@ -4883,8 +4884,12 @@ span.cat-pagebtn {
   right: 0;
   top: calc(var(--head-h) + 1px + 0.5rem);
   text-align: left;
-  max-width: none;
-  padding-inline: 0.75rem;
+}
+@media (min-width: 48rem) {
+  .back-bar {
+    max-width: none;
+    padding-inline: 0.75rem;
+  }
 }
 @media (min-width: 48rem) {
   .back-bar {
@@ -5692,20 +5697,48 @@ span.cat-pagebtn {
   font-size: clamp(12px, calc(4.8cqw + 1px), 13px);
 }
 
-/* Paragraphs are justified, with hyphenation so phone-width lines do not open wide gaps. Paragraphs that sit in a centred block (hero text, cards,
-   banners, notes under buttons) keep that block's alignment: a justified last line would pull them off-centre. */
-.page-body main p {
-  text-align: justify;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  overflow-wrap: break-word;
+/* Gallery: two buttons that switch between the showroom and the workshop photographs. Square corners, the chosen one filled dark. */
+.gal-toggle {
+  display: inline-flex;
+  border: 1px solid #1c1916;
 }
-.page-body main :is(.text-center, [class*="text-center"], .pcard, .prem-banner, .vhero, .cat-bar, .prem-nomatch, .sale-bar) p,
-.page-body main p:is(.text-center, [class*="text-center"], .eyebrow, .prem-eyebrow, .pcard-price) {
-  text-align: inherit;
-  hyphens: manual;
+.gal-toggle button {
+  min-height: 2.75rem;
+  min-width: 7.5rem;
+  padding: 0 1.5rem;
+  background: #fff;
+  color: #1c1916;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 250ms, color 250ms;
 }
-.page-body main :is(.years-mark, .ct-card, [class*="md:text-right"], [class*="sm:text-center"], [class*="md:text-center"], [class*="lg:text-center"]) p {
-  text-align: inherit;
-  hyphens: manual;
+.gal-toggle button + button {
+  border-left: 1px solid #1c1916;
+}
+.gal-toggle button.is-on {
+  background: #1c1916;
+  color: #fff;
+}
+@media (hover: hover) {
+  .gal-toggle button:not(.is-on):hover {
+    background: #f1ede7;
+  }
+}
+.gal-toggle button:focus-visible {
+  outline: 2px solid #1c1916;
+  outline-offset: 2px;
+}
+@media (max-width: 30rem) {
+  .gal-toggle {
+    display: flex;
+    width: 100%;
+  }
+  .gal-toggle button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 0.5rem;
+  }
 }

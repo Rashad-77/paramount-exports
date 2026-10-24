@@ -34,6 +34,8 @@ const MIN_FRAMES = 6;
  */
 export function GallerySections({ sections }: { sections: GallerySectionData[] }) {
   const [open, setOpen] = useState<{ s: number; i: number } | null>(null);
+  /** The section on show: 0 is the first (showroom), 1 the second (workshop). */
+  const [view, setView] = useState(0);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
 
@@ -46,6 +48,12 @@ export function GallerySections({ sections }: { sections: GallerySectionData[] }
   };
   const step = useCallback((d: 1 | -1) => setOpen((o) => (o ? { ...o, i: (o.i + d + (sections[o.s]?.photos.length || 1)) % (sections[o.s]?.photos.length || 1) } : o)), [sections]);
 
+  // A link to /gallery#workshop opens the workshop side.
+  useEffect(() => {
+    const i = sections.findIndex((s) => `#${s.anchor}` === window.location.hash);
+    if (i > 0) setView(i);
+  }, [sections]);
+
   useEffect(() => {
     const d = dialog.current;
     if (!d) return;
@@ -57,8 +65,19 @@ export function GallerySections({ sections }: { sections: GallerySectionData[] }
 
   return (
     <>
-      {sections.map((s, si) => (
-        <section key={s.anchor} id={s.anchor} aria-labelledby={s.id} className={"scroll-mt-20 bg-white section-y" + (si > 0 ? " border-t border-border" : "")}>
+      <div className="bg-white pt-8 md:pt-10">
+        <div className="container-page">
+          <div className="gal-toggle" role="group" aria-label="Choose a gallery">
+            {sections.map((s, si) => (
+              <button key={s.anchor} type="button" aria-pressed={view === si} className={view === si ? "is-on" : undefined} onClick={() => setView(si)}>
+                {s.anchor === "showroom" ? "Showroom" : s.anchor === "workshop" ? "Workshop" : s.eyebrow}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      {sections.map((s, si) => si !== view ? null : (
+        <section key={s.anchor} id={s.anchor} aria-labelledby={s.id} className="scroll-mt-20 bg-white section-y !pt-8">
           <div className="container-page">
             <Reveal variant="fade">
               <p className="eyebrow">{s.eyebrow}</p>
