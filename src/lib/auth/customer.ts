@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import { customerAccounts, profiles } from "@/lib/db/schema";
+import { customerAccounts, userRoles } from "@/lib/db/schema";
 import { hasDatabase, publicEnv } from "@/lib/env";
 import { phoneKey } from "@/lib/contact";
 import { validation } from "@/lib/errors";
@@ -58,9 +58,9 @@ const verifiedUser = cache(async () => {
   return error || !user ? null : user;
 });
 
-/** Staff (the business owner) sign in to the dashboard. They are never customers, and never get a customer account. */
+/** Staff (the business owner) sign in to the dashboard. They are never customers, and never get a customer account. Staff means holding a role: a person whose roles were all removed is an ordinary visitor again. */
 export async function isStaffId(id: string): Promise<boolean> {
-  const [row] = await getDb().select({ id: profiles.id }).from(profiles).where(eq(profiles.id, id)).limit(1);
+  const [row] = await getDb().select({ id: userRoles.userId }).from(userRoles).where(eq(userRoles.userId, id)).limit(1);
   return Boolean(row);
 }
 
