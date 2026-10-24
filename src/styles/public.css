@@ -4743,8 +4743,17 @@ span.cat-pagebtn {
    Centred: a small category label, the name, then the price. */
 .pcard {
   container-type: inline-size;
+  /* Cards in one row are as tall as the tallest, so the text part of a shorter card grows to fill the rest: no blank strip under it. */
+  display: flex;
+  flex-direction: column;
+}
+.pcard > a {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 }
 .pcard .pcard-body {
+  flex: 1 1 auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
