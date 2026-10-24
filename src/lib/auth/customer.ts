@@ -59,7 +59,7 @@ const verifiedUser = cache(async () => {
 });
 
 /** Staff (the business owner) sign in to the dashboard. They are never customers, and never get a customer account. */
-async function isStaffId(id: string): Promise<boolean> {
+export async function isStaffId(id: string): Promise<boolean> {
   const [row] = await getDb().select({ id: profiles.id }).from(profiles).where(eq(profiles.id, id)).limit(1);
   return Boolean(row);
 }

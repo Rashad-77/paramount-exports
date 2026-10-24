@@ -29,6 +29,11 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
           <h2 id="signin-title" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">
             Sign in
           </h2>
+          {one(sp.notice) === "not-customer" ? (
+            <Alert tone="warning" title="Use a different email address">
+              That email address cannot be used for a customer account. Please sign in or sign up with another one.
+            </Alert>
+          ) : null}
           {checkEmail ? (
             <Alert tone="success" title="Check your email">
               We have sent you a link to confirm your address. Open it, then sign in here.
