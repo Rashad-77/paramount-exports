@@ -1,5 +1,7 @@
 /** What the website shows of the business's Google reviews. Nothing here is invented: it is exactly what Google returns, or nothing. */
 export interface GoogleReview {
+  /** Google's own identifier for the review (places/…/reviews/…), when it gives one. Used to recognise a review already saved. */
+  id: string | null;
   author: string;
   /** 1 to 5. */
   rating: number;
@@ -72,6 +74,7 @@ export function parsePlaceReviews(data: unknown): GoogleReviews | null {
     const author = typeof attr.displayName === "string" && attr.displayName.trim() ? attr.displayName.trim() : "A Google user";
     if (!text || rating < 1 || rating > 5) continue;
     reviews.push({
+      id: typeof x.name === "string" && x.name ? x.name : null,
       author,
       rating,
       text,
@@ -106,6 +109,7 @@ export function parseBusinessReviews(data: unknown): { reviews: GoogleReview[]; 
     const when = typeof x.createTime === "string" ? x.createTime : null;
     if (!text || rating < 1) continue;
     reviews.push({
+      id: typeof x.name === "string" && x.name ? x.name : typeof x.reviewId === "string" && x.reviewId ? x.reviewId : null,
       author,
       rating,
       text,

@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { purgeRateLimits } from "@/lib/rate-limit";
 import { purgeStaleQuarantine } from "@/server/files";
+import { syncGoogleReviews } from "@/server/google-review-store";
 import { refreshPublishedPhotos } from "@/server/image-warm";
+import { getBusinessSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -22,6 +24,7 @@ function authorised(req: Request): boolean {
  * Daily housekeeping, called by Vercel Cron (which sends `Authorization: Bearer $CRON_SECRET`):
  *  - delete old rate-limit counters;
  *  - remove uploads that were never attached to a record;
+ *  - save any new Google reviews (only ones not saved yet are added);
  *  - ask for a rotating share of the published product photographs at the customer sizes, so their resized copies are stored
  *    before any customer asks (see src/server/image-warm.ts).
  * Each step is independent: one failing does not stop the others.
@@ -40,6 +43,7 @@ export async function GET(req: Request) {
   };
   await step("rateLimitRowsPurged", () => purgeRateLimits(db));
   await step("abandonedUploadsRemoved", () => purgeStaleQuarantine(db));
+  await step("googleReviewsAdded", async () => syncGoogleReviews((await getBusinessSettings()).googlePlaceId));
   // Last, because it is the only step that takes long: it stops by itself after about 40 seconds.
   await step("photoSizesRefreshed", () => refreshPublishedPhotos());
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });

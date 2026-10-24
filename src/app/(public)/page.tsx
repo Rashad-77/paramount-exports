@@ -17,8 +17,7 @@ import { hasDatabase } from "@/lib/env";
 import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings } from "@/lib/settings";
-import { splitAddress } from "@/lib/address-lines";
-import { googleReviewLink } from "@/lib/google-reviews";
+import { googleReviewLink, type GoogleReview } from "@/lib/google-reviews";
 import { ProductCard } from "@/components/public/product-card";
 import { ReviewButton } from "@/components/public/review-button";
 import { PremiumTeaser } from "@/components/public/premium";
@@ -27,23 +26,8 @@ import {
   listPublicCategories,
   listPublicProducts,
 } from "@/server/catalogue-public";
+import { listSavedGoogleReviews } from "@/server/google-review-store";
 import { getGoogleReviews } from "@/server/google-reviews";
-
-/** Placeholder reviews, shown only while Google has none to give. Replace by connecting Google reviews in Settings. Each carries a delivery address, and the card shows its city. */
-const SAMPLE_REVIEWS = [
-  { quote: "Our dining table arrived exactly as promised and the finish is beautiful. The team measured twice and fitted it in one visit.", name: "Nimali Perera", samplePhotos: 2, address: "24 Alfred House Gardens\nColombo 03\n\nColombo\n00300", stars: 5 },
-  { quote: "I ordered a wardrobe built to my room size. The workmanship is excellent and they kept me updated through every stage.", name: "Rohan Fernando", address: "58 Peradeniya Road\nKandy\n\nKandy\n20000", stars: 5 },
-  { quote: "Good quality timber, fair price and very helpful staff in the showroom. Delivery was on the day they said.", name: "Dilani Silva", samplePhotos: 1, address: "12 Church Street\nFort\n\nGalle\n80000", stars: 5 },
-  { quote: "Replaced all the office desks with Paramount pieces. Sturdy, neat and well finished. Would order again.", name: "Kasun Wijesinghe", address: "7 Lewis Place\nNegombo\n\nNegombo\n11500", stars: 4 },
-  { quote: "They fixed a small issue with my bed frame within days, no fuss at all. That is rare to find.", name: "Anjali Mendis", samplePhotos: 3, address: "31 Temple Road\nBambalapitiya\n\nColombo\n00400", stars: 5 },
-  { quote: "Ordered a teak coffee table and two side tables. The grain is lovely and they matched the stain to my sofa exactly.", name: "Sanjeewa Rajapaksa", address: "18 Hill Street\nDehiwala\n\nDehiwala\n10350", stars: 5, samplePhotos: 2},
-  { quote: "The workshop team walked me through every wood option before I chose. Honest advice, and the bookshelf is perfect.", name: "Thilini Jayawardena", address: "9 Lake Road\nNuwara Eliya\n\nNuwara Eliya\n22200", stars: 5},
-  { quote: "Delivery to Matara was careful and on schedule. One drawer needed adjusting and they came back to fix it the same week.", name: "Chamara Gunasekara", address: "44 Beach Road\nMatara\n\nMatara\n81000", stars: 4, samplePhotos: 1},
-  { quote: "We furnished our new guesthouse with Paramount beds and wardrobes. Guests keep asking where they were made.", name: "Priyanka Ratnayake", address: "5 Fort Road\nGalle\n\nGalle\n80000", stars: 5, samplePhotos: 3},
-  { quote: "Fair price for solid wood, and a clear quotation before they started. The dining chairs are very comfortable.", name: "Mohamed Ifham", address: "62 Main Street\nKurunegala\n\nKurunegala\n60000", stars: 5},
-  { quote: "We first visited the showroom on a Saturday with a rough sketch and a tight budget, and I honestly expected to be handed a catalogue and left alone. Instead, one of the team sat with us for almost an hour, explained the difference between the timbers, showed us how each finish ages, and helped us work out which pieces to buy now and which to leave for later. We ordered a dining table, six chairs and a sideboard. The quotation was clear, the delivery date was kept, and the two men who delivered carried everything upstairs without a single scratch. Three months on, the table has survived two birthday parties and a toddler with a marker pen, and a quick wipe and some oil brought it back like new. When one chair developed a small wobble, the workshop collected it, fixed it and returned it within the week at no charge. This is furniture made by people who care how it will look in your home ten years from now, and we have already told our families about it.", name: "Ishara Abeysekera", address: "27 Galle Road\nRatmalana\n\nRatmalana\n10390", stars: 5, samplePhotos: 3 },
-];
-
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -173,9 +157,10 @@ export default async function HomePage() {
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
   ]);
-  // Reviews: only Google's are shown (the Review us on Google button sends visitors to Google to write theirs). With none yet, the
-  // SAMPLE_REVIEWS below stand in; delete them once real ones are showing.
-  const google = await getGoogleReviews(business.googlePlaceId);
+  // Reviews: only Google's are shown (the Review us on Google button sends visitors to Google to write theirs). A daily job saves new
+  // ones to the database and the carousel shows those; until any are saved, what Google returns right now is shown. With none, the section only invites a first review.
+  const [google, saved] = await Promise.all([getGoogleReviews(business.googlePlaceId), safe(() => listSavedGoogleReviews(), [] as GoogleReview[])]);
+  const shown = saved.length > 0 ? saved : (google?.reviews ?? []);
   const reviewLink = googleReviewLink(business);
   const reviews: Array<{
     id: string;
@@ -192,7 +177,7 @@ export default async function HomePage() {
     stars?: number;
     /** The day Google says it was posted (dd/mm/yyyy). */
     date?: string | null;
-  }> = (google?.reviews ?? []).map((r, i) => ({
+  }> = shown.map((r, i) => ({
     id: `google-${i}`,
     quote: r.text,
     name: r.author,
@@ -200,7 +185,6 @@ export default async function HomePage() {
     avatar: r.photo,
     date: r.date,
   }));
-  if (reviews.length === 0) reviews.push(...SAMPLE_REVIEWS.map((r, i) => ({ ...r, id: `sample-${i}`, city: splitAddress(r.address).city })));
   const viewerReviews = reviews.map((r) => ({ id: r.id, quote: r.quote, name: r.name, city: r.city ?? null, stars: r.stars, photos: r.photos ?? [], avatar: r.avatar ?? null, date: r.date ?? null, samplePhotos: r.samplePhotos ?? 0 }));
   // One band per group, with the categories under it as the note.
   const groups = categories.filter((c) => !c.parentId);

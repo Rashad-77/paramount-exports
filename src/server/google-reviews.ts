@@ -19,8 +19,8 @@ const REVALIDATE_SECONDS = 24 * 60 * 60;
  * The business's Google rating and its most recent reviews, from the Places API (New). Returns null when no Place ID or API key is
  * set, or when Google does not answer: the website then simply shows no Google reviews. It never throws and never blocks a page.
  */
-export async function getGoogleReviews(placeId: string | null): Promise<GoogleReviews | null> {
-  const places = await getPlaceReviews(placeId);
+export async function getGoogleReviews(placeId: string | null, opts: { fresh?: boolean } = {}): Promise<GoogleReviews | null> {
+  const places = await getPlaceReviews(placeId, opts.fresh === true);
   // When the owner has authorised the Business Profile API, every review is shown (the Places API gives only 5).
   const all = await getBusinessReviews();
   if (all && all.reviews.length > 0) {
@@ -34,7 +34,7 @@ export async function getGoogleReviews(placeId: string | null): Promise<GoogleRe
   return places;
 }
 
-async function getPlaceReviews(placeId: string | null): Promise<GoogleReviews | null> {
+async function getPlaceReviews(placeId: string | null, fresh: boolean): Promise<GoogleReviews | null> {
   if (!placeId) return null;
   let key: string | undefined;
   let base = "https://places.googleapis.com/v1/places";
@@ -50,7 +50,7 @@ async function getPlaceReviews(placeId: string | null): Promise<GoogleReviews | 
     const res = await fetch(`${base}/${encodeURIComponent(placeId)}`, {
       headers: { "X-Goog-Api-Key": key, "X-Goog-FieldMask": "rating,userRatingCount,googleMapsUri,reviews" },
       signal: AbortSignal.timeout(6000),
-      next: { revalidate: REVALIDATE_SECONDS },
+      ...(fresh ? { cache: "no-store" as const } : { next: { revalidate: REVALIDATE_SECONDS } }),
     });
     if (!res.ok) {
       console.error(`[google-reviews] Google answered ${res.status}`);

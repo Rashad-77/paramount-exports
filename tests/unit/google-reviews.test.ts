@@ -29,6 +29,7 @@ describe("parsePlaceReviews", () => {
     expect(r.mapsUrl).toBe("https://maps.google.com/?cid=1");
     expect(r.reviews).toHaveLength(2);
     expect(r.reviews[0]).toEqual({
+      id: null,
       author: "Nimal P.",
       rating: 5,
       text: "Beautiful table, delivered on time.",
