@@ -120,8 +120,6 @@ const productBase = z.object({
   availability: optEnum(AVAILABILITY, "availability"),
   showPrice: checkbox,
   photos: photosField,
-  /** The number (1, 2, 3…) of the photo used as the thumbnail. */
-  thumbnail: optInt("Thumbnail number", MAX_PHOTOS),
   seoTitle: optText("Page title", 70),
   seoDescription: optText("Page description", 160),
 });

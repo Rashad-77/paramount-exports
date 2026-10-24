@@ -26,7 +26,6 @@ export interface ProductFormValues {
   discountKind?: string | null;
   discountValue?: string | null;
   images?: Array<{ id: string; url: string }>;
-  thumbnailImageId?: string | null;
 }
 
 export function ProductForm({
@@ -63,7 +62,7 @@ export function ProductForm({
           groups={toCascadeGroups(sorted)}
         />
       </div>
-      <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="One or two sentences shown under the name." />
+      <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="Short description shown under the product name." />
       <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} hint="The long text, shown under the Description bar on the product page." />
 
       <fieldset className="space-y-4 border border-border p-4">
@@ -90,7 +89,7 @@ export function ProductForm({
             {submitLabel === "Create product" ? <span className="ml-2 font-normal text-text-muted">Add at least one.</span> : null}
           </h3>
           {/* Remounted when the saved photos change, so it always starts from what is stored. */}
-          <PhotosEditor key={(values.images ?? []).map((i) => i.id).join(",") + (values.thumbnailImageId ?? "")} initial={values.images ?? []} thumbnailId={values.thumbnailImageId} />
+          <PhotosEditor key={(values.images ?? []).map((i) => i.id).join(",")} initial={values.images ?? []} />
         </div>
       </fieldset>
       <ReviewAndSave

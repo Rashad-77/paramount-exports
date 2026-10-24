@@ -15,6 +15,8 @@ export interface ProductRow {
   id: string;
   name: string;
   categoryName: string;
+  /** The main category above the subcategory, when there is one. */
+  mainCategoryName: string | null;
   isPublished: boolean;
   isFeatured: boolean;
   isPremium: boolean;
@@ -213,14 +215,31 @@ export function ProductsTable({
                   </span>
                 </TD>
                 <TD className="px-2 py-1 text-left">
-                  <Link
-                    href={`/app/products/${p.id}`}
-                    className="inline-block border border-border px-2 py-0.5 text-walnut underline"
-                  >
-                    {p.name}
-                  </Link>
+                  {/* A long name is cut short with "…" (the full name shows on hover and on the product's own page). */}
+                  <div className="max-w-[22rem]">
+                    <Link
+                      href={`/app/products/${p.id}`}
+                      title={p.name}
+                      className="inline-block max-w-full truncate border border-border px-2 py-0.5 align-top text-walnut underline"
+                    >
+                      {p.name}
+                    </Link>
+                  </div>
                 </TD>
-                <TD className="px-2 py-1 text-left">{p.categoryName}</TD>
+                <TD className="px-2 py-1 text-left">
+                  {p.mainCategoryName ? (
+                    <span className="block">
+                      <span className="text-text-muted">{p.mainCategoryName}</span>
+                      <span aria-hidden="true" className="px-1.5 text-text-muted">
+                        ›
+                      </span>
+                      <span className="sr-only"> then </span>
+                      {p.categoryName}
+                    </span>
+                  ) : (
+                    p.categoryName
+                  )}
+                </TD>
                 <TD className="px-2 py-1 text-left">
                   {p.archived ? (
                     <StatusBadge>Archived</StatusBadge>

@@ -4,7 +4,6 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormState } from "@/components/forms/action-form";
 import { uploadToStorage } from "@/components/forms/file-uploader";
-import { SelectField } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
 import { MAX_PHOTOS } from "@/lib/schemas/catalogue";
 
@@ -23,22 +22,15 @@ const MAX_BYTES = 8 * 1024 * 1024;
 
 /**
  * The product's photographs: add them first, then they appear below in order, numbered. Drag a photo to change its number (or focus it and
- * press Alt + an arrow key). The thumbnail is chosen by number, separately from the order. Everything is saved with the product:
- * the form posts `photos` in the order shown and `thumbnail` as the chosen number.
+ * press Alt + an arrow key). Photo 1 is the thumbnail on cards and lists, and the first photo on the product page. Everything is saved
+ * with the product: the form posts `photos` in the order shown.
  */
-export function PhotosEditor({
-  initial,
-  thumbnailId,
-}: {
-  initial: Array<{ id: string; url: string }>;
-  thumbnailId?: string | null;
-}) {
+export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: string }> }) {
   const inputId = useId();
   const { state } = useFormState();
   const missing = state.fieldErrors?.photos?.[0];
   const root = useRef<HTMLDivElement>(null);
   const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, state: "done" as const })));
-  const [thumbKey, setThumbKey] = useState<string | undefined>(() => (initial.find((p) => p.id === thumbnailId) ?? initial[0])?.id);
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [overKey, setOverKey] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -50,8 +42,8 @@ export function PhotosEditor({
     if (form) form.dataset.uploading = uploading ? "true" : "false";
   }, [uploading]);
 
-  // The save preview can reorder, delete and pick the thumbnail too: it sends commands here, and is told when anything changes.
-  const commandRef = useRef<(d: { action: "move" | "remove" | "thumb"; key: string; to?: string }) => void>(() => undefined);
+  // The save preview can reorder and delete too: it sends commands here, and is told when anything changes.
+  const commandRef = useRef<(d: { action: "move" | "remove"; key: string; to?: string }) => void>(() => undefined);
   useEffect(() => {
     const form = root.current?.closest("form");
     if (!form) return;
@@ -61,11 +53,10 @@ export function PhotosEditor({
   }, []);
   useEffect(() => {
     root.current?.closest("form")?.dispatchEvent(new CustomEvent("photos-changed"));
-  }, [photos, thumbKey]);
+  }, [photos]);
 
   const patch = (key: string, p: Partial<Photo>) => setPhotos((cur) => cur.map((x) => (x.key === key ? { ...x, ...p } : x)));
   const ready = photos.filter((p) => p.state === "done");
-  const thumbIndex = Math.max(0, ready.findIndex((p) => p.key === thumbKey));
 
   async function onPick(files: FileList | null) {
     if (!files?.length) return;
@@ -108,14 +99,12 @@ export function PhotosEditor({
 
   const remove = (key: string) => {
     setPhotos((cur) => cur.filter((p) => p.key !== key));
-    if (thumbKey === key) setThumbKey(undefined);
   };
 
   useEffect(() => {
     commandRef.current = (d) => {
       if (d.action === "move" && d.to) move(d.key, d.to);
       else if (d.action === "remove") remove(d.key);
-      else if (d.action === "thumb") setThumbKey(d.key);
     };
   });
 
@@ -164,7 +153,7 @@ export function PhotosEditor({
                 data-photo={p.key}
                 tabIndex={0}
                 draggable={p.state === "done"}
-                aria-label={`Photo ${i + 1}${p.key === thumbKey ? ", thumbnail" : ""}. Drag, or press Alt and an arrow key, to change its number.`}
+                aria-label={`Photo ${i + 1}${p.state === "done" && p.key === ready[0]?.key ? ", thumbnail" : ""}. Drag, or press Alt and an arrow key, to change its number.`}
                 onKeyDown={(e) => onKey(e, p.key, i)}
                 onDragStart={(e) => {
                   setDragKey(p.key);
@@ -206,32 +195,20 @@ export function PhotosEditor({
                 </button>
                 {p.state === "uploading" ? <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-xs text-white">Uploading…</span> : null}
                 {p.state === "error" ? <span className="absolute inset-x-0 bottom-0 bg-danger px-1 py-0.5 text-center text-xs text-white">{p.error ?? "Failed"}</span> : null}
-                {p.state === "done" && p.key === thumbKey ? <span className="absolute inset-x-0 bottom-0 bg-walnut-dark/85 py-0.5 text-center text-xs font-medium text-ivory">Thumbnail</span> : null}
+                {p.state === "done" && p.key === ready[0]?.key ? <span className="absolute inset-x-0 bottom-0 bg-walnut-dark/85 py-0.5 text-center text-xs font-medium text-ivory">Thumbnail</span> : null}
               </li>
             ))}
           </ul>
-          <p className="text-sm text-text-muted">Drag a photo to change its number. Photo 1 is the first one shown on the product page. Deleted photos are removed when you save.</p>
+          <p className="text-sm text-text-muted">Drag a photo to change its number. Photo 1 is the thumbnail on cards and lists, and the first one shown on the product page. Deleted photos are removed when you save.</p>
         </>
       ) : (
         <p className="text-sm text-text-muted">No photos yet.</p>
       )}
 
-      {ready.length > 0 ? (
-        <SelectField
-          label="Thumbnail photo"
-          hint="The photo shown on cards and lists. Choose it by number."
-          value={String(thumbIndex + 1)}
-          onValueChange={(v) => setThumbKey(ready[Number(v) - 1]?.key)}
-          options={ready.map((_, i) => ({ value: String(i + 1), label: `Photo ${i + 1}` }))}
-          className="max-w-md"
-        />
-      ) : null}
-
-      {/* What the form posts: the photos in order, and the thumbnail's number. */}
+      {/* What the form posts: the photos in order. */}
       {ready.map((p) => (
         <input key={p.key} type="hidden" name="photos" value={p.id ? `id:${p.id}` : `file:${p.fileId}`} data-url={p.url} data-key={p.key} />
       ))}
-      {ready.length > 0 ? <input type="hidden" name="thumbnail" value={thumbIndex + 1} /> : null}
     </div>
   );
 }

@@ -62,11 +62,9 @@ describe("product form rules", () => {
       visibility: "archived",
       specifications: JSON.stringify([{ key: "material", label: "Material", type: "list", values: ["Teak"] }]),
       photos: ["id:0f043c10-69bf-40e5-8180-df1f73005e47", "file:5f31f04d-9b84-451b-8e2d-45b32a7a292d"],
-      thumbnail: "2",
     });
     expect(r.specifications?.[0]?.values).toEqual(["Teak"]);
     expect(r.photos).toHaveLength(2);
-    expect(r.thumbnail).toBe(2);
   });
 
   it("refuses broken specification or photo data", () => {

@@ -22,20 +22,23 @@ export const getActor = cache(async (): Promise<Actor | null> => {
   if (!hasSupabaseAuth() || !hasDatabase()) return null;
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-  if (error || !user) return null;
+  // The sign-in token is checked here against Supabase's public signing key, which the server keeps (no trip to the sign-in server on
+  // every page). The proxy has already asked the sign-in server about this same request (getUser), so a signed-out or removed user is
+  // caught there. Should the local check not be possible, getClaims falls back to asking the sign-in server.
+  const { data: claimsData, error } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  if (error || !userId) return null;
   // The password alone is not enough once the authenticator code is switched on (the proxy also sends such a visitor to the code page).
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (needsSecondStep(aal?.currentLevel, aal?.nextLevel)) return null;
 
+  // The profile and the roles are read together, not one after the other.
   const db = getDb();
-  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+  const [[profile], roleRows] = await Promise.all([
+    db.select().from(profiles).where(eq(profiles.id, userId)).limit(1),
+    db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId)),
+  ]);
   if (!profile) return null;
-
-  const roleRows = await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, user.id));
 
   const roles = roleRows.map((r) => r.role).filter(isRole);
   return {

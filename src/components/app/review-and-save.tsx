@@ -2,7 +2,6 @@
 
 import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PanelSelect } from "@/components/app/panel-select";
 import { useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -29,7 +28,6 @@ interface Preview {
   kind: string;
   specs: Array<{ label: string; value: string }>;
   photos: Array<{ key: string; url: string }>;
-  thumbnail: number;
 }
 
 function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>): Preview {
@@ -58,7 +56,6 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
     kind: text("kind"),
     specs: specs.map((s) => ({ label: s.label, value: specText(s) })),
     photos,
-    thumbnail: Math.max(1, Number(text("thumbnail")) || 1),
   };
 }
 
@@ -86,7 +83,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
   };
 
   // Photo changes made in the preview go to the form's photo list (still unsaved), and the preview follows the list.
-  const command = (detail: { action: "move" | "remove" | "thumb"; key: string; to?: string }) => anchor.current?.closest("form")?.dispatchEvent(new CustomEvent("photos-command", { detail }));
+  const command = (detail: { action: "move" | "remove"; key: string; to?: string }) => anchor.current?.closest("form")?.dispatchEvent(new CustomEvent("photos-command", { detail }));
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [showroomPhoto, setShowroomPhoto] = useState(0);
   const categoryRef = useRef(categoryLabels);
@@ -100,7 +97,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
   }, [open]);
 
   const live = preview?.visibility === "published";
-  const cover = preview ? (preview.photos[preview.thumbnail - 1] ?? preview.photos[0])?.url : undefined;
+  const cover = preview?.photos[0]?.url;
 
   return (
     <span ref={anchor}>
@@ -214,22 +211,12 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                         >
                           <Trash2 aria-hidden="true" className="size-3.5" />
                         </button>
-                        {i === Math.min(preview.thumbnail, preview.photos.length) - 1 ? <span className="absolute inset-x-0 bottom-0 bg-walnut-dark/85 text-center text-[0.6875rem] text-ivory">Thumbnail</span> : null}
+                        {i === 0 ? <span className="absolute inset-x-0 bottom-0 bg-walnut-dark/85 text-center text-[0.6875rem] text-ivory">Thumbnail</span> : null}
                       </li>
                     ))}
                   </ul>
                 ) : null}
-                {preview.photos.length ? (
-                  <div className="mt-3 max-w-60">
-                    <PanelSelect
-                      label="Thumbnail photo"
-                      value={String(Math.min(preview.thumbnail, preview.photos.length))}
-                      options={preview.photos.map((_, i) => ({ value: String(i + 1), label: `Photo ${i + 1}` }))}
-                      onChange={(v) => command({ action: "thumb", key: preview.photos[Number(v) - 1]!.key })}
-                    />
-                  </div>
-                ) : null}
-                {preview.photos.length > 1 ? <p className="mt-1.5 text-xs text-text-muted">Drag a photo to change its number. Changes here are kept with the form and saved only when you confirm.</p> : null}
+                {preview.photos.length > 1 ? <p className="mt-1.5 text-xs text-text-muted">Drag a photo to change its number; photo 1 is the thumbnail. Changes here are kept with the form and saved only when you confirm.</p> : null}
               </div>
 
               <div className="min-w-0">

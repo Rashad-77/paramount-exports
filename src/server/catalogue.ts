@@ -4,6 +4,7 @@ import Decimal from "decimal.js";
 import { priceAfterDiscount } from "@/lib/sale";
 import { and, asc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
+import { alias } from "drizzle-orm/pg-core";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { isUniqueViolation } from "@/lib/db/errors";
 import { galleryPhotos, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
@@ -209,6 +210,7 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
   if (f.q) where.push(ilike(products.name, `%${escapeLike(f.q)}%`));
   const cond = and(...where);
   const db = getDb();
+  const parent = alias(productCategories, "parent_category");
   const [rows, countRows] = await Promise.all([
     db
       .select({
@@ -221,11 +223,14 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
         kind: products.kind,
         availability: products.availability,
         categoryName: productCategories.name,
+        /** The main category above a subcategory; null when the product sits in a main category itself. */
+        mainCategoryName: parent.name,
         archivedAt: products.archivedAt,
         updatedAt: products.updatedAt,
       })
       .from(products)
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+      .leftJoin(parent, eq(parent.id, productCategories.parentId))
       .where(cond)
       .orderBy(sql`lower(${products.name})`, asc(products.name))
       .limit(f.pageSize)
@@ -322,7 +327,7 @@ function resolveFields(input: ProductFormInput) {
  * Makes the product's photos match the list the form sent: removes the ones left out, adds the new uploads, saves the order and
  * the thumbnail. Returns the files of removed photos, to delete from storage once the transaction has committed.
  */
-async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: string[], thumbnail: number | undefined, verified: VerifiedFile[]): Promise<string[]> {
+async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: string[], verified: VerifiedFile[]): Promise<string[]> {
   const existing = await tx.select().from(productImages).where(eq(productImages.productId, productId));
   const byId = new Map(existing.map((i) => [i.id, i]));
   const keep = new Set(items.filter((i) => i.startsWith("id:")).map((i) => i.slice(3)));
@@ -346,7 +351,8 @@ async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: st
       ids.push(row!.id);
     }
   }
-  const thumb = ids.length ? ids[Math.min(Math.max((thumbnail ?? 1) - 1, 0), ids.length - 1)]! : null;
+  // The first photo is always the thumbnail.
+  const thumb = ids[0] ?? null;
   await tx.update(products).set({ thumbnailImageId: thumb }).where(eq(products.id, productId));
   return removed.map((r) => r.fileId);
 }
@@ -393,7 +399,7 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
         .returning({ id: products.id });
       const sku = input.sku ?? (await newSku(tx, slugValue));
       await tx.insert(productVariants).values({ productId: p!.id, sku, label: "Standard", listPrice: line.list, comparePrice: line.compare, stockQuantity: f.staff ? f.stock : (input.stockQuantity ?? null) });
-      if (f.staff) await syncPhotos(tx, p!.id, input.name, input.photos, input.thumbnail, verified);
+      if (f.staff) await syncPhotos(tx, p!.id, input.name, input.photos, verified);
       await recordAudit(tx, actor, { action: "product.created", entityType: "product", entityId: p!.id, after: { name: input.name, slug: slugValue, sku, isPublished: f.isPublished } });
       return p!.id;
     });
@@ -459,7 +465,7 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
         } else {
           await tx.insert(productVariants).values({ productId: id, sku: await newSku(tx, before.slug), label: "Standard", listPrice: line.list, comparePrice: line.compare, stockQuantity: f.stock });
         }
-        removedFiles = await syncPhotos(tx, id, input.name, input.photos, input.thumbnail, verified);
+        removedFiles = await syncPhotos(tx, id, input.name, input.photos, verified);
       }
       const archiveChanged = f.staff && wasArchived !== Boolean(f.archived);
       await recordAudit(tx, actor, {

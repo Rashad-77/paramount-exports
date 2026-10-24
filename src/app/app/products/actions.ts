@@ -16,7 +16,9 @@ const refresh = (id?: string) => {
   if (id) revalidatePath(`/app/products/${id}`);
   revalidatePath("/products");
   revalidatePath("/premium");
-  revalidatePath("/", "layout");
+  // Only the pages that show products are refreshed (not the whole site), so the rest of the website stays fast after every save.
+  revalidatePath("/");
+  revalidatePath("/products/[slug]", "page");
 };
 
 export async function createProductAction(

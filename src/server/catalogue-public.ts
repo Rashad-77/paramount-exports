@@ -46,23 +46,18 @@ export interface PublicCard {
   isNew: boolean;
 }
 
-/** The photo a card or list shows for each product: the one chosen as the thumbnail, or else the first. */
+/** The photo a card or list shows for each product: always the first one (photo 1). */
 export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string }>> {
   if (productIds.length === 0) return new Map();
   const db = getDb();
-  const [rows, thumbs] = await Promise.all([
-    db
-      .select({ id: productImages.id, productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position })
-      .from(productImages)
-      .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
-      .where(and(inArray(productImages.productId, productIds), eq(uploadedFiles.status, "linked")))
-      .orderBy(asc(productImages.position)),
-    db.select({ id: products.id, thumb: products.thumbnailImageId }).from(products).where(inArray(products.id, productIds)),
-  ]);
-  const thumbOf = new Map(thumbs.map((t) => [t.id, t.thumb]));
+  const rows = await db
+    .select({ id: productImages.id, productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position })
+    .from(productImages)
+    .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
+    .where(and(inArray(productImages.productId, productIds), eq(uploadedFiles.status, "linked")))
+    .orderBy(asc(productImages.position));
   const out = new Map<string, { url: string; alt: string }>();
   const toEntry = (r: (typeof rows)[number]) => ({ url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt });
-  for (const r of rows) if (r.id === thumbOf.get(r.productId)) out.set(r.productId, toEntry(r));
   for (const r of rows) if (!out.has(r.productId)) out.set(r.productId, toEntry(r));
   return out;
 }

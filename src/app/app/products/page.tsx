@@ -97,6 +97,7 @@ export default async function ProductsAdminPage({
             id: p.id,
             name: p.name,
             categoryName: p.categoryName,
+            mainCategoryName: p.mainCategoryName,
             isPublished: p.isPublished,
             isFeatured: p.isFeatured,
             isPremium: p.isPremium,

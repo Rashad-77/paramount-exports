@@ -20,7 +20,10 @@ const refresh = () => {
   clearCatalogueCache();
   revalidatePath("/app/categories");
   revalidatePath("/products");
-  revalidatePath("/", "layout");
+  // The pages that show categories, not the whole site.
+  revalidatePath("/");
+  revalidatePath("/premium");
+  revalidatePath("/products/[slug]", "page");
 };
 
 export async function createCategoryAction(

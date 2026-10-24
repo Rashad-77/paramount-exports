@@ -176,6 +176,9 @@ export function SpecificationsEditor({
   };
   const patch = (id: string, p: Partial<Row>) => setRows((cur) => cur.map((r) => (r.id === id ? { ...r, ...p } : r)));
   const remove = (id: string) => setRows((cur) => cur.filter((r) => r.id !== id));
+  // A specification is only taken off the product after the owner confirms.
+  const [removing, setRemoving] = useState<string | null>(null);
+  const removingRow = rows.find((r) => r.id === removing);
 
   const json = JSON.stringify(rows.map(toEntry));
 
@@ -221,12 +224,25 @@ export function SpecificationsEditor({
                 <Pencil aria-hidden="true" className="size-3.5" />
               </button>
             ) : null}
-            <button type="button" onClick={() => remove(r.id)} aria-label={`Remove ${r.label}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-danger">
+            <button type="button" onClick={() => setRemoving(r.id)} aria-label={`Remove ${r.label}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-danger">
               <Trash2 aria-hidden="true" className="size-3.5" />
             </button>
           </div>
         </div>
       ))}
+
+      <ConfirmDialog
+        open={Boolean(removingRow)}
+        onClose={() => setRemoving(null)}
+        title={`Remove ${removingRow?.label ?? "this specification"}?`}
+        description="It is taken off this product when you save. You can add it again later."
+        confirmLabel="Remove"
+        destructive
+        onConfirm={() => {
+          if (removing) remove(removing);
+          setRemoving(null);
+        }}
+      />
 
       <AddSpecification catalog={catalog} used={used} onAdd={add} onCreate={createType} onRename={renameType} onDelete={deleteType} />
     </div>
@@ -601,8 +617,9 @@ function AddSpecification({
                 {ordered.length === 0 ? (
                   <li className="px-3 py-3 text-[0.8125rem] text-text-muted">{q ? "Not found." : "Every type is already added."}</li>
                 ) : null}
-                {groups.map((g) => (
-                  <li key={g} role="presentation">
+                {groups.map((g, gi) => (
+                  // A line sets each main group apart from the one above it.
+                  <li key={g} role="presentation" className={gi > 0 ? "mt-1 border-t border-border" : undefined}>
                     <p className="px-3 pb-1 pt-2 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-text-muted">{g}</p>
                     {matches
                       .filter((m) => m.group === g)

@@ -99,7 +99,6 @@ export default async function ProductAdminPage({
                 discountKind: product.discountKind,
                 discountValue: product.discountValue,
                 images,
-                thumbnailImageId: product.thumbnailImageId,
               }}
               submitLabel="Save changes"
             />
