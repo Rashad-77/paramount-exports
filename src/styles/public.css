@@ -4744,7 +4744,7 @@ span.cat-pagebtn {
 .fl-c { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem); }
 .fl-d { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem); }
 .fl-e { font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00155), 1.125rem); }
-.fl-g { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem); }
+.fl-g { font-size: clamp(0.625rem, calc(0.625rem + (100vw - 375px) * 0.00094), 0.6875rem); }
 .fl-input { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem); }
 .phead .logo b,
 .foot .brand b {
