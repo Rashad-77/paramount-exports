@@ -274,7 +274,7 @@ export default async function HomePage() {
             <h1 id="hero-title" className="font-display mt-4">
               Expertise in woodworking, readymade or custom-built
             </h1>
-            <p className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-white/80">
+            <p className="mt-5 max-w-md text-[clamp(1.0188rem,calc(1.0188rem_+_(100vw_-_375px)_*_0.00077),1.0625rem)] leading-relaxed text-white/80">
               Visit our showroom or order online.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -306,13 +306,13 @@ export default async function HomePage() {
               delay={STEP}
               className="years-mark shrink-0 md:text-right"
             >
-              <p className="font-display text-[clamp(3.5rem,2.4rem+4vw,5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
+              <p className="font-display text-[clamp(2.35rem,calc(2.35rem_+_(100vw_-_375px)_*_0.05569),5.5rem)] font-light leading-none tracking-[-0.03em] text-brand">
                 <CountUp to={20} suffix="+" />
               </p>
-              <p className="mt-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text">
+              <p className="mt-3 text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.2em] text-text">
                 Years of woodwork
               </p>
-              <p className="mt-1.5 text-[0.8125rem] text-text-muted">
+              <p className="mt-1.5 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] text-text-muted">
                 Since 2006, in Kuruwita
               </p>
             </Reveal>
@@ -331,10 +331,10 @@ export default async function HomePage() {
                   className="size-5 text-timber"
                   strokeWidth={1.25}
                 />
-                <h3 className="font-display mt-6 text-[1.05rem] leading-tight text-text">
+                <h3 className="font-display mt-6 text-[clamp(1.0125rem,calc(1.0125rem_+_(100vw_-_375px)_*_0.00066),1.05rem)] leading-tight text-text">
                   {w.title}
                 </h3>
-                <p className="mt-3 text-[0.8125rem] leading-relaxed text-text-muted">
+                <p className="mt-3 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text-muted">
                   {w.body}
                 </p>
               </Reveal>
@@ -409,7 +409,7 @@ export default async function HomePage() {
           <div className="mt-12">
             <Reveal variant="up">
               <div className="process-box">
-                <p className="text-[0.75rem] font-semibold uppercase tracking-[0.22em] text-white/60">
+                <p className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.22em] text-white/60">
                   Process
                 </p>
                 <ol>
@@ -463,7 +463,7 @@ export default async function HomePage() {
               >
                 Made for Your Space
               </h2>
-              <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">
+              <p className="mt-4 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
                 Choose something from the showroom floor, or tell us the size of
                 the room and we will build to fit.
               </p>
@@ -477,10 +477,10 @@ export default async function HomePage() {
                   delay={(i % 2) * 70}
                   className="svc"
                 >
-                  <h3 className="font-display text-[0.95rem] text-text">
+                  <h3 className="font-display text-[clamp(0.8563rem,calc(0.8563rem_+_(100vw_-_375px)_*_0.00166),0.95rem)] text-text">
                     {s.title}
                   </h3>
-                  <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-text-muted">
+                  <p className="mt-1.5 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text-muted">
                     {s.body}
                   </p>
                 </Reveal>
@@ -557,7 +557,7 @@ export default async function HomePage() {
               ].map(([k, v], i) => (
                 <Reveal key={k} variant="up" delay={i * 80} className="fact">
                   <dt className="eyebrow">{k}</dt>
-                  <dd className="mt-3 text-[0.8125rem] leading-relaxed text-text">
+                  <dd className="mt-3 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text">
                     {v}
                   </dd>
                 </Reveal>
@@ -581,7 +581,7 @@ export default async function HomePage() {
                 eyebrow="Feedback"
                 title="What Our Customers Say"
               />
-              <p className="mt-4 text-[0.9375rem] text-text-muted">Been to the showroom or bought from us? Tell others what you think.</p>
+              <p className="mt-4 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] text-text-muted">Been to the showroom or bought from us? Tell others what you think.</p>
             </div>
           ) : null}
           {reviews.length > 0 ? (
@@ -635,11 +635,11 @@ export default async function HomePage() {
                     <figcaption className="mt-4 flex items-center gap-3">
                       <ReviewAvatar src={t.avatar} />
                       <span className="min-w-0">
-                        <span className="block text-[0.8125rem] font-semibold text-text">
+                        <span className="block text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] font-semibold text-text">
                           {t.name}
                         </span>
                         {t.city ? (
-                          <span className="mt-0.5 block text-[0.75rem] text-text-muted">
+                          <span className="mt-0.5 block text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] text-text-muted">
                             {t.city}
                           </span>
                         ) : null}
@@ -668,7 +668,7 @@ export default async function HomePage() {
           {reviewLink || google?.rating || reviews.length > 0 ? (
             <div className={"container-page mt-10 flex flex-wrap items-center gap-x-6 gap-y-4 " + (reviews.length === 0 ? "justify-start" : "justify-center text-center")}>
               {google?.rating ? (
-                <p className="text-[0.9375rem] text-text">
+                <p className="text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] text-text">
                   <span className="font-medium">
                     Rated {google.rating.toFixed(1)} out of 5 on Google
                   </span>
@@ -713,7 +713,7 @@ export default async function HomePage() {
             >
               Let&rsquo;s Build Something Beautiful in Wood.
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-[0.9375rem] leading-relaxed text-white/70">
+            <p className="mx-auto mt-5 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-white/70">
               Ask about a piece, request a quotation, or arrange a visit to the
               showroom.
             </p>

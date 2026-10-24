@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { ImagePlaceholder } from "./image-placeholder";
 import { SiteImage } from "./site-image";
@@ -11,7 +11,7 @@ const pad =(n: number) => String(n).padStart(2, "0");
  * A large rectangular photograph with the row of square frames under it, as on the product pages: pressing a frame cross-fades to that
  * photograph. There is one frame per photograph, a fifth of the row wide and centred, so fewer than five leave no empty frames.
  */
-export function PremiumGallery({ images, name, priority = false }: { images: Array<{ id: string; url: string; alt: string }>; name: string; priority?: boolean }) {
+export const PremiumGallery = memo(function PremiumGallery({ images, name, priority = false }: { images: Array<{ id: string; url: string; alt: string }>; name: string; priority?: boolean }) {
   const [active, setActive] = useState(0);
   /** The photograph being faded out: it stays in place under the new one until the fade is done, so the picture never dips to black. */
   const [prev, setPrev] = useState<number | null>(null);
@@ -66,4 +66,4 @@ export function PremiumGallery({ images, name, priority = false }: { images: Arr
       ) : null}
     </div>
   );
-}
+});

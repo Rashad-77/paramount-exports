@@ -194,8 +194,8 @@ export function CatalogueBrowser({
         <section aria-label="Products" aria-busy={loading} className={"mt-6 transition-opacity duration-200 " + (loading ? "opacity-50" : "")}>
           {result.items.length === 0 ? (
             <div className="border border-border bg-white px-6 py-14 text-center">
-              <h2 className="font-display text-[1.5rem] text-text">{filtered ? "No pieces match those filters" : "Made to your measurements"}</h2>
-              <p className="mx-auto mt-2 max-w-md text-[0.9375rem] text-text-muted">
+              <h2 className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] text-text">{filtered ? "No pieces match those filters" : "Made to your measurements"}</h2>
+              <p className="mx-auto mt-2 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] text-text-muted">
                 {filtered ? "Try removing a filter or searching for something broader." : "Tell us the piece you have in mind, with its size and wood, and we will quote before we start."}
               </p>
               {filtered ? (

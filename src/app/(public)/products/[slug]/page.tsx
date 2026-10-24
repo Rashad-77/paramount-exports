@@ -213,7 +213,7 @@ export default async function ProductPage({ params }: Props) {
 
         {related.length ? (
           <section aria-labelledby="related-title" className="mt-16 md:mt-24">
-            <h2 id="related-title" className="font-display text-[1.75rem] leading-tight text-walnut">
+            <h2 id="related-title" className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.00928),1.75rem)] leading-tight text-walnut">
               You may also like
             </h2>
             <ul className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">

@@ -30,16 +30,16 @@ export function PageHeader({
         <div className="min-w-0">
           {badges ? (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">{title}</h1>
+              <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[clamp(1.1125rem,calc(1.1125rem_+_(100vw_-_375px)_*_0.00464),1.375rem)]">{title}</h1>
               {badges}
             </div>
           ) : (
-            <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[1.375rem]">
+            <h1 className="text-xl font-semibold leading-tight text-walnut md:text-[clamp(1.1125rem,calc(1.1125rem_+_(100vw_-_375px)_*_0.00464),1.375rem)]">
               {title}
             </h1>
           )}
           {description ? (
-            <p className="mt-0.5 max-w-prose text-[0.8125rem] text-text-muted">
+            <p className="mt-0.5 max-w-prose text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] text-text-muted">
               {description}
             </p>
           ) : null}

@@ -56,8 +56,8 @@ export default async function AboutPage() {
               <h2 id="owner-title" className="font-display mt-3 text-headline text-brand">
                 {ownerName}
               </h2>
-              {ownerRole ? <p className="mt-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
-              <div className="mt-6 max-w-xl space-y-4 text-[0.9375rem] leading-relaxed text-text-muted">
+              {ownerRole ? <p className="mt-3 text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.2em] text-text-muted">{ownerRole}</p> : null}
+              <div className="mt-6 max-w-xl space-y-4 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
                 {ownerBio.split(/\n{2,}/).map((para, i) => (
                   <p key={i}>{para.trim()}</p>
                 ))}
@@ -75,7 +75,7 @@ export default async function AboutPage() {
             <h2 id="process-title" className="font-display mt-4 text-headline text-text">
               From timber to finished piece, step by step.
             </h2>
-            <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-text-muted">Every piece follows the same careful sequence, from choosing the boards to the final coat of finish. Here is how it comes together.</p>
+            <p className="mt-4 max-w-xl text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">Every piece follows the same careful sequence, from choosing the boards to the final coat of finish. Here is how it comes together.</p>
           </Reveal>
           <ol className="mt-14 space-y-14 md:space-y-20">
             {PROCESS.map((st, i) => (
@@ -86,11 +86,11 @@ export default async function AboutPage() {
                   </div>
                 </Reveal>
                 <Reveal variant={i % 2 === 0 ? "right" : "left"} delay={STEP}>
-                  <span aria-hidden="true" className="font-display text-[2.25rem] leading-none text-timber">
+                  <span aria-hidden="true" className="font-display text-[clamp(1.375rem,calc(1.375rem_+_(100vw_-_375px)_*_0.01547),2.25rem)] leading-none text-timber">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="font-display mt-4 text-[1.6rem] leading-tight text-text">{st.title}</h3>
-                  <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-text-muted">{st.details}</p>
+                  <h3 className="font-display mt-4 text-[clamp(1.1813rem,calc(1.1813rem_+_(100vw_-_375px)_*_0.00740),1.6rem)] leading-tight text-text">{st.title}</h3>
+                  <p className="mt-4 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">{st.details}</p>
                 </Reveal>
               </li>
             ))}
@@ -112,7 +112,7 @@ export default async function AboutPage() {
               <Reveal key={c.href} variant={i === 0 ? "left" : "right"} delay={i * 60}>
                 <Link href={c.href} className="glasscard group">
                   <span className="eyebrow">{c.eyebrow}</span>
-                  <span className="font-display mt-3 block text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold leading-tight text-brand">{c.title}</span>
+                  <span className="font-display mt-3 block text-[clamp(1.2688rem,calc(1.2688rem_+_(100vw_-_375px)_*_0.01116),1.9rem)] font-semibold leading-tight text-brand">{c.title}</span>
                   <span className="mt-2 block max-w-sm text-base leading-relaxed text-text-muted">{c.body}</span>
                   <span className="go mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand">
                     {c.cta}

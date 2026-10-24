@@ -26,7 +26,7 @@ function Channel({ icon: Icon, title, value, href, cta, external = false }: { ic
       <span className="ct-ico">
         <Icon aria-hidden="true" className="mx-auto size-8 text-brand" strokeWidth={1.25} />
       </span>
-      <h2 className="font-display mt-5 text-[1.5rem] leading-tight text-brand">{title}</h2>
+      <h2 className="font-display mt-5 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">{title}</h2>
       <p className="mt-2 break-words text-lg text-text-muted">{value ?? "To be added."}</p>
       {href ? (
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand">
@@ -90,7 +90,7 @@ export default async function ContactPage() {
                 <span className="ct-pin" aria-hidden="true">
                   <MapPin className="size-6" strokeWidth={1.5} />
                 </span>
-                {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[0.75rem] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
+                {!b.mapUrl ? <span className="absolute right-4 top-4 bg-white/85 px-3 py-1.5 text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-medium uppercase tracking-[0.14em] text-[#55554f]">Map to be added</span> : null}
               </>
             )}
           </div>
@@ -99,13 +99,13 @@ export default async function ContactPage() {
           <Reveal variant="up" className="container-page grid gap-6 py-10 md:grid-cols-[1.2fr_1fr_auto] md:items-center">
             <div>
               <p className="eyebrow">Find us</p>
-              <h2 id="visit-title" className="font-display mt-3 text-[1.75rem] leading-tight text-brand">
+              <h2 id="visit-title" className="font-display mt-3 text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.00928),1.75rem)] leading-tight text-brand">
                 Visit the showroom
               </h2>
               <p className="mt-3 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.address ?? "Showroom address to be added."}</p>
             </div>
             <div className="md:border-l md:border-[var(--leaf)] md:pl-8">
-              <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-muted">Opening hours</p>
+              <p className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.2em] text-text-muted">Opening hours</p>
               <p className="mt-2 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.openingHours ?? "Opening hours to be added."}</p>
             </div>
             {mapped ? (
@@ -140,7 +140,7 @@ export default async function ContactPage() {
               Come and see it.
             </h2>
             {b.address ? (
-              <p className="mt-5 flex max-w-md items-start gap-2.5 text-[0.9375rem] leading-relaxed text-text">
+              <p className="mt-5 flex max-w-md items-start gap-2.5 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text">
                 <MapPin aria-hidden="true" className="mt-1 size-4 shrink-0 text-brand" strokeWidth={1.5} />
                 <span className="whitespace-pre-line">{b.address}</span>
               </p>

@@ -45,7 +45,7 @@ export default async function AccountMessagePage({ params }: { params: Promise<{
         <dl className="mb-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {PIECE_FIELDS.map((f) => (
             <div key={f.key}>
-              <dt className="text-[0.75rem] font-semibold uppercase tracking-[0.08em]">{f.label}</dt>
+              <dt className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.08em]">{f.label}</dt>
               <dd>{piece[f.key] ? (f.key === "targetDate" ? formatDate(String(piece[f.key]), "UTC") : String(piece[f.key])) : "Not given"}</dd>
             </div>
           ))}

@@ -24,7 +24,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title="Sign in" lead="See your orders, and keep your details ready for next time. You can still order without an account." />
       <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-2 lg:gap-16">
         <section aria-labelledby="signin-title" className="soft-card space-y-5">
-          <h2 id="signin-title" className="font-display text-[1.5rem] leading-tight text-brand">
+          <h2 id="signin-title" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">
             Sign in
           </h2>
           {checkEmail ? (
@@ -36,7 +36,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         </section>
         {settings.allowSignUp ? (
           <section aria-labelledby="signup-title" className="soft-card space-y-5">
-            <h2 id="signup-title" className="font-display text-[1.5rem] leading-tight text-brand">
+            <h2 id="signup-title" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">
               Create an account
             </h2>
             <SignUpForm next={next || undefined} />

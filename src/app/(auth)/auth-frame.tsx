@@ -7,7 +7,7 @@ export function BrandLockup({ name, large, dark, className }: { name: string; la
     <div role="img" aria-label={name} className={"flex items-center " + (large ? "gap-5 " : "gap-3 ") + (className ?? "")}>
       <Image src="/logo-mark.png" alt="" width={72} height={72} className={(large ? "size-[4.5rem] " : "size-10 ") + "shrink-0 " + (dark ? "" : "invert")} />
       <span className={"flex flex-col leading-tight " + (dark ? "text-walnut" : "text-ivory")}>
-        <b className={(large ? "text-[clamp(1.75rem,3vw,2.75rem)] " : "text-lg ") + "font-semibold uppercase tracking-[0.2em]"}>{first}</b>
+        <b className={(large ? "text-[clamp(1.5125rem,calc(1.5125rem_+_(100vw_-_375px)_*_0.02099),2.7rem)] " : "text-lg ") + "font-semibold uppercase tracking-[0.2em]"}>{first}</b>
         {rest.length ? <i className={(large ? "mt-2 text-sm " : "mt-1 text-[0.625rem] ") + "uppercase not-italic tracking-[0.2em] " + (dark ? "text-text-muted" : "text-ivory/70")}>{rest.join(" ")}</i> : null}
       </span>
     </div>
@@ -29,7 +29,7 @@ export function AuthFrame({ name, heading, sub, children }: { name: string; head
       <div className="flex items-center justify-center px-[var(--gutter)] py-14">
         <div className="w-full max-w-sm">
           <BrandLockup name={name} dark className="lg:hidden" />
-          <h1 className={"font-display mt-6 text-[2.25rem] leading-tight text-walnut lg:mt-0" + (sub ? "" : " mb-8")}>{heading}</h1>
+          <h1 className={"font-display mt-6 text-[clamp(1.375rem,calc(1.375rem_+_(100vw_-_375px)_*_0.01547),2.25rem)] leading-tight text-walnut lg:mt-0" + (sub ? "" : " mb-8")}>{heading}</h1>
           {sub ? <p className="mt-2 mb-8 text-sm text-text-muted">{sub}</p> : null}
           {children}
         </div>

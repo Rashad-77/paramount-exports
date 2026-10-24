@@ -20,7 +20,7 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
         <div className="container-page py-[var(--section-space)]">
           <div className="mx-auto max-w-md text-center">
             <ShoppingBag aria-hidden="true" className="mx-auto size-10 text-brand" strokeWidth={1.25} />
-            <h2 className="font-display mt-5 text-[1.75rem] leading-tight text-brand">Your cart is empty</h2>
+            <h2 className="font-display mt-5 text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.00928),1.75rem)] leading-tight text-brand">Your cart is empty</h2>
             <p className="mt-2 text-text-muted">Browse the collection and add the pieces you like.</p>
             <ButtonLink href="/products" size="cta" className="mt-6">
               Browse the collection
@@ -72,7 +72,7 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
       </ul>
 
       <aside aria-labelledby="summary-title" className="border border-border bg-surface p-6 lg:sticky lg:top-28">
-        <h2 id="summary-title" className="font-display text-[1.5rem] leading-tight text-brand">
+        <h2 id="summary-title" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">
           Order summary
         </h2>
         <dl className="mt-5 space-y-2.5 text-sm">
@@ -89,7 +89,7 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
             <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-[0.8125rem] leading-relaxed text-text-muted">We call to confirm your order and the delivery charge. Pay on delivery, by bank transfer or at the showroom.</p>
+        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text-muted">We call to confirm your order and the delivery charge. Pay on delivery, by bank transfer or at the showroom.</p>
         <ButtonLink href="/checkout" size="cta" className="mt-6 w-full justify-center">
           Proceed to checkout
         </ButtonLink>

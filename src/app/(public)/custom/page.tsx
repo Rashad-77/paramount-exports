@@ -32,7 +32,7 @@ export default function CustomPage() {
           >
             <h2
               id="process-title"
-              className="font-display text-[1.625rem] leading-tight"
+              className="font-display text-[clamp(1.1875rem,calc(1.1875rem_+_(100vw_-_375px)_*_0.00773),1.625rem)] leading-tight"
             >
               How it works
             </h2>
@@ -41,12 +41,12 @@ export default function CustomPage() {
                 <li key={s.title} className="grid grid-cols-[2rem_1fr] gap-3 sm:grid-cols-[3rem_1fr] sm:gap-4">
                   <span
                     aria-hidden="true"
-                    className="text-[2rem] font-bold leading-none text-ivory/95"
+                    className="text-[clamp(1.3rem,calc(1.3rem_+_(100vw_-_375px)_*_0.01238),2rem)] font-bold leading-none text-ivory/95"
                   >
                     {i + 1}
                   </span>
                   <div className="border-t border-ivory/20 pt-4">
-                    <h3 className="font-display text-[1.25rem] leading-tight">
+                    <h3 className="font-display text-[clamp(1.075rem,calc(1.075rem_+_(100vw_-_375px)_*_0.00309),1.25rem)] leading-tight">
                       {s.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-ivory/95">
@@ -70,7 +70,7 @@ export default function CustomPage() {
           >
             <h2
               id="request-title"
-              className="font-display text-[1.625rem] leading-tight text-walnut"
+              className="font-display text-[clamp(1.1875rem,calc(1.1875rem_+_(100vw_-_375px)_*_0.00773),1.625rem)] leading-tight text-walnut"
             >
               Request a quotation
             </h2>
@@ -99,7 +99,7 @@ export default function CustomPage() {
                 <div className="zoom-frame aspect-[4/3]">
                   <ImagePlaceholder label={`Custom example — ${e.title}`} className="size-full" compact />
                 </div>
-                <h3 className="mt-4 text-center text-[0.75rem] font-medium uppercase leading-snug tracking-[0.16em] text-text">{e.title}</h3>
+                <h3 className="mt-4 text-center text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-medium uppercase leading-snug tracking-[0.16em] text-text">{e.title}</h3>
               </Reveal>
             ))}
           </ul>
