@@ -1,4 +1,4 @@
-import { index, integer, pgTable, text, timestamp, uuid, check } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uuid, check } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 /**
@@ -15,6 +15,10 @@ export const googleReviews = pgTable(
     rating: integer("rating").notNull(),
     body: text("body").notNull(),
     photoUrl: text("photo_url"),
+    /** "google" when the daily job saved it, "manual" when staff typed it in. */
+    source: text("source").notNull().default("google"),
+    /** Staff can hide a review; it stays saved (so the daily job does not add it again) but is not shown. */
+    hidden: boolean("hidden").notNull().default(false),
     /** When Google says it was posted. */
     publishedAt: timestamp("published_at", { withTimezone: true }),
     /** When the site first saved it. */

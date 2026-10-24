@@ -59,6 +59,11 @@ export const NAV: NavGroup[] = [
         description: "The photos on the Gallery page, in two sections: the showroom and the workshop.",
         pages: [page("Gallery", "/app/gallery", "website:manage")],
       },
+      {
+        label: "Reviews",
+        description: "Google reviews shown on the homepage: add one by hand, hide one, or fetch the latest from Google. Reviews are written on Google only.",
+        pages: [page("Reviews", "/app/reviews", "website:manage")],
+      },
     ],
   },
   {
