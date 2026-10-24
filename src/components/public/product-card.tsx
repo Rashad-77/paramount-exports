@@ -40,7 +40,7 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
                   <ins className="price-now">{formatMoney(product.fromPrice, currency)}</ins>
                 </>
               ) : (
-                `From ${formatMoney(product.fromPrice, currency)}`
+                formatMoney(product.fromPrice, currency)
               )
             ) : (
               "Price on request"
