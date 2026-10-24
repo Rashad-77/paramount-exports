@@ -48,20 +48,21 @@ export function ReviewsDialog({ reviews, open, focusId, onClose }: { reviews: Vi
         <ul className="space-y-5">
           {reviews.map((r) => (
             <li key={r.id} data-review={r.id} data-focus={r.id === focusId ? "true" : undefined} className="border border-border p-4">
-              {r.stars ? (
-                <div role="img" aria-label={`${r.stars} out of 5 stars`} className="flex gap-0.5 text-[#e8a200]">
-                  {Array.from({ length: 5 }, (_, n) => (
-                    <Star key={n} aria-hidden="true" className="size-4" strokeWidth={1.25} fill={n < r.stars! ? "#fbbc04" : "none"} />
-                  ))}
-                </div>
-              ) : null}
-              <div className="mt-3 flex items-center gap-3">
+              {r.date ? <time className="rv-date">{r.date}</time> : null}
+              <div className="mt-2 flex items-center gap-3">
                 <ReviewAvatar src={r.avatar} />
                 <div className="min-w-0">
                   <p className="rv-name">{r.name ?? "A customer"}</p>
                   {r.city ? <p className="rv-city">{r.city}</p> : null}
                 </div>
               </div>
+              {r.stars ? (
+                <div role="img" aria-label={`${r.stars} out of 5 stars`} className="mt-3 flex gap-0.5 text-[#e8a200]">
+                  {Array.from({ length: 5 }, (_, n) => (
+                    <Star key={n} aria-hidden="true" className="size-4" strokeWidth={1.25} fill={n < r.stars! ? "#fbbc04" : "none"} />
+                  ))}
+                </div>
+              ) : null}
               <p className="rv-quote mt-3 whitespace-pre-line">{r.quote}</p>
               {r.photos.length > 0 || r.samplePhotos > 0 ? (
                 <ul className="mt-4 flex flex-wrap gap-2" aria-label={`Photos from ${r.name ?? "this customer"}`}>

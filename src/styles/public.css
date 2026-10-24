@@ -5800,6 +5800,7 @@ span.cat-pagebtn {
 /* Body text is Arial. Banner titles (h1 and the collection banner title), all-caps text and the logo keep the site fonts. Every selector below is
    a place that sets text-transform: uppercase, plus the logo and banner titles; anything inside them keeps the site font as well. */
 .page-body *:not(:is(
+  .prem-sec,
   main form :is(label, legend:not(.font-display)):not(.flex),
   .uppercase,
   .eyebrow,
@@ -5877,6 +5878,7 @@ span.cat-pagebtn {
   .prem-cta,
   .premium-tag
 )):not(:is(
+  .prem-sec *,
   main form :is(label, legend:not(.font-display)):not(.flex) *,
   .uppercase *,
   .eyebrow *,
@@ -6153,4 +6155,42 @@ span.cat-pagebtn {
   /* nudged up by 0.1 cm */
   position: relative;
   top: -0.1cm;
+}
+
+/* The homepage premium banner keeps the premium typeface (the Arial rule above skips it). */
+.prem-sec .prem-title,
+.prem-sec .prem-title em {
+  font-family: var(--font-premium);
+}
+
+/* Feedback cards: the date posted, small and light, above the profile picture; the picture and name; the stars under the picture. */
+.rv-date {
+  display: block;
+  margin: 0 0 0.6rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: rgb(28 25 22 / 0.42);
+  font-variant-numeric: tabular-nums;
+}
+.rv-who {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  align-items: center;
+}
+.rv-who > :first-child {
+  grid-row: 1 / span 2;
+}
+.rv-who > :nth-child(2):last-child {
+  grid-row: 1 / span 2;
+}
+.rv-stars {
+  margin-top: 0.7rem;
+}
+/* The pop-up's close cross has no box around it, not even while it holds the keyboard focus. */
+.rv-all [aria-label="Close dialog"],
+.rv-dialog [aria-label="Close dialog"],
+.rv-lightbox button {
+  outline: none !important;
+  box-shadow: none !important;
 }

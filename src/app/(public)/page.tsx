@@ -28,7 +28,6 @@ import {
   listPublicProducts,
 } from "@/server/catalogue-public";
 import { getGoogleReviews } from "@/server/google-reviews";
-import { listApprovedReviews } from "@/server/reviews";
 
 /** Placeholder reviews, shown only while Google has none to give. Replace by connecting Google reviews in Settings. Each carries a delivery address, and the card shows its city. */
 const SAMPLE_REVIEWS = [
@@ -172,9 +171,8 @@ export default async function HomePage() {
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
   ]);
-  // Reviews: the ones customers wrote on the site (once approved), then Google's. With neither, the SAMPLE_REVIEWS below stand in; delete them once real ones are showing.
+  // Reviews: only Google's are shown (what customers write on the site is also posted to Google, see the Review us pop-up). With none yet, the SAMPLE_REVIEWS below stand in; delete them once real ones are showing.
   const google = await getGoogleReviews(business.googlePlaceId);
-  const own = await safe(() => listApprovedReviews(), []);
   const reviewLink = googleReviewLink(business);
   const reviews: Array<{
     id: string;
@@ -189,17 +187,18 @@ export default async function HomePage() {
     /** How many stand-in photo tiles to show on a sample review. */
     samplePhotos?: number;
     stars?: number;
-  }> = [
-    ...own.map((r) => ({ id: r.id, quote: r.body, name: r.name, city: r.city, photos: r.photos, avatar: r.avatar, stars: r.stars })),
-    ...(google?.reviews ?? []).map((r, i) => ({
-      id: `google-${i}`,
-      quote: r.text,
-      name: r.author,
-      stars: r.rating,
-    })),
-  ];
+    /** The day Google says it was posted (dd/mm/yyyy). */
+    date?: string | null;
+  }> = (google?.reviews ?? []).map((r, i) => ({
+    id: `google-${i}`,
+    quote: r.text,
+    name: r.author,
+    stars: r.rating,
+    avatar: r.photo,
+    date: r.date,
+  }));
   if (reviews.length === 0) reviews.push(...SAMPLE_REVIEWS.map((r, i) => ({ ...r, id: `sample-${i}`, city: splitAddress(r.address).city })));
-  const viewerReviews = reviews.map((r) => ({ id: r.id, quote: r.quote, name: r.name, city: r.city ?? null, stars: r.stars, photos: r.photos ?? [], avatar: r.avatar ?? null, samplePhotos: r.samplePhotos ?? 0 }));
+  const viewerReviews = reviews.map((r) => ({ id: r.id, quote: r.quote, name: r.name, city: r.city ?? null, stars: r.stars, photos: r.photos ?? [], avatar: r.avatar ?? null, date: r.date ?? null, samplePhotos: r.samplePhotos ?? 0 }));
   // One band per group, with the categories under it as the note.
   const groups = categories.filter((c) => !c.parentId);
   const rows = groups.slice(0, PRODUCT_ROWS).map((g) => {
@@ -594,44 +593,23 @@ export default async function HomePage() {
                   className={CARD_W + " soft-card relative flex flex-col !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
                 >
                   <ReviewCardButton id={t.id} name={t.name} />
+                  {t.date ? <time className="rv-date">{t.date}</time> : null}
+                  {t.name ? (
+                    <figcaption className="rv-who">
+                      <ReviewAvatar src={t.avatar} />
+                      <span className="block text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] font-semibold text-text">{t.name}</span>
+                      {t.city ? <span className="block text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] text-text-muted">{t.city}</span> : null}
+                    </figcaption>
+                  ) : null}
                   {t.stars ? (
-                    <div
-                      role="img"
-                      aria-label={`${t.stars} out of 5 stars`}
-                      className="flex gap-0.5 text-[#e8a200]"
-                    >
+                    <div role="img" aria-label={`${t.stars} out of 5 stars`} className="rv-stars flex gap-0.5 text-[#e8a200]">
                       {Array.from({ length: 5 }, (_, n) => (
-                        <Star
-                          key={n}
-                          aria-hidden="true"
-                          className="size-5"
-                          strokeWidth={1.25}
-                          fill={n < t.stars! ? "#fbbc04" : "none"}
-                        />
+                        <Star key={n} aria-hidden="true" className="size-5" strokeWidth={1.25} fill={n < t.stars! ? "#fbbc04" : "none"} />
                       ))}
                     </div>
                   ) : (
-                    <Quote
-                      aria-hidden="true"
-                      className="size-6 text-timber"
-                      strokeWidth={1.25}
-                    />
+                    <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
                   )}
-                  {t.name ? (
-                    <figcaption className="mt-4 flex items-center gap-3">
-                      <ReviewAvatar src={t.avatar} />
-                      <span className="min-w-0">
-                        <span className="block text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] font-semibold text-text">
-                          {t.name}
-                        </span>
-                        {t.city ? (
-                          <span className="mt-0.5 block text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] text-text-muted">
-                            {t.city}
-                          </span>
-                        ) : null}
-                      </span>
-                    </figcaption>
-                  ) : null}
                   <ReviewQuote id={t.id} quote={t.quote} />
                   {t.photos?.length || t.samplePhotos ? (
                     <ul className="mt-4 flex gap-2" aria-label="Photos from this customer">

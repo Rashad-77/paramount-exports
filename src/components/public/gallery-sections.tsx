@@ -51,6 +51,8 @@ export function GallerySections({ sections }: { sections: GallerySectionData[] }
   // A link to /gallery#workshop opens the workshop side.
   useEffect(() => {
     const i = sections.findIndex((s) => `#${s.anchor}` === window.location.hash);
+    // The address is only known in the browser, so this has to be read after the page has loaded.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (i > 0) setView(i);
   }, [sections]);
 

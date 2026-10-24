@@ -8,6 +8,10 @@ export interface GoogleReview {
   when: string | null;
   /** The reviewer's Google profile, when Google gives one. */
   url: string | null;
+  /** The reviewer's Google profile picture, when Google gives one. */
+  photo: string | null;
+  /** The day Google says the review was posted, as dd/mm/yyyy (no time). */
+  date: string | null;
 }
 
 export interface GoogleReviews {
@@ -26,6 +30,25 @@ export function googleReviewLink(b: { googlePlaceId: string | null; googleReview
   return b.googleReviewUrl ?? null;
 }
 
+/** dd/mm/yyyy in Sri Lanka time, from the moment Google gives (an ISO timestamp). No time of day. */
+export function formatReviewDate(iso: unknown): string | null {
+  if (typeof iso !== "string") return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", { timeZone: "Asia/Colombo", day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+/** A Google-hosted picture address only. */
+function googlePhoto(v: unknown): string | null {
+  if (typeof v !== "string" || v.length > 500) return null;
+  try {
+    const u = new URL(v);
+    return u.protocol === "https:" && /(^|\.)googleusercontent\.com$/.test(u.hostname) ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Turns the answer of Google's Places API (New) into what the site shows. Anything unusable is left out. */
 export function parsePlaceReviews(data: unknown): GoogleReviews | null {
   if (!data || typeof data !== "object") return null;
@@ -37,7 +60,7 @@ export function parsePlaceReviews(data: unknown): GoogleReviews | null {
     const x = r as Record<string, unknown>;
     const text = typeof (x.text as { text?: unknown } | undefined)?.text === "string" ? ((x.text as { text: string }).text).trim() : "";
     const rating = typeof x.rating === "number" ? Math.round(x.rating) : 0;
-    const attr = (x.authorAttribution ?? {}) as { displayName?: unknown; uri?: unknown };
+    const attr = (x.authorAttribution ?? {}) as { displayName?: unknown; uri?: unknown; photoUri?: unknown };
     const author = typeof attr.displayName === "string" && attr.displayName.trim() ? attr.displayName.trim() : "A Google user";
     if (!text || rating < 1 || rating > 5) continue;
     reviews.push({
@@ -46,6 +69,8 @@ export function parsePlaceReviews(data: unknown): GoogleReviews | null {
       text,
       when: typeof x.relativePublishTimeDescription === "string" ? x.relativePublishTimeDescription : null,
       url: typeof attr.uri === "string" && attr.uri.startsWith("https://") ? attr.uri : null,
+      photo: googlePhoto(attr.photoUri),
+      date: formatReviewDate(x.publishTime),
     });
   }
   const rating = typeof d.rating === "number" ? d.rating : null;

@@ -12,6 +12,8 @@ export interface ViewerReview {
   stars?: number;
   photos: string[];
   avatar: string | null;
+  /** The day it was posted, dd/mm/yyyy (Google reviews). */
+  date?: string | null;
   /** Stand-in photo tiles on a sample review. */
   samplePhotos: number;
 }

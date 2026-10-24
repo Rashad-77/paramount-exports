@@ -34,6 +34,27 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     return a && b ? b.offsetLeft - a.offsetLeft : 0;
   }, []);
 
+  /** Until when a scroll counts as the visitor's own (a touch or a drag), so it can be settled onto a card. */
+  const userUntil = useRef(0);
+
+  /** Glide (or jump) so the card nearest the middle of the row sits exactly in the middle. */
+  const centreNearest = useCallback((behavior: ScrollBehavior) => {
+    const el = ref.current;
+    if (!el) return;
+    const cards = Array.from(el.querySelectorAll<HTMLElement>("[data-copy] > *"));
+    const middle = el.scrollLeft + el.clientWidth / 2;
+    let best: HTMLElement | null = null;
+    let gap = Infinity;
+    for (const c of cards) {
+      const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - middle);
+      if (d < gap) {
+        gap = d;
+        best = c;
+      }
+    }
+    if (best && gap > 1) el.scrollTo({ left: best.offsetLeft + best.offsetWidth / 2 - el.clientWidth / 2, behavior });
+  }, []);
+
   const normalize = useCallback(() => {
     const el = ref.current;
     const w = setWidth();
@@ -55,7 +76,8 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
         const c = real.cloneNode(true) as HTMLElement;
         c.dataset.copy = String(n);
         c.setAttribute("aria-hidden", "true");
-        c.setAttribute("inert", "");
+        // The copies can be pressed (a tap on one is passed to the real card, see onClickCapture) but are skipped by the Tab key.
+        c.querySelectorAll<HTMLElement>("a, button, input, [tabindex]").forEach((x) => x.setAttribute("tabindex", "-1"));
         c.querySelectorAll("[id]").forEach((x) => x.removeAttribute("id"));
         made.push(c);
         return c;
@@ -65,6 +87,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
       el.appendChild(copy(2));
       const w = setWidth();
       if (w > 0) el.scrollTo({ left: left + w, behavior: "instant" });
+      if (centered) centreNearest("instant");
     };
     // Safari has no idle callback: a short wait does the same job there.
     const hasIdle = typeof window.requestIdleCallback === "function";
@@ -75,14 +98,22 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
       if (made.length) el.scrollTo({ left: 0, behavior: "instant" });
       made.forEach((c) => c.remove());
     };
-  }, [setWidth]);
+  }, [setWidth, centered, centreNearest]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const settle = () => {
       window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(normalize, 140);
+      timer.current = window.setTimeout(() => {
+        normalize();
+        // After a swipe or a drag, the card nearest the middle glides to the exact middle.
+        if (centered && Date.now() < userUntil.current) {
+          centreNearest("smooth");
+          userUntil.current = 0;
+          resumeAt.current = Date.now() + 3000;
+        }
+      }, 160);
     };
     el.addEventListener("scroll", settle, { passive: true });
     window.addEventListener("resize", normalize);
@@ -91,7 +122,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
       window.removeEventListener("resize", normalize);
       window.clearTimeout(timer.current);
     };
-  }, [normalize]);
+  }, [normalize, centered, centreNearest]);
 
   const go = (dir: 1 | -1) => {
     const el = ref.current;
@@ -202,9 +233,35 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     if (d?.moved) {
       delete e.currentTarget.dataset.dragging;
       resumeAt.current = Date.now() + 1800;
+      userUntil.current = Date.now() + 1500;
       const stop = (ev: Event) => ev.stopPropagation();
       e.currentTarget.addEventListener("click", stop, { capture: true, once: true });
       window.setTimeout(() => e.currentTarget?.removeEventListener("click", stop, { capture: true }), 0);
+    }
+  };
+
+  /** A finger is on the row (or has just left it): the drift waits, and the row settles onto the nearest card when it stops. */
+  const touched = () => {
+    resumeAt.current = Date.now() + 2500;
+    userUntil.current = Date.now() + 5000;
+  };
+
+  /** A press on a card in one of the extra copies is handed to the same card in the real copy, which is the one that has the click handlers. */
+  const passToReal = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    const copy = target.closest<HTMLElement>("[data-copy]");
+    const real = main.current;
+    if (!copy || !real || copy === real) return;
+    const control = target.closest<HTMLElement>("a, button");
+    if (!control) return;
+    const card = Array.from(copy.children).findIndex((c) => c.contains(control));
+    const sel = control.tagName === "A" ? "a" : "button";
+    const at = Array.from<Element>(copy.children[card]?.querySelectorAll(sel) ?? []).indexOf(control);
+    const twin = real.children[card]?.querySelectorAll<HTMLElement>(sel)[at];
+    if (twin) {
+      e.preventDefault();
+      e.stopPropagation();
+      twin.click();
     }
   };
 
@@ -228,9 +285,10 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
           role="group"
           aria-label={label}
           tabIndex={0}
-          onTouchStart={() => (resumeAt.current = Date.now() + 2500)}
-          onTouchMove={() => (resumeAt.current = Date.now() + 2500)}
-          onTouchEnd={() => (resumeAt.current = Date.now() + 2500)}
+          onTouchStart={touched}
+          onTouchMove={touched}
+          onTouchEnd={touched}
+          onClickCapture={passToReal}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
