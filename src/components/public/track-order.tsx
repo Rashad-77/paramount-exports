@@ -235,11 +235,11 @@ export function OrderView({
         </div>
       </div>
 
-      {review && o.status === "delivered" ? (
+      {review?.url && o.status === "delivered" ? (
         <p className="ot-help">
           Happy with your order? Tell others about it:{" "}
-          <ReviewButton reviewUrl={review.url} businessName={review.name} variant="link" className="underline">
-            {review.url ? "review us on Google" : "review us"}
+          <ReviewButton reviewUrl={review.url} variant="link" className="underline">
+            review us on Google
           </ReviewButton>
           .
         </p>

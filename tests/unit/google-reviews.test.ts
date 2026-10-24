@@ -37,6 +37,7 @@ describe("parsePlaceReviews", () => {
       photo: "https://lh3.googleusercontent.com/a/abc=s64-c",
       // 20:30 UTC on the 23rd is already the 24th in Sri Lanka (UTC+5:30); dd/mm/yyyy with no time.
       date: "24/09/2026",
+      published: "2026-09-23T20:30:00Z",
     });
     expect(r.reviews[1]).toMatchObject({ author: "A Google user", url: null, photo: null, date: null });
   });

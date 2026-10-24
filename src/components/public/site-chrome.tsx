@@ -88,11 +88,13 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               <li>
                 <Link href="/track">Track your order</Link>
               </li>
-              <li>
-                <ReviewButton reviewUrl={googleReviewLink(business)} businessName={business.name} variant="link" className="foot-link">
-                  {googleReviewLink(business) ? "Review us on Google" : "Review us"}
-                </ReviewButton>
-              </li>
+              {googleReviewLink(business) ? (
+                <li>
+                  <ReviewButton reviewUrl={googleReviewLink(business)} variant="link" className="foot-link">
+                    Review us on Google
+                  </ReviewButton>
+                </li>
+              ) : null}
               <li>
                 <Link href="/help">How ordering works</Link>
               </li>

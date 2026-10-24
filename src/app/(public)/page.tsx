@@ -171,7 +171,8 @@ export default async function HomePage() {
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
   ]);
-  // Reviews: only Google's are shown (what customers write on the site is also posted to Google, see the Review us pop-up). With none yet, the SAMPLE_REVIEWS below stand in; delete them once real ones are showing.
+  // Reviews: only Google's are shown (the Review us on Google button sends visitors to Google to write theirs). With none yet, the
+  // SAMPLE_REVIEWS below stand in; delete them once real ones are showing.
   const google = await getGoogleReviews(business.googlePlaceId);
   const reviewLink = googleReviewLink(business);
   const reviews: Array<{
@@ -658,9 +659,7 @@ export default async function HomePage() {
                 </p>
               ) : null}
               {reviews.length > 0 ? <ViewAllButton /> : null}
-              <ReviewButton reviewUrl={reviewLink} businessName={business.name}>
-                Review us
-              </ReviewButton>
+              <ReviewButton reviewUrl={reviewLink}>Review us on Google</ReviewButton>
             </div>
           ) : null}
           </ReviewsViewer>

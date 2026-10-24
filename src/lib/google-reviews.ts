@@ -12,6 +12,8 @@ export interface GoogleReview {
   photo: string | null;
   /** The day Google says the review was posted, as dd/mm/yyyy (no time). */
   date: string | null;
+  /** The same moment as an ISO timestamp, to put reviews in order. */
+  published: string | null;
 }
 
 export interface GoogleReviews {
@@ -71,6 +73,7 @@ export function parsePlaceReviews(data: unknown): GoogleReviews | null {
       url: typeof attr.uri === "string" && attr.uri.startsWith("https://") ? attr.uri : null,
       photo: googlePhoto(attr.photoUri),
       date: formatReviewDate(x.publishTime),
+      published: typeof x.publishTime === "string" && !Number.isNaN(new Date(x.publishTime).getTime()) ? x.publishTime : null,
     });
   }
   const rating = typeof d.rating === "number" ? d.rating : null;
