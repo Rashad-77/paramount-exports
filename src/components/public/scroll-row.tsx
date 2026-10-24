@@ -169,41 +169,43 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     if (!el) return;
     let raf = 0;
     let last = 0;
-    let owed = 0; // the part of a pixel not moved yet, so slow drift is smooth rather than lost to rounding
-    let placed = -1; // where we left the row last frame: anything else moving it (a swipe, its momentum, a drag, an arrow) is the visitor
+    // Our own fractional position: phones and high-resolution screens can show positions between whole pixels, which keeps slow drift smooth.
+    let pos: number | null = null;
+    // One copy's width, measured once (measuring every frame forces the page to re-measure itself); asked again after a resize.
+    let w = 0;
+    const forget = () => (w = 0);
+    window.addEventListener("resize", forget);
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
       const dt = Math.min(200, now - last);
       last = now;
-      if (placed >= 0 && Math.abs(el.scrollLeft - placed) > 1.5) {
-        // Moved by someone else: leave it alone until it has been still for a moment.
-        resumeAt.current = Date.now() + 1800;
-        placed = -1;
-      }
       if (held.current || Date.now() < resumeAt.current || !visible.current || document.hidden || dt <= 0) {
-        placed = -1;
-        owed = 0;
+        pos = null; // whoever moves it meanwhile (a press, a swipe, an arrow) decides where we carry on from
         return;
       }
-      const w = setWidth();
-      if (w <= 0) return;
-      owed += (pxPerSecond * dt) / 1000;
-      const whole = Math.trunc(owed);
-      if (whole < 1) {
-        placed = el.scrollLeft;
+      if (w <= 0) {
+        w = setWidth();
+        if (w <= 0) return;
+      }
+      const now_ = el.scrollLeft;
+      if (pos !== null && Math.abs(now_ - pos) > 2) {
+        // Moved by someone else (a swipe, its momentum, a drag): leave it alone until it has been still for a moment.
+        resumeAt.current = Date.now() + 1800;
+        pos = null;
         return;
       }
-      owed -= whole;
-      let next = el.scrollLeft + whole;
-      if (next > w * 1.5) next -= w; // back one copy: identical cards, so the eye sees nothing
-      el.scrollLeft = next;
-      placed = el.scrollLeft;
+      pos = (pos ?? now_) + (pxPerSecond * dt) / 1000;
+      if (pos > w * 1.5) pos -= w; // back one copy: identical cards, so the eye sees nothing
+      el.scrollLeft = pos;
     };
     raf = requestAnimationFrame((t) => {
       last = t;
       raf = requestAnimationFrame(tick);
     });
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", forget);
+    };
   }, [auto, pxPerSecond, setWidth]);
 
   // A mouse can drag the row (touch and trackpads already scroll it natively). A drag does not count as a click on a card.

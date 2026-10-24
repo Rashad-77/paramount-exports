@@ -6194,3 +6194,8 @@ span.cat-pagebtn {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* The endless rows move on their own scroll layer, so drifting does not repaint the rest of the page. */
+.scroll-row {
+  will-change: scroll-position;
+}
