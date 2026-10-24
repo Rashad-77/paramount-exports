@@ -390,54 +390,26 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. Craft: dark band with a collage and the process */}
-      <section aria-labelledby="craft-title" className="sec sec-bark">
+      {/* 4. Browse the category: product cards, newest first */}
+      <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
           <Head
-            id="craft-title"
-            eyebrow="Our craftsmanship"
-            title={
-              <>
-                Made With Care.
-                <br />
-                Crafted From Wood.
-              </>
-            }
-            intro="Every piece moves through the same sequence of hands and machines, from selecting the board to the final coat of finish."
-            dark
+            id="projects-title"
+            eyebrow="Our collection"
+            title="Browse the collection"
           />
-          <div className="mt-12">
-            <Reveal variant="up">
-              <div className="process-box">
-                <p className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.22em] text-white/60">
-                  Process
-                </p>
-                <ol>
-                  {PROCESS.map((st, i) => (
-                    <li key={st.title}>
-                      <span aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className="flex-1">
-                        <span className="block fl-a text-white">
-                          {st.title}
-                        </span>
-                        <span className="mt-1 block fl-c leading-snug text-white/65 sm:leading-relaxed">
-                          {st.summary}
-                        </span>
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-                <Link
-                  href="/about#process"
-                  className="link-arrow mt-6 self-start text-[var(--leaf)]"
-                >
-                  See the full process{" "}
+          <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-4">
+            {products.map((p) => (
+              <Reveal as="li" key={p.id} variant="up">
+                <ProductCard product={p} currency={business.currency} />
+              </Reveal>
+            ))}
+          </ul>
+          <div className="mt-10">
+            <Link href="/products" className="link-arrow text-text">
+              See the full collection{" "}
 
-                </Link>
-              </div>
-            </Reveal>
+            </Link>
           </div>
         </div>
       </section>
@@ -495,26 +467,54 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 6. Browse the category: product cards, newest first */}
-      <section aria-labelledby="projects-title" className="sec sec-white">
+      {/* 6. Craft: dark band with a collage and the process */}
+      <section aria-labelledby="craft-title" className="sec sec-bark">
         <div className="container-page">
           <Head
-            id="projects-title"
-            eyebrow="Our collection"
-            title="Browse the collection"
+            id="craft-title"
+            eyebrow="Our craftsmanship"
+            title={
+              <>
+                Made With Care.
+                <br />
+                Crafted From Wood.
+              </>
+            }
+            intro="Every piece moves through the same sequence of hands and machines, from selecting the board to the final coat of finish."
+            dark
           />
-          <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-4">
-            {products.map((p) => (
-              <Reveal as="li" key={p.id} variant="up">
-                <ProductCard product={p} currency={business.currency} />
-              </Reveal>
-            ))}
-          </ul>
-          <div className="mt-10">
-            <Link href="/products" className="link-arrow text-text">
-              See the full collection{" "}
+          <div className="mt-12">
+            <Reveal variant="up">
+              <div className="process-box">
+                <p className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.22em] text-white/60">
+                  Process
+                </p>
+                <ol>
+                  {PROCESS.map((st, i) => (
+                    <li key={st.title}>
+                      <span aria-hidden="true">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1">
+                        <span className="block fl-a text-white">
+                          {st.title}
+                        </span>
+                        <span className="mt-1 block fl-c leading-snug text-white/65 sm:leading-relaxed">
+                          {st.summary}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                <Link
+                  href="/about#process"
+                  className="link-arrow mt-6 self-start text-[var(--leaf)]"
+                >
+                  See the full process{" "}
 
-            </Link>
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -549,20 +549,6 @@ export default async function HomePage() {
 
               </Link>
             </Reveal>
-            <dl className="mt-12 grid sm:grid-cols-3">
-              {[
-                ["Range", "Ready-made pieces on the showroom floor"],
-                ["Made to order", "Built to your size in our workshop"],
-                ["Supply", "Delivered to you, or collect it yourself"],
-              ].map(([k, v], i) => (
-                <Reveal key={k} variant="up" delay={i * 80} className="fact">
-                  <dt className="eyebrow">{k}</dt>
-                  <dd className="mt-3 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text">
-                    {v}
-                  </dd>
-                </Reveal>
-              ))}
-            </dl>
           </div>
         </div>
       </section>

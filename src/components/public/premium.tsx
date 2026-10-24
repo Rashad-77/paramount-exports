@@ -27,7 +27,7 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
       <ScrollRow
         label="Premium range photographs"
         autoplay
-        pxPerSecond={20}
+        pxPerSecond={40}
         onDark
         centered
         header={

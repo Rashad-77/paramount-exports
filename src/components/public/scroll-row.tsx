@@ -68,7 +68,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     };
     // Safari has no idle callback: a short wait does the same job there.
     const hasIdle = typeof window.requestIdleCallback === "function";
-    const handle = hasIdle ? window.requestIdleCallback(build, { timeout: 1200 }) : window.setTimeout(build, 300);
+    const handle = hasIdle ? window.requestIdleCallback(build, { timeout: 400 }) : window.setTimeout(build, 300);
     return () => {
       if (hasIdle) window.cancelIdleCallback(handle);
       else window.clearTimeout(handle);
@@ -138,21 +138,35 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     if (!el) return;
     let raf = 0;
     let last = 0;
-    let pos: number | null = null; // our own fractional position, so slow drift is not lost to rounding
+    let owed = 0; // the part of a pixel not moved yet, so slow drift is smooth rather than lost to rounding
+    let placed = -1; // where we left the row last frame: anything else moving it (a swipe, its momentum, a drag, an arrow) is the visitor
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
-      const dt = Math.min(64, now - last);
+      const dt = Math.min(200, now - last);
       last = now;
+      if (placed >= 0 && Math.abs(el.scrollLeft - placed) > 1.5) {
+        // Moved by someone else: leave it alone until it has been still for a moment.
+        resumeAt.current = Date.now() + 1800;
+        placed = -1;
+      }
       if (held.current || Date.now() < resumeAt.current || !visible.current || document.hidden || dt <= 0) {
-        pos = null; // whoever moved it meanwhile (a press, a swipe) decides where we carry on from
+        placed = -1;
+        owed = 0;
         return;
       }
       const w = setWidth();
       if (w <= 0) return;
-      if (pos === null) pos = el.scrollLeft;
-      pos += (pxPerSecond * dt) / 1000;
-      if (pos > w * 1.5) pos -= w; // back one copy: identical cards, so the eye sees nothing
-      el.scrollLeft = pos;
+      owed += (pxPerSecond * dt) / 1000;
+      const whole = Math.trunc(owed);
+      if (whole < 1) {
+        placed = el.scrollLeft;
+        return;
+      }
+      owed -= whole;
+      let next = el.scrollLeft + whole;
+      if (next > w * 1.5) next -= w; // back one copy: identical cards, so the eye sees nothing
+      el.scrollLeft = next;
+      placed = el.scrollLeft;
     };
     raf = requestAnimationFrame((t) => {
       last = t;
@@ -160,6 +174,35 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     });
     return () => cancelAnimationFrame(raf);
   }, [auto, pxPerSecond, setWidth]);
+
+  // A mouse can drag the row (touch and trackpads already scroll it natively). A drag does not count as a click on a card.
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    drag.current = { x: e.clientX, left: e.currentTarget.scrollLeft, moved: false };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved && Math.abs(dx) > 5) {
+      d.moved = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      e.currentTarget.dataset.dragging = "";
+    }
+    if (d.moved) e.currentTarget.scrollLeft = d.left - dx;
+  };
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    if (d?.moved) {
+      delete e.currentTarget.dataset.dragging;
+      resumeAt.current = Date.now() + 1800;
+      const stop = (ev: Event) => ev.stopPropagation();
+      e.currentTarget.addEventListener("click", stop, { capture: true, once: true });
+      window.setTimeout(() => e.currentTarget?.removeEventListener("click", stop, { capture: true }), 0);
+    }
+  };
 
   const btn =
     "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center shadow-none transition-transform duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 " +
@@ -181,7 +224,14 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
           role="group"
           aria-label={label}
           tabIndex={0}
-          className={"relative flex gap-5 overflow-x-auto pb-2 [overflow-anchor:none] " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
+          onTouchStart={() => (resumeAt.current = Date.now() + 2500)}
+          onTouchMove={() => (resumeAt.current = Date.now() + 2500)}
+          onTouchEnd={() => (resumeAt.current = Date.now() + 2500)}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          className={"scroll-row relative flex gap-5 overflow-x-auto pb-2 [overflow-anchor:none] " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
         >
           <div ref={main} data-copy="1" className="contents">
             {children}

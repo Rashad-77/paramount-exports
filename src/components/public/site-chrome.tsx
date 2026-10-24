@@ -133,6 +133,22 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                   </a>
                 </li>
               ) : null}
+              {business.facebook ? (
+                <li className="foot-soc-li">
+                  <a href={business.facebook} target="_blank" rel="noopener noreferrer">
+                    <FacebookIcon aria-hidden="true" className="size-4" />
+                    Facebook<span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ) : null}
+              {business.tiktok ? (
+                <li className="foot-soc-li">
+                  <a href={business.tiktok} target="_blank" rel="noopener noreferrer">
+                    <TikTokIcon aria-hidden="true" className="size-4" />
+                    TikTok<span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
           <div>

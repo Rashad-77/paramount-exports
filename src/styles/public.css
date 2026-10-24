@@ -5742,3 +5742,378 @@ span.cat-pagebtn {
     padding: 0 0.5rem;
   }
 }
+
+/* Help page, the list of topics: one under another on a phone, close together, in a smaller size. */
+@media (max-width: 47.99rem) {
+  .help-topics {
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 0.75rem;
+  }
+  .help-topics a {
+    min-height: 2rem;
+    font-size: 0.6875rem;
+  }
+}
+
+/* The endless rows can be dragged with a mouse: a grab cursor, no text or picture selection while dragging, and no snapping while it is held. */
+.scroll-row {
+  cursor: grab;
+}
+.scroll-row[data-dragging] {
+  cursor: grabbing;
+  user-select: none;
+  scroll-snap-type: none;
+}
+.scroll-row img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.scroll-row a {
+  -webkit-user-drag: none;
+}
+
+/* Facebook and TikTok: in the Contact list on phones and tablets; as icons at the right of the bottom bar on computers. */
+.foot-social {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .foot-social {
+    display: flex;
+  }
+  .foot ul.foot-list > li.foot-soc-li {
+    display: none;
+  }
+}
+
+/* Header icons on phones: bag, account and menu sit closer together. */
+@media (max-width: 48rem) {
+  .phead .in {
+    gap: 0.4rem;
+  }
+  .phead .cart::before,
+  .phead .toggle::before {
+    inset: 0 -0.2rem;
+  }
+}
+
+/* Body text is Arial. Banner titles (h1 and the collection banner title), all-caps text and the logo keep the site fonts. Every selector below is
+   a place that sets text-transform: uppercase, plus the logo and banner titles; anything inside them keeps the site font as well. */
+.page-body *:not(:is(
+  main form :is(label, legend:not(.font-display)):not(.flex),
+  .uppercase,
+  .eyebrow,
+  .eyebrow-light,
+  .btn,
+  .fl-g,
+  .logo,
+  .brand,
+  h1,
+  .prem-banner-title,
+  .back-link,
+  .sale-bar,
+  .phead .logo b,
+  .foot .brand b,
+  .phead .logo i,
+  .foot .brand i,
+  .phead nav a,
+  .phead .cart,
+  .gal-cat,
+  .gal-ph,
+  .link-arrow,
+  .pill,
+  .cat-control,
+  .cat-search,
+  .gs-opt,
+  .gc-back,
+  .foot-head,
+  .foot-bottom,
+  .acct-nav a,
+  .acct-nav button,
+  .acct-h a,
+  .acct-stat-l,
+  .st,
+  .acct-feed time,
+  .acct-price span,
+  .acct-steps li,
+  .acct-details dt,
+  .acct-link,
+  .heart-btn,
+  .sale-badge,
+  .sale-tag,
+  .ot-kicker,
+  .ot-step,
+  .ot-facts dt,
+  .ot-sum dt,
+  .pp-off,
+  .pp-code,
+  .pp-options legend,
+  .pp-qty > span,
+  .pp-lead span,
+  .ptabs-list button,
+  .pdp-prose h3,
+  .pdp-specs dt,
+  .ask-btn,
+  .acct-add summary,
+  .acct-address .acct-actions a,
+  .acct-address .acct-actions button,
+  .acct-addr-no,
+  .acct-table thead th,
+  .acct-sort > span,
+  .acct-status,
+  .new-badge,
+  .cat-pagebtn,
+  .rv-dialog,
+  .rv-dialog .rv-field,
+  .rv-dialog .rv-go,
+  .rv-all h2,
+  .rv-all #dialog-desc,
+  .rv-all .rv-name,
+  .rv-all .rv-city,
+  .gal-toggle button,
+  .prem-eyebrow,
+  .prem-link,
+  .prem-banner-go,
+  .prem-cta,
+  .premium-tag
+)):not(:is(
+  main form :is(label, legend:not(.font-display)):not(.flex) *,
+  .uppercase *,
+  .eyebrow *,
+  .eyebrow-light *,
+  .btn *,
+  .fl-g *,
+  .logo *,
+  .brand *,
+  h1 *,
+  .prem-banner-title *,
+  .back-link *,
+  .sale-bar *,
+  .phead .logo b *,
+  .foot .brand b *,
+  .phead .logo i *,
+  .foot .brand i *,
+  .phead nav a *,
+  .phead .cart *,
+  .gal-cat *,
+  .gal-ph *,
+  .link-arrow *,
+  .pill *,
+  .cat-control *,
+  .cat-search *,
+  .gs-opt *,
+  .gc-back *,
+  .foot-head *,
+  .foot-bottom *,
+  .acct-nav a *,
+  .acct-nav button *,
+  .acct-h a *,
+  .acct-stat-l *,
+  .st *,
+  .acct-feed time *,
+  .acct-price span *,
+  .acct-steps li *,
+  .acct-details dt *,
+  .acct-link *,
+  .heart-btn *,
+  .sale-badge *,
+  .sale-tag *,
+  .ot-kicker *,
+  .ot-step *,
+  .ot-facts dt *,
+  .ot-sum dt *,
+  .pp-off *,
+  .pp-code *,
+  .pp-options legend *,
+  .pp-qty > span *,
+  .pp-lead span *,
+  .ptabs-list button *,
+  .pdp-prose h3 *,
+  .pdp-specs dt *,
+  .ask-btn *,
+  .acct-add summary *,
+  .acct-address .acct-actions a *,
+  .acct-address .acct-actions button *,
+  .acct-addr-no *,
+  .acct-table thead th *,
+  .acct-sort > span *,
+  .acct-status *,
+  .new-badge *,
+  .cat-pagebtn *,
+  .rv-dialog *,
+  .rv-dialog .rv-field *,
+  .rv-dialog .rv-go *,
+  .rv-all h2 *,
+  .rv-all #dialog-desc *,
+  .rv-all .rv-name *,
+  .rv-all .rv-city *,
+  .gal-toggle button *,
+  .prem-eyebrow *,
+  .prem-link *,
+  .prem-banner-go *,
+  .prem-cta *,
+  .premium-tag *
+)) {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* The all-caps text and the logo keep the site font whatever sits around them (zero specificity, so their own rules still win). */
+:where(.page-body :is(
+  .uppercase,
+  .eyebrow,
+  .eyebrow-light,
+  .btn,
+  .fl-g,
+  .logo,
+  .brand,
+  .back-link,
+  .sale-bar,
+  .phead .logo b,
+  .foot .brand b,
+  .phead .logo i,
+  .foot .brand i,
+  .phead nav a,
+  .phead .cart,
+  .gal-cat,
+  .gal-ph,
+  .link-arrow,
+  .pill,
+  .cat-control,
+  .cat-search,
+  .gs-opt,
+  .gc-back,
+  .foot-head,
+  .foot-bottom,
+  .acct-nav a,
+  .acct-nav button,
+  .acct-h a,
+  .acct-stat-l,
+  .st,
+  .acct-feed time,
+  .acct-price span,
+  .acct-steps li,
+  .acct-details dt,
+  .acct-link,
+  .heart-btn,
+  .sale-badge,
+  .sale-tag,
+  .ot-kicker,
+  .ot-step,
+  .ot-facts dt,
+  .ot-sum dt,
+  .pp-off,
+  .pp-code,
+  .pp-options legend,
+  .pp-qty > span,
+  .pp-lead span,
+  .ptabs-list button,
+  .pdp-prose h3,
+  .pdp-specs dt,
+  .ask-btn,
+  .acct-add summary,
+  .acct-address .acct-actions a,
+  .acct-address .acct-actions button,
+  .acct-addr-no,
+  .acct-table thead th,
+  .acct-sort > span,
+  .acct-status,
+  .new-badge,
+  .cat-pagebtn,
+  .rv-dialog,
+  .rv-dialog .rv-field,
+  .rv-dialog .rv-go,
+  .rv-all h2,
+  .rv-all #dialog-desc,
+  .rv-all .rv-name,
+  .rv-all .rv-city,
+  .gal-toggle button,
+  .prem-eyebrow,
+  .prem-link,
+  .prem-banner-go,
+  .prem-cta,
+  .premium-tag
+)) {
+  font-family: var(--font-sans);
+}
+:where(.page-body :is(
+  .uppercase *,
+  .eyebrow *,
+  .eyebrow-light *,
+  .btn *,
+  .fl-g *,
+  .logo *,
+  .brand *,
+  .back-link *,
+  .sale-bar *,
+  .phead .logo b *,
+  .foot .brand b *,
+  .phead .logo i *,
+  .foot .brand i *,
+  .phead nav a *,
+  .phead .cart *,
+  .gal-cat *,
+  .gal-ph *,
+  .link-arrow *,
+  .pill *,
+  .cat-control *,
+  .cat-search *,
+  .gs-opt *,
+  .gc-back *,
+  .foot-head *,
+  .foot-bottom *,
+  .acct-nav a *,
+  .acct-nav button *,
+  .acct-h a *,
+  .acct-stat-l *,
+  .st *,
+  .acct-feed time *,
+  .acct-price span *,
+  .acct-steps li *,
+  .acct-details dt *,
+  .acct-link *,
+  .heart-btn *,
+  .sale-badge *,
+  .sale-tag *,
+  .ot-kicker *,
+  .ot-step *,
+  .ot-facts dt *,
+  .ot-sum dt *,
+  .pp-off *,
+  .pp-code *,
+  .pp-options legend *,
+  .pp-qty > span *,
+  .pp-lead span *,
+  .ptabs-list button *,
+  .pdp-prose h3 *,
+  .pdp-specs dt *,
+  .ask-btn *,
+  .acct-add summary *,
+  .acct-address .acct-actions a *,
+  .acct-address .acct-actions button *,
+  .acct-addr-no *,
+  .acct-table thead th *,
+  .acct-sort > span *,
+  .acct-status *,
+  .new-badge *,
+  .cat-pagebtn *,
+  .rv-dialog *,
+  .rv-dialog .rv-field *,
+  .rv-dialog .rv-go *,
+  .rv-all h2 *,
+  .rv-all #dialog-desc *,
+  .rv-all .rv-name *,
+  .rv-all .rv-city *,
+  .gal-toggle button *,
+  .prem-eyebrow *,
+  .prem-link *,
+  .prem-banner-go *,
+  .prem-cta *,
+  .premium-tag *
+)) {
+  font-family: inherit;
+}
+/* Form field labels are all caps, so they keep the site font too. */
+.page-body:not(#a):not(#b) main form :is(label, legend:not(.font-display)):not(.flex),
+.page-body:not(#a):not(#b) main form :is(label, legend:not(.font-display)):not(.flex) * {
+  font-family: var(--font-sans) !important;
+}

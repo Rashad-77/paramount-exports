@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageIntro } from "@/components/public/prose";
 import { Reveal } from "@/components/public/reveal";
-import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "We are here to help you",
@@ -23,8 +22,8 @@ export default async function HelpPage() {
     <>
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
 
-      <div className="container-page py-[var(--section-space)]">
-        <nav aria-label="On this page" className="flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-6">
+      <div className="container-page pb-[var(--section-space)] pt-6 md:pt-[var(--section-space)]">
+        <nav aria-label="On this page" className="help-topics flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-6">
           {TOPICS.map((t) => (
             <a key={t.id} href={`#${t.id}`} className="link-arrow text-text">
               {t.label}
@@ -117,11 +116,11 @@ export default async function HelpPage() {
               <p className="mt-6 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
                 An order cannot be edited on the website once it is placed. If you need to correct something, change a piece or cancel, please contact us and quote your order number, and we will sort it out with you.
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <ButtonLink href="/contact" size="cta">
+              <p className="mt-4">
+                <Link href="/contact" className="link-arrow text-text">
                   Contact us
-                </ButtonLink>
-              </div>
+                </Link>
+              </p>
             </section>
           </Reveal>
         </div>
