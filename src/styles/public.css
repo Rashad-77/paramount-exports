@@ -74,9 +74,9 @@ html:has(.page-body) {
     align-items: center;
     gap: 1.5rem;
     height: var(--head-h);
-    max-width: calc(var(--content-width) + 8rem);
+    max-width: none;
     margin-inline: auto;
-    padding: 0 var(--gutter);
+    padding: 0 clamp(1rem, 2vw, 1.75rem);
   }
   .phead .logo,
   .foot .brand {
@@ -5364,13 +5364,6 @@ span.cat-pagebtn {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   line-height: 1.6;
-}
-
-/* Header: less empty space to the right of the account icon (the left side keeps the full gutter). */
-@media (min-width: 48rem) {
-  .phead .in {
-    padding-right: 0.75rem;
-  }
 }
 
 /* ── Tap targets: at least 44px tall on touch screens and phones (WCAG 2.5.5 / Apple HIG). The look is the same, the pressable area is larger. ── */
