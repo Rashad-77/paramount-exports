@@ -6,7 +6,7 @@ import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/t
 import { requireActor } from "@/lib/auth/session";
 import { formatReviewDate } from "@/lib/google-reviews";
 import { listGoogleReviewsAdmin } from "@/server/google-review-store";
-import { addReviewAction, deleteReviewAction, fetchReviewsNowAction, setReviewHiddenAction } from "./actions";
+import { addReviewAction, deleteReviewAction, setReviewHiddenAction } from "./actions";
 
 export const metadata = { title: "Reviews" };
 
@@ -17,16 +17,7 @@ export default async function ReviewsAdminPage() {
   const reviews = await listGoogleReviewsAdmin(actor);
   return (
     <>
-      <ModuleHeader
-        href="/app/reviews"
-        actions={
-          <ActionForm action={fetchReviewsNowAction} className="space-y-0">
-            <SubmitButton variant="secondary" pendingLabel="Fetching…">
-              Fetch from Google now
-            </SubmitButton>
-          </ActionForm>
-        }
-      />
+      <ModuleHeader href="/app/reviews" />
       <div className="min-w-0 space-y-6">
         <Panel title="Add a review" description="Copy a review from Google. It shows on the homepage straight away, without a picture. A review that is already saved is refused.">
           <ActionForm action={addReviewAction}>
@@ -39,7 +30,7 @@ export default async function ReviewsAdminPage() {
             <SubmitButton pendingLabel="Adding…">Add review</SubmitButton>
           </ActionForm>
         </Panel>
-        <Panel title="Saved reviews" description="Newest first. Hide a review to take it off the website. One saved from Google can only be hidden, because the daily check would add it again.">
+        <Panel title="Saved reviews" description="Newest first. Hide a review to take it off the website without losing it, or delete it for good.">
           <TableWrap label="Saved Google reviews">
             <Table>
               <THead>
@@ -55,7 +46,7 @@ export default async function ReviewsAdminPage() {
               </THead>
               <tbody>
                 {reviews.length === 0 ? (
-                  <EmptyRow colSpan={5} title="No reviews saved yet" description="They are added daily from Google once it is connected, or add one above." />
+                  <EmptyRow colSpan={5} title="No reviews saved yet" description="Add one above." />
                 ) : (
                   reviews.map((r) => (
                     <TR key={r.id}>
@@ -70,7 +61,6 @@ export default async function ReviewsAdminPage() {
                       <TD>
                         <div className="flex flex-wrap gap-1.5">
                           <StatusBadge tone={r.hidden ? "warning" : "success"}>{r.hidden ? "Hidden" : "Shown"}</StatusBadge>
-                          <StatusBadge>{r.source === "manual" ? "Added by hand" : "From Google"}</StatusBadge>
                         </div>
                       </TD>
                       <TD>
@@ -82,14 +72,12 @@ export default async function ReviewsAdminPage() {
                               {r.hidden ? "Show" : "Hide"}
                             </SubmitButton>
                           </ActionForm>
-                          {r.source === "manual" ? (
-                            <ActionForm action={deleteReviewAction} className="space-y-0">
+                          <ActionForm action={deleteReviewAction} className="space-y-0">
                               <input type="hidden" name="id" value={r.id} />
                               <ConfirmSubmit variant="ghost" title="Delete this review?" description="It is removed from the website and from the saved reviews." confirmLabel="Delete">
                                 Delete
                               </ConfirmSubmit>
                             </ActionForm>
-                          ) : null}
                         </div>
                       </TD>
                     </TR>

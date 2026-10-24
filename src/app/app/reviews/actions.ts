@@ -4,10 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { requirePermission } from "@/lib/auth/permissions";
-import { getBusinessSettings } from "@/lib/settings";
 import { enumOf, reqDate, reqText, reqUuid } from "@/lib/validation";
-import { addManualGoogleReview, deleteManualGoogleReview, setGoogleReviewHidden, syncGoogleReviews } from "@/server/google-review-store";
+import { addManualGoogleReview, deleteGoogleReview, setGoogleReviewHidden } from "@/server/google-review-store";
 
 const refresh = () => {
   revalidatePath("/app/reviews");
@@ -39,17 +37,8 @@ export async function setReviewHiddenAction(_p: ActionState, fd: FormData): Prom
 
 export async function deleteReviewAction(_p: ActionState, fd: FormData): Promise<ActionState> {
   return runAction(fd, z.object({ id: reqUuid("review") }), async (input, { actor }) => {
-    await deleteManualGoogleReview(actor!, input.id);
+    await deleteGoogleReview(actor!, input.id);
     refresh();
     return { message: "Review deleted." };
-  });
-}
-
-export async function fetchReviewsNowAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return runAction(fd, z.object({}), async (_i, { actor }) => {
-    requirePermission(actor!, "website:manage");
-    const added = await syncGoogleReviews((await getBusinessSettings()).googlePlaceId);
-    refresh();
-    return { message: added > 0 ? `${added} new ${added === 1 ? "review" : "reviews"} saved from Google.` : "Nothing new from Google (or Google is not connected yet: it needs the Place ID in Settings and the Places key)." };
   });
 }

@@ -12,7 +12,6 @@ import { Table, TableWrap } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { getSettingsForAdmin } from "@/server/settings";
-import { googleKeyIsSet } from "@/server/google-reviews";
 import { updateBusinessAction } from "./actions";
 
 export const metadata = { title: "Settings" };
@@ -131,7 +130,7 @@ export default async function SettingsPage() {
                         label="Google Place ID"
                         defaultValue={business.googlePlaceId ?? ""}
                         placeholder="ChIJ…"
-                        hint={`Makes the Review us on Google button work and finds your Google reviews. Leave blank to switch both off. ${googleKeyIsSet() ? "Reviews are connected." : "To show the reviews as well, the Google API key still has to be added to the website's environment settings."}`}
+                        hint="Makes the Review us on Google button open Google's review box for your business. Leave blank to use a Google Maps search instead."
                       />
                     </SettingRow>
                     <SettingRow label="Google review link">

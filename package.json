@@ -19,7 +19,6 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "create-owner": "tsx scripts/create-owner.ts",
-    "google-business-auth": "tsx scripts/google-business-auth.ts",
     "create-user": "tsx scripts/create-owner.ts",
     "vercel-build": "tsx scripts/prepare-demo-db.ts && pnpm build",
     "docs:permissions": "tsx scripts/gen-permissions-doc.ts",

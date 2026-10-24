@@ -27,7 +27,6 @@ import {
   listPublicProducts,
 } from "@/server/catalogue-public";
 import { listSavedGoogleReviews } from "@/server/google-review-store";
-import { getGoogleReviews } from "@/server/google-reviews";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
@@ -157,10 +156,9 @@ export default async function HomePage() {
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
   ]);
-  // Reviews: only Google's are shown (the Review us on Google button sends visitors to Google to write theirs). A daily job saves new
-  // ones to the database and the carousel shows those; until any are saved, what Google returns right now is shown. With none, the section only invites a first review.
-  const [google, saved] = await Promise.all([getGoogleReviews(business.googlePlaceId), safe(() => listSavedGoogleReviews(), [] as GoogleReview[])]);
-  const shown = saved.length > 0 ? saved : (google?.reviews ?? []);
+  // Reviews: only Google's, saved by staff on the dashboard's Reviews page (the Review us on Google button sends visitors to Google to write theirs).
+  // With none, the section only invites a first review.
+  const shown = await safe(() => listSavedGoogleReviews(), [] as GoogleReview[]);
   const reviewLink = googleReviewLink(business);
   const reviews: Array<{
     id: string;
@@ -616,34 +614,8 @@ export default async function HomePage() {
               ))}
             </ScrollRow>
           ) : null}
-          {reviewLink || google?.rating || reviews.length > 0 ? (
+          {reviewLink || reviews.length > 0 ? (
             <div className={"container-page mt-10 flex flex-wrap items-center gap-x-6 gap-y-4 " + (reviews.length === 0 ? "justify-start" : "justify-center text-center")}>
-              {google?.rating ? (
-                <p className="text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] text-text">
-                  <span className="font-medium">
-                    Rated {google.rating.toFixed(1)} out of 5 on Google
-                  </span>
-                  <span className="text-text-muted">
-                    {" "}
-                    from {google.total}{" "}
-                    {google.total === 1 ? "review" : "reviews"}
-                    {google.mapsUrl ? (
-                      <>
-                        {" · "}
-                        <a
-                          href={google.mapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline"
-                        >
-                          See them all on Google
-                          <span className="sr-only"> (opens in a new tab)</span>
-                        </a>
-                      </>
-                    ) : null}
-                  </span>
-                </p>
-              ) : null}
               {reviews.length > 0 ? <ViewAllButton /> : null}
               <ReviewButton reviewUrl={reviewLink}>Review us on Google</ReviewButton>
             </div>
