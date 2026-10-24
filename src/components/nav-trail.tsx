@@ -50,12 +50,23 @@ export function NavTrail() {
   return null;
 }
 
+/**
+ * The signed-in account pages (orders, profile, wishlist, messages, security, addresses) are sections of one place, switched with the account
+ * menu. Back must never hop between them: it leaves the account for the page the visitor came from. The sign-in, forgot-password and reset
+ * pages are separate pages, so they are not part of that.
+ */
+const accountSection = (path: string): boolean => /^\/account(\/|$)/.test(path) && !/^\/account\/(sign-in|forgot|reset|confirm)(\/|$)/.test(path);
+
 /** The page before this one, or null when this tab has no earlier page on the site. */
 export function previousPage(): string | null {
   const trail = read();
   const here = window.location.pathname;
+  const inAccount = accountSection(here);
   for (let i = trail.length - 1; i >= 0; i--) {
-    if (pathOf(trail[i]!) !== here) return trail[i]!;
+    const p = pathOf(trail[i]!);
+    if (p === here) continue;
+    if (inAccount && accountSection(p)) continue;
+    return trail[i]!;
   }
   return null;
 }
