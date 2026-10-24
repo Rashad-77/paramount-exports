@@ -192,6 +192,12 @@ html:has(.page-body) {
     background: transparent;
     color: #1c1916;
   }
+  /* Computers: header type one pixel smaller */
+  @media (min-width: 72.01rem) {
+    .phead nav a {
+      font-size: 0.6875rem;
+    }
+  }
   /* Tablet and small computers: the links stay in the bar, a little closer together */
   @media (min-width: 48.01rem) and (max-width: 72rem) {
     .phead .in {
@@ -5412,5 +5418,15 @@ span.cat-pagebtn {
     display: flex;
     align-items: flex-end;
     min-height: 3.4em;
+  }
+}
+
+/* Computers: the brand name in the header is one pixel smaller (placed last so it wins over the fluid sizes above). */
+@media (min-width: 72.01rem) {
+  .phead .logo b {
+    font-size: 0.9875rem;
+  }
+  .phead .logo i {
+    font-size: 0.6875rem;
   }
 }
