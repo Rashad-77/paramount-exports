@@ -187,7 +187,11 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     const dx = e.clientX - d.x;
     if (!d.moved && Math.abs(dx) > 5) {
       d.moved = true;
-      e.currentTarget.setPointerCapture(e.pointerId);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // The pointer already ended: the drag simply stops following it.
+      }
       e.currentTarget.dataset.dragging = "";
     }
     if (d.moved) e.currentTarget.scrollLeft = d.left - dx;

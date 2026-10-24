@@ -14,6 +14,7 @@ import {
   signInCustomer,
   signOutCustomer,
   signUpCustomer,
+  startGoogleSignIn,
 } from "@/lib/auth/customer";
 import { getDb } from "@/lib/db/client";
 import { rateLimited, unauthenticated, validation } from "@/lib/errors";
@@ -97,6 +98,13 @@ export async function signInAction(_p: ActionState, fd: FormData): Promise<Actio
     },
     { public: true },
   );
+}
+
+/** The "Continue with Google" button (a plain form post, so it works without scripts). */
+export async function googleSignInAction(fd: FormData): Promise<void> {
+  await accountsOn();
+  const raw = fd.get("next");
+  await startGoogleSignIn(await safeNext(typeof raw === "string" ? raw : undefined));
 }
 
 export async function signOutAction(): Promise<void> {

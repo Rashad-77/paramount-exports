@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { SignInForm, SignUpForm } from "@/components/public/account-forms";
 import { PageIntro } from "@/components/public/prose";
 import { Alert } from "@/components/ui/status";
-import { customerAuthMode, getCustomer } from "@/lib/auth/customer";
+import { customerAuthMode, getCustomer, googleSignInEnabled } from "@/lib/auth/customer";
+import { GoogleButton } from "@/components/public/google-button";
 import { one, type SP } from "@/lib/list-params";
 import { safeNext } from "../actions";
 import { getAccountSettings } from "@/lib/settings";
@@ -18,6 +19,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const sp = await searchParams;
   const next = await safeNext(one(sp.next), "");
   if (await getCustomer()) redirect(next || "/account");
+  const google = googleSignInEnabled();
   const checkEmail = one(sp.notice) === "check-email";
   return (
     <>
@@ -33,6 +35,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
             </Alert>
           ) : null}
           <SignInForm next={next || undefined} />
+          {google ? <GoogleButton next={next || undefined} /> : null}
         </section>
         {settings.allowSignUp ? (
           <section aria-labelledby="signup-title" className="soft-card space-y-5">
@@ -40,6 +43,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
               Create an account
             </h2>
             <SignUpForm next={next || undefined} />
+            {google ? <GoogleButton next={next || undefined} /> : null}
           </section>
         ) : null}
       </div>

@@ -164,6 +164,21 @@ export async function signUpCustomer(input: { fullName: string; email: string; p
   return "signed-in";
 }
 
+/** Google sign-in is offered only when the owner has set it up in Supabase and switched it on here (GOOGLE_SIGN_IN=on). */
+export const googleSignInEnabled = () => customerAuthMode() === "supabase" && process.env.GOOGLE_SIGN_IN === "on";
+
+/** Sends the visitor to Google to choose an account. Google confirms the email address, so there is no confirmation email to wait for. */
+export async function startGoogleSignIn(next: string): Promise<void> {
+  if (!googleSignInEnabled()) throw validation("Sign in with Google is not available yet.");
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${siteUrl()}/account/confirm?next=${encodeURIComponent(next)}` },
+  });
+  if (error || !data.url) throw validation("We could not start sign-in with Google. Please try again, or use your email.");
+  redirect(data.url);
+}
+
 export async function signInCustomer(input: { email: string; password: string }): Promise<void> {
   const mode = customerAuthMode();
   const wrong = () => validation("Incorrect email or password.");
