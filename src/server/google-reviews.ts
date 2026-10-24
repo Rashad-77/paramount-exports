@@ -1,6 +1,7 @@
 import "server-only";
 import { serverEnv } from "@/lib/env";
 import { parsePlaceReviews, type GoogleReviews } from "@/lib/google-reviews";
+import { getBusinessReviews } from "./google-business";
 
 /** True when a Google API key is set, so Settings can say whether Google reviews are connected. The key itself is never shown. */
 export function googleKeyIsSet(): boolean {
@@ -19,6 +20,21 @@ const REVALIDATE_SECONDS = 24 * 60 * 60;
  * set, or when Google does not answer: the website then simply shows no Google reviews. It never throws and never blocks a page.
  */
 export async function getGoogleReviews(placeId: string | null): Promise<GoogleReviews | null> {
+  const places = await getPlaceReviews(placeId);
+  // When the owner has authorised the Business Profile API, every review is shown (the Places API gives only 5).
+  const all = await getBusinessReviews();
+  if (all && all.reviews.length > 0) {
+    return {
+      rating: places?.rating ?? all.average,
+      total: places?.total ?? all.total ?? all.reviews.length,
+      mapsUrl: places?.mapsUrl ?? null,
+      reviews: all.reviews,
+    };
+  }
+  return places;
+}
+
+async function getPlaceReviews(placeId: string | null): Promise<GoogleReviews | null> {
   if (!placeId) return null;
   let key: string | undefined;
   let base = "https://places.googleapis.com/v1/places";

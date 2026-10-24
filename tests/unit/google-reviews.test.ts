@@ -95,3 +95,30 @@ describe("getGoogleReviews", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
 });
+
+import { parseBusinessReviews } from "@/lib/google-reviews";
+
+describe("parseBusinessReviews", () => {
+  it("reads a page of the owner's reviews: stars, words, picture, date, and the next page", () => {
+    const p = parseBusinessReviews({
+      averageRating: 4.7,
+      totalReviewCount: 63,
+      nextPageToken: "abc",
+      reviews: [
+        { starRating: "FIVE", comment: "  Lovely work.  ", createTime: "2026-09-23T20:30:00Z", reviewer: { displayName: "Nimal P.", profilePhotoUrl: "https://lh3.googleusercontent.com/a/x=s64-c" } },
+        { starRating: "FOUR", comment: "Good.", createTime: "2026-01-02T05:00:00Z", reviewer: { displayName: "Hidden", isAnonymous: true, profilePhotoUrl: "https://evil.example/pic.png" } },
+        { starRating: "FIVE", comment: "", reviewer: { displayName: "Stars only" } },
+        { starRating: "NONE", comment: "No stars" },
+      ],
+    });
+    expect(p.total).toBe(63);
+    expect(p.average).toBe(4.7);
+    expect(p.next).toBe("abc");
+    expect(p.reviews).toHaveLength(2);
+    expect(p.reviews[0]).toMatchObject({ author: "Nimal P.", rating: 5, text: "Lovely work.", date: "24/09/2026", photo: "https://lh3.googleusercontent.com/a/x=s64-c" });
+    expect(p.reviews[1]).toMatchObject({ author: "A Google user", rating: 4, photo: null });
+  });
+  it("returns nothing for an odd answer", () => {
+    expect(parseBusinessReviews(null)).toEqual({ reviews: [], next: null, total: null, average: null });
+  });
+});

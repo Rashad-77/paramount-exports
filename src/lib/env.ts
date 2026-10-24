@@ -22,6 +22,12 @@ const serverSchema = z.object({
   RESEND_API_KEY: z.string().min(1).optional(),
   /** Google Places API key, used to show the business's Google reviews on the website. Without it no Google reviews are shown. */
   GOOGLE_PLACES_API_KEY: z.string().min(10).optional(),
+  /** All of the business's Google reviews (not just 5): the Business Profile API, authorised once by the business owner. All four are needed; see docs/GOOGLE_REVIEWS.md. */
+  GOOGLE_BUSINESS_CLIENT_ID: z.string().min(10).optional(),
+  GOOGLE_BUSINESS_CLIENT_SECRET: z.string().min(10).optional(),
+  GOOGLE_BUSINESS_REFRESH_TOKEN: z.string().min(10).optional(),
+  /** Looks like accounts/123456789/locations/987654321. */
+  GOOGLE_BUSINESS_LOCATION: z.string().regex(/^accounts\/\d+\/locations\/\d+$/).optional(),
   /** Where the Places API lives. Only set for tests, to point at a stand-in; Google's address is used when blank. */
   GOOGLE_PLACES_API_URL: z.string().url().optional(),
   /** The "from" address for those emails, e.g. "Paramount website <orders@yourdomain.lk>". Must be on a domain verified with Resend. */

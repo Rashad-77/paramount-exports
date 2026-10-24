@@ -82,3 +82,38 @@ export function parsePlaceReviews(data: unknown): GoogleReviews | null {
   if (reviews.length === 0 && rating === null) return null;
   return { rating, total, mapsUrl, reviews };
 }
+
+const STARS: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
+
+/** One page of the business's own Google reviews, from the Business Profile API (which, unlike the Places API, lists all of them). */
+export function parseBusinessReviews(data: unknown): { reviews: GoogleReview[]; next: string | null; total: number | null; average: number | null } {
+  const d = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const raw = Array.isArray(d.reviews) ? d.reviews : [];
+  const reviews: GoogleReview[] = [];
+  for (const r of raw) {
+    if (!r || typeof r !== "object") continue;
+    const x = r as Record<string, unknown>;
+    const rating = typeof x.starRating === "string" ? (STARS[x.starRating] ?? 0) : 0;
+    const text = typeof x.comment === "string" ? x.comment.trim() : "";
+    const who = (x.reviewer ?? {}) as { displayName?: unknown; profilePhotoUrl?: unknown; isAnonymous?: unknown };
+    const author = who.isAnonymous !== true && typeof who.displayName === "string" && who.displayName.trim() ? who.displayName.trim() : "A Google user";
+    const when = typeof x.createTime === "string" ? x.createTime : null;
+    if (!text || rating < 1) continue;
+    reviews.push({
+      author,
+      rating,
+      text,
+      when: null,
+      url: null,
+      photo: googlePhoto(who.profilePhotoUrl),
+      date: formatReviewDate(when),
+      published: when && !Number.isNaN(new Date(when).getTime()) ? when : null,
+    });
+  }
+  return {
+    reviews,
+    next: typeof d.nextPageToken === "string" && d.nextPageToken ? d.nextPageToken : null,
+    total: typeof d.totalReviewCount === "number" ? d.totalReviewCount : null,
+    average: typeof d.averageRating === "number" ? d.averageRating : null,
+  };
+}

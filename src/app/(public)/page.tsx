@@ -158,6 +158,8 @@ const SERVICES = [
   { title: "Pay when it arrives", body: "Nothing is charged on this website." },
 ];
 
+/** The feedback row shows the newest this many; "View all" lists every review. */
+const CAROUSEL_REVIEWS = 12;
 const CARD_W = "w-[82%] shrink-0 snap-start sm:w-[22rem]";
 
 export default async function HomePage() {
@@ -585,12 +587,12 @@ export default async function HomePage() {
             >
               {/* A few reviews are repeated to fill the endless row; the repeats are hidden from screen readers */}
               {Array.from(
-                { length: Math.max(reviews.length, 6) },
-                (_, i) => reviews[i % reviews.length]!,
+                { length: Math.max(Math.min(reviews.length, CAROUSEL_REVIEWS), 6) },
+                (_, i) => reviews[i % Math.min(reviews.length, CAROUSEL_REVIEWS)]!,
               ).map((t, i) => (
                 <figure
                   key={i}
-                  aria-hidden={i >= reviews.length ? true : undefined}
+                  aria-hidden={i >= Math.min(reviews.length, CAROUSEL_REVIEWS) ? true : undefined}
                   className={CARD_W + " soft-card relative flex flex-col !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
                 >
                   <ReviewCardButton id={t.id} name={t.name} />
