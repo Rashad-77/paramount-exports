@@ -4,7 +4,9 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { siteSettings } from "@/lib/db/schema";
+import { kept } from "@/lib/data-cache";
 import { hasDatabase } from "@/lib/env";
+import { SETTINGS_REVALIDATE, SETTINGS_TAG } from "@/server/settings-cache";
 import { DEFAULT_TIMEZONE } from "@/lib/time";
 
 /**
@@ -79,13 +81,24 @@ export const isPlaceholderBusiness = (b: BusinessSettings) => b.isDefault === tr
 
 const UNSAVED: BusinessSettings = { ...DEFAULT_BUSINESS, isDefault: true };
 
+/** One saved row of site_settings (null when there is none). A failed read throws, so a database hiccup is never kept as if it were the answer. */
+const readSettingRow = kept(
+  async (key: string): Promise<Record<string, unknown> | null> => {
+    const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
+    return (row?.value as Record<string, unknown> | undefined) ?? null;
+  },
+  ["settings", "row"],
+  [SETTINGS_TAG],
+  SETTINGS_REVALIDATE,
+);
+
 /** Never throws: the public site must keep rendering even if the database is unreachable. */
 export const getBusinessSettings = cache(async (): Promise<BusinessSettings> => {
   if (!hasDatabase()) return UNSAVED;
   try {
-    const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, "business")).limit(1);
+    const row = await readSettingRow("business");
     if (!row) return UNSAVED;
-    const parsed = businessSchema.safeParse({ ...DEFAULT_BUSINESS, ...(row.value as object) });
+    const parsed = businessSchema.safeParse({ ...DEFAULT_BUSINESS, ...row });
     if (!parsed.success) return UNSAVED;
     return parsed.data.name === PLACEHOLDER_NAME ? { ...parsed.data, name: DEFAULT_BUSINESS_NAME, isDefault: true } : parsed.data;
   } catch (error) {
@@ -119,8 +132,8 @@ export const DEFAULT_PAGES: PageContent = { about: null, privacy: null, terms: n
 export const getPageContent = cache(async (): Promise<PageContent> => {
   if (!hasDatabase()) return DEFAULT_PAGES;
   try {
-    const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, "pages")).limit(1);
-    const parsed = pagesSchema.safeParse({ ...DEFAULT_PAGES, ...((row?.value as object | undefined) ?? {}) });
+    const row = await readSettingRow("pages");
+    const parsed = pagesSchema.safeParse({ ...DEFAULT_PAGES, ...(row ?? {}) });
     return parsed.success ? parsed.data : DEFAULT_PAGES;
   } catch (error) {
     console.error("Failed to load page content; using defaults.", error instanceof Error ? error.message : "unknown");
@@ -148,8 +161,8 @@ export const DEFAULT_ACCOUNTS: AccountSettings = { enabled: true, allowSignUp: t
 export const getAccountSettings = cache(async (): Promise<AccountSettings> => {
   if (!hasDatabase()) return DEFAULT_ACCOUNTS;
   try {
-    const [row] = await getDb().select().from(siteSettings).where(eq(siteSettings.key, "accounts")).limit(1);
-    const parsed = accountsSchema.safeParse({ ...DEFAULT_ACCOUNTS, ...((row?.value as object | undefined) ?? {}) });
+    const row = await readSettingRow("accounts");
+    const parsed = accountsSchema.safeParse({ ...DEFAULT_ACCOUNTS, ...(row ?? {}) });
     return parsed.success ? parsed.data : DEFAULT_ACCOUNTS;
   } catch (error) {
     console.error("Failed to load account settings; accounts stay off.", error instanceof Error ? error.message : "unknown");

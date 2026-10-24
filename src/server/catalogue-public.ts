@@ -1,6 +1,6 @@
 import { outer } from "@/lib/db/outer";
 import "server-only";
-import { unstable_cache } from "next/cache";
+import { kept as keptRead } from "@/lib/data-cache";
 import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
@@ -381,18 +381,7 @@ async function listPublishedProductSlugsImpl(): Promise<Array<{ slug: string; up
  * for each one. Anything that changes what they show clears them at once (see clearCatalogueCache); the time limit is only a safety net.
  * Results are plain data, so they survive being stored. A failed read throws and is therefore never stored.
  */
-const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: string) => {
-  const stored = unstable_cache(read, ["catalogue", name], { tags: [CATALOGUE_TAG], revalidate: CATALOGUE_REVALIDATE });
-  return async (...args: A): Promise<R> => {
-    try {
-      return await stored(...args);
-    } catch (e) {
-      // Outside the web server (the database tests, scripts) there is no cache to keep things in: read straight from the database.
-      if (e instanceof Error && /incrementalCache missing/.test(e.message)) return read(...args);
-      throw e;
-    }
-  };
-};
+const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: string) => keptRead(read, ["catalogue", name], [CATALOGUE_TAG], CATALOGUE_REVALIDATE);
 
 const listPublicProductsKept = kept(listPublicProductsImpl, "products");
 const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");

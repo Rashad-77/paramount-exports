@@ -5,8 +5,10 @@ import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { businessFormSchema } from "@/lib/schemas/settings";
 import { updateBusiness } from "@/server/settings";
+import { clearSettingsCache } from "@/server/settings-cache";
 
 const refresh = () => {
+  clearSettingsCache();
   revalidatePath("/", "layout");
   revalidatePath("/app/settings");
 };

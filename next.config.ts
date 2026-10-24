@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    // The browser keeps a page it has just shown for a short while, so going back to it, or clicking the same link again, is instant instead of
+    // asking the server again. Saving anything on the dashboard clears this, so an edit always shows. (Pages that are fully loaded ahead of a
+    // click, such as the dashboard menu on hover, are kept for the second figure.)
+    staleTimes: { dynamic: 30, static: 60 },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     // Few sizes, so most phones and computers share the same stored copies of a photograph (the list is mirrored in src/lib/image-sizes.ts).
