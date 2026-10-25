@@ -6259,20 +6259,36 @@ a.acct-row {
   }
 }
 
-/* Tablet: the search box goes first and spans the full width; the category, material and sort boxes sit together in the row under it. */
+/* Tablet: the search box goes first and spans the full width; the category, material and sort boxes share the row under it, each a third of the width. */
 @media (min-width: 48rem) and (max-width: 72rem) {
   .cat-bar {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
   }
   .cat-right {
     display: contents;
   }
   .cat-searchwrap {
     order: -1;
-    flex: 1 1 100%;
+    grid-column: 1 / -1;
     width: 100%;
   }
-  .cat-search {
+  .cat-search,
+  .cat-bar .gs,
+  .cat-bar .gs-button {
     width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Phone: the boxes are stacked and thin. */
+@media (max-width: 47.99rem) {
+  .cat-bar,
+  .cat-right {
+    gap: 0.5rem;
+  }
+  .cat-control {
+    min-height: 2rem;
   }
 }
