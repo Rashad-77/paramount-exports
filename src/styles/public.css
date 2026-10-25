@@ -6123,9 +6123,6 @@ span.cat-pagebtn {
   height: 1.375rem;
   border-radius: 999px;
   object-fit: cover;
-  /* nudged up by 0.1 cm */
-  position: relative;
-  top: -0.1cm;
 }
 
 /* The homepage premium banner keeps the premium typeface (the Arial rule above skips it). */
