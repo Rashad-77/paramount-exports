@@ -401,8 +401,8 @@ export default async function HomePage() {
             ))}
           </ul>
           <div className="mt-10 flex justify-center">
-            <ButtonLink href="/products" size="cta" variant="secondary">
-              See more
+            <ButtonLink href="/products" size="cta">
+              See all
             </ButtonLink>
           </div>
         </div>
