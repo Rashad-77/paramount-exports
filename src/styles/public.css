@@ -6123,9 +6123,9 @@ span.cat-pagebtn {
   height: 1.375rem;
   border-radius: 999px;
   object-fit: cover;
-  /* half a pixel lower than the bag icon's centre line */
+  /* 0.4px lower than the bag icon's centre line */
   position: relative;
-  top: 0.5px;
+  top: 0.4px;
 }
 
 /* The homepage premium banner keeps the premium typeface (the Arial rule above skips it). */
