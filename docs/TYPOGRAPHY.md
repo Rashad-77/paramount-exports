@@ -55,3 +55,7 @@ CSS used for each size above body: `clamp(phone, calc(phone + (100vw - 375px) x 
 
 - Product-card names scale with the card’s own width (container query units), 12px to 17px.
 - The tiny sizes (11-15px) stay as they are for the same reason as body copy: they are already at the readable floor on a phone.
+
+## Tablets use the desktop sizes (from 25 October 2026)
+
+Every fluid size (`clamp(min, calc(min + (100vw - 375px) * growth), max)`) now reaches its desktop size at 768px wide instead of at about 1280px. Phones (under 768px) still scale between the phone size at 375px and the desktop size; tablets and computers use the desktop size. To keep it that way, a new size needs `growth = (max - min) in px / 393`.

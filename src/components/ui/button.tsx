@@ -26,7 +26,7 @@ const sizes: Record<Size, string> = {
   md: "min-h-10 px-4 text-sm tracking-[0.01em] pointer-coarse:min-h-11",
   lg: "min-h-[var(--touch-target)] px-6 text-base tracking-[0.01em]",
   // Public calls to action: small tracked capitals, generous padding.
-  cta: "min-h-12 rounded-[3px] px-7 text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00110),0.75rem)] font-semibold uppercase tracking-[0.16em]",
+  cta: "min-h-12 rounded-[3px] px-7 text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00254),0.75rem)] font-semibold uppercase tracking-[0.16em]",
 };
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {

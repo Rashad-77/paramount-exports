@@ -27,7 +27,7 @@ export const PUBLIC_LINKS: NavLink[] = [
 export function PlaceholderNotice({ business }: { business: BusinessSettings }) {
   if (!isPlaceholderBusiness(business)) return null;
   return (
-    <div className="bg-brand-dark text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] text-ivory">
+    <div className="bg-brand-dark text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] text-ivory">
       <p className="container-page flex items-start gap-2 py-2">
         <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-ivory/95" strokeWidth={1.75} />
         <span>

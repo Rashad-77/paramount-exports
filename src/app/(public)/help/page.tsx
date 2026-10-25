@@ -38,14 +38,14 @@ export default async function HelpPage() {
               <h2 id="ordering-title" className="font-display mt-3 text-headline text-text">
                 How to order
               </h2>
-              <ol className="mt-6 space-y-5 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
+              <ol className="mt-6 space-y-5 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
                 {[
                   ["Choose", "Open a piece, pick the size or finish you want and add it to your order. You can add as many pieces as you like."],
                   ["Check out", "Tell us your name and phone number, whether you would like it delivered or want to collect it, and how you plan to pay. You are not charged anything on this website."],
                   ["We confirm", "We call or message you to confirm your order and agree the details with you. You will have an order number, which you can use to follow your order any time."],
                 ].map(([t, b], i) => (
                   <li key={t} className="flex gap-5">
-                    <span className="font-display w-9 shrink-0 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-none text-timber">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-display w-9 shrink-0 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.01425),1.5rem)] leading-none text-timber">{String(i + 1).padStart(2, "0")}</span>
                     <span>
                       <span className="block font-medium text-text">{t}</span>
                       {b}
@@ -67,7 +67,7 @@ export default async function HelpPage() {
               <h2 id="payment-title" className="font-display mt-3 text-headline text-text">
                 Pay when it arrives
               </h2>
-              <div className="mt-6 space-y-4 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
+              <div className="mt-6 space-y-4 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
                 <p>
                   <strong className="font-medium text-text">Nothing is paid online.</strong> This website never asks for card or bank details. You pay us directly, in one of the ways below.
                 </p>
@@ -96,7 +96,7 @@ export default async function HelpPage() {
               <h2 id="custom-title" className="font-display mt-3 text-headline text-text">
                 Made to measure
               </h2>
-              <p className="mt-6 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
+              <p className="mt-6 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
                 If you need a different size, wood or finish, or something that is not in the collection, tell us what you have in mind on the custom enquiry page. We reply with a quotation, and no work starts until you agree it.
               </p>
               <p className="mt-4">
@@ -113,7 +113,7 @@ export default async function HelpPage() {
               <h2 id="changes-title" className="font-display mt-3 text-headline text-text">
                 Changes and cancellations
               </h2>
-              <p className="mt-6 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00166),0.9375rem)] leading-relaxed text-text-muted">
+              <p className="mt-6 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
                 An order cannot be edited on the website once it is placed. If you need to correct something, change a piece or cancel, please contact us and quote your order number, and we will sort it out with you.
               </p>
               <p className="mt-4">

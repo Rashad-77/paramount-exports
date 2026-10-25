@@ -13,7 +13,7 @@ export function Prose({ text }: { text: string }) {
   blocks.forEach((block, i) => {
     if (block.startsWith("## ")) {
       out.push(
-        <h2 key={i} className="font-display mt-8 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-walnut first:mt-0">
+        <h2 key={i} className="font-display mt-8 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.01425),1.5rem)] leading-tight text-walnut first:mt-0">
           {block.slice(3)}
         </h2>,
       );
@@ -60,7 +60,7 @@ export function PageIntro({ title, lead, eyebrow, action, brand, back }: { title
           <div aria-hidden="true" className="hidden shrink-0 items-center gap-[clamp(0.9rem,0.5rem+0.9vw,1.4rem)] self-center lg:flex">
             <Image src="/logo-mark.png" alt="" width={72} height={72} className="size-[clamp(2.6rem,1.6rem+2.2vw,3.6rem)] shrink-0 brightness-0 invert" />
             <p className="grid gap-[0.55rem] text-left leading-none">
-              <span className="block whitespace-nowrap text-[clamp(1.375rem,calc(1.375rem_+_(100vw_-_375px)_*_0.01547),2.25rem)] font-semibold uppercase tracking-[0.26em] text-white">{brandFirst}</span>
+              <span className="block whitespace-nowrap text-[clamp(1.375rem,calc(1.375rem_+_(100vw_-_375px)_*_0.03562),2.25rem)] font-semibold uppercase tracking-[0.26em] text-white">{brandFirst}</span>
               {brandRest.length ? <span className="block whitespace-nowrap text-[clamp(0.6rem,0.5rem+0.25vw,0.78rem)] font-normal uppercase tracking-[0.3em] text-white/75">{brandRest.join(" ")}</span> : null}
             </p>
           </div>

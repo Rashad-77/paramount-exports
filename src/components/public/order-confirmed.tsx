@@ -64,7 +64,7 @@ export function OrderConfirmed({ reference, payment, fulfilment, bankDetails, ph
 
       {snap && snap.items.length > 0 ? (
         <div className="mt-8 border border-border bg-surface p-5 text-left">
-          <h2 className="font-display text-[clamp(1.075rem,calc(1.075rem_+_(100vw_-_375px)_*_0.00309),1.25rem)] leading-tight text-brand">Order summary</h2>
+          <h2 className="font-display text-[clamp(1.075rem,calc(1.075rem_+_(100vw_-_375px)_*_0.00712),1.25rem)] leading-tight text-brand">Order summary</h2>
           <ul className="mt-3 divide-y divide-border text-sm">
             {snap.items.map((i, n) => (
               <li key={n} className="flex justify-between gap-3 py-2.5">

@@ -75,7 +75,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <h2 className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.00928),1.75rem)] leading-tight text-brand">Your cart is empty</h2>
+        <h2 className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.02137),1.75rem)] leading-tight text-brand">Your cart is empty</h2>
         <p className="mt-2 text-text-muted">Add a piece to your order first.</p>
         <ButtonLink href="/products" size="cta" className="mt-6">
           Browse the collection
@@ -88,7 +88,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
   if (requireAccount && me !== undefined && me === null) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <h2 className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.00928),1.75rem)] leading-tight text-brand">Sign in to place your order</h2>
+        <h2 className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.02137),1.75rem)] leading-tight text-brand">Sign in to place your order</h2>
         <p className="mt-2 text-text-muted">Orders are placed from an account, so we can show you where your order is. Your basket is kept.</p>
         <ButtonLink href="/account/sign-in?next=/checkout" size="cta" className="mt-6">
           Sign in or create an account
@@ -123,7 +123,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">Choose a delivery method</legend>
+          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.01425),1.5rem)] leading-tight text-brand">Choose a delivery method</legend>
           {(["delivery", "pickup"] as const).map((f) => (
             <Choice
               key={f}
@@ -149,7 +149,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">Choose payment method</legend>
+          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.01425),1.5rem)] leading-tight text-brand">Choose payment method</legend>
           <p className="text-sm text-text-muted">There is no payment on this website. Choose how you plan to pay and we will confirm with you.</p>
           {PAYMENTS_FOR[fulfilment].map((p) => (
             <Choice key={p} name="paymentMethod" value={p} checked={payment === p} onChange={() => setPayment(p)} title={PAYMENT_LABEL[p]} help={PAYMENT_HELP[p]} />
@@ -177,7 +177,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
       </ActionForm>
 
       <aside aria-labelledby="checkout-summary" className="border border-border bg-surface p-6 lg:sticky lg:top-28">
-        <h2 id="checkout-summary" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">
+        <h2 id="checkout-summary" className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.01425),1.5rem)] leading-tight text-brand">
           Order summary
         </h2>
         <ul className="mt-5 divide-y divide-border text-sm">
@@ -208,7 +208,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
             <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text-muted">Pay on delivery, by bank transfer or at the showroom. No payment is taken online.</p>
+        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text-muted">Pay on delivery, by bank transfer or at the showroom. No payment is taken online.</p>
         <p className="mt-3 text-sm">
           <Link href="/cart" className="underline">
             Edit cart

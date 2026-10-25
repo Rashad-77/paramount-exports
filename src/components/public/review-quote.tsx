@@ -24,7 +24,7 @@ export function ReviewQuote({ id, quote }: { id: string; quote: string }) {
 
   return (
     <>
-      <blockquote ref={box} className="mt-4 line-clamp-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00144),0.8125rem)] leading-relaxed text-text">
+      <blockquote ref={box} className="mt-4 line-clamp-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text">
         {quote}
       </blockquote>
       {cut ? (

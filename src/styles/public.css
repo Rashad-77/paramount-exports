@@ -112,7 +112,7 @@ html:has(.page-body) {
   .phead .logo i,
   .foot .brand i {
     font-style: normal;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 400;
     letter-spacing: 0.3em;
     text-transform: uppercase;
@@ -138,7 +138,7 @@ html:has(.page-body) {
     line-height: 1;
     padding: 0 0.95rem;
     border: 1px solid transparent;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -161,7 +161,7 @@ html:has(.page-body) {
     justify-content: center;
     width: 1.75rem;
     min-height: 2.75rem;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -254,7 +254,7 @@ html:has(.page-body) {
     }
     .phead nav a {
       padding: 0.95rem 0.5rem;
-      font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+      font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
       border-width: 0 0 1px;
       border-color: rgb(28 25 22 / 0.1);
     }
@@ -346,7 +346,7 @@ html:has(.page-body) {
   }
   .vhero h1 {
     font-family: var(--font-sans);
-    font-size: clamp(1.9rem, calc(1.9rem + (100vw - 375px) * 0.03713), 4rem);
+    font-size: clamp(1.9rem, calc(1.9rem + (100vw - 375px) * 0.0855), 4rem);
     font-weight: 300;
     line-height: 1.02;
     letter-spacing: -0.04em;
@@ -386,7 +386,7 @@ html:has(.page-body) {
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+    font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
     color: rgb(255 255 255 / 0.85);
   }
   .proof b {
@@ -441,7 +441,7 @@ html:has(.page-body) {
   }
   .step .num {
     display: block;
-    font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.01547), 2.25rem);
+    font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.03562), 2.25rem);
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -584,7 +584,7 @@ html:has(.page-body) {
     align-items: center;
     gap: 0.55rem;
     padding: 0.4rem 0;
-    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
     font-weight: 500;
     color: var(--color-brand);
     background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
@@ -820,14 +820,14 @@ html:has(.page-body) {
     }
   }
   .gal-cat {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 600;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--leaf);
   }
   .gal-title {
-    font-size: clamp(0.8563rem, calc(0.8563rem + (100vw - 375px) * 0.00166), 0.95rem);
+    font-size: clamp(0.8563rem, calc(0.8563rem + (100vw - 375px) * 0.00381), 0.95rem);
     font-weight: 500;
     line-height: 1.3;
   }
@@ -879,12 +879,12 @@ html:has(.page-body) {
     justify-content: center;
   }
   .gal-count {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     letter-spacing: 0.14em;
     color: rgb(255 255 255 / 0.65);
   }
   .gal-ph {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 500;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1011,7 +1011,7 @@ html:has(.page-body) {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1096,7 +1096,7 @@ html:has(.page-body) {
   }
   .process-box li > span:first-child {
     min-width: 1.25rem;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     color: var(--leaf);
   }
 
@@ -1207,7 +1207,7 @@ html:has(.page-body) {
   }
   .track-label {
     font-family: var(--font-serif);
-    font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00155), 1.125rem);
+    font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00356), 1.125rem);
     line-height: 1.3;
     color: var(--color-text);
   }
@@ -1216,13 +1216,13 @@ html:has(.page-body) {
   }
   .track-when {
     margin-top: 0.15rem;
-    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
     color: var(--color-text-muted);
   }
   .track-note {
     margin-top: 0.5rem;
     max-width: 32rem;
-    font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+    font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
     line-height: 1.6;
     color: var(--color-text);
   }
@@ -1237,7 +1237,7 @@ html:has(.page-body) {
     border-radius: 999px;
     background: #f1ece4;
     color: #1c1916;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -1611,7 +1611,7 @@ html:has(.page-body) {
       align-items: center;
       gap: 0.5rem;
       padding: 0.65rem 1.1rem;
-      font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+      font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -1646,7 +1646,7 @@ html:has(.page-body) {
     border: 0;
     background: none;
     padding: 0.25rem 0;
-    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
     color: var(--color-text-muted);
     text-decoration: none;
     cursor: pointer;
@@ -1676,13 +1676,13 @@ html:has(.page-body) {
     color: #fff;
     border-top: 0;
     font-family: var(--font-sans);
-    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+    font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   }
   .foot .brand b {
-    font-size: clamp(0.8563rem, calc(0.8563rem + (100vw - 375px) * 0.00166), 0.95rem);
+    font-size: clamp(0.8563rem, calc(0.8563rem + (100vw - 375px) * 0.00381), 0.95rem);
   }
   .foot .brand i {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   }
   .foot-grid {
     display: grid;
@@ -1723,7 +1723,7 @@ html:has(.page-body) {
     color: rgb(255 255 255 / 0.65);
   }
   .foot-head {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -1763,7 +1763,7 @@ html:has(.page-body) {
     gap: 0.6rem;
     padding-block: 1.1rem 1.4rem;
     border-top: 1px solid rgb(255 255 255 / 0.15);
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgb(255 255 255 / 0.55);
@@ -1844,14 +1844,14 @@ html:has(.page-body) {
   --pf-ring: rgb(51 28 17 / 0.12);
 }
 .page-body main form:not(.cat-bar) label:not(.flex) {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #1c1916;
 }
 .page-body main form:not(.cat-bar) label:not(.flex) span:not([aria-hidden]) {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   text-transform: none;
@@ -1929,12 +1929,12 @@ html:has(.page-body) {
 }
 /* Messages under a field: small, calm, never shouting */
 .page-body main form:not(.cat-bar) p[id$="-hint"] {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   line-height: 1.5;
   color: var(--color-text-muted);
 }
 .page-body main form:not(.cat-bar) p[role="alert"] {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   font-weight: 500;
   line-height: 1.5;
 }
@@ -1959,7 +1959,7 @@ html:has(.page-body) {
   margin-bottom: 1.25rem;
   padding: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.1125rem, calc(1.1125rem + (100vw - 375px) * 0.00464), 1.375rem);
+  font-size: clamp(1.1125rem, calc(1.1125rem + (100vw - 375px) * 0.01069), 1.375rem);
   line-height: 1.2;
   color: #331c11;
 }
@@ -2061,7 +2061,7 @@ html:has(.page-body) {
   border: 1px solid rgb(28 25 22 / 0.14);
   border-radius: 0;
   background: #fff;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2152,12 +2152,12 @@ html:has(.page-body) {
 .acct-h h2,
 .acct-h h1 {
   font-family: var(--font-display);
-  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.00619), 1.5rem);
+  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.01425), 1.5rem);
   line-height: 1.2;
   color: #331c11;
 }
 .acct-h a {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2167,7 +2167,7 @@ html:has(.page-body) {
 }
 .acct-lead {
   max-width: 40rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.7;
   color: var(--color-text-muted);
 }
@@ -2201,7 +2201,7 @@ html:has(.page-body) {
 }
 .acct-stat-l {
   display: block;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2211,7 +2211,7 @@ html:has(.page-body) {
   display: block;
   margin-top: 0.7rem;
   font-family: var(--font-display);
-  font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.01547), 2.25rem);
+  font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.03562), 2.25rem);
   line-height: 1;
   color: #1c1916;
 }
@@ -2260,19 +2260,19 @@ a.acct-row {
 }
 .acct-row strong {
   display: block;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 600;
   color: #1c1916;
 }
 .acct-row small {
   display: block;
   margin-top: 0.2rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 .acct-amount {
   font-family: var(--font-display);
-  font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00155), 1.125rem);
+  font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00356), 1.125rem);
   color: #1c1916;
   white-space: nowrap;
 }
@@ -2281,7 +2281,7 @@ a.acct-row {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2345,19 +2345,19 @@ a.acct-row {
 }
 .acct-feed strong {
   display: block;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 600;
 }
 .acct-feed p {
   margin-top: 0.15rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   line-height: 1.6;
   color: var(--color-text-muted);
 }
 .acct-feed time {
   display: block;
   margin-top: 0.3rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgb(28 25 22 / 0.62);
@@ -2372,7 +2372,7 @@ a.acct-row {
 .acct-empty p {
   max-width: 30rem;
   margin-inline: auto;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.7;
 }
 .acct-empty .acct-actions {
@@ -2394,7 +2394,7 @@ a.acct-row {
   color: #fff;
 }
 .acct-price span {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2402,12 +2402,12 @@ a.acct-row {
 }
 .acct-price strong {
   font-family: var(--font-display);
-  font-size: clamp(1.525rem, calc(1.525rem + (100vw - 375px) * 0.02166), 2.75rem);
+  font-size: clamp(1.525rem, calc(1.525rem + (100vw - 375px) * 0.04987), 2.75rem);
   font-weight: 400;
   line-height: 1.1;
 }
 .acct-price small {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.6;
   color: rgb(255 255 255 / 0.8);
 }
@@ -2426,7 +2426,7 @@ a.acct-row {
 .acct-steps li {
   position: relative;
   padding: 0 0 1rem 1.75rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2488,7 +2488,7 @@ a.acct-row {
   }
 }
 .acct-details dt {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2496,7 +2496,7 @@ a.acct-row {
 }
 .acct-details dd {
   margin-top: 0.3rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.6;
   color: #1c1916;
 }
@@ -2528,7 +2528,7 @@ a.acct-row {
 }
 .acct-address address {
   font-style: normal;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.65;
   white-space: pre-line;
   color: #1c1916;
@@ -2542,7 +2542,7 @@ a.acct-row {
   padding: 0;
   border: 0;
   background: none;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2582,7 +2582,7 @@ a.acct-row {
   border: 1px solid rgb(28 25 22 / 0.3);
   border-radius: 0;
   background: #fff;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -2702,7 +2702,7 @@ a.acct-row {
   padding: 0 10px;
   background: #ffd400;
   color: #1c1916;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
@@ -2713,7 +2713,7 @@ a.acct-row {
   .sale-badge {
     height: 2.1em;
     padding: 0 0.7em;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     letter-spacing: 0.06em;
   }
 }
@@ -2725,7 +2725,7 @@ a.acct-row {
   padding: 0.8rem 1rem;
   background: #ffd400;
   color: #1c1916;
-  font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00155), 0.9rem);
+  font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00356), 0.9rem);
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.06em;
@@ -2739,7 +2739,7 @@ a.acct-row {
   border-radius: 0;
   background: #ffd400;
   color: #1c1916;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
@@ -2764,7 +2764,7 @@ a.acct-row {
   gap: 1rem;
 }
 .ot-hello {
-  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.00619), 1.5rem);
+  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.01425), 1.5rem);
   line-height: 1.25;
   color: #331c11;
   margin-bottom: 0.25rem;
@@ -2784,7 +2784,7 @@ a.acct-row {
   margin-bottom: 1.75rem;
 }
 .ot-kicker {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2793,13 +2793,13 @@ a.acct-row {
 .ot-ref {
   margin-top: 0.15rem;
   font-family: var(--font-display);
-  font-size: clamp(1.2625rem, calc(1.2625rem + (100vw - 375px) * 0.01083), 1.875rem);
+  font-size: clamp(1.2625rem, calc(1.2625rem + (100vw - 375px) * 0.02494), 1.875rem);
   line-height: 1.15;
   color: #1c1916;
 }
 .ot-sub {
   margin-top: 0.3rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 /* The four steps: dots joined by a line, labels underneath */
@@ -2856,7 +2856,7 @@ a.acct-row {
   box-shadow: 0 0 0 4px rgb(51 28 17 / 0.15);
 }
 .ot-step {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.1em;
   line-height: 1.35;
@@ -2868,24 +2868,24 @@ a.acct-row {
   color: #1c1916;
 }
 .ot-when {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   color: var(--color-text-muted);
 }
 .ot-note {
   max-width: 40rem;
   margin: 1.5rem auto 0;
   text-align: center;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.65;
   color: var(--color-text-muted);
 }
 @media (max-width: 30rem) {
   .ot-step {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     letter-spacing: 0.06em;
   }
   .ot-when {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   }
 }
 /* The three facts under the bar */
@@ -2903,7 +2903,7 @@ a.acct-row {
 }
 .ot-facts dt,
 .ot-sum dt {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -2911,13 +2911,13 @@ a.acct-row {
 }
 .ot-facts dd {
   margin-top: 0.3rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.55;
   color: #1c1916;
 }
 .ot-total {
   font-family: var(--font-display);
-  font-size: clamp(1.075rem, calc(1.075rem + (100vw - 375px) * 0.00309), 1.25rem);
+  font-size: clamp(1.075rem, calc(1.075rem + (100vw - 375px) * 0.00712), 1.25rem);
 }
 .ot-muted {
   color: var(--color-text-muted);
@@ -2925,7 +2925,7 @@ a.acct-row {
 /* The items and the sum */
 .ot-h {
   font-family: var(--font-display);
-  font-size: clamp(1.075rem, calc(1.075rem + (100vw - 375px) * 0.00309), 1.25rem);
+  font-size: clamp(1.075rem, calc(1.075rem + (100vw - 375px) * 0.00712), 1.25rem);
   line-height: 1.2;
   color: #331c11;
 }
@@ -2940,7 +2940,7 @@ a.acct-row {
   gap: 1rem;
   padding: 0.9rem 0;
   border-top: 1px solid rgb(28 25 22 / 0.1);
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
 }
 .ot-items li:first-child {
   border-top: 0;
@@ -2951,7 +2951,7 @@ a.acct-row {
 .ot-qty {
   display: block;
   margin-top: 0.15rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .ot-money {
   flex: none;
@@ -2968,7 +2968,7 @@ a.acct-row {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
 }
 .ot-sum dd {
   font-variant-numeric: tabular-nums;
@@ -2979,11 +2979,11 @@ a.acct-row {
   font-weight: 600;
 }
 .ot-sum-total dt {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   color: #1c1916;
 }
 .ot-help {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.6;
   color: var(--color-text-muted);
 }
@@ -3001,7 +3001,7 @@ a.acct-row {
 }
 .pp-price p:first-child {
   font-family: var(--font-display);
-  font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.01547), 2.25rem);
+  font-size: clamp(1.375rem, calc(1.375rem + (100vw - 375px) * 0.03562), 2.25rem);
   line-height: 1.15;
   color: #331c11;
 }
@@ -3014,7 +3014,7 @@ a.acct-row {
   padding: 0.25rem 0.5rem;
   background: #ffd400;
   font-family: var(--font-sans);
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -3024,7 +3024,7 @@ a.acct-row {
 }
 .pp-code {
   margin-top: 0.5rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3045,7 +3045,7 @@ a.acct-row {
   display: block;
   margin-bottom: 0.6rem;
   padding: 0;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3064,7 +3064,7 @@ a.acct-row {
   border: 1px solid rgb(28 25 22 / 0.25);
   border-radius: 0;
   background: #fff;
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   color: #1c1916;
   cursor: pointer;
   transition: border-color 250ms var(--ease-out), background-color 250ms var(--ease-out);
@@ -3094,7 +3094,7 @@ a.acct-row {
 }
 .pp-lead span {
   margin-right: 0.5rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3140,7 +3140,7 @@ a.acct-row {
   justify-content: center;
 }
 .pp-note {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   color: var(--color-text-muted);
 }
 /* Tabs */
@@ -3170,7 +3170,7 @@ a.acct-row {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   background: transparent;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3200,7 +3200,7 @@ a.acct-row {
   outline: none;
 }
 .pdp-prose {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.75;
   color: var(--color-text-muted);
 }
@@ -3211,7 +3211,7 @@ a.acct-row {
 }
 .pdp-prose h3 {
   margin: 1.75rem 0 0.6rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -3259,14 +3259,14 @@ a.acct-row {
   }
 }
 .pdp-specs dt {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
 .pdp-specs dd {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   color: #1c1916;
 }
 /* On the quotation form, when it was opened from a product */
@@ -3275,7 +3275,7 @@ a.acct-row {
   border: 1px solid rgb(28 25 22 / 0.14);
   border-left: 3px solid #331c11;
   background: #faf8f5;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.6;
 }
 
@@ -3314,13 +3314,13 @@ a.acct-row {
 }
 .ask-head h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.1125rem, calc(1.1125rem + (100vw - 375px) * 0.00464), 1.375rem);
+  font-size: clamp(1.1125rem, calc(1.1125rem + (100vw - 375px) * 0.01069), 1.375rem);
   line-height: 1.25;
   color: #331c11;
 }
 .ask-head p {
   margin-top: 0.25rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   color: var(--color-text-muted);
 }
 .ask-btn {
@@ -3332,7 +3332,7 @@ a.acct-row {
   border: 1px solid #331c11;
   border-radius: 0;
   background: transparent;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -3406,7 +3406,7 @@ a.acct-row {
 .pdp-page .pdp-specs dt,
 .pdp-page .pdp-prose h3,
 .pdp-page .sale-tag {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -3418,19 +3418,19 @@ a.acct-row {
 }
 .pdp-page .pdp-prose h3 {
   font-family: var(--font-display);
-  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00077), 1.0625rem);
+  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00178), 1.0625rem);
   font-weight: 400;
   color: #331c11;
 }
 .pdp-page .ptabs-list button {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   padding: 0 1.1rem;
 }
 .pdp-page .pp-actions .btn-solid,
 .pdp-page .pp-actions a,
 .pdp-page .pp-actions button,
 .pdp-page .ask-btn {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -3438,23 +3438,23 @@ a.acct-row {
 .pdp-page .pp-options label,
 .pdp-page .pp-lead,
 .pdp-page .pdp-specs dd {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
 }
 .pdp-page .pp-price p:first-child {
-  font-size: clamp(1.2625rem, calc(1.2625rem + (100vw - 375px) * 0.01083), 1.875rem);
+  font-size: clamp(1.2625rem, calc(1.2625rem + (100vw - 375px) * 0.02494), 1.875rem);
 }
 .pdp-page .pdp-category {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   letter-spacing: 0.01em;
   text-transform: none;
 }
 .pdp-page .pdp-lead {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.7;
 }
 .pdp-page .pdp-prose,
 .pdp-page .pdp-list li {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
 }
 .pdp-page .pp-actions button,
 .pdp-page .ask-btn,
@@ -3485,19 +3485,19 @@ a.acct-row {
 .pdp-info h3 {
   margin: 0 0 0.35rem;
   font-family: var(--font-display);
-  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00077), 1.0625rem);
+  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00178), 1.0625rem);
   font-weight: 400;
   color: #331c11;
 }
 .pdp-info p {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.7;
   color: var(--color-text-muted);
 }
 .pdp-info address {
   margin-top: 0.9rem;
   font-style: normal;
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.65;
   color: #1c1916;
 }
@@ -3511,7 +3511,7 @@ a.acct-row {
 .pdp-directions {
   display: inline-block;
   margin-top: 1rem;
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   font-weight: 500;
   color: #1c1916;
   text-decoration: underline;
@@ -3546,7 +3546,7 @@ a.acct-row {
     background: transparent;
     color: var(--color-text);
     font: inherit;
-    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
     text-align: left;
     cursor: pointer;
     transform: none;
@@ -3597,7 +3597,7 @@ a.acct-row {
 .pdp-page .pdp-specs dt,
 .pdp-page .pdp-specs dd {
   margin: 0;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   line-height: 1.45;
 }
 @media (min-width: 40rem) {
@@ -3612,34 +3612,34 @@ a.acct-row {
     padding: 0.625rem 0.75rem 0.75rem;
   }
   .pcard .pcard-body h3 {
-    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+    font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
     line-height: 1.3;
   }
   .pcard .pcard-body p {
     margin-top: 0.25rem;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     line-height: 1.4;
   }
   .pcard .pcard-body p:last-child {
     margin-top: 0.5rem;
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   }
 }
 
 /* Footer: smaller type throughout. */
 .foot {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .foot .brand b {
-  font-size: clamp(0.7625rem, calc(0.7625rem + (100vw - 375px) * 0.00155), 0.85rem);
+  font-size: clamp(0.7625rem, calc(0.7625rem + (100vw - 375px) * 0.00356), 0.85rem);
 }
 .foot-head {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .foot-list a,
 .foot-list .plain,
 .foot-tag {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Footer: smaller still. */
@@ -3647,16 +3647,16 @@ a.acct-row {
 .foot-list a,
 .foot-list .plain,
 .foot-tag {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .foot .brand b {
-  font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00141), 0.78rem);
+  font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00326), 0.78rem);
 }
 .foot-head {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .foot-bottom {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Footer: tighter spacing. */
@@ -3715,7 +3715,7 @@ a.acct-row {
 /* The sale strip across the top of a product page: slimmer. */
 .pdp-page .sale-bar {
   padding: 0.45rem 1rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.08em;
 }
 
@@ -3761,7 +3761,7 @@ a.acct-row {
   align-items: center;
   gap: 0.9rem;
   margin-top: 1rem;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
 }
 .ot-piece .ot-sum {
   margin-top: 0.75rem;
@@ -3774,32 +3774,32 @@ a.acct-row {
 
 /* Order tracking result: smaller type throughout. */
 .ot-ref {
-  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.00619), 1.5rem);
+  font-size: clamp(1.15rem, calc(1.15rem + (100vw - 375px) * 0.01425), 1.5rem);
 }
 .ot-sub,
 .ot-note,
 .ot-help {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .ot-h {
-  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00077), 1.0625rem);
+  font-size: clamp(1.0188rem, calc(1.0188rem + (100vw - 375px) * 0.00178), 1.0625rem);
 }
 .ot-facts dd,
 .ot-item,
 .ot-sum dd,
 .ot-sum-total dd {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .ot-facts dt,
 .ot-sum dt,
 .ot-sum-total dt {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .ot-step {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .ot-when {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .ot-thumb {
   width: 3rem;
@@ -3892,7 +3892,7 @@ a.acct-row {
 
 .acct-nav a,
 .acct-nav button {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Account figures: every tile the same height, with the number on the same line whatever the label length. */
@@ -3920,7 +3920,7 @@ a.acct-row {
 }
 .acct-h h2,
 .acct-h h1 {
-  font-size: clamp(1.0438rem, calc(1.0438rem + (100vw - 375px) * 0.00188), 1.15rem);
+  font-size: clamp(1.0438rem, calc(1.0438rem + (100vw - 375px) * 0.00432), 1.15rem);
 }
 .acct-stats {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3940,7 +3940,7 @@ a.acct-row {
 }
 .acct-stat-v {
   margin-top: 0.4rem;
-  font-size: clamp(1.1813rem, calc(1.1813rem + (100vw - 375px) * 0.00740), 1.6rem);
+  font-size: clamp(1.1813rem, calc(1.1813rem + (100vw - 375px) * 0.01705), 1.6rem);
 }
 .acct-empty {
   padding: 0;
@@ -3969,7 +3969,7 @@ a.acct-row {
 .acct-sub-h {
   margin-bottom: 0.9rem;
   font-family: var(--font-display);
-  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem);
+  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem);
   color: #331c11;
 }
 
@@ -4038,18 +4038,18 @@ a.acct-row {
 .foot .foot-list a,
 .foot .foot-list li.plain,
 .foot .foot-tag {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
 }
 .foot .brand b {
   font-size: 1.05rem;
 }
 .foot .brand i {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .foot .foot-head,
 .foot .foot-bottom,
 .foot .foot-bottom a {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Profile: one container, with the parts divided by thin lines. */
@@ -4065,7 +4065,7 @@ a.acct-row {
 .acct-part-h {
   margin-bottom: 1rem;
   font-family: var(--font-display);
-  font-size: clamp(1.0438rem, calc(1.0438rem + (100vw - 375px) * 0.00188), 1.15rem);
+  font-size: clamp(1.0438rem, calc(1.0438rem + (100vw - 375px) * 0.00432), 1.15rem);
   line-height: 1.2;
   color: #331c11;
 }
@@ -4095,7 +4095,7 @@ a.acct-row {
   min-height: 2.5rem;
   padding: 0 1.1rem;
   border: 1px solid rgb(28 25 22 / 0.3);
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4135,7 +4135,7 @@ select:focus {
 .acct-address address {
   padding-right: 5rem;
   font-weight: 400;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   line-height: 1.6;
 }
 .acct-address .acct-actions {
@@ -4170,7 +4170,7 @@ select:focus {
 .acct-addr-no {
   margin: 0;
   text-align: right;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgb(28 25 22 / 0.55);
@@ -4259,12 +4259,12 @@ select:focus {
   gap: 0.25rem 0.9rem;
 }
 .acct-order-id span {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 500;
   color: #1c1916;
 }
 .acct-order-id small {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 .acct-order-items {
@@ -4292,18 +4292,18 @@ select:focus {
 .acct-order-name {
   flex: 1;
   min-width: 0;
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
   line-height: 1.4;
   color: #1c1916;
 }
 .acct-order-name small {
   display: block;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   color: var(--color-text-muted);
 }
 .acct-order-qty {
   flex: none;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 .acct-order-total {
@@ -4311,7 +4311,7 @@ select:focus {
   padding: 0.7rem 1.1rem;
   border-top: 1px solid rgb(28 25 22 / 0.1);
   text-align: right;
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
 }
 
 /* My orders as a table, with a line between every row and column. */
@@ -4327,7 +4327,7 @@ select:focus {
   min-width: 26rem;
   border-collapse: collapse;
   border: 1px solid rgb(28 25 22 / 0.18);
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
 }
 .acct-table th,
 .acct-table td {
@@ -4338,7 +4338,7 @@ select:focus {
   vertical-align: middle;
 }
 .acct-table thead th {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4372,7 +4372,7 @@ select:focus {
   color: #1c1916;
 }
 .acct-table-order a small {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 .acct-table-total td {
@@ -4433,15 +4433,15 @@ select:focus {
 /* Phones: smaller type in the orders table and no pictures. */
 @media (max-width: 39.99rem) {
   .acct-table {
-    font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00141), 0.78rem);
+    font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00326), 0.78rem);
   }
   .acct-table-order a small,
   .acct-table-order a span,
   .acct-table .acct-table-total td {
-    font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00141), 0.78rem);
+    font-size: clamp(0.7rem, calc(0.7rem + (100vw - 375px) * 0.00326), 0.78rem);
   }
   .acct-table thead th {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   }
   .acct-table .pic {
     width: 0;
@@ -4463,7 +4463,7 @@ select:focus {
   margin-bottom: 0.9rem;
 }
 .acct-sort > span {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4504,7 +4504,7 @@ select:focus {
   padding: 0 0.7rem;
   border: 1px solid rgb(28 25 22 / 0.2);
   background: #fff;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 
 /* Search in the list tools row: the collection page style, sized to share the row with the sort box. */
@@ -4520,7 +4520,7 @@ select:focus {
   height: 2.25rem;
   border: 0;
   padding-inline: 2.5rem 0.9rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 /* Order header: the number on the left, the date placed on the right. */
 .acct-table-order a {
@@ -4564,7 +4564,7 @@ select:focus {
 
 /* Status as plain text in the account tables and lists. */
 .acct-status {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -4589,7 +4589,7 @@ select:focus {
   color: #1c1916;
 }
 .acct-table-order .acct-table-ref small {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
 .acct-cell-note {
@@ -4598,7 +4598,7 @@ select:focus {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   line-height: 1.45;
   color: var(--color-text-muted);
 }
@@ -4607,11 +4607,11 @@ select:focus {
     width: 5.5rem;
   }
   .acct-status {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
     letter-spacing: 0.06em;
   }
   .acct-cell-note {
-    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+    font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   }
 }
 
@@ -4624,7 +4624,7 @@ select:focus {
 .sale-badge {
   height: 2.4em;
   padding: 0 0.8em;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.08em;
 }
 /* A card's price line wraps instead of running past the card: old price, then the new one. */
@@ -4659,7 +4659,7 @@ select:focus {
   border-radius: 2px;
   background: #ffd400;
   color: #1c1916;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
@@ -4699,7 +4699,7 @@ select:focus {
 }
 .cat-pagebtn {
   padding: 0 0.875rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -4725,7 +4725,7 @@ span.cat-pagebtn {
 .cat-pages a {
   min-width: 1.875rem;
   padding: 0 0.25rem;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .cat-pages a[aria-current="page"] {
   border-bottom-color: #331c11;
@@ -4739,35 +4739,35 @@ span.cat-pagebtn {
 }
 
 /* ── Smooth type: every size below grows steadily from a 375px phone to a 1024px screen (no jumps at 480, 640, 768 or 1152px) ── */
-.fl-a { font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem); }
-.fl-b { font-size: clamp(1.2688rem, calc(1.2688rem + (100vw - 375px) * 0.01116), 1.9rem); }
-.fl-c { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem); }
-.fl-d { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem); }
-.fl-e { font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00155), 1.125rem); }
-.fl-g { font-size: clamp(0.625rem, calc(0.625rem + (100vw - 375px) * 0.00094), 0.6875rem); }
-.fl-input { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem); }
+.fl-a { font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem); }
+.fl-b { font-size: clamp(1.2688rem, calc(1.2688rem + (100vw - 375px) * 0.0257), 1.9rem); }
+.fl-c { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem); }
+.fl-d { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem); }
+.fl-e { font-size: clamp(1.0375rem, calc(1.0375rem + (100vw - 375px) * 0.00356), 1.125rem); }
+.fl-g { font-size: clamp(0.625rem, calc(0.625rem + (100vw - 375px) * 0.00254), 0.6875rem); }
+.fl-input { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem); }
 .phead .logo b,
 .foot .brand b {
-  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00347), 1.05rem);
+  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00611), 1.05rem);
   letter-spacing: clamp(0.2em, calc(0.2em + (100vw - 375px) * 0.0013), 0.26em);
 }
 .phead .logo i,
 .foot .brand i {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: clamp(0.22em, calc(0.22em + (100vw - 375px) * 0.0012), 0.3em);
 }
-.gs-field .gs-button { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem); }
+.gs-field .gs-button { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem); }
 .page-body main form:not(.cat-bar) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
 .page-body main form:not(.cat-bar) textarea,
-.page-body main form:not(.cat-bar) .gs-field .gs-button { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem); }
-.acct-table { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem); }
-.acct-table-order a small { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem); }
+.page-body main form:not(.cat-bar) .gs-field .gs-button { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem); }
+.acct-table { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem); }
+.acct-table-order a small { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem); }
 .acct-table-order a span,
-.acct-table .acct-table-total td { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00155), 0.875rem); }
-.acct-table thead th { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem); }
-.acct-status { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem); }
-.acct-cell-note { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem); }
-.ptabs-bar { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem); }
+.acct-table .acct-table-total td { font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem); }
+.acct-table thead th { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem); }
+.acct-status { font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem); }
+.acct-cell-note { font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem); }
+.ptabs-bar { font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem); }
 
 /* Product card: the text part is built from the card's own width, so the photo and the text keep the same proportion at every screen size.
    Centred: a small category label, the name, then the price. */
@@ -4820,7 +4820,7 @@ span.cat-pagebtn {
   align-items: center;
   gap: 0.5rem;
   margin: 0.75rem 0 0;
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text);
 }
 .pp-stock .pp-dot {
@@ -4849,7 +4849,7 @@ span.cat-pagebtn {
   align-items: center;
   gap: 0.3rem;
   padding-block: 0.5rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.16em;
@@ -5085,7 +5085,7 @@ span.cat-pagebtn {
   border-bottom: 0.5px solid #000;
 }
 .rv-dialog h2 {
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 600;
   letter-spacing: 0.22em;
 }
@@ -5093,7 +5093,7 @@ span.cat-pagebtn {
 .rv-dialog legend,
 .rv-dialog label,
 .rv-dialog p {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   line-height: 1.7;
 }
 .rv-dialog legend,
@@ -5121,7 +5121,7 @@ span.cat-pagebtn {
   stroke: #000;
 }
 .rv-dialog .rv-go {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -5209,7 +5209,7 @@ span.cat-pagebtn {
 /* All-reviews pop-up type: the site's own typeface throughout, set small, with wide-spaced capitals for the title, names and places. */
 .rv-all h2 {
   font-family: var(--font-sans);
-  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00166), 0.9375rem);
+  font-size: clamp(0.8438rem, calc(0.8438rem + (100vw - 375px) * 0.00381), 0.9375rem);
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -5217,26 +5217,26 @@ span.cat-pagebtn {
 }
 .rv-all #dialog-desc {
   margin-top: 0.375rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .rv-all .rv-name {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 .rv-all .rv-city {
   margin-top: 0.125rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
 .rv-all .rv-quote {
   font-family: var(--font-sans);
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   line-height: 1.75;
   letter-spacing: 0.02em;
 }
@@ -5295,11 +5295,11 @@ span.cat-pagebtn {
 
 /* Review pop-up, set smaller. The page's own form styling (hairline fieldsets, large floated legends, tall fields) reaches into the pop-up now that it holds a form, so the pop-up states its own. */
 .rv-dialog h2 {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .rv-dialog #dialog-desc,
 .rv-dialog p {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .page-body main .rv-dialog.rv-dialog form fieldset {
   margin: 0;
@@ -5312,7 +5312,7 @@ span.cat-pagebtn {
   margin: 0 0 0.5rem;
   padding: 0;
   font-family: var(--font-sans);
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0.18em;
@@ -5321,7 +5321,7 @@ span.cat-pagebtn {
   text-align: center;
 }
 .page-body main .rv-dialog.rv-dialog form label:not(.flex) {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.16em;
 }
 .page-body main .rv-dialog.rv-dialog form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
@@ -5347,11 +5347,11 @@ span.cat-pagebtn {
 }
 .page-body main .rv-dialog.rv-dialog form p[role="alert"],
 .page-body main .rv-dialog.rv-dialog form p[id$="-hint"] {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   font-weight: 400;
 }
 .rv-dialog .rv-go {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Review pop-up header: the title and line of text are centred across the whole window (the close cross floats at the corner), and set small enough that the line stays on one row. */
@@ -5367,12 +5367,12 @@ span.cat-pagebtn {
   right: 0.5rem;
 }
 .rv-dialog h2 {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.24em;
 }
 .rv-dialog #dialog-desc {
   margin-top: 0.375rem;
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
   letter-spacing: 0.1em;
   line-height: 1.6;
 }
@@ -5432,7 +5432,7 @@ span.cat-pagebtn {
 /* Computers: the brand name in the header is one pixel smaller (placed last so it wins over the fluid sizes above). */
 @media (min-width: 72.01rem) {
   .phead .logo b {
-    font-size: clamp(0.8875rem, calc(0.8875rem + (100vw - 375px) * 0.00177), 0.9875rem);
+    font-size: clamp(0.8875rem, calc(0.8875rem + (100vw - 375px) * 0.00407), 0.9875rem);
   }
   .phead .logo i {
     font-size: 0.6875rem;
@@ -5522,17 +5522,17 @@ span.cat-pagebtn {
 .foot .foot-list li.plain,
 .foot ul.foot-list > li > span,
 .foot .foot-tag {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .foot .foot-head,
 .foot .foot-bottom,
 .foot .foot-bottom a {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 
 /* Header text, a step smaller: the brand name, its second line and the menu links. */
 .phead .logo b {
-  font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00155), 0.9rem);
+  font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00356), 0.9rem);
 }
 .phead .logo i {
   font-size: 0.6875rem;
@@ -5547,7 +5547,7 @@ span.cat-pagebtn {
 }
 @media (min-width: 72.01rem) {
   .phead .logo b {
-    font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00155), 0.9rem);
+    font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00356), 0.9rem);
   }
   .phead .logo i {
     font-size: 0.625rem;
@@ -5570,13 +5570,13 @@ span.cat-pagebtn {
 /* Small text on the public pages: 90% of its computer size on a 375px phone (never below 11px), growing to full size at 1280px. Tailwind's
    text-xs, text-sm and text-base are matched here so the same ratio covers them. The dashboard is not under .page-body, so it is unchanged. */
 .page-body .text-xs {
-  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
 .page-body .text-sm {
-  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00221), 0.875rem);
+  font-size: clamp(0.7875rem, calc(0.7875rem + (100vw - 375px) * 0.00356), 0.875rem);
 }
 .page-body .text-base {
-  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem);
+  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem);
 }
 /* Form fields stay at 16px on touch screens: below that, phones zoom the page when a field is tapped. */
 @media (pointer: coarse) {
@@ -5613,7 +5613,7 @@ span.cat-pagebtn {
 /* Running text that takes its size from the page (About, Privacy, Terms, product descriptions, the cart) follows the same rule as other small
    text: 90% of its computer size on a phone, full size from 1280px. Form fields and everything with its own size are set above. */
 .page-body {
-  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00177), 1rem);
+  font-size: clamp(0.9rem, calc(0.9rem + (100vw - 375px) * 0.00407), 1rem);
 }
 
 /* Product card: the name is a little larger again, and the New tag is small and sits at the same corner spacing as the heart (centred on it). */
@@ -5634,11 +5634,11 @@ span.cat-pagebtn {
 .cat-control,
 .gs-label,
 .cat-clear {
-  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00407), 0.75rem);
   letter-spacing: clamp(0.07em, calc(0.07em + (100vw - 375px) * 0.00006), 0.12em);
 }
 .cat-search::placeholder {
-  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00407), 0.75rem);
   letter-spacing: clamp(0.07em, calc(0.07em + (100vw - 375px) * 0.00006), 0.12em);
 }
 
@@ -5648,21 +5648,21 @@ span.cat-pagebtn {
 .acct-sort .gs-button,
 .rv-dialog .rv-field::placeholder,
 .page-body main .rv-dialog.rv-dialog form textarea::placeholder {
-  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00110), 0.75rem);
+  font-size: clamp(0.65rem, calc(0.65rem + (100vw - 375px) * 0.00407), 0.75rem);
 }
 .page-body main form:not(.cat-bar) .gs-field .gs-button,
 .page-body main form:not(.cat-bar) .gs-field .gs-opt,
 .gs-field .gs-opt {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 .page-body main .rv-dialog.rv-dialog form textarea {
-  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00144), 0.8125rem);
+  font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
 }
 @media (pointer: fine) {
   .cat-search,
   .rv-dialog .rv-field,
   .page-body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]) {
-    font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00069), 0.875rem);
+    font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.00254), 0.875rem);
   }
 }
 
