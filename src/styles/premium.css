@@ -125,11 +125,11 @@
   justify-content: flex-end;
   margin-top: 1.25rem;
 }
-/* One photograph in the endless row: rectangular, no words */
+/* One photograph in the endless row: no words, and the same 4:5 shape as the photo on a product card */
 .pm-tile {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   background: #1b1511;
 }
