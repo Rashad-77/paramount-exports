@@ -44,8 +44,8 @@ export function PageIntro({ title, lead, eyebrow, action, brand, back }: { title
       {back ? <BackBar href={back.href} to={back.to} /> : null}
       <div className="container-page flex items-end justify-between gap-10 pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
         <div className="min-w-0">
-        {eyebrow === null ? null : <p className="eyebrow">{eyebrow ?? "Showroom and workshop"}</p>}
-        <h1 className={"font-display max-w-3xl text-display text-white" + (eyebrow === null ? "" : " mt-4")}>{title}</h1>
+        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+        <h1 className={"font-display max-w-3xl text-display text-white" + (eyebrow ? " mt-4" : "")}>{title}</h1>
         {lead ? <p className="mt-5 max-w-xl text-base leading-relaxed on-wood-muted">{lead}</p> : null}
         {action ? (
           <div className="mt-8">

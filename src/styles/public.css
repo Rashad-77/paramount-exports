@@ -4875,7 +4875,7 @@ span.cat-pagebtn {
     stroke-width: 2.75;
   }
 }
-/* On a dark banner: on a phone it lines up on the left with the banner's own content (the title and text); from tablet width up it is pinned
+/* On a dark banner: on a phone or tablet it lines up on the left with the banner's own content (the title and text); on a computer it is pinned
    near the screen's left edge, clear of the logo and title. */
 .back-bar {
   position: absolute;
@@ -4885,7 +4885,8 @@ span.cat-pagebtn {
   top: calc(var(--head-h) + 1px + 0.5rem);
   text-align: left;
 }
-@media (min-width: 48rem) {
+/* Phones and tablets: lined up with the banner's own content. Only computers pin it near the screen's left edge. */
+@media (min-width: 72.01rem) {
   .back-bar {
     max-width: none;
     padding-inline: 0.75rem;
@@ -5784,6 +5785,7 @@ span.cat-pagebtn {
   .phead .logo i,
   .foot .brand i,
   .phead nav a,
+  .phead .more-menu a,
   .phead .cart,
   .gal-cat,
   .gal-ph,
@@ -5862,6 +5864,7 @@ span.cat-pagebtn {
   .phead .logo i *,
   .foot .brand i *,
   .phead nav a *,
+  .phead .more-menu a *,
   .phead .cart *,
   .gal-cat *,
   .gal-ph *,
@@ -5941,6 +5944,7 @@ span.cat-pagebtn {
   .phead .logo i,
   .foot .brand i,
   .phead nav a,
+  .phead .more-menu a,
   .phead .cart,
   .gal-cat,
   .gal-ph,
@@ -6018,6 +6022,7 @@ span.cat-pagebtn {
   .phead .logo i *,
   .foot .brand i *,
   .phead nav a *,
+  .phead .more-menu a *,
   .phead .cart *,
   .gal-cat *,
   .gal-ph *,
@@ -6193,5 +6198,81 @@ a.acct-row {
   }
   a.acct-row:hover {
     padding-inline: 0;
+  }
+}
+
+/* Tablet: Support, About and Track order sit in the menu (hamburger) at the right of the bar. The links that stay keep their place. */
+.phead .more-menu {
+  display: none;
+}
+@media (min-width: 48.01rem) and (max-width: 72rem) {
+  .phead nav .nav-more {
+    display: none;
+  }
+  .phead .logo {
+    order: 0;
+  }
+  .phead nav {
+    order: 1;
+  }
+  .phead .cart {
+    order: 2;
+  }
+  .phead .toggle {
+    display: inline-flex;
+    order: 3;
+  }
+  .phead .more-menu {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    flex-direction: column;
+    padding: 0.5rem var(--gutter) 1rem;
+    background: rgb(255 255 255 / 0.98);
+    border-top: 1px solid rgb(28 25 22 / 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, -8px, 0);
+    transition: opacity 220ms, transform 220ms, visibility 220ms;
+  }
+  .phead.open .more-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .phead .more-menu a {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.95rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1c1916;
+    border-bottom: 1px solid rgb(28 25 22 / 0.1);
+  }
+  .phead .more-menu a[aria-current="page"] {
+    font-weight: 700;
+  }
+}
+
+/* Tablet: the search box goes first and spans the full width; the category, material and sort boxes sit together in the row under it. */
+@media (min-width: 48rem) and (max-width: 72rem) {
+  .cat-bar {
+    justify-content: flex-start;
+  }
+  .cat-right {
+    display: contents;
+  }
+  .cat-searchwrap {
+    order: -1;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .cat-search {
+    width: 100%;
   }
 }

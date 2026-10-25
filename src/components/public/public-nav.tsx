@@ -13,6 +13,9 @@ export interface NavLink {
   href: string;
 }
 
+/** On a tablet these three leave the bar and sit in the menu (hamburger) instead. On a phone every link is in the menu; on a computer every link is in the bar. */
+const IN_MENU_ON_TABLET = new Set(["/help", "/about", "/track"]);
+
 /**
  * The public header: a floating pill that firms up once the page has scrolled, with a drop-down
  * menu on narrow screens (closes on Escape, on a link tap and on route change).
@@ -60,16 +63,25 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
             {rest ? <i>{rest}</i> : null}
           </span>
         </Link>
-        <button type="button" className="toggle" aria-expanded={open} aria-controls={id} aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
+        <button type="button" className="toggle" aria-expanded={open} aria-controls={`${id} ${id}-more`} aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
           {open ? <X aria-hidden="true" className="size-4" strokeWidth={1.5} /> : <Menu aria-hidden="true" className="size-4" strokeWidth={1.5} />}
         </button>
         <nav id={id} aria-label="Primary" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
           {links.map((l) => (
-            <Link key={l.href} href={l.href} aria-current={path === l.href || path.startsWith(`${l.href}/`) ? "page" : undefined}>
+            <Link key={l.href} href={l.href} className={IN_MENU_ON_TABLET.has(l.href) ? "nav-more" : undefined} aria-current={path === l.href || path.startsWith(`${l.href}/`) ? "page" : undefined}>
               {l.label}
             </Link>
           ))}
         </nav>
+        <div id={`${id}-more`} className="more-menu" role="navigation" aria-label="More" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
+          {links
+            .filter((l) => IN_MENU_ON_TABLET.has(l.href))
+            .map((l) => (
+              <Link key={l.href} href={l.href} aria-current={path === l.href || path.startsWith(`${l.href}/`) ? "page" : undefined}>
+                {l.label}
+              </Link>
+            ))}
+        </div>
         <CartLink onClick={() => setOpen(false)} />
         <Link href={accountHref} className="cart acct" aria-label="Account" onClick={() => setOpen(false)}>
           {me?.avatar ? (
