@@ -47,7 +47,7 @@ export function Alert({
   const { box, Icon } = toneStyles[tone];
   const urgent = tone === "danger" || tone === "warning";
   return (
-    <div role={urgent ? "alert" : "status"} className={cn("flex gap-3 border p-4", box, className)}>
+    <div role={urgent ? "alert" : "status"} className={cn("notice flex gap-3 border p-4", box, className)}>
       <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0" strokeWidth={1.75} />
       <div className="min-w-0 text-sm">
         {title ? <p className="font-semibold">{title}</p> : null}

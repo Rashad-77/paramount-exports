@@ -377,11 +377,18 @@ export default async function HomePage() {
       {/* 4. Browse the category: product cards, newest first */}
       <section aria-labelledby="projects-title" className="sec sec-white">
         <div className="container-page">
-          <Head
-            id="projects-title"
-            eyebrow="Our collection"
-            title="Browse the collection"
-          />
+          <div className="flex items-end justify-between gap-4">
+            <Head
+              id="projects-title"
+              eyebrow="Our collection"
+              title="Browse the collection"
+            />
+            <Reveal variant="up" className="shrink-0 pb-1">
+              <Link href="/products" className="link-arrow text-text">
+                See all
+              </Link>
+            </Reveal>
+          </div>
           <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-4">
             {products.map((p) => (
               <Reveal as="li" key={p.id} variant="up">
@@ -389,12 +396,6 @@ export default async function HomePage() {
               </Reveal>
             ))}
           </ul>
-          <div className="mt-10">
-            <Link href="/products" className="link-arrow text-text">
-              See the full collection{" "}
-
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -587,17 +588,17 @@ export default async function HomePage() {
                     </figcaption>
                   ) : null}
                   {t.stars ? (
-                    <div role="img" aria-label={`${t.stars} out of 5 stars`} className="rv-stars flex gap-0.5 text-[#e8a200]">
+                    <div role="img" aria-label={`${t.stars} out of 5 stars`} className="rv-stars flex justify-center gap-0.5 text-[#e8a200]">
                       {Array.from({ length: 5 }, (_, n) => (
                         <Star key={n} aria-hidden="true" className="size-5" strokeWidth={1.25} fill={n < t.stars! ? "#fbbc04" : "none"} />
                       ))}
                     </div>
                   ) : (
-                    <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
+                    <Quote aria-hidden="true" className="mx-auto size-6 text-timber" strokeWidth={1.25} />
                   )}
                   <ReviewQuote id={t.id} quote={t.quote} />
                   {t.photos?.length || t.samplePhotos ? (
-                    <ul className="mt-4 flex gap-2" aria-label="Photos from this customer">
+                    <ul className="mt-4 flex justify-center gap-2" aria-label="Photos from this customer">
                       {t.photos?.map((src) => (
                         <li key={src} className="relative size-14 overflow-hidden border border-border">
                           <SiteImage src={src} alt={`Photo from ${t.name ?? "a customer"}`} fill sizes="56px" className="object-cover" />
@@ -615,7 +616,7 @@ export default async function HomePage() {
             </ScrollRow>
           ) : null}
           {reviewLink || reviews.length > 0 ? (
-            <div className={"container-page mt-10 flex flex-wrap items-center gap-x-6 gap-y-4 " + (reviews.length === 0 ? "justify-start" : "justify-center text-center")}>
+            <div className={"container-page mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center"}>
               {reviews.length > 0 ? <ViewAllButton /> : null}
               <ReviewButton reviewUrl={reviewLink}>Review us on Google</ReviewButton>
             </div>

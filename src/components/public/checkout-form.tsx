@@ -37,7 +37,7 @@ function Choice({ name, value, checked, onChange, title, help }: { name: string;
 }
 
 /**
- * The checkout: who you are, how you want it (delivery or collection), and how you plan to pay. Nothing is charged here. The basket
+ * The checkout: who you are, how you want it (delivery or collection, with the address in parts), and how you plan to pay. Nothing is charged here. The basket
  * travels as ids and quantities only; the server prices it. Anti-spam: honeypot, signed time-stamped token, optional Turnstile.
  */
 export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireAccount = false }: { currency: string; bankDetails: string | null; turnstileSiteKey?: string; requireAccount?: boolean }) {
@@ -113,7 +113,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
         </div>
 
         <fieldset className="space-y-5">
-          <legend className="font-display text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">Your details</legend>
+          <legend className="sr-only">Your details</legend>
           <SignedInLine me={contact} name={knownName} phone={knownPhone} email={knownEmail} />
           <div className="grid gap-5 sm:grid-cols-2">
             {knownName ? null : <FField name="name" kind="personName" label="Your name" autoComplete="name" maxLength={120} required />}
@@ -123,7 +123,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">How would you like it?</legend>
+          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">Choose a delivery method</legend>
           {(["delivery", "pickup"] as const).map((f) => (
             <Choice
               key={f}
@@ -135,11 +135,21 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
               help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our showroom. No delivery charge."}
             />
           ))}
-          {fulfilment === "delivery" ? <FTextArea name="address" kind="address" label="Delivery address" rows={3} maxLength={400} required autoComplete="street-address" /> : null}
+          {fulfilment === "delivery" ? (
+            <div className="space-y-5 pt-2">
+              <FField name="line1" kind="address" label="Address line 1" autoComplete="address-line1" maxLength={120} required />
+              <FField name="line2" kind="address" label="Address line 2" autoComplete="address-line2" maxLength={120} />
+              <FField name="line3" kind="address" label="Address line 3" autoComplete="address-line3" maxLength={120} />
+              <div className="grid items-start gap-5 sm:grid-cols-2">
+                <FField name="city" kind="place" label="City" autoComplete="address-level2" maxLength={80} required />
+                <FField name="postalCode" kind="postal" label="Postal code" autoComplete="postal-code" maxLength={20} required />
+              </div>
+            </div>
+          ) : null}
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">How will you pay?</legend>
+          <legend className="font-display mb-2 text-[clamp(1.15rem,calc(1.15rem_+_(100vw_-_375px)_*_0.00619),1.5rem)] leading-tight text-brand">Choose payment method</legend>
           <p className="text-sm text-text-muted">There is no payment on this website. Choose how you plan to pay and we will confirm with you.</p>
           {PAYMENTS_FOR[fulfilment].map((p) => (
             <Choice key={p} name="paymentMethod" value={p} checked={payment === p} onChange={() => setPayment(p)} title={PAYMENT_LABEL[p]} help={PAYMENT_HELP[p]} />

@@ -5469,29 +5469,6 @@ span.cat-pagebtn {
     flex-wrap: wrap;
   }
 }
-.foot-social {
-  display: flex;
-  gap: 0.25rem;
-}
-.foot-social a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  color: rgb(255 255 255 / 0.65);
-  transition: color 200ms;
-}
-.foot-social a:hover {
-  color: #fff;
-}
-@media (pointer: fine) and (min-width: 48rem) {
-  .foot-social a {
-    width: 2rem;
-    height: 2rem;
-  }
-}
-
 /* Footer rows, one rule set that wins over the layers above: every row (link, button, phone number, address, hours) is a flex line with an
    icon slot and the same vertical padding, so rows are evenly spaced. Touch screens and phones get a 44px row; a mouse on a larger window gets a tighter one. */
 .foot ul.foot-list {
@@ -5773,18 +5750,7 @@ span.cat-pagebtn {
   -webkit-user-drag: none;
 }
 
-/* Facebook and TikTok: in the Contact list on phones and tablets; as icons at the right of the bottom bar on computers. */
-.foot-social {
-  display: none;
-}
-@media (min-width: 64rem) {
-  .foot-social {
-    display: flex;
-  }
-  .foot ul.foot-list > li.foot-soc-li {
-    display: none;
-  }
-}
+/* Facebook and TikTok stay in the Contact list at every screen size. */
 
 /* Header icons on phones: bag, account and menu sit closer together. */
 @media (max-width: 48rem) {
@@ -6198,4 +6164,34 @@ span.cat-pagebtn {
 /* The endless rows move on their own scroll layer, so drifting does not repaint the rest of the page. */
 .scroll-row {
   will-change: scroll-position;
+}
+
+/* Feedback cards are centred: the picture and name sit together in the middle of the card. */
+.rv-who {
+  grid-template-columns: auto auto;
+  justify-content: center;
+  text-align: left;
+}
+
+/* The red dot on the bag: smaller. */
+.phead .cart-dot {
+  top: 0.85rem;
+  right: 0.05rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  box-shadow: 0 0 0 1.5px #fff;
+}
+
+/* Account overview: no hover animation on the Active orders tile or its rows. */
+.acct-stat,
+a.acct-row {
+  transition: none;
+}
+@media (hover: hover) {
+  a.acct-stat:hover {
+    border-color: rgb(28 25 22 / 0.12);
+  }
+  a.acct-row:hover {
+    padding-inline: 0;
+  }
 }

@@ -136,7 +136,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                 </li>
               ) : null}
               {business.facebook ? (
-                <li className="foot-soc-li">
+                <li>
                   <a href={business.facebook} target="_blank" rel="noopener noreferrer">
                     <FacebookIcon aria-hidden="true" className="size-4" />
                     Facebook<span className="sr-only"> (opens in a new tab)</span>
@@ -144,7 +144,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
                 </li>
               ) : null}
               {business.tiktok ? (
-                <li className="foot-soc-li">
+                <li>
                   <a href={business.tiktok} target="_blank" rel="noopener noreferrer">
                     <TikTokIcon aria-hidden="true" className="size-4" />
                     TikTok<span className="sr-only"> (opens in a new tab)</span>
@@ -175,22 +175,6 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <p>
             © {new Date().getFullYear()} {business.name}
           </p>
-          {business.facebook || business.tiktok ? (
-            <div className="foot-social">
-              {business.facebook ? (
-                <a href={business.facebook} target="_blank" rel="noopener noreferrer">
-                  <FacebookIcon aria-hidden="true" className="size-5" />
-                  <span className="sr-only">Facebook (opens in a new tab)</span>
-                </a>
-              ) : null}
-              {business.tiktok ? (
-                <a href={business.tiktok} target="_blank" rel="noopener noreferrer">
-                  <TikTokIcon aria-hidden="true" className="size-5" />
-                  <span className="sr-only">TikTok (opens in a new tab)</span>
-                </a>
-              ) : null}
-            </div>
-          ) : null}
         </div>
       </div>
     </footer>

@@ -28,7 +28,7 @@ export function ReviewQuote({ id, quote }: { id: string; quote: string }) {
         {quote}
       </blockquote>
       {cut ? (
-        <button type="button" onClick={() => show(id)} aria-haspopup="dialog" className="relative z-10 -mb-3 mt-1 inline-flex min-h-11 items-center self-start text-xs font-medium underline">
+        <button type="button" onClick={() => show(id)} aria-haspopup="dialog" className="relative z-10 -mb-3 mt-1 inline-flex min-h-11 items-center self-center text-xs font-medium underline">
           See more
         </button>
       ) : null}

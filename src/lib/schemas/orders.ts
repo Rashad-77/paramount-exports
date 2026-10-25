@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { joinAddress } from "@/lib/address-lines";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 import { checkbox, enumOf, optEmail, optText, reqPhone, reqText } from "@/lib/validation";
 
@@ -35,7 +36,13 @@ export const checkoutSchema = z
     phone: reqPhone,
     email: optEmail,
     fulfilment: enumOf(FULFILMENT, "delivery option"),
+    // The delivery address is asked for in parts, like the address form in the account. A full address in one piece is still accepted.
     address: optText("Delivery address", 400),
+    line1: optText("Address line 1", 120),
+    line2: optText("Address line 2", 120),
+    line3: optText("Address line 3", 120),
+    city: optText("City", 80),
+    postalCode: optText("Postal code", 20),
     paymentMethod: enumOf(PAYMENT_METHODS, "payment option"),
     note: optText("Note", 1000),
     cart: cartField,
@@ -45,13 +52,23 @@ export const checkoutSchema = z
     "cf-turnstile-response": z.string().optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.fulfilment === "delivery" && !v.address) ctx.addIssue({ code: "custom", path: ["address"], message: "Enter the address we should deliver to." });
+    if (v.fulfilment === "delivery" && !v.address) {
+      if (!v.line1) ctx.addIssue({ code: "custom", path: ["line1"], message: "Enter the first line of the address we should deliver to." });
+      if (!v.city) ctx.addIssue({ code: "custom", path: ["city"], message: "Enter the city." });
+      if (!v.postalCode) ctx.addIssue({ code: "custom", path: ["postalCode"], message: "Enter the postal code." });
+    }
     if (v.fulfilment === "pickup" && v.paymentMethod === "on_delivery") {
       ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose bank transfer or pay at the showroom for a showroom pickup." });
     }
     if (v.fulfilment === "delivery" && v.paymentMethod === "at_showroom") {
       ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose pay on delivery or bank transfer for a delivery." });
     }
+  })
+  // The parts become the one stored address (five lines, as in the account), and only a delivery has one.
+  .transform((v) => {
+    const { line1, line2, line3, city, postalCode, ...rest } = v;
+    const address = v.fulfilment !== "delivery" ? undefined : line1 ? joinAddress({ line1, line2: line2 ?? "", line3: line3 ?? "", city: city ?? "", postalCode: postalCode ?? "" }) : v.address;
+    return { ...rest, address };
   });
 export type CheckoutInput = z.output<typeof checkoutSchema>;
 

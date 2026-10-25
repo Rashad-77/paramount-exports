@@ -871,3 +871,11 @@ html:has(.app-ui) {
   .toast-out { animation: none; opacity: 0; }
 }
 .toaster:not(:popover-open) { display: none; }
+
+/* Notifications (the pop-up messages and the message boxes) are always set in Arial. */
+.toaster,
+.toaster *,
+.notice,
+.notice * {
+  font-family: Arial, Helvetica, sans-serif;
+}
