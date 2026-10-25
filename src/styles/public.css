@@ -6292,3 +6292,23 @@ a.acct-row {
     min-height: 2rem;
   }
 }
+
+/* Tablet header: the same spacing as on a computer (gaps between the name, the links and the icons, room around each link, letter spacing).
+   Below about 840px wide it tightens a little so everything still fits on one line. */
+@media (min-width: 48.01rem) and (max-width: 72rem) {
+  .phead .in {
+    gap: clamp(0.75rem, calc(0.75rem + (100vw - 768px) * 0.1667), 1.5rem);
+    padding-inline: clamp(1rem, 2vw, 1.75rem);
+  }
+  .phead nav {
+    margin-right: 0;
+    gap: 0.25rem;
+  }
+  .phead nav a {
+    padding: 0 clamp(0.45rem, calc(0.45rem + (100vw - 768px) * 0.1111), 0.95rem);
+    letter-spacing: clamp(1px, calc(1px + (100vw - 768px) * 0.0083), 1.6px);
+  }
+  .phead .logo b {
+    letter-spacing: clamp(2px, calc(2px + (100vw - 768px) * 0.0236), 3.7px);
+  }
+}
