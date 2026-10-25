@@ -16,7 +16,8 @@ import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { hasDatabase } from "@/lib/env";
 import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
-import { getBusinessSettings } from "@/lib/settings";
+import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
+import { customerAuthMode } from "@/lib/auth/customer";
 import { googleReviewLink, type GoogleReview } from "@/lib/google-reviews";
 import { ProductCard } from "@/components/public/product-card";
 import { ReviewButton } from "@/components/public/review-button";
@@ -146,7 +147,7 @@ const CAROUSEL_REVIEWS = 12;
 const CARD_W = "w-[82%] shrink-0 snap-start sm:w-[22rem]";
 
 export default async function HomePage() {
-  const [business, categories, products, premium] = await Promise.all([
+  const [business, categories, products, premium, accountSettings] = await Promise.all([
     getBusinessSettings(),
     safe(() => listPublicCategories(), []),
     safe(
@@ -155,7 +156,10 @@ export default async function HomePage() {
       [],
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
+    safe(() => getAccountSettings(), null),
   ]);
+  // The heart on each card shows when customer accounts are on, as on the Products page.
+  const wishlist = Boolean(accountSettings?.enabled) && customerAuthMode() !== "off";
   // Reviews: only Google's, saved by staff on the dashboard's Reviews page (the Review us on Google button sends visitors to Google to write theirs).
   // With none, the section only invites a first review.
   const shown = await safe(() => listSavedGoogleReviews(), [] as GoogleReview[]);
@@ -392,7 +396,7 @@ export default async function HomePage() {
           <ul className="mt-12 grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-4">
             {products.map((p) => (
               <Reveal as="li" key={p.id} variant="up">
-                <ProductCard product={p} currency={business.currency} />
+                <ProductCard product={p} currency={business.currency} wishlist={wishlist} />
               </Reveal>
             ))}
           </ul>
@@ -551,8 +555,9 @@ export default async function HomePage() {
                 id="reviews-title"
                 eyebrow="Feedback"
                 title="What Our Customers Say"
+                center
               />
-              <p className="mt-4 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] text-text-muted">Been to the showroom or bought from us? Tell others what you think.</p>
+              <p className="mt-4 text-center text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] text-text-muted">Been to the showroom or bought from us? Tell others what you think.</p>
             </div>
           ) : null}
           {reviews.length > 0 ? (
@@ -565,6 +570,7 @@ export default async function HomePage() {
                   id="reviews-title"
                   eyebrow="Feedback"
                   title="What Our Customers Say"
+                  center
                 />
               }
             >
@@ -576,7 +582,7 @@ export default async function HomePage() {
                 <figure
                   key={i}
                   aria-hidden={i >= Math.min(reviews.length, CAROUSEL_REVIEWS) ? true : undefined}
-                  className={CARD_W + " soft-card relative flex flex-col !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
+                  className={CARD_W + " soft-card relative flex flex-col text-center !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
                 >
                   <ReviewCardButton id={t.id} name={t.name} />
                   {t.date ? <time className="rv-date">{t.date}</time> : null}
