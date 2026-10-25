@@ -36,7 +36,7 @@ export const revalidate = 300;
 const STEP = 90;
 /** The product rows: always this many, with grey labelled placeholders making up the difference. */
 const PRODUCT_ROWS = 7;
-const PRODUCT_CARDS = 6;
+const PRODUCT_CARDS = 20;
 /** Premium pieces whose photographs run in the homepage carousel. */
 const PREMIUM_PIECES = 8;
 
@@ -400,6 +400,11 @@ export default async function HomePage() {
               </Reveal>
             ))}
           </ul>
+          <div className="mt-10 flex justify-center">
+            <ButtonLink href="/products" size="cta" variant="secondary">
+              See more
+            </ButtonLink>
+          </div>
         </div>
       </section>
 
