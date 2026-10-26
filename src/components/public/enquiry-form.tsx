@@ -6,7 +6,6 @@ import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/componen
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
-import { SignedInLine, useAccountContact } from "@/components/public/signed-in-contact";
 import { QuotePrefill } from "@/components/public/quote-prefill";
 import { CONTACT_CHOICE_LABEL, CONTACT_LABELS, CUSTOM_MESSAGE_LABEL, MESSAGE_LABEL, PHOTOS_LABEL, PIECE_FIELDS, PIECE_HEADING } from "@/lib/enquiry-form-labels";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
@@ -39,10 +38,6 @@ export function EnquiryForm({
   /** Spread across the full width: name, phone and email in one row, the tick and the button on one line. */
   wide?: boolean;
 }) {
-  const me = useAccountContact();
-  const knownName = Boolean(me?.name);
-  const knownPhone = Boolean(me?.phone);
-  const knownEmail = Boolean(me?.email);
   const [token, setToken] = useState("");
   useEffect(() => {
     let alive = true;
@@ -76,11 +71,10 @@ export function EnquiryForm({
         </label>
       </div>
 
-      <SignedInLine me={me} name={knownName} phone={knownPhone} email={knownEmail} />
       <div className={wide ? (variants && variants.length > 1 ? "grid gap-5 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-5 sm:grid-cols-3") : "grid gap-5 sm:grid-cols-2"}>
-        {knownName ? null : <FField name="name" kind="personName" label={CONTACT_LABELS.name} autoComplete="name" maxLength={120} required />}
-        {knownPhone ? null : <FField name="phone" label={CONTACT_LABELS.phone} kind="phone" maxLength={40} required />}
-        {knownEmail ? null : <FField name="email" kind="email" label={CONTACT_LABELS.email} type="email" autoComplete="email" inputMode="email" maxLength={200} />}
+        <FField name="name" kind="personName" label={CONTACT_LABELS.name} autoComplete="name" maxLength={120} required />
+        <FField name="phone" label={CONTACT_LABELS.phone} kind="phone" maxLength={40} required />
+        <FField name="email" kind="email" label={CONTACT_LABELS.email} type="email" autoComplete="email" inputMode="email" maxLength={200} />
         {wide ? null : <FSelect name="preferredContact" label={CONTACT_LABELS.preferredContact} options={CONTACT_OPTIONS} placeholder="No preference" />}
         {wide && variants && variants.length > 1 ? <FSelect name="variantId" label="Option" options={variants.map((v) => ({ value: v.id, label: v.label }))} placeholder="Not sure yet" /> : null}
       </div>
