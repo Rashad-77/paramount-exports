@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus, Pencil, Trash2 } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ function BandText({ name, subs }: { name: string; subs: string[] }) {
 }
 
 /**
- * The "Category banner image" field of a main category: choose a picture, then press the pencil to drag it to where it should sit in the
+ * The "Category banner image" field of a main category: choose a picture, then press Edit to drag it to where it should sit in the
  * band. The picture goes straight to storage; the form only carries the file's id and the chosen position.
  */
 export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 50, subNames = [] }: { initialUrl?: string | null; initialX?: number; initialY?: number; subNames?: string[] }) {
@@ -99,16 +99,9 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
 
   return (
     <div ref={root} className="space-y-2">
-      <div className="flex items-center gap-1.5">
-        <label htmlFor={inputId} className="text-sm font-medium tracking-[0.01em] text-text">
-          Category banner image <span className="font-normal text-text-muted">(optional)</span>
-        </label>
-        {url ? (
-          <button type="button" onClick={openEditor} aria-label="Edit where the picture sits in the banner" title="Edit placement" className="inline-flex size-7 items-center justify-center text-text-muted outline-none hover:bg-linen hover:text-text focus-visible:bg-linen">
-            <Pencil aria-hidden="true" className="size-3.5" />
-          </button>
-        ) : null}
-      </div>
+      <label htmlFor={inputId} className="block text-sm font-medium tracking-[0.01em] text-text">
+        Category banner image <span className="font-normal text-text-muted">(optional)</span>
+      </label>
       <input
         id={inputId}
         type="file"
@@ -126,12 +119,10 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
             <img src={url} alt="" draggable={false} className="absolute inset-0 size-full object-cover" style={{ objectPosition: `${pos.x}% ${pos.y}%` }} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <label htmlFor={inputId} className="inline-flex h-9 cursor-pointer items-center gap-2 border border-border-strong bg-surface px-3 text-[0.8125rem] font-medium hover:bg-linen">
-              <ImagePlus aria-hidden="true" className="size-4" />
-              {busy ? "Uploading…" : "Change"}
-            </label>
-            <button type="button" onClick={remove} className="inline-flex h-9 items-center gap-2 border border-border-strong bg-surface px-3 text-[0.8125rem] font-medium hover:bg-linen">
-              <Trash2 aria-hidden="true" className="size-4" />
+            <button type="button" onClick={openEditor} className="inline-flex h-9 items-center border border-border-strong bg-surface px-3 text-[0.8125rem] font-medium hover:bg-linen">
+              Edit
+            </button>
+            <button type="button" onClick={remove} className="inline-flex h-9 items-center border border-border-strong bg-surface px-3 text-[0.8125rem] font-medium hover:bg-linen">
               Remove
             </button>
           </div>
