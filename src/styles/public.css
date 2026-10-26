@@ -6282,6 +6282,24 @@ a.acct-row {
   }
 }
 
+/* Computer: the four boxes fill the row with the same gap between each (the search box a little wider). */
+@media (min-width: 72.01rem) {
+  .cat-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.3fr);
+    gap: 0.75rem;
+  }
+  .cat-right {
+    display: contents;
+  }
+  .cat-search,
+  .cat-bar .gs,
+  .cat-bar .gs-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 /* Phone: the boxes are stacked and thin. */
 @media (max-width: 47.99rem) {
   .cat-bar,
