@@ -47,6 +47,7 @@ export function ActionForm({
   className,
   hideOnSuccess = false,
   successTitle,
+  resetOnSuccess = false,
 }: {
   action: Action;
   children: ReactNode;
@@ -54,8 +55,17 @@ export function ActionForm({
   /** Replace the form with the success message (used by public enquiry forms). */
   hideOnSuccess?: boolean;
   successTitle?: string;
+  /** After a successful send, keep the form on the page but empty it (the success message appears as a pop-up). */
+  resetOnSuccess?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(guarded(action), {});
+  // Each success gives the form a new key, which empties every box and the file chooser (a new result is noticed while rendering, as in DateField).
+  const [seen, setSeen] = useState(state);
+  const [resets, setResets] = useState(0);
+  if (state !== seen) {
+    setSeen(state);
+    if (state.ok && resetOnSuccess) setResets((n) => n + 1);
+  }
   const form = useRef<HTMLFormElement>(null);
 
   // Unsaved changes: what the form held just before the person first touched it, compared with what it holds now. Leaving the page
@@ -122,6 +132,7 @@ export function ActionForm({
   return (
     <>
     <form
+      key={resets}
       ref={form}
       action={formAction}
       noValidate

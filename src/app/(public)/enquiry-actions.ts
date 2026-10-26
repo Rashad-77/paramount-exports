@@ -13,7 +13,7 @@ import { notifyNewMessage } from "@/server/notify";
 
 /** A made-to-order request is a quotation request and is numbered QUO-…; everything else is an enquiry numbered MSG-…. */
 const THANKS = (ref: string, custom = false) =>
-  `We have received your ${custom ? "request" : "enquiry"} (reference ${custom ? quoteRef(ref) : ref}). Someone from the team will contact you using the details you gave.`;
+  `Your ${custom ? "quotation request has been sent" : "enquiry has been sent"} (reference ${custom ? quoteRef(ref) : ref}). Someone from the team will contact you using the details you gave.`;
 
 export async function submitEnquiryAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   return runAction(
