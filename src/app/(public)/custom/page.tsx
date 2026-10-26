@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { PageIntro } from "@/components/public/prose";
-import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { Reveal } from "@/components/public/reveal";
 import { publicEnv } from "@/lib/env";
 import { CUSTOM_STEPS } from "@/lib/custom-steps";
@@ -21,7 +20,7 @@ export default function CustomPage() {
         title="Made to your measurements"
         eyebrow="Made to order"
         lead="Send us the details of what you have in mind. There is no obligation, and an enquiry does not create an order."
-        action={{ href: "#examples", label: "See examples" }}
+        action={{ href: "#quotation", label: "Request a quotation" }}
       />
       <div>
         <div id="quotation" className="container-page scroll-mt-20 grid gap-10 py-[var(--section-space)] lg:grid-cols-[1fr_1.25fr] lg:gap-0">
@@ -84,36 +83,6 @@ export default function CustomPage() {
           </Reveal>
         </div>
       </div>
-
-      <section id="examples" aria-labelledby="examples-title" className="scroll-mt-20 border-t border-border bg-white section-y">
-        <div className="container-page">
-          <Reveal>
-            <p className="eyebrow">Examples</p>
-            <h2 id="examples-title" className="font-display mt-3 text-headline text-brand">
-              Custom pieces, made to measure
-            </h2>
-          </Reveal>
-          <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {EXAMPLES.map((e, i) => (
-              <Reveal as="li" key={e.title} delay={(i % 3) * 80}>
-                <div className="zoom-frame aspect-[4/3]">
-                  <ImagePlaceholder label={`Custom example — ${e.title}`} className="size-full" compact />
-                </div>
-                <h3 className="mt-4 text-center text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00254),0.75rem)] font-medium uppercase leading-snug tracking-[0.16em] text-text">{e.title}</h3>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
     </>
   );
 }
-
-const EXAMPLES = [
-  { title: "A dining table built to size" },
-  { title: "Fitted storage" },
-  { title: "Joinery detail" },
-  { title: "A finish sample" },
-  { title: "A piece in its room" },
-  { title: "Workshop progress" },
-];
