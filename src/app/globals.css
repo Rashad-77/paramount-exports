@@ -604,14 +604,14 @@ body:has(.app-ui) {
   line-height: 1.15;
 }
 .staff-brand-name b {
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 .staff-brand-name i {
   margin-top: 0.15rem;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-style: normal;
   letter-spacing: 0.2em;
   text-transform: uppercase;
