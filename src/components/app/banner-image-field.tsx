@@ -6,8 +6,8 @@ import { uploadToStorage } from "@/components/forms/file-uploader";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 
-/** Height of a band as a share of its width, as on a computer (a 1440px page has a band about 208px tall). */
-const BAND_RATIO = "1440 / 208";
+/** Height of a band as a share of its width, as on a computer (a 1440px page has a band about 227px tall). */
+const BAND_RATIO = "1440 / 227";
 
 /**
  * The text of the band, as it will read on the website. It never moves: only the picture behind it can be placed.
