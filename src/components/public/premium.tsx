@@ -52,6 +52,9 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
           t.piece ? (
             <Link key={t.n} href={`/products/${t.piece.slug}`} aria-label={t.piece.name} className={TILE_W + " pm-tile"}>
               {t.url ? <SiteImage src={t.url} alt={t.alt} fill sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 47vw, 78vw" className="object-cover" /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
+              <span className="pm-name" aria-hidden="true">
+                {t.piece.name}
+              </span>
             </Link>
           ) : (
             <div key={t.n} aria-hidden="true" className={TILE_W + " pm-tile"}>

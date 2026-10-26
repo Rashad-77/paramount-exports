@@ -199,7 +199,8 @@ export default async function HomePage() {
     return {
       key: g.id,
       name: g.name,
-      href: `/products?category=${g.slug}`,
+      // Made-to-order work has no pieces to browse: its band leads to the quotation request instead.
+      href: /^custom/i.test(g.name) ? "/custom#quotation" : `/products?category=${g.slug}`,
       all: kids.join(" · "),
       lines:
         kids.length > 6
