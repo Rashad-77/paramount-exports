@@ -19,7 +19,7 @@ const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export const ENQUIRY_LIMITS = {
   perIp: { limit: 5, windowSeconds: 600 },
-  perPhone: { limit: 3, windowSeconds: 3600 },
+  perPhone: { limit: 5, windowSeconds: 3600 },
 } as const;
 
 /**
@@ -33,7 +33,10 @@ export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | nul
   const ipHit = await hitRateLimit(db, { scope: "enquiry-ip", value: ctx.ip ?? "unknown", ...ENQUIRY_LIMITS.perIp });
   if (!ipHit.allowed) throw rateLimited("You have sent several messages recently. Please wait a few minutes, or call us instead.");
   const phoneHit = await hitRateLimit(db, { scope: "enquiry-phone", value: key, ...ENQUIRY_LIMITS.perPhone });
-  if (!phoneHit.allowed) throw rateLimited("We already have several messages from this phone number. We will be in touch shortly.");
+  if (!phoneHit.allowed) {
+    const minutes = Math.max(1, Math.ceil(phoneHit.retryAfterSeconds / 60));
+    throw rateLimited(`Hourly ${input.kind === "custom" ? "quotation" : "enquiry"} limit reached. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`);
+  }
 
   // The product must exist and be public; a message cannot be attached to a hidden or archived item.
   let productId: string | null = null;
