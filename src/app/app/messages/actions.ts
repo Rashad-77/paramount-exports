@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { messageHandledSchema, replySchema } from "@/lib/schemas/orders";
+import { messageHandledSchema } from "@/lib/schemas/orders";
 import {
   closeQuoteSchema,
   quoteToOrderSchema,
@@ -14,7 +14,6 @@ import { reqUuid } from "@/lib/validation";
 import {
   closeQuotation,
   createOrderFromQuotation,
-  replyToMessage,
   sendQuote,
   setEnquiryState,
   setMessageHandled,
@@ -113,13 +112,4 @@ export async function startReviewAction(
       return { message: "Quotation request moved to under review." };
     },
   );
-}
-
-export async function replyAction(_p: ActionState, fd: FormData): Promise<ActionState> {
-  return runAction(fd, replySchema, async (input, { actor }) => {
-    const r = await replyToMessage(actor!, input.id, input.body);
-    refreshMessage(input.id);
-    const via = [r.email ? `emailed to ${r.email}` : "", r.onAccount ? "shown on their account" : ""].filter(Boolean).join(" and ");
-    return { message: `Reply sent: ${via}.` };
-  });
 }

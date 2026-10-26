@@ -4,7 +4,7 @@ import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } 
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
-import { customerAccounts, messageReplies, messages, orderItems, orders, productVariants, products, profiles, uploadedFiles } from "@/lib/db/schema";
+import { customerAccounts, messages, orderItems, orders, productVariants, products, uploadedFiles } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { formatMoney, moneyString } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
@@ -168,58 +168,6 @@ export async function setMessageHandled(actor: Actor, id: string, handled: boole
       .where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: handled ? "message.handled" : "message.reopened", entityType: "message", entityId: id, before: { isHandled: m.isHandled }, after: { isHandled: handled } });
   });
-}
-
-/** The customer to answer: their account if they have one, and the email on the request or the account. */
-export async function replyRoute(m: typeof messages.$inferSelect): Promise<{ accountId: string | null; email: string | null }> {
-  return quoteAudience(getDb(), m);
-}
-
-/**
- * Staff answer an enquiry or request from the site. The reply reaches the customer by email (when we have an address) and as a notice on
- * their account (when they have one). Sending it also marks the enquiry as responded. A customer we cannot reach this way is answered by
- * phone instead, so nothing is sent and the staff member is told.
- */
-export async function replyToMessage(actor: Actor, id: string, body: string): Promise<{ email: string | null; onAccount: boolean }> {
-  requirePermission(actor, "messages:handle");
-  const business = await getBusinessSettings();
-  let mail: { email: string; subject: string; text: string } | null = null;
-  const result = await withTx(async (tx) => {
-    const [m] = await tx.select().from(messages).where(eq(messages.id, id)).for("update");
-    if (!m) throw notFound("That message could not be found.");
-    if (m.kind === "custom") throw invalidState("A quotation request is answered by contacting the customer, not from here.");
-    const who = await quoteAudience(tx, m);
-    if (!who.email && !who.accountId) throw invalidState(`${m.name} left no email and has no account, so a reply cannot be sent from here. Call them on ${m.phone}.`);
-    const ref = m.kind === "custom" ? quoteRef(m.reference) : m.reference;
-    await tx.insert(messageReplies).values({ messageId: id, body, sentBy: actor.id, emailedTo: who.email, onAccount: Boolean(who.accountId) });
-    await tx.update(messages).set({ isHandled: true, inProgress: false, handledAt: m.isHandled && m.handledAt ? m.handledAt : new Date(), handledBy: m.isHandled && m.handledBy ? m.handledBy : actor.id }).where(eq(messages.id, id));
-    await recordAudit(tx, actor, { action: "message.replied", entityType: "message", entityId: id, after: { emailed: Boolean(who.email), onAccount: Boolean(who.accountId) } });
-    await recordUpdate(tx, who.accountId, { kind: "message", title: `A reply to your ${m.kind === "custom" ? "request" : "enquiry"} ${ref}`, body, link: `/account/messages/${m.reference}` });
-    if (who.email) {
-      mail = {
-        email: who.email,
-        subject: `Re: your ${m.kind === "custom" ? "request" : "enquiry"} ${ref} - ${business.name}`,
-        text: [`Hello ${m.name},`, ``, body, ``, `If you would like to reply, call us on ${business.phone ?? "the number on our website"}${business.email ? ` or write to ${business.email}` : ""} and quote ${ref}.`, ``, business.name].join("\n"),
-      };
-    }
-    return { email: who.email, onAccount: Boolean(who.accountId) };
-  });
-  if (mail) {
-    const m = mail as { email: string; subject: string; text: string };
-    emailCustomer(m.email, m.subject, m.text);
-  }
-  return result;
-}
-
-/** The replies sent on a message, oldest first, with who sent each. */
-export async function listReplies(actor: Actor, id: string) {
-  requirePermission(actor, "messages:view");
-  return getDb()
-    .select({ id: messageReplies.id, body: messageReplies.body, emailedTo: messageReplies.emailedTo, onAccount: messageReplies.onAccount, createdAt: messageReplies.createdAt, by: profiles.fullName })
-    .from(messageReplies)
-    .leftJoin(profiles, eq(profiles.id, messageReplies.sentBy))
-    .where(eq(messageReplies.messageId, id))
-    .orderBy(asc(messageReplies.createdAt));
 }
 
 /* ───────────────────────────── quotations (made-to-measure requests) ───────────────────────────── */

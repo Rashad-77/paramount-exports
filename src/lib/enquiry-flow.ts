@@ -8,4 +8,4 @@ export function enquirySteps(e: { createdAt: Date; handledAt: Date | null; isHan
   ];
 }
 
-export const enquiryNextStep = (isHandled: boolean) => (isHandled ? "This enquiry has been answered. Nothing more to do." : "Reply to the customer by phone or email, then press “Mark as responded”.");
+export const enquiryNextStep = (isHandled: boolean) => (isHandled ? "This enquiry has been answered. Nothing more to do." : "Contact the customer by phone or email, then press “Mark as responded”.");

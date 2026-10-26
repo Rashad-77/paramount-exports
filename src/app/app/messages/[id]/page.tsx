@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { plainPhone } from "@/lib/contact";
 import type { ReactNode } from "react";
 import { FlowPanel } from "@/components/app/flow-panel";
-import { ReplyForm } from "@/components/app/reply-form";
 import { EnquiryTag } from "@/components/app/tags";
 import { ActionForm, SubmitButton } from "@/components/forms/action-form";
 import { PageHeader } from "@/components/ui/page-header";
@@ -25,7 +24,7 @@ import { quoteRef } from "@/lib/quotation-ui";
 import { enquiryNextStep, enquirySteps } from "@/lib/enquiry-flow";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDate, formatDateTime } from "@/lib/time";
-import { getMessage, listReplies, replyRoute } from "@/server/messages";
+import { getMessage } from "@/server/messages";
 import { setEnquiryStateAction } from "../actions";
 
 export const metadata = { title: "Message" };
@@ -64,9 +63,6 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
   const tz = business.timezone;
   const { message: m, product, files, accountAddress } = data;
   const custom = m.kind === "custom";
-  // A quotation request is answered by contacting the customer, so only ordinary enquiries have replies sent from here.
-  const replies = custom ? [] : await listReplies(actor, id);
-  const route = await replyRoute(m);
   const canHandle = can(actor, "messages:handle");
   const piece = (m.payload && typeof m.payload === "object" ? m.payload : {}) as Record<string, unknown>;
   const word = custom ? "request" : "enquiry";
@@ -149,41 +145,6 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
             <p className="col-span-full whitespace-pre-line border border-border bg-linen px-4 py-3 text-base">{m.message ?? <span className="text-text-muted">Not given</span>}</p>
           </Group>
         </section>
-
-        {!custom ? (
-          <section id="reply" className="min-w-0 scroll-mt-24 border border-border bg-surface p-5">
-            <h3 className="mb-4 text-sm font-semibold text-walnut">Replies</h3>
-            {replies.length > 0 ? (
-              <ul className="mb-5 space-y-3">
-                {replies.map((r) => (
-                  <li key={r.id} className="border border-border px-4 py-3 text-sm">
-                    <p className="whitespace-pre-line">{r.body}</p>
-                    <p className="mt-2 text-[0.8125rem] text-text-muted">
-                      {r.by ?? "Staff"} · {formatDateTime(r.createdAt, tz)}
-                      {r.emailedTo ? ` · emailed to ${r.emailedTo}` : ""}
-                      {r.onAccount ? " · shown on their account" : ""}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mb-5 text-sm text-text-muted">No reply has been sent from here yet.</p>
-            )}
-            {canHandle ? (
-              route.email || route.accountId ? (
-                <ReplyForm messageId={m.id} to={`It will be ${[route.email ? `emailed to ${route.email}` : "", route.accountId ? "shown on their account" : ""].filter(Boolean).join(" and ")}, and this enquiry will be marked as responded.`} />
-              ) : (
-                <p className="border border-border bg-linen px-3 py-2 text-sm">
-                  {m.name} left no email and has no account, so a reply cannot be sent from here. Call them on{" "}
-                  <a className="underline" href={`tel:${m.phone.replace(/\s+/g, "")}`}>
-                    {plainPhone(m.phone)}
-                  </a>
-                  .
-                </p>
-              )
-            ) : null}
-          </section>
-        ) : null}
       </div>
     </>
   );
