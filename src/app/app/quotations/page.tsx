@@ -1,24 +1,17 @@
-import { EnquiryTag } from "@/components/app/tags";
-import { plainPhone } from "@/lib/contact";
-import Link from "next/link";
+import { EditProvider, EditToggle } from "@/components/app/edit-mode";
 import { ListFilters } from "@/components/app/list-filters";
+import { QuotationsTable } from "@/components/app/quotations-table";
 import { ModuleHeader } from "@/components/ui/page-header";
-import {
-  EmptyRow,
-  Pagination,
-  Table,
-  TableWrap,
-  TD,
-  TH,
-  THead,
-  TR,
-} from "@/components/ui/table";
+import { Pagination } from "@/components/ui/table";
+import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import { plainPhone } from "@/lib/contact";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { quoteRef } from "@/lib/quotation-ui";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listQuotations } from "@/server/messages";
+import { deleteQuotationsAction } from "./actions";
 
 export const metadata = { title: "Quotations" };
 const PAGE_SIZE = 20;
@@ -39,6 +32,7 @@ export default async function QuotationsPage({
     listQuotations(actor, { status, q, sort, page, pageSize: PAGE_SIZE }),
   ]);
   const { counts } = result;
+  const canDelete = can(actor, "customers:delete");
   const href = (over: Record<string, string | undefined>) =>
     buildHref("/app/quotations", {
       status,
@@ -46,9 +40,19 @@ export default async function QuotationsPage({
       sort: sort === "latest" ? undefined : sort,
       ...over,
     });
+  const rows = result.rows.map((r) => ({
+    id: r.id,
+    reference: quoteRef(r.reference),
+    summary: (r.payload as { furnitureType?: string | null } | null)?.furnitureType ?? r.message ?? "—",
+    name: r.name,
+    phone: plainPhone(r.phone),
+    handled: r.isHandled,
+    createdIso: r.createdAt.toISOString(),
+    createdText: formatDateTime(r.createdAt, business.timezone),
+  }));
   return (
-    <>
-      <ModuleHeader href="/app/quotations" />
+    <EditProvider>
+      <ModuleHeader href="/app/quotations" actions={canDelete && rows.length > 0 ? <EditToggle /> : null} />
       <ListFilters
         action="/app/quotations"
         param="status"
@@ -63,81 +67,23 @@ export default async function QuotationsPage({
         ]}
       />
       <div className="app-results">
-        <TableWrap label="Quotations">
-          <Table>
-            <THead>
-              <tr>
-                <TH className="w-16">No.</TH>
-                <TH>Request</TH>
-                <TH>Customer</TH>
-                <TH className="w-44">Status</TH>
-              </tr>
-            </THead>
-            <tbody>
-              {result.rows.length === 0 ? (
-                <EmptyRow
-                  colSpan={4}
-                  title={
-                    q || status
-                      ? "No quotations match"
-                      : "No quotation requests yet"
-                  }
-                  description={
-                    q || status
-                      ? "Try a different tab or search."
-                      : "Made-to-measure requests from the website will appear here."
-                  }
-                />
-              ) : null}
-              {result.rows.map((r, i) => {
-                const what = (
-                  r.payload as { furnitureType?: string | null } | null
-                )?.furnitureType;
-                return (
-                  <TR key={r.id}>
-                    <TD className="tabular text-center text-text-muted">
-                      {(page - 1) * PAGE_SIZE + i + 1}
-                    </TD>
-                    <TD>
-                      <Link
-                        href={`/app/messages/${r.id}`}
-                        className="font-medium text-walnut underline"
-                      >
-                        {quoteRef(r.reference)}
-                      </Link>
-                      <div className="mt-0.5 line-clamp-1 max-w-md text-text-muted">
-                        {what ?? r.message ?? "—"}
-                      </div>
-                    </TD>
-                    <TD>
-                      <div className="font-medium">{r.name}</div>
-                      <div className="text-text-muted">
-                        {plainPhone(r.phone)}
-                      </div>
-                    </TD>
-                    <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
-                      <div className="relative flex flex-col items-center">
-                        <EnquiryTag state={r.isHandled ? "responded" : "new"} />
-                        <time
-                          dateTime={r.createdAt.toISOString()}
-                          className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted"
-                        >
-                          {formatDateTime(r.createdAt, business.timezone)}
-                        </time>
-                      </div>
-                    </TD>
-                  </TR>
-                );
-              })}
-            </tbody>
-          </Table>
-        </TableWrap>
+        <QuotationsTable
+          rows={rows}
+          startAt={(page - 1) * PAGE_SIZE}
+          total={counts.all}
+          canDelete={canDelete}
+          deleteAction={deleteQuotationsAction}
+          empty={{
+            title: q || status ? "No quotations match" : "No quotation requests yet",
+            description: q || status ? "Try a different tab or search." : "Made-to-measure requests from the website will appear here.",
+          }}
+        />
         <Pagination
           page={page}
           pageCount={result.pageCount}
           hrefFor={(n) => href({ page: String(n) })}
         />
       </div>
-    </>
+    </EditProvider>
   );
 }

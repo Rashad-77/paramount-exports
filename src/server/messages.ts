@@ -1,6 +1,6 @@
 import "server-only";
 import { quoteRef } from "@/lib/quotation-ui";
-import { and, asc, count, desc, eq, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -437,5 +437,19 @@ export async function startQuoteReview(actor: Actor, id: string): Promise<void> 
     if (m.quoteStatus !== "requested") throw invalidState("Only a new request can be moved to under review.");
     await tx.update(messages).set({ quoteStatus: "under_review", handledBy: actor.id }).where(eq(messages.id, id));
     await recordAudit(tx, actor, { action: "quotation.under_review", entityType: "message", entityId: id, before: { status: m.quoteStatus }, after: { status: "under_review" } });
+  });
+}
+
+/** Owner only: permanently deletes quotation requests (and their replies). Returns how many were deleted. */
+export async function deleteQuotations(actor: Actor, ids: string[]): Promise<number> {
+  requirePermission(actor, "customers:delete");
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return 0;
+  return withTx(async (tx) => {
+    const found = await tx.select({ id: messages.id, reference: messages.reference, name: messages.name }).from(messages).where(and(inArray(messages.id, unique), isQuotation)).for("update");
+    if (found.length === 0) return 0;
+    await tx.delete(messages).where(inArray(messages.id, found.map((m) => m.id)));
+    for (const m of found) await recordAudit(tx, actor, { action: "quotation.deleted", entityType: "message", entityId: m.id, before: { reference: m.reference, name: m.name } });
+    return found.length;
   });
 }
