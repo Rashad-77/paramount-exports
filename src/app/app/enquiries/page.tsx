@@ -1,23 +1,17 @@
-import { EnquiryTag } from "@/components/app/tags";
-import { plainPhone } from "@/lib/contact";
-import Link from "next/link";
+import { DeleteSelectedButton } from "@/components/app/delete-selected";
+import { EditProvider, EditToggle } from "@/components/app/edit-mode";
 import { ListFilters } from "@/components/app/list-filters";
+import { MessagesTable } from "@/components/app/messages-table";
 import { ModuleHeader } from "@/components/ui/page-header";
-import {
-  EmptyRow,
-  Pagination,
-  Table,
-  TableWrap,
-  TD,
-  TH,
-  THead,
-  TR,
-} from "@/components/ui/table";
+import { Pagination } from "@/components/ui/table";
+import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
+import { plainPhone } from "@/lib/contact";
 import { buildHref, one, oneOf, pageOf, type SP } from "@/lib/list-params";
 import { getBusinessSettings } from "@/lib/settings";
 import { formatDateTime } from "@/lib/time";
 import { listEnquiries } from "@/server/messages";
+import { deleteEnquiriesAction } from "./actions";
 
 export const metadata = { title: "Enquiries" };
 const PAGE_SIZE = 20;
@@ -39,6 +33,7 @@ export default async function EnquiriesPage({
     listEnquiries(actor, { state, q, sort, page, pageSize: PAGE_SIZE }),
   ]);
   const { counts } = result;
+  const canDelete = can(actor, "customers:delete");
   const href = (over: Record<string, string | undefined>) =>
     buildHref("/app/enquiries", {
       state,
@@ -46,9 +41,29 @@ export default async function EnquiriesPage({
       sort: sort === "latest" ? undefined : sort,
       ...over,
     });
+  const rows = result.rows.map((r) => ({
+    id: r.id,
+    reference: r.reference,
+    summary: r.message ?? "—",
+    name: r.name,
+    phone: plainPhone(r.phone),
+    handled: r.isHandled,
+    createdIso: r.createdAt.toISOString(),
+    createdText: formatDateTime(r.createdAt, business.timezone),
+  }));
   return (
-    <>
-      <ModuleHeader href="/app/enquiries" />
+    <EditProvider>
+      <ModuleHeader
+        href="/app/enquiries"
+        actions={
+          canDelete && rows.length > 0 ? (
+            <>
+              <EditToggle />
+              <DeleteSelectedButton items={rows.map((r) => ({ id: r.id, label: r.reference }))} singular="enquiry" plural="enquiries" action={deleteEnquiriesAction} />
+            </>
+          ) : null
+        }
+      />
       <ListFilters
         action="/app/enquiries"
         param="state"
@@ -63,79 +78,23 @@ export default async function EnquiriesPage({
         ]}
       />
       <div className="app-results">
-        <TableWrap label="Enquiries">
-          <Table>
-            <THead>
-              <tr>
-                <TH className="w-16">No.</TH>
-                <TH>Enquiry</TH>
-                <TH className="w-52">Customer</TH>
-                <TH className="w-44">Status</TH>
-              </tr>
-            </THead>
-            <tbody>
-              {result.rows.length === 0 ? (
-                <EmptyRow
-                  colSpan={4}
-                  title={q || state ? "No enquiries match" : "No enquiries yet"}
-                  description={
-                    q || state
-                      ? "Try a different tab or search."
-                      : "Messages from the contact form and product pages will appear here."
-                  }
-                />
-              ) : null}
-              {result.rows.map((r, i) => {
-                const badge = r.isHandled ? (
-                  <EnquiryTag state="responded" />
-                ) : (
-                  <EnquiryTag state="new" />
-                );
-                return (
-                  <TR key={r.id}>
-                    <TD className="tabular text-center text-text-muted">
-                      {(page - 1) * PAGE_SIZE + i + 1}
-                    </TD>
-                    <TD>
-                      <Link
-                        href={`/app/messages/${r.id}`}
-                        className="font-medium text-walnut underline"
-                      >
-                        {r.reference}
-                      </Link>
-                      <div className="mt-0.5 line-clamp-1 max-w-md text-text-muted">
-                        {r.message ?? "—"}
-                      </div>
-                    </TD>
-                    <TD className="text-center">
-                      <div className="font-medium">{r.name}</div>
-                      <div className="text-text-muted">
-                        {plainPhone(r.phone)}
-                      </div>
-                    </TD>
-                    <TD className="w-44 min-w-[11rem] whitespace-nowrap text-center">
-                      <div className="relative flex flex-col items-center">
-                        {badge}
-                        <time
-                          dateTime={r.createdAt.toISOString()}
-                          className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-[0.65rem] leading-none whitespace-nowrap text-text-muted"
-                        >
-                          {formatDateTime(r.createdAt, business.timezone)}
-                        </time>
-                      </div>
-                    </TD>
-                  </TR>
-                );
-              })}
-            </tbody>
-          </Table>
-        </TableWrap>
+        <MessagesTable
+          rows={rows}
+          startAt={(page - 1) * PAGE_SIZE}
+          canDelete={canDelete}
+          label="Enquiries"
+          requestHeading="Enquiry"
+          empty={{
+            title: q || state ? "No enquiries match" : "No enquiries yet",
+            description: q || state ? "Try a different tab or search." : "Messages from the contact form and product pages will appear here.",
+          }}
+        />
         <Pagination
           page={page}
           pageCount={result.pageCount}
           hrefFor={(n) => href({ page: String(n) })}
         />
       </div>
-    </>
+    </EditProvider>
   );
 }

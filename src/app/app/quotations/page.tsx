@@ -1,6 +1,7 @@
 import { EditProvider, EditToggle } from "@/components/app/edit-mode";
 import { ListFilters } from "@/components/app/list-filters";
-import { QuotationsTable } from "@/components/app/quotations-table";
+import { DeleteSelectedButton } from "@/components/app/delete-selected";
+import { MessagesTable } from "@/components/app/messages-table";
 import { ModuleHeader } from "@/components/ui/page-header";
 import { Pagination } from "@/components/ui/table";
 import { can } from "@/lib/auth/permissions";
@@ -52,7 +53,17 @@ export default async function QuotationsPage({
   }));
   return (
     <EditProvider>
-      <ModuleHeader href="/app/quotations" actions={canDelete && rows.length > 0 ? <EditToggle /> : null} />
+      <ModuleHeader
+        href="/app/quotations"
+        actions={
+          canDelete && rows.length > 0 ? (
+            <>
+              <EditToggle />
+              <DeleteSelectedButton items={rows.map((r) => ({ id: r.id, label: r.reference }))} singular="quotation" plural="quotations" action={deleteQuotationsAction} />
+            </>
+          ) : null
+        }
+      />
       <ListFilters
         action="/app/quotations"
         param="status"
@@ -67,12 +78,12 @@ export default async function QuotationsPage({
         ]}
       />
       <div className="app-results">
-        <QuotationsTable
+        <MessagesTable
           rows={rows}
           startAt={(page - 1) * PAGE_SIZE}
-          total={counts.all}
           canDelete={canDelete}
-          deleteAction={deleteQuotationsAction}
+          label="Quotations"
+          requestHeading="Request"
           empty={{
             title: q || status ? "No quotations match" : "No quotation requests yet",
             description: q || status ? "Try a different tab or search." : "Made-to-measure requests from the website will appear here.",

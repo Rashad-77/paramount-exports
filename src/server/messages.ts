@@ -440,16 +440,23 @@ export async function startQuoteReview(actor: Actor, id: string): Promise<void> 
   });
 }
 
-/** Owner only: permanently deletes quotation requests (and their replies). Returns how many were deleted. */
-export async function deleteQuotations(actor: Actor, ids: string[]): Promise<number> {
+/** Owner only: permanently deletes quotation requests or enquiries (and their replies). Returns how many were deleted. */
+async function deleteMessages(actor: Actor, ids: string[], kind: "quotation" | "enquiry"): Promise<number> {
   requirePermission(actor, "customers:delete");
   const unique = [...new Set(ids)];
   if (unique.length === 0) return 0;
   return withTx(async (tx) => {
-    const found = await tx.select({ id: messages.id, reference: messages.reference, name: messages.name }).from(messages).where(and(inArray(messages.id, unique), isQuotation)).for("update");
+    const found = await tx
+      .select({ id: messages.id, reference: messages.reference, name: messages.name })
+      .from(messages)
+      .where(and(inArray(messages.id, unique), kind === "quotation" ? isQuotation : isEnquiry))
+      .for("update");
     if (found.length === 0) return 0;
     await tx.delete(messages).where(inArray(messages.id, found.map((m) => m.id)));
-    for (const m of found) await recordAudit(tx, actor, { action: "quotation.deleted", entityType: "message", entityId: m.id, before: { reference: m.reference, name: m.name } });
+    for (const m of found) await recordAudit(tx, actor, { action: `${kind}.deleted`, entityType: "message", entityId: m.id, before: { reference: m.reference, name: m.name } });
     return found.length;
   });
 }
+
+export const deleteQuotations = (actor: Actor, ids: string[]) => deleteMessages(actor, ids, "quotation");
+export const deleteEnquiries = (actor: Actor, ids: string[]) => deleteMessages(actor, ids, "enquiry");
