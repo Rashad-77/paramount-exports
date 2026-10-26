@@ -1138,12 +1138,12 @@ html:has(.page-body) {
     display: flex;
     align-items: center;
     /* A band grows if it has many subcategories to list, so nothing is ever cut off */
-    min-height: calc(9rem + 0.5cm);
+    min-height: calc(9rem + 1cm);
     padding-block: 1.5rem;
   }
   @media (min-width: 40rem) {
     .prow {
-      min-height: calc(13rem + 0.5cm);
+      min-height: calc(13rem + 1cm);
       padding-block: 2rem;
     }
   }
