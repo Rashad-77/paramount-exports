@@ -155,8 +155,8 @@ export function ActionForm({
       </Ctx.Provider>
     </form>
     {successDialog ? (
-      <Dialog open={Boolean(state.ok) && closed !== state} onClose={() => setClosed(state)} title={successDialog} description={state.message}>
-        <div className="flex justify-end p-5">
+      <Dialog open={Boolean(state.ok) && closed !== state} onClose={() => setClosed(state)} title={successDialog} description={state.message} centered>
+        <div className="flex justify-center px-6 pb-6 pt-3">
           <Button type="button" onClick={() => setClosed(state)}>
             Close
           </Button>

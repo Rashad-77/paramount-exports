@@ -17,7 +17,10 @@ export function Dialog({
   wide = false,
   headerActions,
   className,
+  centered = false,
 }: {
+  /** A short message: centred text, no divider and no cross (the button in the body closes it). */
+  centered?: boolean;
   open: boolean;
   onClose: () => void;
   title: string;
@@ -55,18 +58,18 @@ export function Dialog({
       aria-describedby={description ? "dialog-desc" : undefined}
       className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto" : "m-auto max-h-[92vh] w-[min(34rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm" + (className ? " " + className : "")}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+      <div className={centered ? "px-6 pb-2 pt-7 text-center" : "flex items-start justify-between gap-4 border-b border-border p-5"}>
         <div>
           <h2 id="dialog-title" className="text-lg font-semibold">
             {title}
           </h2>
           {description ? (
-            <div id="dialog-desc" className="mt-1 text-sm text-text-muted">
+            <div id="dialog-desc" className={"mt-2 text-sm text-text-muted" + (centered ? " leading-relaxed" : "")}>
               {description}
             </div>
           ) : null}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className={centered ? "hidden" : "flex shrink-0 items-center gap-2"}>
           {headerActions}
           <button
             type="button"
@@ -78,7 +81,7 @@ export function Dialog({
           </button>
         </div>
       </div>
-      <div className="p-5">{children}</div>
+      <div className={centered ? undefined : "p-5"}>{children}</div>
     </dialog>
   );
 }
