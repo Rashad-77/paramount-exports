@@ -8,7 +8,7 @@ import { customerAccounts, messageReplies, messages, orderItems, orders, product
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { formatMoney, moneyString } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
-import { hitRateLimit } from "@/lib/rate-limit";
+import { clearRateLimit, hitRateLimit } from "@/lib/rate-limit";
 import type { EnquiryInput } from "@/lib/schemas/enquiry";
 import { recordAudit } from "./audit";
 import { recordUpdate } from "./account-updates";
@@ -447,12 +447,14 @@ async function deleteMessages(actor: Actor, ids: string[], kind: "quotation" | "
   if (unique.length === 0) return 0;
   return withTx(async (tx) => {
     const found = await tx
-      .select({ id: messages.id, reference: messages.reference, name: messages.name })
+      .select({ id: messages.id, reference: messages.reference, name: messages.name, phoneKey: messages.phoneKey })
       .from(messages)
       .where(and(inArray(messages.id, unique), kind === "quotation" ? isQuotation : isEnquiry))
       .for("update");
     if (found.length === 0) return 0;
     await tx.delete(messages).where(inArray(messages.id, found.map((m) => m.id)));
+    // The "several messages from this phone number" limit counts what a number has sent: with those messages deleted, it starts again from zero.
+    for (const key of new Set(found.map((m) => m.phoneKey))) await clearRateLimit(tx, { scope: "enquiry-phone", value: key });
     for (const m of found) await recordAudit(tx, actor, { action: `${kind}.deleted`, entityType: "message", entityId: m.id, before: { reference: m.reference, name: m.name } });
     return found.length;
   });

@@ -57,6 +57,11 @@ export async function releaseRateLimit(db: DbOrTx, opts: { scope: string; value:
   await db.execute(sql`UPDATE rate_limits SET count = GREATEST(count - 1, 0) WHERE key_hash = ${hashKey(opts.scope, opts.value)} AND window_start = ${new Date(windowStartMs).toISOString()}::timestamptz`);
 }
 
+/** Forgets every earlier hit for this key, in every time window, so the next visit starts from zero (for example once staff have deleted the messages the limit was counting). */
+export async function clearRateLimit(db: DbOrTx, opts: { scope: string; value: string }): Promise<void> {
+  await db.execute(sql`DELETE FROM rate_limits WHERE key_hash = ${hashKey(opts.scope, opts.value)}`);
+}
+
 /** Housekeeping: remove windows older than `olderThanSeconds`. Called by the cron endpoint. */
 export async function purgeRateLimits(db: DbOrTx, olderThanSeconds = 24 * 3600): Promise<number> {
   const rows = await db.execute<{ n: number }>(

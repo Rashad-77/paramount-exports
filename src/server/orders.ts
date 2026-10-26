@@ -7,7 +7,7 @@ import { outer } from "@/lib/db/outer";
 import { auditLogs, customerAccounts, customerAddresses, messages, orderItems, orders, productVariants, products } from "@/lib/db/schema";
 import { invalidState, notFound, rateLimited, validation } from "@/lib/errors";
 import { dec, moneyString, sum } from "@/lib/money";
-import { hitRateLimit } from "@/lib/rate-limit";
+import { clearRateLimit, hitRateLimit } from "@/lib/rate-limit";
 import { getBusinessSettings } from "@/lib/settings";
 import { OPEN_STATUSES, type CheckoutInput, type Fulfilment, type OrderStatus } from "@/lib/schemas/orders";
 import { recordAudit } from "./audit";
@@ -494,7 +494,11 @@ export async function deleteCustomers(actor: Actor, keys: string[]): Promise<{ c
       if (theirOrders.length === 0 && theirMessages.length === 0) continue;
       const accountIds = [...new Set([...theirOrders.map((o) => o.accountId), ...theirMessages.map((m) => m.accountId)].filter((a): a is string => a !== null))];
       const name = theirOrders[0]?.name ?? theirMessages[0]?.name ?? key;
-      if (theirMessages.length) await tx.delete(messages).where(inArray(messages.id, theirMessages.map((m) => m.id)));
+      if (theirMessages.length) {
+        await tx.delete(messages).where(inArray(messages.id, theirMessages.map((m) => m.id)));
+        // With the messages gone, the "several messages from this phone number" limit starts again from zero.
+        await clearRateLimit(tx, { scope: "enquiry-phone", value: key });
+      }
       if (theirOrders.length) await tx.delete(orders).where(inArray(orders.id, theirOrders.map((o) => o.id)));
       if (accountIds.length) await tx.delete(customerAccounts).where(inArray(customerAccounts.id, accountIds));
       await recordAudit(tx, actor, {
