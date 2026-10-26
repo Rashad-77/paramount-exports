@@ -1,3 +1,4 @@
+import { BannerImageField } from "@/components/app/banner-image-field";
 import { FPanelSelect } from "@/components/app/panel-select";
 import { ActionForm, FField, SubmitButton } from "@/components/forms/action-form";
 import type { ActionState } from "@/lib/action-state";
@@ -9,6 +10,12 @@ export interface CategoryFormValues {
   description?: string | null;
   sortOrder?: number;
   isActive?: boolean;
+  /** The picture behind a main category's band, and where it sits. */
+  bannerUrl?: string | null;
+  bannerX?: number;
+  bannerY?: number;
+  /** The subcategories listed on the band. */
+  subNames?: string[];
 }
 
 /** The add and edit form for a category. The web address is made from the name, like a product's. */
@@ -38,6 +45,7 @@ export function CategoryForm({
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
         />
       </div>
+      {values.parentId ? null : <BannerImageField initialUrl={values.bannerUrl ?? null} initialX={values.bannerX ?? 50} initialY={values.bannerY ?? 50} subNames={values.subNames ?? []} />}
       <SubmitButton>{submitLabel}</SubmitButton>
     </ActionForm>
   );

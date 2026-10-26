@@ -2,6 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BannerImageField } from "@/components/app/banner-image-field";
 import { FPanelSelect } from "@/components/app/panel-select";
 import { ActionForm, FField, SubmitButton, useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
@@ -112,6 +113,8 @@ function Fields({ groups }: { groups: Array<{ id: string; name: string }> }) {
       ) : null}
 
       <FField name="name" kind="title" label={sub ? "Subcategory name" : "Category name"} required maxLength={80} defaultValue={state.values?.name ?? ""} hint="The web address is made from the name automatically." />
+
+      {sub ? null : <BannerImageField />}
 
       {sub ? null : <SubcategoryList names={subs} setNames={setSubs} />}
     </>

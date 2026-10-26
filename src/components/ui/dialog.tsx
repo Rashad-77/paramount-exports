@@ -18,7 +18,10 @@ export function Dialog({
   headerActions,
   className,
   centered = false,
+  plainClose = false,
 }: {
+  /** The close cross shows no outline or border when pressed. */
+  plainClose?: boolean;
   /** A short message: centred text, no divider and no cross (the button in the body closes it). */
   centered?: boolean;
   open: boolean;
@@ -75,7 +78,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="inline-flex size-11 shrink-0 items-center justify-center hover:bg-linen"
+            className={"inline-flex size-11 shrink-0 items-center justify-center hover:bg-linen" + (plainClose ? " border-0 outline-none! ring-0 focus:outline-none! focus-visible:outline-none! focus-visible:bg-linen" : "")}
           >
             <X aria-hidden="true" className="size-5" />
           </button>

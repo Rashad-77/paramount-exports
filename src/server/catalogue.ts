@@ -44,11 +44,16 @@ export async function listCategories(actor: Actor) {
       sortOrder: productCategories.sortOrder,
       isActive: productCategories.isActive,
       archivedAt: productCategories.archivedAt,
+      bannerX: productCategories.bannerX,
+      bannerY: productCategories.bannerY,
+      bannerBucket: uploadedFiles.bucket,
+      bannerKey: uploadedFiles.objectKey,
       productCount: sql<number>`count(${products.id}) FILTER (WHERE ${products.archivedAt} IS NULL)::int`,
     })
     .from(productCategories)
     .leftJoin(products, eq(products.categoryId, productCategories.id))
-    .groupBy(productCategories.id)
+    .leftJoin(uploadedFiles, eq(uploadedFiles.id, productCategories.bannerFileId))
+    .groupBy(productCategories.id, uploadedFiles.id)
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
 }
 
@@ -77,7 +82,7 @@ async function categorySlugFor(tx: DbOrTx, input: { slug?: string; name: string 
   return `${base.slice(0, 60)}-${randomBytes(3).toString("hex")}`;
 }
 
-async function insertCategory(tx: DbOrTx, actor: Actor, input: CategoryInput): Promise<string> {
+async function insertCategory(tx: DbOrTx, actor: Actor, input: CategoryInput, banner?: VerifiedFile): Promise<string> {
   const slugValue = await categorySlugFor(tx, input);
   await assertParentUsable(tx, input.parentId);
   // Without a position it goes to the end of its list (main categories together, or the subcategories under one main category).
@@ -91,8 +96,9 @@ async function insertCategory(tx: DbOrTx, actor: Actor, input: CategoryInput): P
   }
   const [c] = await tx
     .insert(productCategories)
-    .values({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder, isActive: input.isActive })
+    .values({ name: input.name, slug: slugValue, description: input.description ?? null, parentId: input.parentId ?? null, sortOrder, isActive: input.isActive, bannerFileId: banner?.id ?? null, bannerX: input.bannerX ?? 50, bannerY: input.bannerY ?? 50 })
     .returning({ id: productCategories.id });
+  if (banner) await linkUploads(tx, [banner], { type: "category", id: c!.id });
   await recordAudit(tx, actor, { action: "category.created", entityType: "product_category", entityId: c!.id, after: { name: input.name, slug: slugValue } });
   return c!.id;
 }
@@ -110,9 +116,11 @@ export async function createCategory(actor: Actor, input: CategoryInput): Promis
 /** A main category with subcategories made in the same step, or a single subcategory. All of it is saved, or none of it. */
 export async function createCategoryWithSubs(actor: Actor, input: CategoryInput, subs: string[]): Promise<{ id: string; parentName: string | null }> {
   requirePermission(actor, "products:write");
+  // Only a main category has a banner picture.
+  const [banner] = input.bannerFileId && !input.parentId ? await verifyUploads([input.bannerFileId], "catalogue", actor) : [];
   try {
     return await withTx(async (tx) => {
-      const id = await insertCategory(tx, actor, input);
+      const id = await insertCategory(tx, actor, input, banner);
       let order = 0;
       for (const name of subs) {
         await insertCategory(tx, actor, { name, slug: undefined, description: undefined, parentId: id, sortOrder: order++, isActive: input.isActive });
@@ -132,6 +140,8 @@ export async function createCategoryWithSubs(actor: Actor, input: CategoryInput,
 
 export async function updateCategory(actor: Actor, id: string, input: CategoryInput): Promise<void> {
   requirePermission(actor, "products:write");
+  const [banner] = input.bannerFileId && !input.parentId ? await verifyUploads([input.bannerFileId], "catalogue", actor) : [];
+  let oldBanner: string | null = null;
   try {
     await withTx(async (tx) => {
       const [before] = await tx.select().from(productCategories).where(eq(productCategories.id, id)).for("update");
@@ -139,9 +149,14 @@ export async function updateCategory(actor: Actor, id: string, input: CategoryIn
       // The web address keeps its first value (links already shared must not break) unless one is typed in.
       const slugValue = input.slug ? resolveSlug(input.slug, input.name) : before.slug;
       await assertParentUsable(tx, input.parentId, id);
+      // A subcategory has no banner; a main category keeps its picture unless a new one is added or it is taken away.
+      const isMain = !input.parentId;
+      const bannerFileId = !isMain ? null : banner ? banner.id : input.removeBanner ? null : before.bannerFileId;
+      if (banner) await linkUploads(tx, [banner], { type: "category", id });
+      if (before.bannerFileId && before.bannerFileId !== bannerFileId) oldBanner = before.bannerFileId;
       await tx
         .update(productCategories)
-        .set({ name: input.name, slug: slugValue, description: input.description === undefined ? before.description : input.description, parentId: input.parentId ?? null, sortOrder: input.sortOrder ?? before.sortOrder, isActive: before.archivedAt === null })
+        .set({ name: input.name, slug: slugValue, description: input.description === undefined ? before.description : input.description, parentId: input.parentId ?? null, sortOrder: input.sortOrder ?? before.sortOrder, isActive: before.archivedAt === null, bannerFileId, bannerX: bannerFileId ? (input.bannerX ?? 50) : 50, bannerY: bannerFileId ? (input.bannerY ?? 50) : 50 })
         .where(eq(productCategories.id, id));
       await recordAudit(tx, actor, { action: "category.updated", entityType: "product_category", entityId: id, before: { name: before.name, slug: before.slug }, after: { name: input.name, slug: slugValue } });
     });
@@ -149,6 +164,7 @@ export async function updateCategory(actor: Actor, id: string, input: CategoryIn
     if (isUniqueViolation(e)) throw conflict("A category with that web address name already exists.");
     throw e;
   }
+  if (oldBanner) await removeFileObject(oldBanner);
 }
 
 export async function setCategoryArchived(actor: Actor, id: string, archived: boolean): Promise<void> {

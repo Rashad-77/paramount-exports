@@ -28,8 +28,16 @@ export const categorySchema = z.object({
   sortOrder: z.preprocess((v) => (v === "" || v === undefined ? undefined : Number(v)), z.number({ error: "Sort order must be a whole number." }).int().min(0).max(9999).optional()),
   /** Not asked for on the forms: a category shows on the website until it is archived. */
   isActive: z.boolean().default(true),
+  /** The uploaded picture for a main category's banner (just uploaded; empty when it is not being changed), and where it sits (percent). */
+  bannerFileId: optUuid("banner picture"),
+  bannerX: z.preprocess((v) => (v === "" || v === undefined ? 50 : Number(v)), z.number().min(0).max(100).transform((n) => Math.round(n))),
+  bannerY: z.preprocess((v) => (v === "" || v === undefined ? 50 : Number(v)), z.number().min(0).max(100).transform((n) => Math.round(n))),
+  /** Take the banner picture away. */
+  removeBanner: z.preprocess((v) => v === "1" || v === "on" || v === true, z.boolean()),
 });
-export type CategoryInput = z.output<typeof categorySchema>;
+/** The banner position and removal are optional when a category is made in code (they default to centred and kept). */
+type CategoryParsed = z.output<typeof categorySchema>;
+export type CategoryInput = Omit<CategoryParsed, "bannerX" | "bannerY" | "removeBanner"> & Partial<Pick<CategoryParsed, "bannerX" | "bannerY" | "removeBanner">>;
 
 /** The Add category pop-up: a main category (optionally with subcategories made at the same time) or a subcategory under a main one. */
 export const categoryCreateSchema = categorySchema.safeExtend({

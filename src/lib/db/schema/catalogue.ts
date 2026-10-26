@@ -23,6 +23,10 @@ export const productCategories = pgTable(
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
+    /** The picture behind a main category's band on the homepage, and where it sits in the band (percent from the left and from the top). */
+    bannerFileId: uuid("banner_file_id").references(() => uploadedFiles.id, { onDelete: "set null" }),
+    bannerX: integer("banner_x").notNull().default(50),
+    bannerY: integer("banner_y").notNull().default(50),
     ...timestamps,
   },
   (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`), index("product_categories_parent_idx").on(t.parentId)],

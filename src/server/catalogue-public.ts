@@ -267,7 +267,7 @@ export async function listPublicProductsByIds(ids: string[]): Promise<PublicCard
   return cards.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
 }
 
-async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number }>> {
+async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number; bannerUrl: string | null; bannerX: number; bannerY: number }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({
@@ -276,15 +276,24 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
       slug: productCategories.slug,
       description: productCategories.description,
       parentId: productCategories.parentId,
+      bannerX: productCategories.bannerX,
+      bannerY: productCategories.bannerY,
+      bannerBucket: uploadedFiles.bucket,
+      bannerKey: uploadedFiles.objectKey,
       count: sql<number>`count(${products.id}) FILTER (WHERE ${products.isPublished} AND ${products.archivedAt} IS NULL)::int`,
     })
     .from(productCategories)
     .leftJoin(products, eq(products.categoryId, productCategories.id))
+    .leftJoin(uploadedFiles, eq(uploadedFiles.id, productCategories.bannerFileId))
     .where(and(eq(productCategories.isActive, true), isNull(productCategories.archivedAt), parentShown))
-    .groupBy(productCategories.id)
+    .groupBy(productCategories.id, uploadedFiles.id)
     .orderBy(asc(productCategories.sortOrder), asc(productCategories.name));
   // A group counts the pieces in the categories under it as well as its own.
-  return rows.map((r) => ({ ...r, count: r.count + rows.filter((c) => c.parentId === r.id).reduce((n, c) => n + c.count, 0) }));
+  return rows.map(({ bannerBucket, bannerKey, ...r }) => ({
+    ...r,
+    count: r.count + rows.filter((c) => c.parentId === r.id).reduce((n, c) => n + c.count, 0),
+    bannerUrl: bannerBucket && bannerKey ? publicFileUrl({ bucket: bannerBucket, objectKey: bannerKey }) : null,
+  }));
 }
 
 async function listPublicMaterialsImpl(): Promise<string[]> {

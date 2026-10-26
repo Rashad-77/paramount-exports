@@ -199,6 +199,7 @@ export default async function HomePage() {
     return {
       key: g.id,
       name: g.name,
+      banner: g.bannerUrl ? { url: g.bannerUrl, x: g.bannerX, y: g.bannerY } : null,
       // Made-to-order work has no pieces to browse: its band leads to the quotation request instead.
       href: /^custom/i.test(g.name) ? "/custom#quotation" : `/products?category=${g.slug}`,
       all: kids.join(" · "),
@@ -354,17 +355,26 @@ export default async function HomePage() {
             {rows.map((r, i) => (
               <Reveal as="li" key={r.key} variant="up" delay={i * 60}>
                 <Link href={r.href} className="prow group">
-                  <ImagePlaceholder
-                    label={`${r.name} — photograph`}
-                    className="absolute inset-0"
-                    compact
-                  />
+                  {r.banner ? (
+                    <>
+                      {/* The picture is the lowest layer and the band clips it; the dark wash keeps the white words readable. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={r.banner.url} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={{ objectPosition: `${r.banner.x}% ${r.banner.y}%` }} />
+                      <span aria-hidden="true" className="prow-shade absolute inset-0" />
+                    </>
+                  ) : (
+                    <ImagePlaceholder
+                      label={`${r.name} — photograph`}
+                      className="absolute inset-0"
+                      compact
+                    />
+                  )}
                   <span className="container-page relative flex items-center justify-between gap-4">
                     <span className="min-w-0">
-                      <span className="font-display block fl-b leading-tight text-text">
+                      <span className={"font-display block fl-b leading-tight " + (r.banner ? "text-white" : "text-text")}>
                         {r.name}
                       </span>
-                      <span className="mt-2.5 grid max-w-[34rem] gap-1.5 fl-g font-semibold uppercase leading-snug tracking-[0.1em] text-text/70 sm:tracking-[0.16em]">
+                      <span className={"mt-2.5 grid max-w-[34rem] gap-1.5 fl-g font-semibold uppercase leading-snug tracking-[0.1em] sm:tracking-[0.16em] " + (r.banner ? "text-white/85" : "text-text/70")}>
                         {r.lines.length > 0
                           ? r.lines.map((l) => <span key={l}>{l}</span>)
                           : r.all || r.note}

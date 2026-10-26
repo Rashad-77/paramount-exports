@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/status";
 import { can } from "@/lib/auth/permissions";
 import { requireActor } from "@/lib/auth/session";
 import { listCategories } from "@/server/catalogue";
+import { publicFileUrl } from "@/server/files";
 import { updateCategoryAction } from "../actions";
 
 export const metadata = { title: "Category" };
@@ -46,6 +47,10 @@ export default async function CategoryPage({
               description: category.description,
               sortOrder: category.sortOrder,
               isActive: category.isActive,
+              bannerUrl: category.bannerBucket && category.bannerKey ? publicFileUrl({ bucket: category.bannerBucket, objectKey: category.bannerKey }) : null,
+              bannerX: category.bannerX,
+              bannerY: category.bannerY,
+              subNames: flat.filter((c) => c.parentId === id && !c.archivedAt).map((c) => c.name),
             }}
             submitLabel="Save changes"
           />
