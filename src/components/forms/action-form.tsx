@@ -4,7 +4,7 @@ import { createContext, useActionState, useContext, useEffect, useRef, useState,
 import type { ActionState } from "@/lib/action-state";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/dialog";
+import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Alert } from "@/components/ui/status";
 import { useResultToast } from "@/components/ui/toaster";
@@ -48,6 +48,7 @@ export function ActionForm({
   hideOnSuccess = false,
   successTitle,
   resetOnSuccess = false,
+  successDialog,
 }: {
   action: Action;
   children: ReactNode;
@@ -57,6 +58,8 @@ export function ActionForm({
   successTitle?: string;
   /** After a successful send, keep the form on the page but empty it (the success message appears as a pop-up). */
   resetOnSuccess?: boolean;
+  /** After a successful send, show the message in a pop-up window with this title (instead of a notification). */
+  successDialog?: string;
 }) {
   const [state, formAction, pending] = useActionState(guarded(action), {});
   // Each success gives the form a new key, which empties every box and the file chooser (a new result is noticed while rendering, as in DateField).
@@ -120,7 +123,9 @@ export function ActionForm({
     target?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, [state]);
 
-  useResultToast(state);
+  // A success shown in a pop-up window is not also shown as a notification.
+  useResultToast(successDialog && state.ok ? undefined : state);
+  const [closed, setClosed] = useState<ActionState | null>(null);
 
   if (state.ok && hideOnSuccess) {
     return (
@@ -149,6 +154,15 @@ export function ActionForm({
         {children}
       </Ctx.Provider>
     </form>
+    {successDialog ? (
+      <Dialog open={Boolean(state.ok) && closed !== state} onClose={() => setClosed(state)} title={successDialog} description={state.message}>
+        <div className="flex justify-end p-5">
+          <Button type="button" onClick={() => setClosed(state)}>
+            Close
+          </Button>
+        </div>
+      </Dialog>
+    ) : null}
     <ConfirmDialog
       open={leaveTo !== null}
       onClose={() => setLeaveTo(null)}

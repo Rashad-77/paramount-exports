@@ -51,7 +51,7 @@ export function EnquiryForm({
   }, []);
 
   return (
-    <ActionForm action={submitEnquiryAction} resetOnSuccess>
+    <ActionForm action={submitEnquiryAction} resetOnSuccess successDialog={kind === "custom" ? "Quotation request sent" : "Enquiry sent"}>
       {turnstileSiteKey ? <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" /> : null}
       <PrefillFromAccount />
       <input type="hidden" name="kind" value={kind} />
