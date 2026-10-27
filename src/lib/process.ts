@@ -59,5 +59,6 @@ export const PROCESS: ProcessStep[] = [
     details:
       "A sample is used to check how the selected coating looks on the timber before it is applied to the furniture. The coating is spread or sprayed in even layers, with time allowed for each layer to dry. Between layers, the surface may be lightly sanded and cleaned to remove small raised spots or dust. The final coats bring an even appearance to the visible surfaces and help protect them during everyday use.",
     photo: "A finished piece being checked",
+    image: "/about/step-5-finishing.jpg",
   },
 ];
