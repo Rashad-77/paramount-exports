@@ -270,6 +270,16 @@
 }
 
 /* The showroom page */
+/* The bottom of the banner photograph melts into the page below it, with no hard edge. */
+.prem-page .vhero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 55%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgb(11 8 7 / 0.55) 55%, var(--prem-bg) 100%);
+}
 .prem-page {
   color: #fff;
   background:
