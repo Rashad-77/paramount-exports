@@ -1792,6 +1792,11 @@ html:has(.page-body) {
   .foot-bottom a:hover {
     color: #fff;
   }
+  /* The "Built by" credit is quieter than the copyright line. */
+  .foot-bottom .foot-built {
+    font-size: 0.5625rem;
+    letter-spacing: 0.1em;
+  }
   .foot .brand,
   .foot .brand i {
     color: #fff;

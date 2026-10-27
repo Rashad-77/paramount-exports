@@ -178,7 +178,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <p>
             © {new Date().getFullYear()} {business.name}
           </p>
-          <p>
+          <p className="foot-built">
             <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
               Built by Rashad<span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
