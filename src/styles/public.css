@@ -6270,7 +6270,7 @@ a.acct-row {
 @media (min-width: 48rem) and (max-width: 72rem) {
   .cat-bar {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1.3fr repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
   }
   .cat-right {
@@ -6293,7 +6293,8 @@ a.acct-row {
 @media (min-width: 72.01rem) {
   .cat-bar {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.3fr);
+    /* The category box is never narrower than its longest category name */
+    grid-template-columns: minmax(max-content, 1.3fr) repeat(2, minmax(0, 1fr)) minmax(0, 1.3fr);
     gap: 0.75rem;
   }
   .cat-right {
@@ -6304,6 +6305,15 @@ a.acct-row {
   .cat-bar .gs-button {
     width: 100%;
     min-width: 0;
+  }
+}
+
+/* The open lists grow to fit their longest name (the side list of subcategories already does). */
+@media (min-width: 48rem) {
+  .cat-bar .gs-panel:not(.gc-side) {
+    width: max-content;
+    min-width: 100%;
+    max-width: 24rem;
   }
 }
 
