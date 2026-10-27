@@ -259,33 +259,32 @@ export function ImagePlacementDialog({
           />
           {overlay}
         </div>
-        <div className="flex items-center gap-3">
-          <button type="button" aria-label="Zoom out" onClick={() => setPos((p) => ({ ...p, z: Math.max(MIN_ZOOM, p.z - 10) }))} className="inline-flex size-8 shrink-0 items-center justify-center text-text-muted hover:text-text">
-            <ZoomOut aria-hidden="true" className="size-5" />
+        {/* The icons and the percentage line up with the slider itself (first row); the marks sit in a second row under the slider only. */}
+        <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem_3rem] items-center gap-x-3 gap-y-1">
+          <button type="button" aria-label="Zoom out" onClick={() => setPos((p) => ({ ...p, z: Math.max(MIN_ZOOM, p.z - 10) }))} className="inline-flex size-8 items-center justify-center text-text-muted hover:text-text">
+            <ZoomOut aria-hidden="true" className="block size-5" />
           </button>
-          <div className="min-w-0 flex-1">
-            <input
-              type="range"
-              aria-label="Zoom"
-              min={MIN_ZOOM}
-              max={MAX_ZOOM}
-              step={5}
-              value={pos.z}
-              onChange={(e) => setPos((p) => ({ ...p, z: Number(e.target.value) }))}
-              className="block w-full accent-[var(--color-walnut)]"
-            />
-            <div className="tabular mt-0.5 flex justify-between px-2 text-[0.6875rem] text-text-muted" aria-hidden="true">
-              <span>1×</span>
-              <span>1.5×</span>
-              <span>2×</span>
-              <span>2.5×</span>
-              <span>3×</span>
-            </div>
+          <input
+            type="range"
+            aria-label="Zoom"
+            min={MIN_ZOOM}
+            max={MAX_ZOOM}
+            step={5}
+            value={pos.z}
+            onChange={(e) => setPos((p) => ({ ...p, z: Number(e.target.value) }))}
+            className="m-0 block h-5 w-full accent-[var(--color-walnut)]"
+          />
+          <button type="button" aria-label="Zoom in" onClick={() => setPos((p) => ({ ...p, z: Math.min(MAX_ZOOM, p.z + 10) }))} className="inline-flex size-8 items-center justify-center text-text-muted hover:text-text">
+            <ZoomIn aria-hidden="true" className="block size-5" />
+          </button>
+          <span className="tabular text-right text-sm leading-none text-text-muted">{pos.z}%</span>
+          <div className="tabular col-start-2 flex justify-between px-2 text-[0.6875rem] leading-none text-text-muted" aria-hidden="true">
+            <span>1×</span>
+            <span>1.5×</span>
+            <span>2×</span>
+            <span>2.5×</span>
+            <span>3×</span>
           </div>
-          <button type="button" aria-label="Zoom in" onClick={() => setPos((p) => ({ ...p, z: Math.min(MAX_ZOOM, p.z + 10) }))} className="inline-flex size-8 shrink-0 items-center justify-center text-text-muted hover:text-text">
-            <ZoomIn aria-hidden="true" className="size-5" />
-          </button>
-          <span className="tabular w-12 shrink-0 text-right text-sm text-text-muted">{pos.z}%</span>
         </div>
         <div className="flex justify-end">
           <Button type="button" onClick={() => onSave(pos)}>
