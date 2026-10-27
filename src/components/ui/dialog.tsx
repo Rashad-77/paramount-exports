@@ -61,18 +61,12 @@ export function Dialog({
       aria-describedby={description ? "dialog-desc" : undefined}
       className={(wide ? "m-auto max-h-[92vh] w-[min(56rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto" : "m-auto max-h-[92vh] w-[min(34rem,calc(100vw-2rem))] overflow-x-hidden overflow-y-auto") + " border border-border bg-surface p-0 text-text shadow-[var(--shadow-lg)] backdrop:bg-charcoal/45 backdrop:backdrop-blur-sm" + (className ? " " + className : "")}
     >
-      <div className={centered ? "px-6 pb-2 pt-7 text-center" : "flex items-start justify-between gap-4 border-b border-border p-5"}>
-        <div>
-          <h2 id="dialog-title" className="text-lg font-semibold">
-            {title}
-          </h2>
-          {description ? (
-            <div id="dialog-desc" className={"mt-2 text-sm text-text-muted" + (centered ? " leading-relaxed" : "")}>
-              {description}
-            </div>
-          ) : null}
-        </div>
-        <div className={centered ? "hidden" : "flex shrink-0 items-center gap-2"}>
+      {/* The title and the cross share the first line; the description runs the full width under them. */}
+      <div className={centered ? "px-6 pb-2 pt-7 text-center" : "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 border-b border-border p-5"}>
+        <h2 id="dialog-title" className="text-lg font-semibold">
+          {title}
+        </h2>
+        <div className={centered ? "hidden" : "col-start-2 row-start-1 flex shrink-0 items-center gap-2"}>
           {headerActions}
           <button
             type="button"
@@ -83,6 +77,11 @@ export function Dialog({
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>
+        {description ? (
+          <div id="dialog-desc" className={"col-span-full mt-2 text-sm text-text-muted" + (centered ? " leading-relaxed" : "")}>
+            {description}
+          </div>
+        ) : null}
       </div>
       <div className={centered ? undefined : "p-5"}>{children}</div>
     </dialog>
