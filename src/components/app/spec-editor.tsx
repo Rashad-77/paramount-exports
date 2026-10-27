@@ -448,20 +448,8 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
             .filter((r) => !r.removed)
             .map((r) => (
               <li key={r.orig} className="flex items-center gap-2">
-                <input type="checkbox" aria-label={`${r.orig} is on this product`} checked={r.on} onChange={(e) => patchRow(r.orig, { on: e.target.checked })} className="size-5 shrink-0" />
-                <input
-                  aria-label={`Name of ${r.orig}`}
-                  className={input}
-                  value={r.name}
-                  maxLength={200}
-                  onKeyDown={(e) => {
-                    // Enter must not submit the product form behind the window.
-                    if (e.key === "Enter") e.preventDefault();
-                  }}
-                  onChange={(e) => patchRow(r.orig, { name: e.target.value })}
-                />
-                {/* The box always takes its room, so the names do not shift when Delete is pressed. */}
-                <span className="inline-flex size-9 shrink-0 items-center justify-center">
+                {/* The tick box is only for choosing what to delete, so it shows only after Delete is pressed (its room is kept, so the names do not shift). */}
+                <span className="inline-flex size-6 shrink-0 items-center justify-center">
                   {deleting ? (
                     <input
                       type="checkbox"
@@ -479,6 +467,17 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
                     />
                   ) : null}
                 </span>
+                <input
+                  aria-label={`Name of ${r.orig}`}
+                  className={input}
+                  value={r.name}
+                  maxLength={200}
+                  onKeyDown={(e) => {
+                    // Enter must not submit the product form behind the window.
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
+                  onChange={(e) => patchRow(r.orig, { name: e.target.value })}
+                />
               </li>
             ))}
         </ul>
