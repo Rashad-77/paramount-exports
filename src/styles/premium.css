@@ -770,44 +770,58 @@
   text-transform: uppercase;
 }
 
-/* The preview in the product form ("In the premium showroom") is a scaled copy of the showroom row as it looks on a computer screen: the photograph, the
-   title, the description, the button and the gaps all keep the same proportions to each other. On the showroom page the photograph is 28.46rem wide, the
-   title 3rem, the description 16.5px and the words 28rem wide; --s is how much smaller the preview is (it needs its own dark colour, since the showroom page
-   gets its colour from the photograph behind it). */
+/* The preview in the product form ("In the premium showroom") is an exact scaled copy of the showroom row as it looks on a computer screen.
+   Every size is a share of the width of the preview box (cqw: 1% of it), worked out from the showroom page, where the photograph, the gap and the words
+   add up to 979.4 px: photograph 455 px (46.46%), gap 76.4 px (7.80%), words 448 px (45.74%), title 48 px (4.90%), description 16.5 px (1.685%).
+   So whatever the size of the preview, the photograph, the title, the description and the button keep the proportions they have on the page. The showroom
+   page sets its words in Arial (the whole public site does), so the preview does too. It also needs its own dark colour, since the showroom page gets its
+   colour from the photograph behind it. */
 .prem-preview {
-  --s: 0.77;
   background: var(--prem-bg);
-}
-.prem-preview .prem-piece-name {
-  font-size: calc(3rem * var(--s));
-}
-.prem-preview .prem-piece-text {
-  max-width: none;
-  margin-top: calc(1.1rem * var(--s));
-  font-size: calc(16.5px * var(--s));
-}
-.prem-preview .prem-cta {
-  margin-top: calc(1.5rem * var(--s));
-  min-height: calc(3rem * var(--s));
-  padding-inline: calc(1.6rem * var(--s));
-  font-size: calc(0.75rem * var(--s));
-}
-.prem-preview .pg-thumbs {
-  margin-top: calc(0.75rem * var(--s));
-  gap: calc(0.5rem * var(--s));
-}
-.prem-preview .prem-gallery-wrap {
-  width: 100%;
-  max-width: none;
-  justify-self: stretch;
-}
-.prem-preview .prem-info {
-  width: 100%;
+  container-type: inline-size;
+  padding-inline: 1.5rem;
 }
 @media (min-width: 40rem) {
   .prem-preview .prem-piece {
-    grid-template-columns: minmax(0, calc(28.46rem * var(--s))) minmax(0, calc(28rem * var(--s)));
-    column-gap: calc(4.77rem * var(--s));
-    justify-content: center;
+    grid-template-columns: 46.46cqw 45.74cqw;
+    column-gap: 7.8cqw;
+    justify-content: start;
+    padding-inline: 0;
+  }
+  .prem-preview .prem-gallery-wrap {
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+  }
+  .prem-preview .prem-info {
+    width: 100%;
+  }
+  .prem-preview .prem-piece-name {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 4.9cqw;
+  }
+  .prem-preview .prem-piece-text {
+    max-width: none;
+    margin-top: 1.797cqw;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.685cqw;
+  }
+  .prem-preview .prem-cta {
+    margin-top: 2.45cqw;
+    min-height: 4.9cqw;
+    padding-inline: 2.614cqw;
+    font-size: 1.225cqw;
+  }
+  .prem-preview .pg-thumbs {
+    margin-top: 1.225cqw;
+    gap: 0.817cqw;
+  }
+  .prem-preview .pg-thumbs li {
+    width: calc((100% - 3.268cqw) / 5);
+  }
+  .prem-preview .pg-count {
+    right: 1.633cqw;
+    bottom: 1.388cqw;
+    font-size: 1.225cqw;
   }
 }
