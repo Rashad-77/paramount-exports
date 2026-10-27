@@ -81,12 +81,12 @@ export function PurchasePanel({
         )}
       </div>
 
-      {stock.state !== "untracked" ? (
+      {/* Sold out has no line of its own here: the disabled "Sold out" button below already says it. */}
+      {stock.state !== "untracked" && stock.state !== "out" ? (
         <p className="pp-stock" data-state={stock.state} role="status">
           <span aria-hidden="true" className="pp-dot" />
           {stock.state === "in" ? `In stock · ${stock.left} available` : null}
           {stock.state === "low" ? `Only ${stock.left} left, order soon` : null}
-          {stock.state === "out" ? "Sold out" : null}
           {stock.state === "made_to_order" ? "Made to order" : null}
         </p>
       ) : null}
