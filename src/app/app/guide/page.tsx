@@ -8,11 +8,10 @@ export const metadata = { title: "Guide" };
 export default async function GuidePage() {
   await requireActor();
   return (
-    <>
+    // The title sits in the same centred column as the question box and the guide, so its left edge lines up with theirs.
+    <div className="mx-auto max-w-3xl">
       <ModuleHeader href="/app/guide" />
-      <div className="mx-auto max-w-3xl">
-        <OwnerGuide />
-      </div>
-    </>
+      <OwnerGuide />
+    </div>
   );
 }
