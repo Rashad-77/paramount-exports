@@ -181,9 +181,10 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           <p className="foot-built">
             <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer" className="gap-1">
               {/* One line runs under "by", the name and the arrow, close to the letters (the arrow's extra height is pulled back so it does not push the line down). */}
-              <span className="inline-flex items-center gap-1 border-b border-current leading-none">
+              <span className="inline-flex items-center gap-1 border-b border-current leading-[0.9]">
                 by Rashad
-                <ArrowUpRight aria-hidden="true" className="-my-1 size-4" strokeWidth={1.75} />
+                {/* Raised a little: capital letters sit above the middle of their line, and the arrow should line up with them. */}
+                <ArrowUpRight aria-hidden="true" className="-my-1 size-4 -translate-y-[1.5px]" strokeWidth={1.75} />
               </span>
               <span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
