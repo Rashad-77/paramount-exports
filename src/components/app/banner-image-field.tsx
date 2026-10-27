@@ -1,6 +1,6 @@
 "use client";
 
-import { ImagePlus, Minus, Plus } from "lucide-react";
+import { ImagePlus, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { Button } from "@/components/ui/button";
@@ -260,24 +260,32 @@ export function ImagePlacementDialog({
           {overlay}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium">Zoom</span>
-          <button type="button" aria-label="Zoom out" onClick={() => setPos((p) => ({ ...p, z: Math.max(MIN_ZOOM, p.z - 10) }))} className="inline-flex size-9 items-center justify-center border border-border-strong bg-surface hover:bg-linen">
-            <Minus aria-hidden="true" className="size-4" />
+          <button type="button" aria-label="Zoom out" onClick={() => setPos((p) => ({ ...p, z: Math.max(MIN_ZOOM, p.z - 10) }))} className="inline-flex size-8 shrink-0 items-center justify-center text-text-muted hover:text-text">
+            <ZoomOut aria-hidden="true" className="size-5" />
           </button>
-          <input
-            type="range"
-            aria-label="Zoom"
-            min={MIN_ZOOM}
-            max={MAX_ZOOM}
-            step={5}
-            value={pos.z}
-            onChange={(e) => setPos((p) => ({ ...p, z: Number(e.target.value) }))}
-            className="min-w-0 flex-1 accent-[var(--color-walnut)]"
-          />
-          <button type="button" aria-label="Zoom in" onClick={() => setPos((p) => ({ ...p, z: Math.min(MAX_ZOOM, p.z + 10) }))} className="inline-flex size-9 items-center justify-center border border-border-strong bg-surface hover:bg-linen">
-            <Plus aria-hidden="true" className="size-4" />
+          <div className="min-w-0 flex-1">
+            <input
+              type="range"
+              aria-label="Zoom"
+              min={MIN_ZOOM}
+              max={MAX_ZOOM}
+              step={5}
+              value={pos.z}
+              onChange={(e) => setPos((p) => ({ ...p, z: Number(e.target.value) }))}
+              className="block w-full accent-[var(--color-walnut)]"
+            />
+            <div className="tabular mt-0.5 flex justify-between px-2 text-[0.6875rem] text-text-muted" aria-hidden="true">
+              <span>1×</span>
+              <span>1.5×</span>
+              <span>2×</span>
+              <span>2.5×</span>
+              <span>3×</span>
+            </div>
+          </div>
+          <button type="button" aria-label="Zoom in" onClick={() => setPos((p) => ({ ...p, z: Math.min(MAX_ZOOM, p.z + 10) }))} className="inline-flex size-8 shrink-0 items-center justify-center text-text-muted hover:text-text">
+            <ZoomIn aria-hidden="true" className="size-5" />
           </button>
-          <span className="tabular w-12 text-right text-sm text-text-muted">{pos.z}%</span>
+          <span className="tabular w-12 shrink-0 text-right text-sm text-text-muted">{pos.z}%</span>
         </div>
         <div className="flex justify-end">
           <Button type="button" onClick={() => onSave(pos)}>
