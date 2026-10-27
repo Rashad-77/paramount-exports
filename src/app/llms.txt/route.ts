@@ -36,7 +36,6 @@ export async function GET() {
     `- [Collection](${site}/products): the pieces on sale, by category and material`,
     `- [Custom furniture](${site}/custom): furniture made to measurements, with a quotation before any work starts`,
     `- [About us](${site}/about): who we are and how a piece is made, from timber selection to finishing`,
-    `- [Timber and care guide](${site}/guide): choosing wood and looking after solid wood furniture`,
     `- [Support](${site}/help): how ordering, delivery and payment work (payment is made to us directly, never online)`,
     `- [Gallery](${site}/gallery): photographs of the showroom and workshop`,
     `- [Contact](${site}/contact): address, opening hours, map and enquiry form`,
