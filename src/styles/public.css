@@ -4899,6 +4899,8 @@ span.cat-pagebtn {
   /* The link has 0.5rem of room above its letters of its own, taken off so that the gap is measured to the letters. */
   top: calc(var(--head-h) + 1px + var(--back-gap) - 0.5rem);
   text-align: left;
+  /* A flex box, so the link sits at its top edge: in an ordinary block the line it sits on pushed it 2 px lower on a computer screen. */
+  display: flex;
 }
 /* Phones and tablets: lined up with the banner's own content. Only computers pin it near the screen's left edge. */
 @media (min-width: 72.01rem) {
@@ -4906,8 +4908,6 @@ span.cat-pagebtn {
     --back-gap: 1.5rem;
     max-width: none;
     padding-inline: var(--back-gap);
-    /* Measured on the live page: on a computer the word sat 2 px lower than its distance from the left edge, so it is lifted by that much. */
-    top: calc(var(--head-h) - 1px + var(--back-gap) - 0.5rem);
   }
 }
 
@@ -6408,6 +6408,7 @@ a.acct-row {
 }
 .pdp-back {
   margin-bottom: 0.75rem;
+  display: flex;
 }
 @media (min-width: 72.01rem) {
   .pdp-back {
