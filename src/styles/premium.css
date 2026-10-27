@@ -305,10 +305,10 @@
   font-size: clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem);
 }
 .prem-page .vhero::before {
-  /* Only the top of the band, not all of it. */
+  /* From the top of the page down to where the title ends (the room above it, the title itself, and a little more), not further. */
   inset: 0 0 auto 0;
-  height: clamp(7rem, 16svh, 10rem);
-  background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.92) 40%, rgb(0 0 0 / 0.55) 75%, transparent 100%);
+  height: calc(1cm + 5rem + clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem) + 1rem);
+  background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.97) 50%, rgb(0 0 0 / 0.75) 80%, transparent 100%);
 }
 /* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
 .prem-glass-wrap {
@@ -319,7 +319,7 @@
 }
 .prem-glass {
   border: 1px solid rgb(255 255 255 / 0.12);
-  background: linear-gradient(180deg, rgb(11 8 7 / 0.3) 0%, rgb(11 8 7 / 0.18) 100%);
+  background: linear-gradient(180deg, rgb(11 8 7 / 0.62) 0%, rgb(11 8 7 / 0.5) 100%);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   backdrop-filter: saturate(1.5) blur(18px);
   box-shadow: 0 24px 64px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.08);
