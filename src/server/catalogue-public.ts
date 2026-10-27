@@ -4,7 +4,8 @@ import { kept as keptRead } from "@/lib/data-cache";
 import { and, asc, desc, eq, exists, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
-import { galleryPhotos, productCategories, productImages, productVariants, products, uploadedFiles } from "@/lib/db/schema";
+import { galleryPhotos, productCategories, productImages, productVariants, products, specHiddenValues, specValues, uploadedFiles } from "@/lib/db/schema";
+import { SPEC_CATALOG } from "@/lib/specifications";
 import type { CatalogueSort } from "@/lib/catalogue-sort";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { moneyString } from "@/lib/money";
@@ -299,14 +300,21 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
 
 async function listPublicMaterialsImpl(): Promise<string[]> {
   if (!hasDatabase()) return [];
-  // Each material named in the Material specification of a product on show, once each (a product with Teak and Mahogany gives both).
-  const rows = await getDb()
-    .select({ material: products.material })
-    .from(products)
-    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
-    .where(and(visible, sql`${products.material} IS NOT NULL`));
+  // The same list the staff are offered under a product's Material: the built-in names that have not been removed, and the ones added since
+  // (a material typed on a product joins that list when the product is saved).
+  const db = getDb();
+  const [saved, hiddenRows] = await Promise.all([
+    db.select({ value: specValues.value }).from(specValues).where(eq(specValues.typeKey, "material")),
+    db.select({ value: specHiddenValues.value }).from(specHiddenValues).where(eq(specHiddenValues.typeKey, "material")),
+  ]);
+  const hidden = new Set(hiddenRows.map((h) => h.value.toLowerCase()));
   const seen = new Map<string, string>();
-  for (const r of rows) for (const m of (r.material ?? "").split(/\s*,\s*/)) if (m.trim() && !seen.has(m.trim().toLowerCase())) seen.set(m.trim().toLowerCase(), m.trim());
+  const note = (v: string) => {
+    const clean = v.trim();
+    if (clean && !seen.has(clean.toLowerCase())) seen.set(clean.toLowerCase(), clean);
+  };
+  for (const s of SPEC_CATALOG.find((c) => c.key === "material")?.suggestions ?? []) if (!hidden.has(s.toLowerCase())) note(s);
+  for (const s of saved) note(s.value);
   return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { reqText } from "@/lib/validation";
+import { clearCatalogueCache } from "@/server/catalogue-cache";
 import { deleteSpecType, deleteSpecValue, renameSpecType, renameSpecValue, saveSpecType, saveSpecValue } from "@/server/specs";
 
 /** Saves a specification type the moment it is created. Hands the saved type back in `data`. */
@@ -33,6 +34,7 @@ export async function saveSpecValueAction(
     z.object({ key: reqText("Type", 80), value: reqText("Value", 200) }),
     async (input, { actor }) => {
       await saveSpecValue(actor!, input.key, input.value);
+      clearCatalogueCache(); // the collection's material list follows these suggestions
     },
   );
 }
@@ -75,6 +77,7 @@ export async function renameSpecValueAction(
     z.object({ key: reqText("Type", 80), from: reqText("Value", 200), to: reqText("Value", 200) }),
     async (input, { actor }) => {
       await renameSpecValue(actor!, input.key, input.from, input.to);
+      clearCatalogueCache();
     },
   );
 }
@@ -89,6 +92,7 @@ export async function deleteSpecValueAction(
     z.object({ key: reqText("Type", 80), value: reqText("Value", 200) }),
     async (input, { actor }) => {
       await deleteSpecValue(actor!, input.key, input.value);
+      clearCatalogueCache();
     },
   );
 }

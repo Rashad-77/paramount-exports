@@ -1,9 +1,8 @@
 import "server-only";
-import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, type DbOrTx } from "@/lib/db/client";
-import { products, specHiddenValues, specTypes, specValues } from "@/lib/db/schema";
-import { conflict } from "@/lib/errors";
+import { specHiddenValues, specTypes, specValues } from "@/lib/db/schema";
 import { SPEC_CATALOG, isBuiltinSuggestion, specKeyFor, type SavedSpecType, type SpecEntry } from "@/lib/specifications";
 
 export interface SpecCatalogExtras {
@@ -21,8 +20,6 @@ export async function listSpecCatalogExtras(actor: Actor): Promise<SpecCatalogEx
   const [types, values, hiddenRows] = await Promise.all([db.select().from(specTypes).orderBy(asc(specTypes.label)), db.select().from(specValues).orderBy(asc(specValues.value)), db.select().from(specHiddenValues)]);
   const byKey: Record<string, string[]> = {};
   for (const v of values) (byKey[v.typeKey] ??= []).push(v.value);
-  // The materials offered on a product are exactly the ones in the Materials table.
-  byKey[MATERIAL_KEY] = (await listMaterials(actor)).map((m) => m.name);
   const hidden: Record<string, string[]> = {};
   for (const h of hiddenRows) (hidden[h.typeKey] ??= []).push(h.value);
   // A saved type that has the same name as a built-in one is just that built-in type.
@@ -115,49 +112,6 @@ export async function deleteSpecValue(actor: Actor, key: string, value: string):
   const clean = value.trim();
   await db.delete(specValues).where(sameValue(key, clean));
   if (isBuiltinSuggestion(key, clean)) await hideBuiltin(db, key, clean);
-}
-
-const MATERIAL_KEY = "material";
-
-/**
- * The materials offered when a product's Material is filled in: the built-in names (unless removed), the ones staff added, and any
- * material already used on a product. Each with how many products (not archived) name it. A to Z.
- */
-export async function listMaterials(actor: Actor): Promise<Array<{ name: string; products: number }>> {
-  requirePermission(actor, "products:view");
-  const db = getDb();
-  const [saved, hiddenRows, used] = await Promise.all([
-    db.select({ value: specValues.value }).from(specValues).where(eq(specValues.typeKey, MATERIAL_KEY)),
-    db.select({ value: specHiddenValues.value }).from(specHiddenValues).where(eq(specHiddenValues.typeKey, MATERIAL_KEY)),
-    db.select({ material: products.material }).from(products).where(and(isNull(products.archivedAt), isNotNull(products.material))),
-  ]);
-  const hidden = new Set(hiddenRows.map((h) => h.value.toLowerCase()));
-  const names = new Map<string, string>();
-  const note = (v: string) => {
-    const clean = v.trim();
-    if (clean && !names.has(clean.toLowerCase())) names.set(clean.toLowerCase(), clean);
-  };
-  for (const s of SPEC_CATALOG.find((c) => c.key === MATERIAL_KEY)?.suggestions ?? []) if (!hidden.has(s.toLowerCase())) note(s);
-  for (const s of saved) note(s.value);
-  const counts = new Map<string, number>();
-  for (const p of used) {
-    const own = new Set((p.material ?? "").split(/\s*,\s*/).map((m) => m.trim().toLowerCase()).filter(Boolean));
-    for (const m of own) {
-      note(p.material!.split(/\s*,\s*/).find((x) => x.trim().toLowerCase() === m) ?? m);
-      counts.set(m, (counts.get(m) ?? 0) + 1);
-    }
-  }
-  return [...names.entries()].map(([k, name]) => ({ name, products: counts.get(k) ?? 0 })).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
-}
-
-/** Adds a material to the list offered on products. A name already in the list is refused. */
-export async function addMaterial(actor: Actor, name: string): Promise<void> {
-  requirePermission(actor, "products:write");
-  const clean = name.trim().replace(/\s+/g, " ").slice(0, 200);
-  if (!clean) return;
-  const current = await listMaterials(actor);
-  if (current.some((m) => m.name.toLowerCase() === clean.toLowerCase())) throw conflict("That material is already in the list.");
-  await saveSpecValue(actor, MATERIAL_KEY, clean);
 }
 
 /** Renames a value in the suggestions. A built-in one is hidden and the new name saved in its place. */
