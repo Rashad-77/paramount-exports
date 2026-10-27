@@ -444,6 +444,20 @@
     width: min(100%, 28rem);
     justify-self: center;
   }
+  .prem-glass .prem-piece {
+    column-gap: 2rem;
+  }
+}
+/* On a computer the two halves are only as wide as the photograph and the words, with a small gap between them, and the pair sits in the middle of the panel. */
+@media (min-width: 64rem) {
+  .prem-glass .prem-piece {
+    grid-template-columns: minmax(0, 32rem) minmax(0, 28rem);
+    column-gap: 3rem;
+    justify-content: center;
+  }
+  .prem-glass .prem-piece:nth-child(even) {
+    grid-template-columns: minmax(0, 28rem) minmax(0, 32rem);
+  }
 }
 
 /* The photograph: large and rectangular, with the row of frames under it */
