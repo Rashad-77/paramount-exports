@@ -57,17 +57,7 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
   return (
     <div className="space-y-4">
       {reviews.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant={editing ? "primary" : "secondary"}
-            onClick={() => {
-              setEditing((e) => !e);
-              setSelected(new Set());
-            }}
-          >
-            {editing ? "Done" : "Edit"}
-          </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {editing ? (
             <>
               <form action={hideFormAction}>
@@ -90,6 +80,16 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
               </form>
             </>
           ) : null}
+          <Button
+            type="button"
+            variant={editing ? "primary" : "secondary"}
+            onClick={() => {
+              setEditing((e) => !e);
+              setSelected(new Set());
+            }}
+          >
+            {editing ? "Done" : "Edit"}
+          </Button>
         </div>
       ) : null}
 
@@ -99,8 +99,8 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
             <TR>
               <TH>Reviewer</TH>
               <TH>Review</TH>
-              <TH>Date</TH>
-              <TH>Status</TH>
+              <TH className="text-center">Date</TH>
+              <TH className="text-center">Status</TH>
             </TR>
           </THead>
           <tbody>
@@ -109,7 +109,8 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
               <TR key={r.id} className={selected.has(r.id) ? "bg-linen" : undefined}>
                 <TD>
                   <span className="flex items-start gap-3">
-                    {editing ? <input type="checkbox" aria-label={`Select the review by ${r.author}`} checked={selected.has(r.id)} onChange={(e) => toggle(r.id, e.target.checked)} className="mt-0.5 size-4 accent-[var(--color-walnut)]" /> : null}
+                    {/* The box always takes its room (hidden until Edit is pressed), so nothing in the table moves when Edit is pressed. */}
+                    <input type="checkbox" aria-label={`Select the review by ${r.author}`} checked={selected.has(r.id)} onChange={(e) => toggle(r.id, e.target.checked)} disabled={!editing} tabIndex={editing ? 0 : -1} aria-hidden={!editing} className={"mt-0.5 size-4 shrink-0 accent-[var(--color-walnut)] " + (editing ? "" : "invisible")} />
                     <span>
                       <span className="font-medium">{r.author}</span>
                       <span className="block text-xs text-text-muted">{"★".repeat(r.rating)}</span>
@@ -119,8 +120,8 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
                 <TD className="max-w-md">
                   <p className="line-clamp-3">{r.body}</p>
                 </TD>
-                <TD>{r.dateText}</TD>
-                <TD>
+                <TD className="text-center">{r.dateText}</TD>
+                <TD className="text-center">
                   <StatusBadge tone={r.hidden ? "warning" : "success"}>{r.hidden ? "Hidden" : "Shown"}</StatusBadge>
                 </TD>
               </TR>
