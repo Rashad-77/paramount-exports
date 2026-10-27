@@ -31,7 +31,10 @@ const page = (label: string, href: string, permission: Permission | null): NavPa
 export const NAV: NavGroup[] = [
   {
     label: "General",
-    modules: [{ label: "Dashboard", description: "New orders, what needs doing today, and recent activity.", pages: [page("Dashboard", "/app", null)] }],
+    modules: [
+      { label: "Dashboard", description: "New orders, what needs doing today, and recent activity.", pages: [page("Dashboard", "/app", null)] },
+      { label: "Guide", description: "How to do things in this dashboard, as questions and answers. Type a question to find the answer, or open any question to see the steps.", pages: [page("Guide", "/app/guide", null)] },
+    ],
   },
   {
     label: "Sales",
