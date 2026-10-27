@@ -59,8 +59,13 @@ function toProductView(i: PreviewInput): ProductViewData {
   } as ProductViewData;
 }
 
-/** The page's own width on a computer screen (its content box is 72 rem wide): drawn at this width and shrunk, so it fills the box edge to edge. */
-const PAGE_WIDTH = 1152;
+/**
+ * The page's content on a computer screen is 1072 px wide (the site's 72 rem page, less its 40 px side margins). The preview draws exactly that, with only a
+ * 16 px margin each side, and shrinks it to the box, so it fills the box and every size inside keeps its proportion to the others. The page width and the
+ * side margin are set here, whatever the dashboard sets, so the preview is the same everywhere.
+ */
+const SIDE = 16;
+const PAGE_WIDTH = 1072 + 2 * SIDE;
 
 /**
  * The product page as it will look, only smaller: the page itself is drawn at its full width and shrunk to fit the box, so every size and every gap keeps
@@ -81,7 +86,7 @@ export function ProductPagePreview({ input, shop }: { input: PreviewInput; shop:
   }, []);
   return (
     <div ref={box} className="max-h-[65vh] overflow-y-auto overflow-x-hidden border border-border">
-      <div style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px" }} className="page-body [&_.pdp-page]:min-h-0 [&_a]:pointer-events-none">
+      <div style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px", ["--content-width" as string]: `${PAGE_WIDTH}px`, ["--gutter" as string]: `${SIDE}px` }} className="page-body [&_.pdp-page]:min-h-0 [&_a]:pointer-events-none">
         <ProductView p={toProductView(input)} shop={shop} preview />
       </div>
     </div>
