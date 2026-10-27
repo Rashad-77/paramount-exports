@@ -49,6 +49,9 @@ export const PROCESS: ProcessStep[] = [
     details:
       "Rough areas, saw marks and small blemishes are smoothed in stages, starting with a coarser abrasive and moving to finer ones. The final passes follow the grain to leave an even surface, while edges and shaped areas are sanded by hand so they keep their intended form. Before coating, the surfaces are checked by hand and in good light for scratches or rough spots that might otherwise show through.",
     photo: "A surface being sanded",
+    image: "/about/step-4-sanding.jpg",
+    // A tall picture: keep the hand and the sandpaper.
+    imagePosition: "50% 25%",
   },
   {
     title: "Finishing",
