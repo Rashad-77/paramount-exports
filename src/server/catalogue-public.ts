@@ -39,6 +39,7 @@ export interface PublicCard {
   /** Where the first photograph sits in its 4:5 frame (percent from the left and from the top). */
   imageX: number;
   imageY: number;
+  imageZoom: number;
   fromPrice: string | null;
   /** The regular price, when the piece is on sale (the price above is then the price after the discount). */
   fromCompare: string | null;
@@ -51,17 +52,17 @@ export interface PublicCard {
 }
 
 /** The photo a card or list shows for each product: always the first one (photo 1). */
-export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string; x: number; y: number }>> {
+export async function firstImages(productIds: string[]): Promise<Map<string, { url: string; alt: string; x: number; y: number; z: number }>> {
   if (productIds.length === 0) return new Map();
   const db = getDb();
   const rows = await db
-    .select({ id: productImages.id, productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position, x: productImages.focusX, y: productImages.focusY })
+    .select({ id: productImages.id, productId: productImages.productId, alt: productImages.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey, position: productImages.position, x: productImages.focusX, y: productImages.focusY, z: productImages.focusZoom })
     .from(productImages)
     .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
     .where(and(inArray(productImages.productId, productIds), eq(uploadedFiles.status, "linked")))
     .orderBy(asc(productImages.position));
-  const out = new Map<string, { url: string; alt: string; x: number; y: number }>();
-  const toEntry = (r: (typeof rows)[number]) => ({ url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt, x: r.x, y: r.y });
+  const out = new Map<string, { url: string; alt: string; x: number; y: number; z: number }>();
+  const toEntry = (r: (typeof rows)[number]) => ({ url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }), alt: r.alt, x: r.x, y: r.y, z: r.z });
   for (const r of rows) if (!out.has(r.productId)) out.set(r.productId, toEntry(r));
   return out;
 }
@@ -96,6 +97,7 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     imageAlt: images.get(r.id)?.alt ?? null,
     imageX: images.get(r.id)?.x ?? 50,
     imageY: images.get(r.id)?.y ?? 50,
+    imageZoom: images.get(r.id)?.z ?? 100,
     fromPrice: r.showPrice && priceBy.get(r.id) ? moneyString(priceBy.get(r.id)!.price) : null,
     fromCompare: r.showPrice && priceBy.get(r.id)?.compare ? moneyString(priceBy.get(r.id)!.compare!) : null,
     discountKind: r.showPrice && priceBy.get(r.id)?.compare ? (r.discountKind as "amount" | "percent" | null) : null,
@@ -198,7 +200,7 @@ async function listFeaturedProductsImpl(limit = 3): Promise<PublicCard[]> {
 /** A piece of the premium range, with every photograph and its long description, as the showroom page shows them. */
 export interface PremiumPiece extends PublicCard {
   description: string | null;
-  images: Array<{ id: string; url: string; alt: string; x: number; y: number }>;
+  images: Array<{ id: string; url: string; alt: string; x: number; y: number; z: number }>;
 }
 
 /** The pieces the owner has marked both premium and featured, newest first. They also stay in the normal collection. */
@@ -217,7 +219,7 @@ async function listPremiumProductsImpl(limit?: number): Promise<PremiumPiece[]> 
   const [cards, imgs] = await Promise.all([
     toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug }))),
     db
-      .select({ productId: productImages.productId, id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+      .select({ productId: productImages.productId, id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, z: productImages.focusZoom, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
       .from(productImages)
       .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
       .where(and(inArray(productImages.productId, ids), eq(uploadedFiles.status, "linked")))
@@ -227,7 +229,7 @@ async function listPremiumProductsImpl(limit?: number): Promise<PremiumPiece[]> 
   return cards.map((c) => ({
     ...c,
     description: byId.get(c.id)?.description ?? null,
-    images: imgs.filter((i) => i.productId === c.id).map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
+    images: imgs.filter((i) => i.productId === c.id).map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
   }));
 }
 
@@ -274,7 +276,7 @@ export async function listPublicProductsByIds(ids: string[]): Promise<PublicCard
   return cards.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
 }
 
-async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number; bannerUrl: string | null; bannerX: number; bannerY: number }>> {
+async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: string; slug: string; description: string | null; parentId: string | null; count: number; bannerUrl: string | null; bannerX: number; bannerY: number; bannerZoom: number }>> {
   if (!hasDatabase()) return [];
   const rows = await getDb()
     .select({
@@ -285,6 +287,7 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
       parentId: productCategories.parentId,
       bannerX: productCategories.bannerX,
       bannerY: productCategories.bannerY,
+      bannerZoom: productCategories.bannerZoom,
       bannerBucket: uploadedFiles.bucket,
       bannerKey: uploadedFiles.objectKey,
       count: sql<number>`count(${products.id}) FILTER (WHERE ${products.isPublished} AND ${products.archivedAt} IS NULL)::int`,
@@ -337,7 +340,7 @@ async function getPublicProductImpl(slugValue: string) {
   const p = row.p;
   const [images, variants] = await Promise.all([
     db
-      .select({ id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+      .select({ id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, z: productImages.focusZoom, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
       .from(productImages)
       .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
       .where(and(eq(productImages.productId, p.id), eq(uploadedFiles.status, "linked")))
@@ -370,7 +373,7 @@ async function getPublicProductImpl(slugValue: string) {
     seoDescription: p.seoDescription,
     availability: p.showAvailability && p.availability ? AVAILABILITY_LABEL[p.availability] : null,
     availabilityState: p.showAvailability && p.availability ? (p.availability === "on_request" ? "made_to_order" : p.availability) : null,
-    images: images.map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
+    images: images.map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
     variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, compare: p.showPrice && v.listPrice && v.comparePrice ? moneyString(v.comparePrice) : null, stock: v.stockQuantity })),
     updatedAt: p.updatedAt,
   };

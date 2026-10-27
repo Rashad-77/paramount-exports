@@ -3,6 +3,7 @@ import { ImagePlaceholder } from "./image-placeholder";
 import { SiteImage } from "./site-image";
 import type { PublicCard } from "@/server/catalogue-public";
 import { formatMoney } from "@/lib/money";
+import { focusStyle } from "@/lib/focus";
 import { saleLabel } from "@/lib/sale";
 import { WishlistButton } from "./wishlist-button";
 
@@ -21,7 +22,7 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               priority={priority}
               className="object-cover"
-              style={{ objectPosition: `${product.imageX}% ${product.imageY}%` }}
+              style={focusStyle({ x: product.imageX, y: product.imageY, z: product.imageZoom })}
             />
           ) : (
             <ImagePlaceholder label={product.name} className="absolute inset-0" />

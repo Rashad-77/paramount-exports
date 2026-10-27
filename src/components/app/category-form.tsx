@@ -14,6 +14,7 @@ export interface CategoryFormValues {
   bannerUrl?: string | null;
   bannerX?: number;
   bannerY?: number;
+  bannerZoom?: number;
   /** The subcategories listed on the band. */
   subNames?: string[];
 }
@@ -45,7 +46,7 @@ export function CategoryForm({
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
         />
       </div>
-      {values.parentId ? null : <BannerImageField initialUrl={values.bannerUrl ?? null} initialX={values.bannerX ?? 50} initialY={values.bannerY ?? 50} subNames={values.subNames ?? []} />}
+      {values.parentId ? null : <BannerImageField initialUrl={values.bannerUrl ?? null} initialX={values.bannerX ?? 50} initialY={values.bannerY ?? 50} initialZoom={values.bannerZoom ?? 100} subNames={values.subNames ?? []} />}
       <SubmitButton>{submitLabel}</SubmitButton>
     </ActionForm>
   );

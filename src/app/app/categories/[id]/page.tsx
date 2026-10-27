@@ -50,6 +50,7 @@ export default async function CategoryPage({
               bannerUrl: category.bannerBucket && category.bannerKey ? publicFileUrl({ bucket: category.bannerBucket, objectKey: category.bannerKey }) : null,
               bannerX: category.bannerX,
               bannerY: category.bannerY,
+              bannerZoom: category.bannerZoom,
               subNames: flat.filter((c) => c.parentId === id && !c.archivedAt).map((c) => c.name),
             }}
             submitLabel="Save changes"

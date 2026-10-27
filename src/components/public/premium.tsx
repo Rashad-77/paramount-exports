@@ -1,3 +1,4 @@
+import { focusStyle } from "@/lib/focus";
 import Link from "next/link";
 import { ImagePlaceholder } from "./image-placeholder";
 import { Reveal } from "./reveal";
@@ -20,7 +21,7 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
   const tiles = Array.from({ length: Math.max(pieces.length, MIN_TILES) }, (_, n) => {
     const p = pieces[n];
     const first = p?.images[0];
-    return { n, piece: p ?? null, url: (first?.url ?? null) as string | null, alt: first?.alt || p?.name || "", x: first?.x ?? 50, y: first?.y ?? 50 };
+    return { n, piece: p ?? null, url: (first?.url ?? null) as string | null, alt: first?.alt || p?.name || "", x: first?.x ?? 50, y: first?.y ?? 50, z: first?.z ?? 100 };
   });
   return (
     <section aria-labelledby="premium-title" className="prem-sec">
@@ -51,7 +52,7 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
         {tiles.map((t) =>
           t.piece ? (
             <Link key={t.n} href={`/products/${t.piece.slug}`} aria-label={t.piece.name} className={TILE_W + " pm-tile"}>
-              {t.url ? <SiteImage src={t.url} alt={t.alt} fill sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 47vw, 78vw" className="object-cover" style={{ objectPosition: `${t.x}% ${t.y}%` }} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
+              {t.url ? <SiteImage src={t.url} alt={t.alt} fill sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 47vw, 78vw" className="object-cover" style={focusStyle({ x: t.x, y: t.y, z: t.z })} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
               <span className="pm-name" aria-hidden="true">
                 {t.piece.name}
               </span>

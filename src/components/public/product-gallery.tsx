@@ -1,5 +1,6 @@
 "use client";
 
+import { focusStyle } from "@/lib/focus";
 import { useState, type ReactNode } from "react";
 import { SiteImage } from "./site-image";
 import { ImagePlaceholder } from "./image-placeholder";
@@ -16,7 +17,7 @@ export function ProductGallery({
   saleLabel,
   premium = false,
 }: {
-  images: Array<{ id: string; url: string; alt: string; x?: number; y?: number }>;
+  images: Array<{ id: string; url: string; alt: string; x?: number; y?: number; z?: number }>;
   name: string;
   heart?: ReactNode;
   saleLabel?: string;
@@ -47,7 +48,7 @@ export function ProductGallery({
                 "object-cover transition-opacity duration-300 motion-reduce:transition-none",
                 i === active ? "opacity-100" : "opacity-0",
               )}
-              style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }}
+              style={focusStyle({ x: img.x ?? 50, y: img.y ?? 50, z: img.z })}
             />
           ))
         ) : (
@@ -83,7 +84,7 @@ export function ProductGallery({
                   fill
                   sizes="96px"
                   className="object-cover"
-                  style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }}
+                  style={focusStyle({ x: img.x ?? 50, y: img.y ?? 50, z: img.z })}
                 />
               </button>
             </li>

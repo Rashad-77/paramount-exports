@@ -1,3 +1,4 @@
+import { focusStyle } from "@/lib/focus";
 import { Clock, Hammer, Handshake, Mail, MapPin, Phone, Quote, Ruler, Star, TreeDeciduous } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -199,7 +200,7 @@ export default async function HomePage() {
     return {
       key: g.id,
       name: g.name,
-      banner: g.bannerUrl ? { url: g.bannerUrl, x: g.bannerX, y: g.bannerY } : null,
+      banner: g.bannerUrl ? { url: g.bannerUrl, x: g.bannerX, y: g.bannerY, z: g.bannerZoom } : null,
       href: `/products?category=${g.slug}`,
       all: kids.join(" · "),
       lines:
@@ -358,7 +359,7 @@ export default async function HomePage() {
                     <>
                       {/* The picture is the lowest layer and the band clips it; the dark wash keeps the white words readable. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.banner.url} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={{ objectPosition: `${r.banner.x}% ${r.banner.y}%` }} />
+                      <img src={r.banner.url} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={focusStyle({ x: r.banner.x, y: r.banner.y, z: r.banner.z })} />
                       <span aria-hidden="true" className="prow-shade absolute inset-0" />
                     </>
                   ) : (

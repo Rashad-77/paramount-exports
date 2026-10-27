@@ -1,10 +1,11 @@
 "use client";
 
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Minus, Plus } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { MAX_ZOOM, MIN_ZOOM, focusStyle } from "@/lib/focus";
 
 /** Height of a band as a share of its width, as on a computer (a 1440px page has a band about 265px tall). */
 const BAND_RATIO = "1440 / 265";
@@ -26,13 +27,13 @@ function BandText({ name, subs }: { name: string; subs: string[] }) {
  * The "Category banner image" field of a main category: choose a picture, then press Edit to drag it to where it should sit in the
  * band. The picture goes straight to storage; the form only carries the file's id and the chosen position.
  */
-export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 50, subNames = [] }: { initialUrl?: string | null; initialX?: number; initialY?: number; subNames?: string[] }) {
+export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 50, initialZoom = 100, subNames = [] }: { initialUrl?: string | null; initialX?: number; initialY?: number; initialZoom?: number; subNames?: string[] }) {
   const inputId = useId();
   const root = useRef<HTMLDivElement>(null);
   const [url, setUrl] = useState<string | null>(initialUrl);
   const [fileId, setFileId] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);
-  const [pos, setPos] = useState({ x: initialX, y: initialY });
+  const [pos, setPos] = useState({ x: initialX, y: initialY, z: initialZoom });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -63,7 +64,7 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
       setUrl(blobUrl.current);
       setFileId(id);
       setRemoved(false);
-      setPos({ x: 50, y: 50 });
+      setPos({ x: 50, y: 50, z: 100 });
     } catch (e) {
       setError(e instanceof Error ? e.message : "The upload failed. Please try again.");
     } finally {
@@ -76,7 +77,7 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
     setUrl(null);
     setFileId(null);
     setRemoved(Boolean(initialUrl));
-    setPos({ x: 50, y: 50 });
+    setPos({ x: 50, y: 50, z: 100 });
   }
 
   function openEditor() {
@@ -116,7 +117,7 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
         <div className="flex items-center gap-3">
           <div className="relative w-48 shrink-0 overflow-hidden bg-linen" style={{ aspectRatio: BAND_RATIO }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={url} alt="" draggable={false} className="absolute inset-0 size-full object-cover" style={{ objectPosition: `${pos.x}% ${pos.y}%` }} />
+            <img src={url} alt="" draggable={false} className="absolute inset-0 size-full object-cover" style={focusStyle(pos)} />
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={openEditor} className="inline-flex h-9 items-center border border-border-strong bg-surface px-3 text-[0.8125rem] font-medium hover:bg-linen">
@@ -140,6 +141,7 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
       {removed ? <input type="hidden" name="removeBanner" value="1" /> : null}
       <input type="hidden" name="bannerX" value={pos.x} />
       <input type="hidden" name="bannerY" value={pos.y} />
+      <input type="hidden" name="bannerZoom" value={pos.z} />
 
       {url && editing ? (
         <PlacementDialog
@@ -160,8 +162,8 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
 }
 
 /** The banner's pop-up: the band as it will look, with the text fixed and the picture underneath it. */
-function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { open: boolean; url: string; start: { x: number; y: number }; name: string; subs: string[]; onClose: () => void; onSave: (p: { x: number; y: number }) => void }) {
-  return <ImagePlacementDialog open={open} url={url} start={start} ratio={BAND_RATIO} title="Banner picture" description="Drag the picture to choose which part shows. The text stays where it is." wide overlay={<BandText name={name} subs={subs} />} onClose={onClose} onSave={onSave} />;
+function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { open: boolean; url: string; start: { x: number; y: number; z: number }; name: string; subs: string[]; onClose: () => void; onSave: (p: { x: number; y: number; z: number }) => void }) {
+  return <ImagePlacementDialog open={open} url={url} start={start} ratio={BAND_RATIO} title="Banner picture" description="Drag the picture to choose which part shows, and zoom in if you like. The text stays where it is." wide overlay={<BandText name={name} subs={subs} />} onClose={onClose} onSave={onSave} />;
 }
 
 /**
@@ -184,7 +186,7 @@ export function ImagePlacementDialog({
 }: {
   open: boolean;
   url: string;
-  start: { x: number; y: number };
+  start: { x: number; y: number; z?: number };
   /** The frame's shape as a CSS aspect-ratio, e.g. "4 / 5". */
   ratio: string;
   title: string;
@@ -195,9 +197,9 @@ export function ImagePlacementDialog({
   /** Anything laid over the picture and kept in place (the banner's text). */
   overlay?: ReactNode;
   onClose: () => void;
-  onSave: (p: { x: number; y: number }) => void;
+  onSave: (p: { x: number; y: number; z: number }) => void;
 }) {
-  const [pos, setPos] = useState(start);
+  const [pos, setPos] = useState({ x: start.x, y: start.y, z: start.z ?? MIN_ZOOM });
   const box = useRef<HTMLDivElement>(null);
   const natural = useRef<{ w: number; h: number } | null>(null);
   const drag = useRef<{ px: number; py: number; x: number; y: number } | null>(null);
@@ -214,12 +216,14 @@ export function ImagePlacementDialog({
     const n = natural.current;
     if (!d || !el || !n) return;
     const r = el.getBoundingClientRect();
-    // object-fit: cover scales the picture to fill the band; only what overflows can be moved, so a pixel of dragging is worth 100% / overflow.
-    const scale = Math.max(r.width / n.w, r.height / n.h);
+    // object-fit: cover scales the picture to fill the frame, and the zoom makes it larger still; only what overflows can be moved, so a pixel
+    // of dragging is worth 100% / overflow.
+    const scale = Math.max(r.width / n.w, r.height / n.h) * (pos.z / 100);
     const overX = n.w * scale - r.width;
     const overY = n.h * scale - r.height;
     const clamp = (v: number) => Math.min(100, Math.max(0, v));
     setPos({
+      z: pos.z,
       x: overX > 0.5 ? Math.round(clamp(d.x - ((e.clientX - d.px) / overX) * 100)) : d.x,
       y: overY > 0.5 ? Math.round(clamp(d.y - ((e.clientY - d.py) / overY) * 100)) : d.y,
     });
@@ -251,9 +255,29 @@ export function ImagePlacementDialog({
               natural.current = { w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight };
             }}
             className="absolute inset-0 size-full object-cover"
-            style={{ objectPosition: `${pos.x}% ${pos.y}%` }}
+            style={focusStyle(pos)}
           />
           {overlay}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium">Zoom</span>
+          <button type="button" aria-label="Zoom out" onClick={() => setPos((p) => ({ ...p, z: Math.max(MIN_ZOOM, p.z - 10) }))} className="inline-flex size-9 items-center justify-center border border-border-strong bg-surface hover:bg-linen">
+            <Minus aria-hidden="true" className="size-4" />
+          </button>
+          <input
+            type="range"
+            aria-label="Zoom"
+            min={MIN_ZOOM}
+            max={MAX_ZOOM}
+            step={5}
+            value={pos.z}
+            onChange={(e) => setPos((p) => ({ ...p, z: Number(e.target.value) }))}
+            className="min-w-0 flex-1 accent-[var(--color-walnut)]"
+          />
+          <button type="button" aria-label="Zoom in" onClick={() => setPos((p) => ({ ...p, z: Math.min(MAX_ZOOM, p.z + 10) }))} className="inline-flex size-9 items-center justify-center border border-border-strong bg-surface hover:bg-linen">
+            <Plus aria-hidden="true" className="size-4" />
+          </button>
+          <span className="tabular w-12 text-right text-sm text-text-muted">{pos.z}%</span>
         </div>
         <div className="flex justify-end">
           <Button type="button" onClick={() => onSave(pos)}>

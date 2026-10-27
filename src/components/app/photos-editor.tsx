@@ -6,6 +6,7 @@ import { ImagePlacementDialog } from "@/components/app/banner-image-field";
 import { useFormState } from "@/components/forms/action-form";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { cn } from "@/lib/cn";
+import { focusStyle } from "@/lib/focus";
 import { MAX_PHOTOS } from "@/lib/schemas/catalogue";
 
 interface Photo {
@@ -18,6 +19,7 @@ interface Photo {
   /** Where the photograph sits in its 4:5 frame (percent from the left and from the top). */
   x: number;
   y: number;
+  z: number;
   state: "uploading" | "done" | "error";
   error?: string;
 }
@@ -29,12 +31,12 @@ const MAX_BYTES = 8 * 1024 * 1024;
  * press Alt + an arrow key). Photo 1 is the thumbnail on cards and lists, and the first photo on the product page. Everything is saved
  * with the product: the form posts `photos` in the order shown.
  */
-export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: string; x?: number; y?: number }> }) {
+export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: string; x?: number; y?: number; z?: number }> }) {
   const inputId = useId();
   const { state } = useFormState();
   const missing = state.fieldErrors?.photos?.[0];
   const root = useRef<HTMLDivElement>(null);
-  const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, x: p.x ?? 50, y: p.y ?? 50, state: "done" as const })));
+  const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, x: p.x ?? 50, y: p.y ?? 50, z: p.z ?? 100, state: "done" as const })));
   /** The photo whose placement window is open. */
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [dragKey, setDragKey] = useState<string | null>(null);
@@ -77,6 +79,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
       url: URL.createObjectURL(f),
       x: 50,
       y: 50,
+      z: 100,
       state: f.size > MAX_BYTES ? "error" : "uploading",
       error: f.size > MAX_BYTES ? `${f.name} is over 8 MB.` : undefined,
     }));
@@ -193,7 +196,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.url} alt="" draggable={false} className={cn("size-full object-cover", p.state === "uploading" && "opacity-50")} style={{ objectPosition: `${p.x}% ${p.y}%` }} />
+                <img src={p.url} alt="" draggable={false} className={cn("size-full object-cover", p.state === "uploading" && "opacity-50")} style={focusStyle(p)} />
                 {numberOf(p.key) > 0 ? <span className="tabular absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center bg-walnut-dark text-xs font-semibold text-ivory">{numberOf(p.key)}</span> : null}
                 {p.state === "done" ? (
                   <button
@@ -231,10 +234,10 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
             key={p.key}
             open
             url={p.url}
-            start={{ x: p.x, y: p.y }}
+            start={{ x: p.x, y: p.y, z: p.z }}
             ratio="4 / 5"
             title={`Photo ${numberOf(p.key)}`}
-            description="Drag the photo to choose which part shows in the 4:5 frame, as on the product cards and pages."
+            description="Drag the photo to choose which part shows in the 4:5 frame, and zoom in if you like. This is how it appears on the product cards and pages."
             boxClassName="mx-auto w-full max-w-[18rem]"
             onClose={() => setEditingKey(null)}
             onSave={(pos) => {
@@ -247,7 +250,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
 
       {/* What the form posts: the photos in order. */}
       {ready.map((p) => (
-        <input key={p.key} type="hidden" name="photos" value={`${p.id ? `id:${p.id}` : `file:${p.fileId}`}@${p.x},${p.y}`} data-url={p.url} data-key={p.key} data-x={p.x} data-y={p.y} />
+        <input key={p.key} type="hidden" name="photos" value={`${p.id ? `id:${p.id}` : `file:${p.fileId}`}@${p.x},${p.y},${p.z}`} data-url={p.url} data-key={p.key} data-x={p.x} data-y={p.y} />
       ))}
     </div>
   );

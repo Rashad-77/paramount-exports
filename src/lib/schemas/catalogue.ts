@@ -32,12 +32,13 @@ export const categorySchema = z.object({
   bannerFileId: optUuid("banner picture"),
   bannerX: z.preprocess((v) => (v === "" || v === undefined ? 50 : Number(v)), z.number().min(0).max(100).transform((n) => Math.round(n))),
   bannerY: z.preprocess((v) => (v === "" || v === undefined ? 50 : Number(v)), z.number().min(0).max(100).transform((n) => Math.round(n))),
+  bannerZoom: z.preprocess((v) => (v === "" || v === undefined ? 100 : Number(v)), z.number().min(100).max(300).transform((n) => Math.round(n))),
   /** Take the banner picture away. */
   removeBanner: z.preprocess((v) => v === "1" || v === "on" || v === true, z.boolean()),
 });
 /** The banner position and removal are optional when a category is made in code (they default to centred and kept). */
 type CategoryParsed = z.output<typeof categorySchema>;
-export type CategoryInput = Omit<CategoryParsed, "bannerX" | "bannerY" | "removeBanner"> & Partial<Pick<CategoryParsed, "bannerX" | "bannerY" | "removeBanner">>;
+export type CategoryInput = Omit<CategoryParsed, "bannerX" | "bannerY" | "bannerZoom" | "removeBanner"> & Partial<Pick<CategoryParsed, "bannerX" | "bannerY" | "bannerZoom" | "removeBanner">>;
 
 /** The Add category pop-up: a main category (optionally with subcategories made at the same time) or a subcategory under a main one. */
 export const categoryCreateSchema = categorySchema.safeExtend({
@@ -83,10 +84,10 @@ const specificationsField = z.preprocess(
   z.array(specEntrySchema, { error: "The specifications could not be read. Reload the page and try again." }).max(40, "Add at most 40 specifications.").optional(),
 );
 
-/** "id:<existing photo>" or "file:<newly uploaded file>", each with its place in the frame as "@x,y" (percent), in the order the photos are shown. */
+/** "id:<existing photo>" or "file:<newly uploaded file>", each with its place in the frame and zoom as "@x,y,zoom" (percent), in the order the photos are shown. */
 const photosField = z.preprocess(
   (v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v.filter((x) => x !== "") : [v]),
-  z.array(z.string().regex(/^(id|file):[0-9a-fA-F-]{36}(@\d{1,3},\d{1,3})?$/, "A photo could not be read. Reload the page and try again.")).max(MAX_PHOTOS, `Add up to ${MAX_PHOTOS} photos.`),
+  z.array(z.string().regex(/^(id|file):[0-9a-fA-F-]{36}(@\d{1,3},\d{1,3}(,\d{1,3})?)?$/, "A photo could not be read. Reload the page and try again.")).max(MAX_PHOTOS, `Add up to ${MAX_PHOTOS} photos.`),
 );
 
 const optInt = (label: string, max: number) =>

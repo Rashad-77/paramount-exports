@@ -1,5 +1,6 @@
 "use client";
 
+import { focusStyle } from "@/lib/focus";
 import { memo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { ImagePlaceholder } from "./image-placeholder";
@@ -11,7 +12,7 @@ const pad =(n: number) => String(n).padStart(2, "0");
  * A large rectangular photograph with the row of square frames under it, as on the product pages: pressing a frame cross-fades to that
  * photograph. There is one frame per photograph, a fifth of the row wide and centred, so fewer than five leave no empty frames.
  */
-export const PremiumGallery = memo(function PremiumGallery({ images, name, priority = false }: { images: Array<{ id: string; url: string; alt: string; x?: number; y?: number }>; name: string; priority?: boolean }) {
+export const PremiumGallery = memo(function PremiumGallery({ images, name, priority = false }: { images: Array<{ id: string; url: string; alt: string; x?: number; y?: number; z?: number }>; name: string; priority?: boolean }) {
   const [active, setActive] = useState(0);
   /** The photograph being faded out: it stays in place under the new one until the fade is done, so the picture never dips to black. */
   const [prev, setPrev] = useState<number | null>(null);
@@ -33,7 +34,7 @@ export const PremiumGallery = memo(function PremiumGallery({ images, name, prior
               priority={priority && i === 0}
               sizes="(min-width: 1024px) 40rem, (min-width: 768px) 50vw, 100vw"
               className="pg-img object-cover"
-              style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }}
+              style={focusStyle({ x: img.x ?? 50, y: img.y ?? 50, z: img.z })}
               data-on={i === active ? "" : undefined}
               data-prev={i === prev && i !== active ? "" : undefined}
               aria-hidden={i === active ? undefined : true}
@@ -59,7 +60,7 @@ export const PremiumGallery = memo(function PremiumGallery({ images, name, prior
                 aria-pressed={i === active}
                 className={cn("pg-thumb", i === active && "is-on")}
               >
-                <SiteImage src={img.url} alt="" fill sizes="96px" className="object-cover" style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }} />
+                <SiteImage src={img.url} alt="" fill sizes="96px" className="object-cover" style={focusStyle({ x: img.x ?? 50, y: img.y ?? 50, z: img.z })} />
               </button>
             </li>
           ))}

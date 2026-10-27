@@ -27,6 +27,8 @@ export const productCategories = pgTable(
     bannerFileId: uuid("banner_file_id").references(() => uploadedFiles.id, { onDelete: "set null" }),
     bannerX: integer("banner_x").notNull().default(50),
     bannerY: integer("banner_y").notNull().default(50),
+    /** How far the banner picture is zoomed in: 100 fills the band, up to 300. */
+    bannerZoom: integer("banner_zoom").notNull().default(100),
     ...timestamps,
   },
   (t) => [check("product_categories_slug_format", sql`${t.slug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`), index("product_categories_parent_idx").on(t.parentId)],
@@ -139,6 +141,8 @@ export const productImages = pgTable(
     /** Where the photograph sits in its 4:5 frame (percent from the left and from the top), as set with the pencil on the product form. */
     focusX: integer("focus_x").notNull().default(50),
     focusY: integer("focus_y").notNull().default(50),
+    /** How far the photograph is zoomed in: 100 fills its frame, up to 300. */
+    focusZoom: integer("focus_zoom").notNull().default(100),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("product_images_product_idx").on(t.productId), unique("product_images_file_key").on(t.fileId)],
