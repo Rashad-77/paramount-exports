@@ -143,7 +143,8 @@ async function listPublicProductsImpl(query: CatalogueQuery) {
     const inGroup = alias(productCategories, "group_cat");
     where.push(or(eq(productCategories.slug, query.category), exists(getDb().select({ one: sql`1` }).from(inGroup).where(and(eq(inGroup.id, productCategories.parentId), eq(inGroup.slug, query.category)))))!);
   }
-  if (query.material) where.push(eq(products.material, query.material));
+  // A product has one or several materials (stored joined by commas): it matches when the chosen one is among them.
+  if (query.material) where.push(sql`${query.material.trim().toLowerCase()} = ANY(string_to_array(lower(regexp_replace(${products.material}, '[[:space:]]*,[[:space:]]*', ',', 'g')), ','))`);
   if (query.q) {
     const like = `%${escapeLike(query.q)}%`;
     where.push(
@@ -298,13 +299,15 @@ async function listPublicCategoriesImpl(): Promise<Array<{ id: string; name: str
 
 async function listPublicMaterialsImpl(): Promise<string[]> {
   if (!hasDatabase()) return [];
+  // Each material named in the Material specification of a product on show, once each (a product with Teak and Mahogany gives both).
   const rows = await getDb()
-    .selectDistinct({ material: products.material })
+    .select({ material: products.material })
     .from(products)
     .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
-    .where(and(visible, sql`${products.material} IS NOT NULL`))
-    .orderBy(asc(products.material));
-  return rows.map((r) => r.material!).filter(Boolean);
+    .where(and(visible, sql`${products.material} IS NOT NULL`));
+  const seen = new Map<string, string>();
+  for (const r of rows) for (const m of (r.material ?? "").split(/\s*,\s*/)) if (m.trim() && !seen.has(m.trim().toLowerCase())) seen.set(m.trim().toLowerCase(), m.trim());
+  return [...seen.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
 /** One item per non-empty line. */

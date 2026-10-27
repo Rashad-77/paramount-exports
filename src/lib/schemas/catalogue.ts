@@ -151,8 +151,16 @@ const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
   if (v.showAvailability && !v.availability) ctx.addIssue({ code: "custom", path: ["availability"], message: "Choose the availability to show, or untick “Show availability”." });
 };
 
+/** Every product says what it is made of: the Material specification needs at least one value (checked when the form sends its specifications). */
+const materialRule = (v: { specifications?: Array<{ key: string; values: string[] }> }, ctx: z.RefinementCtx) => {
+  if (!v.specifications) return;
+  const material = v.specifications.find((s) => s.key === "material");
+  if (!material || !material.values.some((x) => x.trim())) ctx.addIssue({ code: "custom", path: ["specifications"], message: "Add at least one material (for example Teak)." });
+};
+
 export const productSchema = productBase.superRefine((v, ctx) => {
   productRules(v, ctx);
+  materialRule(v, ctx);
   // A new product starts with at least one photo.
   if (v.visibility !== undefined && v.photos.length === 0) ctx.addIssue({ code: "custom", path: ["photos"], message: "Add at least one photo of the product." });
   if (v.visibility === undefined && v.showPrice && !v.listPrice) ctx.addIssue({ code: "custom", path: ["listPrice"], message: "Enter a price, or untick “Show price publicly”." });
@@ -160,7 +168,10 @@ export const productSchema = productBase.superRefine((v, ctx) => {
 export type ProductInput = z.output<typeof productSchema>;
 
 /** Update from the staff form carries the price and stock of the product's one price line; the older form left prices to the options. */
-export const productUpdateSchema = productBase.omit({ sku: true }).superRefine(productRules);
+export const productUpdateSchema = productBase.omit({ sku: true }).superRefine((v, ctx) => {
+  productRules(v, ctx);
+  materialRule(v, ctx);
+});
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
 /** The gallery has two sections, each a set of photographs: the showroom and the workshop. */

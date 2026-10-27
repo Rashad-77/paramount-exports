@@ -36,11 +36,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     listPremiumProducts(1),
   ]);
 
-  // The wood types of the timber group come first, then any other material already used on a product.
-  const timber = categories.find((c) => c.slug === "timber-and-wood-planks");
-  const woodNames = timber ? categories.filter((c) => c.parentId === timber.id).map((c) => c.name) : [];
-  const woods = [...woodNames, ...materials.filter((m) => !woodNames.some((w) => w.toLowerCase() === m.toLowerCase()))];
-
   return (
     <>
       <PageIntro back={{ href: "/", to: "home" }}
@@ -54,7 +49,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <CatalogueBrowser
           wishlist={(await getAccountSettings()).enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}
-          materials={woods}
+          materials={materials}
           initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}
           initialResult={result}
           currency={business.currency}

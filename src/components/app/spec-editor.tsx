@@ -5,6 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createSpecTypeAction, deleteSpecTypeAction, deleteSpecValueAction, renameSpecTypeAction, renameSpecValueAction, saveSpecValueAction } from "@/app/app/products/spec-actions";
 import { PanelSelect } from "@/components/app/panel-select";
 import { Button } from "@/components/ui/button";
+import { useFormState } from "@/components/forms/action-form";
 import { ConfirmDialog, Dialog } from "@/components/ui/dialog";
 import { SelectField } from "@/components/ui/field";
 import { cn } from "@/lib/cn";
@@ -69,7 +70,13 @@ export function SpecificationsEditor({
   /** Built-in suggestions the staff have removed. */
   savedHidden?: Record<string, string[]>;
 }) {
-  const [rows, setRows] = useState<Row[]>(() => initial.map(fromEntry));
+  // Material is on every product, always the first row, and cannot be removed.
+  const [rows, setRows] = useState<Row[]>(() => {
+    const made = initial.map(fromEntry);
+    return made.some((r) => r.key === "material") ? made : [{ id: nextId(), key: "material", label: "Material", type: "list", values: [] }, ...made];
+  });
+  const { state: formState } = useFormState();
+  const materialError = formState.fieldErrors?.specifications?.[0];
   const [types, setTypes] = useState<SavedSpecType[]>(savedTypes);
   const [values, setValues] = useState<Record<string, string[]>>(savedValues);
   const [hidden, setHidden] = useState<Record<string, string[]>>(savedHidden);
@@ -203,7 +210,10 @@ export function SpecificationsEditor({
 
       {rows.map((r) => (
         <div key={r.id} className="grid gap-2 border border-border bg-surface p-3 sm:grid-cols-[10rem_1fr_auto] sm:items-center">
-          <p className="text-sm font-medium">{r.label}</p>
+          <p className="text-sm font-medium">
+            {r.label}
+            {r.key === "material" ? <span className="text-danger" aria-hidden="true"> *</span> : null}
+          </p>
           <div className="min-w-0">
             {r.type === "text" ? (
               <input
@@ -224,10 +234,17 @@ export function SpecificationsEditor({
                 <Pencil aria-hidden="true" className="size-3.5" />
               </button>
             ) : null}
-            <button type="button" onClick={() => setRemoving(r.id)} aria-label={`Remove ${r.label}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-danger">
-              <Trash2 aria-hidden="true" className="size-3.5" />
-            </button>
+            {r.key === "material" ? null : (
+              <button type="button" onClick={() => setRemoving(r.id)} aria-label={`Remove ${r.label}`} className="inline-flex size-6 items-center justify-center text-text-muted hover:bg-black/5 hover:text-danger">
+                <Trash2 aria-hidden="true" className="size-3.5" />
+              </button>
+            )}
           </div>
+          {r.key === "material" && materialError ? (
+            <p role="alert" className="text-[0.8125rem] text-danger sm:col-span-full">
+              {materialError}
+            </p>
+          ) : null}
         </div>
       ))}
 
