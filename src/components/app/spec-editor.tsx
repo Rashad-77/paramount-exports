@@ -417,49 +417,32 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
         onClose={() => (dirty ? setAsking(true) : onClose())}
         title={title}
         headerActions={
-          dirty ? (
-            <Button size="md" onClick={save}>
-              Save
-            </Button>
-          ) : null
+          <>
+            {rows.some((r) => !r.removed) ? (
+              <DeleteControls
+                deleting={deleting}
+                count={picked.size}
+                onStart={() => setDeleting(true)}
+                onCancel={() => {
+                  setDeleting(false);
+                  setPicked(new Set());
+                }}
+                onDelete={() => {
+                  setRows((cur) => cur.map((r) => (picked.has(r.orig) ? { ...r, removed: true } : r)));
+                  setPicked(new Set());
+                  setDeleting(false);
+                }}
+              />
+            ) : null}
+            {dirty ? (
+              <Button size="md" onClick={save}>
+                Save
+              </Button>
+            ) : null}
+          </>
         }
       >
-        {rows.filter((r) => !r.removed).length === 0 ? <p className="text-sm text-text-muted">No values.</p> : (
-          <div className="mb-3 flex items-center justify-end gap-2">
-            {deleting ? (
-              <>
-                <Button
-                  type="button"
-                  size="md"
-                  variant="secondary"
-                  onClick={() => {
-                    setDeleting(false);
-                    setPicked(new Set());
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="md"
-                  variant="danger"
-                  disabled={picked.size === 0}
-                  onClick={() => {
-                    setRows((cur) => cur.map((r) => (picked.has(r.orig) ? { ...r, removed: true } : r)));
-                    setPicked(new Set());
-                    setDeleting(false);
-                  }}
-                >
-                  Delete{picked.size > 0 ? ` (${picked.size})` : ""}
-                </Button>
-              </>
-            ) : (
-              <Button type="button" size="md" variant="secondary" onClick={() => setDeleting(true)}>
-                Delete
-              </Button>
-            )}
-          </div>
-        )}
+        {rows.filter((r) => !r.removed).length === 0 ? <p className="text-sm text-text-muted">No values.</p> : null}
         <ul className="space-y-2">
           {rows
             .filter((r) => !r.removed)
@@ -737,6 +720,24 @@ function AddSpecification({
   );
 }
 
+/** The red Delete button in the top right of an edit window, left of Save. Pressed, tick boxes appear on the rows and it becomes Cancel and "Delete (n)". */
+function DeleteControls({ deleting, count, onStart, onCancel, onDelete }: { deleting: boolean; count: number; onStart: () => void; onCancel: () => void; onDelete: () => void }) {
+  return deleting ? (
+    <>
+      <Button type="button" size="md" variant="secondary" onClick={onCancel}>
+        Cancel
+      </Button>
+      <Button type="button" size="md" variant="danger" disabled={count === 0} onClick={onDelete}>
+        Delete{count > 0 ? ` (${count})` : ""}
+      </Button>
+    </>
+  ) : (
+    <Button type="button" size="md" variant="danger" onClick={onStart}>
+      Delete
+    </Button>
+  );
+}
+
 /** The edit window for the staff's own specification types: change names or remove them, then Save. Closing with changes asks first. */
 function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCatalogItem[]; onRename: (key: string, label: string) => void; onDelete: (key: string) => void; onClose: () => void }) {
   const [rows, setRows] = useState(() => types.map((t) => ({ key: t.key, orig: t.label, name: t.label, removed: false })));
@@ -761,49 +762,32 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
         onClose={() => (dirty ? setAsking(true) : onClose())}
         title="Edit your own types"
         headerActions={
-          dirty ? (
-            <Button size="md" onClick={save}>
-              Save
-            </Button>
-          ) : null
+          <>
+            {shown.length > 0 ? (
+              <DeleteControls
+                deleting={deleting}
+                count={picked.size}
+                onStart={() => setDeleting(true)}
+                onCancel={() => {
+                  setDeleting(false);
+                  setPicked(new Set());
+                }}
+                onDelete={() => {
+                  setRows((cur) => cur.map((r) => (picked.has(r.key) ? { ...r, removed: true } : r)));
+                  setPicked(new Set());
+                  setDeleting(false);
+                }}
+              />
+            ) : null}
+            {dirty ? (
+              <Button size="md" onClick={save}>
+                Save
+              </Button>
+            ) : null}
+          </>
         }
       >
-        {shown.length === 0 ? <p className="text-sm text-text-muted">You have no types of your own.</p> : (
-          <div className="mb-3 flex items-center justify-end gap-2">
-            {deleting ? (
-              <>
-                <Button
-                  type="button"
-                  size="md"
-                  variant="secondary"
-                  onClick={() => {
-                    setDeleting(false);
-                    setPicked(new Set());
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  size="md"
-                  variant="danger"
-                  disabled={picked.size === 0}
-                  onClick={() => {
-                    setRows((cur) => cur.map((r) => (picked.has(r.key) ? { ...r, removed: true } : r)));
-                    setPicked(new Set());
-                    setDeleting(false);
-                  }}
-                >
-                  Delete{picked.size > 0 ? ` (${picked.size})` : ""}
-                </Button>
-              </>
-            ) : (
-              <Button type="button" size="md" variant="secondary" onClick={() => setDeleting(true)}>
-                Delete
-              </Button>
-            )}
-          </div>
-        )}
+        {shown.length === 0 ? <p className="text-sm text-text-muted">You have no types of your own.</p> : null}
         <ul className="space-y-2">
           {shown.map((r) => (
             <li key={r.key} className="flex items-center gap-2">
