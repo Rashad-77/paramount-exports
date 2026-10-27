@@ -1,4 +1,4 @@
-import { Clock, Info, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Clock, Info, Mail, MapPin, Phone } from "lucide-react";
 import { ReviewButton } from "@/components/public/review-button";
 import { googleReviewLink } from "@/lib/google-reviews";
 import Image from "next/image";
@@ -179,8 +179,9 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
             © {new Date().getFullYear()} {business.name}
           </p>
           <p className="foot-built">
-            <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
+            <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer" className="gap-1">
               by <span className="underline underline-offset-2">Rashad</span>
+              <ArrowUpRight aria-hidden="true" className="ml-0.5 inline size-3 align-[-0.1em]" strokeWidth={1.75} />
               <span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
           </p>
