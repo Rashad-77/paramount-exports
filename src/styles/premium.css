@@ -603,11 +603,9 @@
 .prem-piece-text p {
   white-space: pre-line;
 }
-/* Words that would run past the bottom of the photograph are cut there and fade out (see FitText). */
+/* Words that would run past the bottom of the photograph are cut at the last whole line that fits (see FitText), with no fade. */
 .prem-piece-text[data-cut="true"] {
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 3rem), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 3rem), transparent 100%);
 }
 .prem-piece-text p + p {
   margin-top: 1rem;
@@ -779,8 +777,10 @@
 }
 @media (min-width: 40rem) {
   .prem-preview .prem-piece {
-    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    /* The photograph and the words are only as wide as they need to be, and the pair sits in the middle of the box: the same room on the left and on the right. */
+    grid-template-columns: minmax(0, 17rem) minmax(0, 28rem);
     column-gap: 2rem;
+    justify-content: center;
   }
 }
 .prem-preview .prem-gallery-wrap {

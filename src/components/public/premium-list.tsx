@@ -11,7 +11,7 @@ const STEP = 90;
 
 /**
  * The words beside a photograph never run past the bottom of the photograph: when the screen is wide enough for them to sit side by side, whatever
- * would hang below it is cut off with a soft fade. (The description is also limited to a number of words, so this is only the safety net for
+ * would hang below it is cut off at the last whole line. (The description is also limited to a number of words, so this is only the safety net for
  * narrower screens, where the column is narrow and the same words need more lines.)
  */
 function FitText({ children }: { children: ReactNode }) {
@@ -30,7 +30,9 @@ function FitText({ children }: { children: ReactNode }) {
       // From the top of the words to the bottom of the photograph, less the button that follows them and the space above it.
       const room = photo.getBoundingClientRect().bottom - el.getBoundingClientRect().top - (cta ? cta.offsetHeight + parseFloat(getComputedStyle(cta).marginTop) : 0);
       if (room > 0 && el.scrollHeight > room + 1) {
-        el.style.maxHeight = `${Math.floor(room)}px`;
+        // Only whole lines: the last line shown is never cut through the middle.
+        const line = parseFloat(getComputedStyle(el).lineHeight) || 0;
+        el.style.maxHeight = `${line > 0 ? Math.floor(room / line) * line : Math.floor(room)}px`;
         el.dataset.cut = "true";
       }
     };
