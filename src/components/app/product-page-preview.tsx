@@ -86,7 +86,7 @@ export function ProductPagePreview({ input, shop }: { input: PreviewInput; shop:
   }, []);
   return (
     <div ref={box} className="max-h-[65vh] overflow-y-auto overflow-x-hidden border border-border">
-      <div style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px", ["--content-width" as string]: `${PAGE_WIDTH}px`, ["--gutter" as string]: `${SIDE}px` }} className="page-body [&_.pdp-page]:min-h-0 [&_a]:pointer-events-none">
+      <div style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px", ["--content-width" as string]: `${PAGE_WIDTH}px`, ["--gutter" as string]: `${SIDE}px` }} className="page-body pdp-preview [&_.pdp-page]:min-h-0 [&_a]:pointer-events-none">
         <ProductView p={toProductView(input)} shop={shop} preview />
       </div>
     </div>

@@ -6374,3 +6374,17 @@ a.acct-row {
     letter-spacing: clamp(2px, calc(2px + (100vw - 768px) * 0.0236), 3.7px);
   }
 }
+
+/* The long description on a product page: the block is centred under the tabs and its lines are justified (both edges straight, long words hyphenated so the spacing stays even). */
+.ptabs-panel:has(> .pdp-prose) {
+  margin-inline: auto;
+}
+.pdp-prose {
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* In the preview in the product form the page is drawn small, so the words under the tabs are set larger there (they would be hard to read at the page's own size). */
+.pdp-preview .pdp-page :is(.pdp-prose, .pdp-prose p, .pdp-specs dt, .pdp-specs dd, .pdp-info p) {
+  font-size: 1.1rem;
+}
