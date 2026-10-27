@@ -6,7 +6,7 @@ import { useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { AvailabilityTag, type AvailabilityState } from "@/components/public/availability-tag";
-import { Alert, StatusBadge } from "@/components/ui/status";
+import { Alert } from "@/components/ui/status";
 import { formatMoney } from "@/lib/money";
 import { priceAfterDiscount, saleLabel } from "@/lib/sale";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
@@ -237,25 +237,26 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                   );
                 })()}
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}{preview.availability === "in_stock" && preview.stock ? `: ${preview.stock} available` : ""}</AvailabilityTag> : null}
-                  {preview.featured ? <StatusBadge tone="info">Featured on the homepage</StatusBadge> : null}
-                  {preview.premium ? <span className="inline-flex items-center border border-walnut-dark bg-walnut-dark px-2 py-0.5 text-xs font-medium text-ivory">Premium range</span> : null}
+                  {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}</AvailabilityTag> : null}
                 </div>
 
-                <h4 className="mt-5 text-sm font-semibold">Specifications</h4>
-                <dl className="mt-1.5 divide-y divide-border border-y border-border text-sm">
-                  <div className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
-                    <dt className="text-text-muted">Type</dt>
-                    <dd>{preview.kind === "made_to_order" ? "Made to order" : "Ready-made"}</dd>
-                  </div>
-                  {preview.specs.map((s, i) => (
-                    <div key={i} className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
-                      <dt className="text-text-muted">{s.label}</dt>
-                      <dd>{s.value}</dd>
-                    </div>
-                  ))}
-                </dl>
               </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold">Specifications</h4>
+              <dl className="mt-1.5 divide-y divide-border border-y border-border text-sm">
+                <div className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
+                  <dt className="text-text-muted">Type</dt>
+                  <dd>{preview.kind === "made_to_order" ? "Made to order" : "Ready-made"}</dd>
+                </div>
+                {preview.specs.map((s, i) => (
+                  <div key={i} className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
+                    <dt className="text-text-muted">{s.label}</dt>
+                    <dd>{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             {preview.description ? (
