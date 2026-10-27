@@ -9,7 +9,7 @@ import { SAMPLE_OWNER } from "@/lib/history";
 import { PROCESS } from "@/lib/process";
 import { getBusinessSettings, getPageContent } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "About us", description: "Who we are, how we work, and the craft behind our ready-made and made-to-measure wood furniture.", alternates: { canonical: "/about" } };
+export const metadata: Metadata = { title: "About our workshop and process", description: "Who we are, how we work, and the craft behind our ready-made and made-to-measure wood furniture, from timber selection to the final coat.", alternates: { canonical: "/about" } };
 export const revalidate = 300;
 
 const STEP = 80;

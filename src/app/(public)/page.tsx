@@ -44,11 +44,13 @@ const aboutLine = (name: string, place: string | null) =>
 export async function generateMetadata(): Promise<Metadata> {
   const business = await getBusinessSettings();
   const place = placeOf(business.address);
+  // Search results show about 155 characters of the description: this one fits whole.
+  const description = `Solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made pieces to see in our showroom, or furniture built to your measurements.`;
   return {
     title: { absolute: `${business.name}${place ? ` · Solid wood furniture in ${place}` : " · Solid wood furniture"}` },
-    description: aboutLine(business.name, place),
+    description,
     alternates: { canonical: "/" },
-    openGraph: { title: business.name, description: aboutLine(business.name, place), url: "/" },
+    openGraph: { title: business.name, description, url: "/", siteName: business.name, type: "website", locale: "en_LK" },
   };
 }
 

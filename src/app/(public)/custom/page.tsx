@@ -6,7 +6,7 @@ import { publicEnv } from "@/lib/env";
 import { CUSTOM_STEPS } from "@/lib/custom-steps";
 
 export const metadata: Metadata = {
-  title: "Custom furniture",
+  title: "Custom made wood furniture",
   description:
     "Have wood furniture made to your measurements, in the timber and finish you choose. Tell us what you need and we will reply with a quotation before any work starts.",
   alternates: { canonical: "/custom" },

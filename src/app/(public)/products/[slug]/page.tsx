@@ -76,7 +76,7 @@ export default async function ProductPage({ params }: Props) {
       ...p.specifications.map((s) => ({ "@type": "PropertyValue", name: s.label, value: specText(s) })).filter((s) => s.value),
     ],
     // Only describe an offer when the business chose to show prices publicly.
-    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0], url: `${site}/products/${p.slug}`, ...(availabilityLd ? { availability: availabilityLd } : {}), seller: { "@id": `${site}/#business` } } } : {}),
+    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0], itemCondition: "https://schema.org/NewCondition", url: `${site}/products/${p.slug}`, ...(availabilityLd ? { availability: availabilityLd } : {}), seller: { "@id": `${site}/#business` } } } : {}),
   };
   const crumbs = breadcrumbLd(site, [
     { name: "Home", path: "/" },

@@ -6,8 +6,8 @@ import { Reveal } from "@/components/public/reveal";
 import { faqLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "We are here to help you",
-  description: "How to order, how delivery and payment work, and what to do if you need to change something.",
+  title: "Ordering, delivery and payment",
+  description: "How to order our wood furniture, how delivery and payment work (nothing is paid online), and what to do if you need to change or cancel an order.",
   alternates: { canonical: "/help" },
 };
 export const revalidate = 300;

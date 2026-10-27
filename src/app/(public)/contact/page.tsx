@@ -17,7 +17,7 @@ import { localBusinessLd } from "@/lib/structured-data";
 import { listGalleryPhotos } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
-  title: "Contact us",
+  title: "Contact and showroom visit",
   description: "Visit the showroom, call or message us on WhatsApp, or send an enquiry. Address, opening hours and a map to find us.",
   alternates: { canonical: "/contact" },
 };
