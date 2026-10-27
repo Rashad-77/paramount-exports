@@ -318,9 +318,9 @@
 }
 /* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
 .prem-glass-wrap {
-  /* Wider than the rest of the site: nearly the full width of the screen. */
+  /* Wider than the rest of the site, but 2 cm narrower than the full width of the screen (1 cm more room on each side). */
   max-width: none;
-  padding-inline: clamp(0.75rem, 2.5vw, 2rem);
+  padding-inline: calc(clamp(0.75rem, 2.5vw, 2rem) + 1cm);
   padding-bottom: clamp(2rem, 5vw, 4rem);
 }
 .prem-glass {
