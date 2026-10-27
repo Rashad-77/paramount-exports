@@ -50,7 +50,9 @@ export default async function AboutPage() {
         <section id="owner" aria-labelledby="owner-title" className="scroll-mt-24 bg-[var(--color-ivory,#faf8f4)] section-y">
           <div className="container-page grid items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
             <Reveal variant="left">
-              <ImagePlaceholder label={`${ownerName}, photograph`} className="aspect-[4/5] w-full" />
+              <div className="relative aspect-[4/5] w-full">
+                <Image src="/about/owner.jpg" alt={`${ownerName}, owner of ${business.name}`} fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" style={{ objectPosition: "50% 30%" }} />
+              </div>
             </Reveal>
             <Reveal variant="right" delay={STEP}>
               <p className="eyebrow">Meet the owner</p>
