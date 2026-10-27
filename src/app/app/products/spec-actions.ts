@@ -4,15 +4,7 @@ import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { reqText } from "@/lib/validation";
-import { revalidatePath } from "next/cache";
-import { clearCatalogueCache } from "@/server/catalogue-cache";
 import { deleteSpecType, deleteSpecValue, renameSpecType, renameSpecValue, saveSpecType, saveSpecValue } from "@/server/specs";
-
-/** The collection page's material list follows these suggestions, so it is refreshed the moment one changes. */
-const refreshMaterials = () => {
-  clearCatalogueCache();
-  revalidatePath("/products");
-};
 
 /** Saves a specification type the moment it is created. Hands the saved type back in `data`. */
 export async function createSpecTypeAction(
@@ -40,8 +32,8 @@ export async function saveSpecValueAction(
     fd,
     z.object({ key: reqText("Type", 80), value: reqText("Value", 200) }),
     async (input, { actor }) => {
+      // No page is refreshed here: the form on screen stays as it is (the collection page reads the list fresh each time).
       await saveSpecValue(actor!, input.key, input.value);
-      refreshMaterials();
     },
   );
 }
@@ -84,7 +76,6 @@ export async function renameSpecValueAction(
     z.object({ key: reqText("Type", 80), from: reqText("Value", 200), to: reqText("Value", 200) }),
     async (input, { actor }) => {
       await renameSpecValue(actor!, input.key, input.from, input.to);
-      refreshMaterials();
     },
   );
 }
@@ -99,7 +90,6 @@ export async function deleteSpecValueAction(
     z.object({ key: reqText("Type", 80), value: reqText("Value", 200) }),
     async (input, { actor }) => {
       await deleteSpecValue(actor!, input.key, input.value);
-      refreshMaterials();
     },
   );
 }

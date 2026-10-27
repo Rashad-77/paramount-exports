@@ -405,7 +405,6 @@ const kept = <A extends unknown[], R>(read: (...args: A) => Promise<R>, name: st
 
 const listPublicProductsKept = kept(listPublicProductsImpl, "products");
 const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");
-const listPublicMaterialsKept = kept(listPublicMaterialsImpl, "materials");
 const listPremiumProductsKept = kept(listPremiumProductsImpl, "premium");
 
 /** A search is typed by the visitor and could be anything, so searches are never stored; neither are oddly long filters or far-off pages. */
@@ -413,7 +412,8 @@ export const listPublicProducts = (query: CatalogueQuery) =>
   query.q || (query.category?.length ?? 0) > 80 || (query.material?.length ?? 0) > 80 || (query.page ?? 1) > 50
     ? listPublicProductsImpl(query)
     : listPublicProductsKept(query);
-export const listPublicMaterials = () => listPublicMaterialsKept();
+/** Two small reads, and always fresh: the list follows the suggestions staff edit on a product without anything being cleared. */
+export const listPublicMaterials = () => listPublicMaterialsImpl();
 
 /* Build-safe public readers (see duringBuildSafe). */
 export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
