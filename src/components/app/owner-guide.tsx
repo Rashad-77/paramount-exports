@@ -5,6 +5,8 @@ import { useId, useMemo, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { searchGuide } from "@/lib/guide-search";
 import { GUIDE, GUIDE_SECTIONS, type GuideItem } from "@/lib/owner-guide";
+import { GUIDE_SI } from "@/lib/owner-guide-si";
+import { useLang } from "./dash-language";
 
 /** One question. Closed it is a single bar; opened it shows the short answer, the steps, the tips and a link to the screen. */
 function Entry({ item, open = false, best = false }: { item: GuideItem; open?: boolean; best?: boolean }) {
@@ -58,7 +60,10 @@ export function OwnerGuide() {
   const [text, setText] = useState("");
   /** The question that was sent with Enter (null: none yet). */
   const [asked, setAsked] = useState<string | null>(null);
-  const matches = useMemo(() => (asked === null ? [] : searchGuide(asked, GUIDE)), [asked]);
+  const { lang } = useLang();
+  const matches = useMemo(() => (asked === null ? [] : searchGuide(asked, GUIDE, 4, GUIDE_SI)), [asked]);
+  /** An entry as shown in the chosen language (the buttons and headings around it are translated by the page itself). */
+  const view = (item: GuideItem): GuideItem => (lang === "si" && GUIDE_SI[item.id] ? { ...item, ...GUIDE_SI[item.id] } : item);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +118,7 @@ export function OwnerGuide() {
           {matches.length > 0 ? (
             <div className="space-y-2">
               {matches.map((m, i) => (
-                <Entry key={asked + ":" + m.item.id} item={m.item} open best={i === 0} />
+                <Entry key={asked + ":" + m.item.id + ":" + lang} item={view(m.item)} open best={i === 0} />
               ))}
             </div>
           ) : (
@@ -135,7 +140,7 @@ export function OwnerGuide() {
               </h2>
               <div className="space-y-2">
                 {items.map((item) => (
-                  <Entry key={item.id} item={item} />
+                  <Entry key={item.id + ":" + lang} item={view(item)} />
                 ))}
               </div>
             </section>

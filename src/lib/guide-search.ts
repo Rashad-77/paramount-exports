@@ -1,4 +1,5 @@
 import type { GuideItem } from "@/lib/owner-guide";
+import type { GuideSi } from "@/lib/owner-guide-si";
 
 /** Words that carry no meaning in a question ("how do I add a photo" is about "add" and "photo"). */
 const STOP = new Set(
@@ -21,7 +22,7 @@ export function stem(word: string): string {
 export function words(text: string): string[] {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/[^a-z0-9඀-෿\s]/g, " ")
     .split(/\s+/)
     .filter((w) => w.length > 1 && !STOP.has(w))
     .map(stem);
@@ -39,15 +40,17 @@ export interface GuideMatch {
  * section, and then the rest of its text. A word that is found nowhere counts against the entry, so an entry that covers more of the question beats
  * one that covers a single word. Only entries close to the best one are kept, and at most `limit`.
  */
-export function searchGuide(query: string, items: GuideItem[], limit = 4): GuideMatch[] {
+export function searchGuide(query: string, items: GuideItem[], limit = 4, si: Record<string, GuideSi> = {}): GuideMatch[] {
   const tokens = [...new Set(words(query))];
   if (tokens.length === 0) return [];
   const scored: GuideMatch[] = [];
   for (const item of items) {
-    const q = words(item.question);
-    const k = words(item.keywords);
+    // The English and the Sinhala wording of the entry are searched together, so a question can be typed in either language.
+    const x = si[item.id];
+    const q = words(item.question + " " + (x?.question ?? ""));
+    const k = words(item.keywords + " " + (x?.keywords ?? ""));
     const s = words(item.section);
-    const body = words([item.answer, ...(item.steps ?? []), ...(item.tips ?? [])].join(" "));
+    const body = words([item.answer, ...(item.steps ?? []), ...(item.tips ?? []), x?.answer ?? "", ...(x?.steps ?? []), ...(x?.tips ?? [])].join(" "));
     let score = 0;
     let found = 0;
     for (const t of tokens) {

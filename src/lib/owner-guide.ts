@@ -47,6 +47,19 @@ export const GUIDE: GuideItem[] = [
     link: { href: "/app/account", label: "Your account" },
   },
   {
+    id: "language",
+    section: "Getting started",
+    question: "How do I switch the dashboard between English and Sinhala?",
+    answer: "Use the English and සිංහල buttons in the top bar. Your choice is remembered, so the dashboard opens in the language you last picked.",
+    steps: [
+      "Look for the English | සිංහල buttons in the top bar of the dashboard (beside the menu button on a phone).",
+      "Press සිංහල. The menu, buttons, headings and messages change to Sinhala.",
+      "Press English to go back.",
+    ],
+    tips: ["Names (products, customers, Google Place ID, Facebook, TikTok, WhatsApp) stay in English, and so do dates and prices.", "Only the dashboard changes. The website itself, its pages and the orders stay in English."],
+    keywords: "language sinhala english translate switch change සිංහල",
+  },
+  {
     id: "dashboard",
     section: "Getting started",
     question: "What is on the Dashboard page?",

@@ -36,6 +36,15 @@
   font-feature-settings: "cv11", "ss01";
 }
 
+/* Sinhala: the Latin letters stay in Inter, and Sinhala letters come from the first of these fonts the device has (they are on Windows, Android, Mac and iPhone). */
+.app-ui:lang(si) {
+  --font-sans: "Inter Variable", "Noto Sans Sinhala", "Iskoola Pota", "Nirmala UI", "Sinhala MN", "Sinhala Sangam MN", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: normal;
+}
+.app-ui:lang(si) :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+
 @layer base {
   html {
     background: var(--color-ivory);

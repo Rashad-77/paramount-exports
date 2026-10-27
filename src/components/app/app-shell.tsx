@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Actor } from "@/lib/auth/permissions";
 import { visibleNav } from "@/lib/nav";
 import { AppNav } from "./app-nav";
+import { LanguageSwitch } from "./dash-language";
 import { StaffBrand } from "./staff-brand";
 import { AppNavMobile } from "./app-nav-mobile";
 
@@ -79,14 +80,17 @@ export function AppShell({
 
       <div className="min-w-0">
         {/* Desktop top bar */}
-        <div className="hidden h-[var(--header-height)] items-center border-b border-border px-[var(--gutter)] lg:flex">
+        <div className="hidden h-[var(--header-height)] items-center justify-between gap-4 border-b border-border px-[var(--gutter)] lg:flex">
           <p className="text-sm font-medium tracking-[0.02em] text-text">
             Administration dashboard
           </p>
+          <LanguageSwitch />
         </div>
         {/* Mobile / tablet top bar */}
         <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-surface px-[var(--gutter)] text-text lg:hidden">
           <StaffBrand name={businessName} />
+          <div className="flex items-center gap-2">
+            <LanguageSwitch />
           <AppNavMobile>
             <NavList actor={actor} currentPath={currentPath} />
             <div className="mt-6 border-t border-border pt-4">
@@ -94,6 +98,7 @@ export function AppShell({
               <div className="mt-2">{signOut}</div>
             </div>
           </AppNavMobile>
+          </div>
         </header>
 
         <main
