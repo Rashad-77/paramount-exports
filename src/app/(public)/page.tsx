@@ -148,7 +148,7 @@ const CAROUSEL_REVIEWS = 12;
 const CARD_W = "w-[82%] shrink-0 snap-start sm:w-[22rem]";
 
 export default async function HomePage() {
-  const [business, categories, products, premium, accountSettings] = await Promise.all([
+  const [business, categories, products, premium, accountSettings, shown] = await Promise.all([
     getBusinessSettings(),
     safe(() => listPublicCategories(), []),
     safe(
@@ -158,12 +158,12 @@ export default async function HomePage() {
     ),
     safe(() => listPremiumProducts(PREMIUM_PIECES), []),
     safe(() => getAccountSettings(), null),
+    // Reviews: only Google's, saved by staff on the dashboard's Reviews page (the Review us on Google button sends visitors to Google to write theirs).
+    // With none, the section only invites a first review.
+    safe(() => listSavedGoogleReviews(), [] as GoogleReview[]),
   ]);
   // The heart on each card shows when customer accounts are on, as on the Products page.
   const wishlist = Boolean(accountSettings?.enabled) && customerAuthMode() !== "off";
-  // Reviews: only Google's, saved by staff on the dashboard's Reviews page (the Review us on Google button sends visitors to Google to write theirs).
-  // With none, the section only invites a first review.
-  const shown = await safe(() => listSavedGoogleReviews(), [] as GoogleReview[]);
   const reviewLink = googleReviewLink(business);
   const reviews: Array<{
     id: string;

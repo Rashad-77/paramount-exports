@@ -10,6 +10,7 @@ import type { CatalogueSort } from "@/lib/catalogue-sort";
 import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
 import { moneyString } from "@/lib/money";
 import { alias } from "drizzle-orm/pg-core";
+import { cache } from "react";
 import { publicFileUrl } from "./files";
 import { CATALOGUE_REVALIDATE, CATALOGUE_TAG } from "./catalogue-cache";
 
@@ -70,10 +71,10 @@ export async function firstImages(productIds: string[]): Promise<Map<string, { u
 /** A product counts as new for this many days after it is added. */
 const NEW_FOR_DAYS = 30;
 
-async function toCards(rows: Array<typeof products.$inferSelect & { categoryName: string; categorySlug: string }>): Promise<PublicCard[]> {
+async function toCards(rows: Array<typeof products.$inferSelect & { categoryName: string; categorySlug: string }>, firstImagesOf?: Map<string, { url: string; alt: string; x: number; y: number; z: number }>): Promise<PublicCard[]> {
   const ids = rows.map((r) => r.id);
   const [images, prices] = await Promise.all([
-    firstImages(ids),
+    firstImagesOf ?? firstImages(ids),
     ids.length
       ? getDb()
           .select({ productId: productVariants.productId, price: productVariants.listPrice, compare: productVariants.comparePrice })
@@ -216,21 +217,23 @@ async function listPremiumProductsImpl(limit?: number): Promise<PremiumPiece[]> 
     .limit(limit ?? 24);
   if (rows.length === 0) return [];
   const ids = rows.map((r) => r.p.id);
-  const [cards, imgs] = await Promise.all([
-    toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug }))),
-    db
-      .select({ productId: productImages.productId, id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, z: productImages.focusZoom, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
-      .from(productImages)
-      .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
-      .where(and(inArray(productImages.productId, ids), eq(uploadedFiles.status, "linked")))
-      .orderBy(asc(productImages.position)),
-  ]);
+  // Every photo of these pieces, read once: the cards take each piece's first one from the same rows.
+  const imgs = await db
+    .select({ productId: productImages.productId, id: productImages.id, alt: productImages.altText, x: productImages.focusX, y: productImages.focusY, z: productImages.focusZoom, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+    .from(productImages)
+    .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
+    .where(and(inArray(productImages.productId, ids), eq(uploadedFiles.status, "linked")))
+    .orderBy(asc(productImages.position));
+  const imagesBy = new Map<string, PremiumPiece["images"]>();
+  for (const i of imgs) {
+    const list = imagesBy.get(i.productId) ?? [];
+    list.push({ id: i.id, alt: i.alt, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) });
+    imagesBy.set(i.productId, list);
+  }
+  const first = new Map([...imagesBy].map(([id, list]) => [id, list[0]!]));
+  const cards = await toCards(rows.map((r) => ({ ...r.p, categoryName: r.categoryName, categorySlug: r.categorySlug })), first);
   const byId = new Map(rows.map((r) => [r.p.id, r.p]));
-  return cards.map((c) => ({
-    ...c,
-    description: byId.get(c.id)?.description ?? null,
-    images: imgs.filter((i) => i.productId === c.id).map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
-  }));
+  return cards.map((c) => ({ ...c, description: byId.get(c.id)?.description ?? null, images: imagesBy.get(c.id) ?? [] }));
 }
 
 /**
@@ -240,14 +243,16 @@ async function listPremiumProductsImpl(limit?: number): Promise<PremiumPiece[]> 
 export async function listRelatedProducts(productId: string, categoryId: string, limit = 4): Promise<PublicCard[]> {
   if (!hasDatabase()) return [];
   const db = getDb();
-  const [cat] = await db.select({ parentId: productCategories.parentId }).from(productCategories).where(eq(productCategories.id, categoryId)).limit(1);
-  const same = await db
-    .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
-    .from(products)
-    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
-    .where(and(visible, eq(products.categoryId, categoryId), sql`${products.id} <> ${productId}`))
-    .orderBy(desc(products.isFeatured), desc(products.updatedAt))
-    .limit(limit);
+  const [[cat], same] = await Promise.all([
+    db.select({ parentId: productCategories.parentId }).from(productCategories).where(eq(productCategories.id, categoryId)).limit(1),
+    db
+      .select({ p: products, categoryName: productCategories.name, categorySlug: productCategories.slug })
+      .from(products)
+      .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+      .where(and(visible, eq(products.categoryId, categoryId), sql`${products.id} <> ${productId}`))
+      .orderBy(desc(products.isFeatured), desc(products.updatedAt))
+      .limit(limit),
+  ]);
   let rows = same;
   if (rows.length < limit && cat?.parentId) {
     const have = rows.map((r) => r.p.id);
@@ -416,10 +421,14 @@ const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");
 const listPremiumProductsKept = kept(listPremiumProductsImpl, "premium");
 
 /** A search is typed by the visitor and could be anything, so searches are never stored; neither are oddly long filters or far-off pages. */
-export const listPublicProducts = (query: CatalogueQuery) =>
-  query.q || (query.category?.length ?? 0) > 80 || (query.material?.length ?? 0) > 80 || (query.page ?? 1) > 50
-    ? listPublicProductsImpl(query)
-    : listPublicProductsKept(query);
+export const listPublicProducts = (query: CatalogueQuery) => {
+  if (query.q || (query.category?.length ?? 0) > 80 || (query.material?.length ?? 0) > 80 || (query.page ?? 1) > 50) return listPublicProductsImpl(query);
+  // The same list asked for in different words (no sort or "newest", no page or page 1) is kept once, not once per wording.
+  const key: CatalogueQuery = { sort: query.sort ?? "newest", page: Math.max(1, query.page ?? 1) };
+  if (query.category) key.category = query.category;
+  if (query.material) key.material = query.material;
+  return duringBuildSafe("listPublicProducts", { items: [] as PublicCard[], total: 0, page: 1, pageCount: 1 }, () => listPublicProductsKept(key));
+};
 /** Two small reads, and always fresh: the list follows the suggestions staff edit on a product without anything being cleared. */
 export const listPublicMaterials = () => listPublicMaterialsImpl();
 
@@ -427,6 +436,7 @@ export const listPublicMaterials = () => listPublicMaterialsImpl();
 export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
 export const listPremiumProducts = (...args: Parameters<typeof listPremiumProductsImpl>) => duringBuildSafe("listPremiumProducts", [] as Awaited<ReturnType<typeof listPremiumProductsImpl>>, () => listPremiumProductsKept(...args));
 export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesKept(...args));
-export const getPublicProduct = (...args: Parameters<typeof getPublicProductImpl>) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(...args));
+// The page and its title both ask for the product: within one visit it is read once.
+export const getPublicProduct = cache((slugValue: string) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(slugValue)));
 export const listGalleryPhotos = (...args: Parameters<typeof listGalleryPhotosImpl>) => duringBuildSafe("listGalleryPhotos", { showroom: [], workshop: [] } as Awaited<ReturnType<typeof listGalleryPhotosImpl>>, () => listGalleryPhotosImpl(...args));
 export const listPublishedProductSlugs = (...args: Parameters<typeof listPublishedProductSlugsImpl>) => duringBuildSafe("listPublishedProductSlugs", [] as Awaited<ReturnType<typeof listPublishedProductSlugsImpl>>, () => listPublishedProductSlugsImpl(...args));

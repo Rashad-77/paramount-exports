@@ -111,8 +111,18 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
   };
 
   const remove = (key: string) => {
+    // A photo picked on this page shows from a copy held in the browser; free it once the photo is gone.
+    const url = photos.find((p) => p.key === key)?.url;
+    if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
     setPhotos((cur) => cur.filter((p) => p.key !== key));
   };
+
+  // Leaving the page frees the copies of the photos picked on it.
+  const latest = useRef(photos);
+  useEffect(() => {
+    latest.current = photos;
+  }, [photos]);
+  useEffect(() => () => latest.current.forEach((p) => p.url.startsWith("blob:") && URL.revokeObjectURL(p.url)), []);
 
   useEffect(() => {
     commandRef.current = (d) => {

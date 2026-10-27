@@ -609,7 +609,7 @@ export async function attachProductImages(actor: Actor, productId: string, fileI
     if (n + verified.length > MAX_PHOTOS) throw validation(`A product can have up to ${MAX_PHOTOS} photos.`, { fileIds: [`A product can have up to ${MAX_PHOTOS} photos.`] });
     let pos = m + 1;
     await linkUploads(tx, verified, { type: "product", id: productId });
-    for (const f of verified) await tx.insert(productImages).values({ productId, fileId: f.id, altText, position: pos++ });
+    if (verified.length) await tx.insert(productImages).values(verified.map((f) => ({ productId, fileId: f.id, altText, position: pos++ })));
     await recordAudit(tx, actor, { action: "product.images_added", entityType: "product", entityId: productId, after: { count: verified.length } });
   });
 }
@@ -673,7 +673,7 @@ export async function addGalleryPhotos(actor: Actor, area: GalleryArea, fileIds:
     let pos = m + 1;
     const alt = area === "showroom" ? "Photograph of our showroom" : "Photograph of our workshop";
     await linkUploads(tx, verified, { type: "gallery", id: area });
-    for (const f of verified) await tx.insert(galleryPhotos).values({ area, fileId: f.id, altText: alt, position: pos++ });
+    await tx.insert(galleryPhotos).values(verified.map((f) => ({ area, fileId: f.id, altText: alt, position: pos++ })));
     await recordAudit(tx, actor, { action: "gallery.photos_added", entityType: "gallery", entityId: area, after: { count: verified.length } });
   });
 }

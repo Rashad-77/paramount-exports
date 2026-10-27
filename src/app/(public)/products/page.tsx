@@ -28,8 +28,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sort = parseSort(one(sp.sort));
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
 
-  const [business, categories, materials, result, premium] = await Promise.all([
+  const [business, accounts, categories, materials, result, premium] = await Promise.all([
     getBusinessSettings(),
+    getAccountSettings(),
     listPublicCategories(),
     listPublicMaterials(),
     listPublicProducts({ q, category, material, sort, page }),
@@ -47,7 +48,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       <div className="bg-white pt-10 pb-16">
         {premium[0] ? <PremiumBanner /> : null}
         <CatalogueBrowser
-          wishlist={(await getAccountSettings()).enabled && customerAuthMode() !== "off"}
+          wishlist={accounts.enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}
           materials={materials}
           initial={{ q: q ?? "", category: category ?? "", material: material ?? "", sort, page }}
