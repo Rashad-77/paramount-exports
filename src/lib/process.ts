@@ -32,8 +32,6 @@ export const PROCESS: ProcessStep[] = [
       "The timber is marked out to the dimensions needed for each part, then cut and trimmed to size. Matching parts, such as legs or cabinet sides, are prepared together so their lengths and edges line up. The cut edges are squared and checked before the parts move on, giving the frame and panels a sound fit when they are brought together.",
     photo: "Boards being measured and cut",
     image: "/about/step-2-cutting.jpg",
-    // A wide picture: keep the end of the board and the saw blade.
-    imagePosition: "48% 50%",
   },
   {
     title: "Joinery and assembly",
