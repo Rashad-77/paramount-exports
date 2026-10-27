@@ -391,6 +391,9 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
   const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
   const [rows, setRows] = useState<ValueRow[]>(() => alpha(uniqueValues([...selected, ...suggestions])).map((v) => ({ orig: v, name: v, on: selected.some((x) => same(x, v)), was: selected.some((x) => same(x, v)), removed: false })));
   const [asking, setAsking] = useState(false);
+  /** Delete mode: a tick box appears at the end of each row, and the one Delete button above the list removes the ticked values. */
+  const [deleting, setDeleting] = useState(false);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig) || r.on !== r.was);
   const patchRow = (orig: string, p: Partial<ValueRow>) => setRows((cur) => cur.map((r) => (r.orig === orig ? { ...r, ...p } : r)));
 
@@ -421,7 +424,42 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
           ) : null
         }
       >
-        {rows.filter((r) => !r.removed).length === 0 ? <p className="text-sm text-text-muted">No values.</p> : null}
+        {rows.filter((r) => !r.removed).length === 0 ? <p className="text-sm text-text-muted">No values.</p> : (
+          <div className="mb-3 flex items-center justify-end gap-2">
+            {deleting ? (
+              <>
+                <Button
+                  type="button"
+                  size="md"
+                  variant="secondary"
+                  onClick={() => {
+                    setDeleting(false);
+                    setPicked(new Set());
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="md"
+                  variant="danger"
+                  disabled={picked.size === 0}
+                  onClick={() => {
+                    setRows((cur) => cur.map((r) => (picked.has(r.orig) ? { ...r, removed: true } : r)));
+                    setPicked(new Set());
+                    setDeleting(false);
+                  }}
+                >
+                  Delete{picked.size > 0 ? ` (${picked.size})` : ""}
+                </Button>
+              </>
+            ) : (
+              <Button type="button" size="md" variant="secondary" onClick={() => setDeleting(true)}>
+                Delete
+              </Button>
+            )}
+          </div>
+        )}
         <ul className="space-y-2">
           {rows
             .filter((r) => !r.removed)
@@ -439,9 +477,25 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
                   }}
                   onChange={(e) => patchRow(r.orig, { name: e.target.value })}
                 />
-                <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.orig, { removed: true })} className="inline-flex size-9 shrink-0 items-center justify-center text-text-muted hover:text-danger">
-                  <Trash2 aria-hidden="true" className="size-4" />
-                </button>
+                {/* The box always takes its room, so the names do not shift when Delete is pressed. */}
+                <span className="inline-flex size-9 shrink-0 items-center justify-center">
+                  {deleting ? (
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${r.orig} to delete`}
+                      checked={picked.has(r.orig)}
+                      onChange={(e) =>
+                        setPicked((cur) => {
+                          const next = new Set(cur);
+                          if (e.target.checked) next.add(r.orig);
+                          else next.delete(r.orig);
+                          return next;
+                        })
+                      }
+                      className="size-5 accent-[var(--color-danger)]"
+                    />
+                  ) : null}
+                </span>
               </li>
             ))}
         </ul>
@@ -687,6 +741,9 @@ function AddSpecification({
 function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCatalogItem[]; onRename: (key: string, label: string) => void; onDelete: (key: string) => void; onClose: () => void }) {
   const [rows, setRows] = useState(() => types.map((t) => ({ key: t.key, orig: t.label, name: t.label, removed: false })));
   const [asking, setAsking] = useState(false);
+  /** Delete mode, as in the values window: tick boxes at the end of each row and one Delete button above the list. */
+  const [deleting, setDeleting] = useState(false);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
   const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig));
   const patchRow = (key: string, p: Partial<(typeof rows)[number]>) => setRows((cur) => cur.map((r) => (r.key === key ? { ...r, ...p } : r)));
   const save = () => {
@@ -711,7 +768,42 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
           ) : null
         }
       >
-        {shown.length === 0 ? <p className="text-sm text-text-muted">You have no types of your own.</p> : null}
+        {shown.length === 0 ? <p className="text-sm text-text-muted">You have no types of your own.</p> : (
+          <div className="mb-3 flex items-center justify-end gap-2">
+            {deleting ? (
+              <>
+                <Button
+                  type="button"
+                  size="md"
+                  variant="secondary"
+                  onClick={() => {
+                    setDeleting(false);
+                    setPicked(new Set());
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="md"
+                  variant="danger"
+                  disabled={picked.size === 0}
+                  onClick={() => {
+                    setRows((cur) => cur.map((r) => (picked.has(r.key) ? { ...r, removed: true } : r)));
+                    setPicked(new Set());
+                    setDeleting(false);
+                  }}
+                >
+                  Delete{picked.size > 0 ? ` (${picked.size})` : ""}
+                </Button>
+              </>
+            ) : (
+              <Button type="button" size="md" variant="secondary" onClick={() => setDeleting(true)}>
+                Delete
+              </Button>
+            )}
+          </div>
+        )}
         <ul className="space-y-2">
           {shown.map((r) => (
             <li key={r.key} className="flex items-center gap-2">
@@ -725,9 +817,24 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
                 }}
                 onChange={(e) => patchRow(r.key, { name: e.target.value })}
               />
-              <button type="button" aria-label={`Remove ${r.orig}`} onClick={() => patchRow(r.key, { removed: true })} className="inline-flex size-9 shrink-0 items-center justify-center text-text-muted hover:text-danger">
-                <Trash2 aria-hidden="true" className="size-4" />
-              </button>
+              <span className="inline-flex size-9 shrink-0 items-center justify-center">
+                {deleting ? (
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${r.orig} to delete`}
+                    checked={picked.has(r.key)}
+                    onChange={(e) =>
+                      setPicked((cur) => {
+                        const next = new Set(cur);
+                        if (e.target.checked) next.add(r.key);
+                        else next.delete(r.key);
+                        return next;
+                      })
+                    }
+                    className="size-5 accent-[var(--color-danger)]"
+                  />
+                ) : null}
+              </span>
             </li>
           ))}
         </ul>
