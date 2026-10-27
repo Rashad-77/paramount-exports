@@ -63,7 +63,7 @@ export function ReviewsDialog({ reviews, open, focusId, onClose }: { reviews: Vi
                   ))}
                 </div>
               ) : null}
-              <p className="rv-quote mt-3 whitespace-pre-line">{r.quote}</p>
+              {r.quote.trim() ? <p className="rv-quote mt-3 whitespace-pre-line">{r.quote}</p> : null}
               {r.photos.length > 0 || r.samplePhotos > 0 ? (
                 <ul className="mt-4 flex flex-wrap gap-2" aria-label={`Photos from ${r.name ?? "this customer"}`}>
                   {[...r.photos, ...Array.from({ length: r.samplePhotos }, () => null)].map((src, k, all) => (

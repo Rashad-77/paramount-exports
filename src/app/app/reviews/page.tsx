@@ -24,13 +24,13 @@ export default async function ReviewsAdminPage() {
               <FSelect name="rating" label="Stars" options={STARS} defaultValue="5" required />
               <FField name="postedOn" type="date" label="Date posted" max={new Date().toISOString().slice(0, 10)} required />
             </div>
-            <FTextArea name="body" label="Review" rows={4} required />
+            <FTextArea name="body" label="Review (optional)" rows={4} />
             <SubmitButton pendingLabel="Adding…">Add review</SubmitButton>
           </ActionForm>
         </Panel>
         <Panel title="Saved reviews" description="Newest first. Press Edit, tick the reviews, then hide them to take them off the website without losing them, or delete them for good.">
           <SavedReviews
-            reviews={reviews.map((r) => ({ id: r.id, author: r.author, rating: r.rating, body: r.body, hidden: r.hidden, dateText: formatReviewDate((r.publishedAt ?? r.createdAt).toISOString()) ?? "" }))}
+            reviews={reviews.map((r) => ({ id: r.id, author: r.author, rating: r.rating, body: r.body, hidden: r.hidden, dateIso: (r.publishedAt ?? r.createdAt).toISOString(), dateText: formatReviewDate((r.publishedAt ?? r.createdAt).toISOString()) ?? "" }))}
             hideAction={setReviewsHiddenAction}
             deleteAction={deleteReviewsAction}
           />

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
-import { enumOf, reqDate, reqText, reqUuid } from "@/lib/validation";
+import { enumOf, optText, reqDate, reqText, reqUuid } from "@/lib/validation";
 import { addManualGoogleReview, deleteGoogleReviews, setGoogleReviewsHidden } from "@/server/google-review-store";
 
 const refresh = () => {
@@ -15,13 +15,13 @@ const refresh = () => {
 const addSchema = z.object({
   author: reqText("The reviewer's name", 80),
   rating: enumOf(["1", "2", "3", "4", "5"], "number of stars"),
-  body: reqText("The review", 2000),
+  body: optText("The review", 2000),
   postedOn: reqDate("The date posted"),
 });
 
 export async function addReviewAction(_p: ActionState, fd: FormData): Promise<ActionState> {
   return runAction(fd, addSchema, async (input, { actor }) => {
-    await addManualGoogleReview(actor!, { author: input.author, rating: Number(input.rating), body: input.body, postedOn: input.postedOn });
+    await addManualGoogleReview(actor!, { author: input.author, rating: Number(input.rating), body: input.body ?? "", postedOn: input.postedOn });
     refresh();
     return { message: "Review added. It shows on the homepage now." };
   });

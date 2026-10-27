@@ -16,8 +16,40 @@ export interface SavedReview {
   rating: number;
   body: string;
   dateText: string;
+  /** The date the review was posted, for sorting. */
+  dateIso: string;
   hidden: boolean;
 }
+
+const SORTS = [
+  { value: "newest", label: "Date: newest first" },
+  { value: "oldest", label: "Date: oldest first" },
+  { value: "az", label: "Name: A to Z" },
+  { value: "za", label: "Name: Z to A" },
+  { value: "stars-high", label: "Stars: most first" },
+  { value: "stars-low", label: "Stars: fewest first" },
+] as const;
+type SortKey = (typeof SORTS)[number]["value"];
+
+const sortReviews = (list: SavedReview[], key: SortKey): SavedReview[] => {
+  const byName = (a: SavedReview, b: SavedReview) => a.author.localeCompare(b.author, undefined, { sensitivity: "base" });
+  const byDate = (a: SavedReview, b: SavedReview) => a.dateIso.localeCompare(b.dateIso);
+  const out = [...list];
+  switch (key) {
+    case "oldest":
+      return out.sort(byDate);
+    case "az":
+      return out.sort(byName);
+    case "za":
+      return out.sort((a, b) => byName(b, a));
+    case "stars-high":
+      return out.sort((a, b) => b.rating - a.rating || byDate(b, a));
+    case "stars-low":
+      return out.sort((a, b) => a.rating - b.rating || byDate(b, a));
+    default:
+      return out.sort((a, b) => byDate(b, a));
+  }
+};
 
 /**
  * The saved reviews. Edit (above the table) shows a tick box on each row, and Hide (or Show) and Delete appear next to it. Reviews are
@@ -27,6 +59,8 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState(false);
+  const [sort, setSort] = useState<SortKey>("newest");
+  const sorted = sortReviews(reviews, sort);
   const deleteForm = useRef<HTMLFormElement>(null);
 
   const [hideState, hideFormAction, hiding] = useActionState<ActionState, FormData>(async (prev, fd) => {
@@ -57,7 +91,22 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
   return (
     <div className="space-y-4">
       {reviews.length > 0 ? (
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="mr-auto flex flex-wrap items-center gap-3">
+            <p className="text-xs text-text-muted">
+              {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+            </p>
+            <label className="flex items-center gap-2 text-xs text-text-muted">
+              Sort by
+              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="h-10 border border-border-strong bg-surface px-3 text-[0.8125rem] text-text">
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           {editing ? (
             <>
               <form action={hideFormAction}>
@@ -105,7 +154,7 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
           </THead>
           <tbody>
             {reviews.length === 0 ? <EmptyRow colSpan={4} title="No reviews saved yet" description="Add one above." /> : null}
-            {reviews.map((r) => (
+            {sorted.map((r) => (
               <TR key={r.id} className={selected.has(r.id) ? "bg-linen" : undefined}>
                 <TD>
                   <span className="flex items-start gap-3">
@@ -118,7 +167,7 @@ export function SavedReviews({ reviews, hideAction, deleteAction }: { reviews: S
                   </span>
                 </TD>
                 <TD className="max-w-md">
-                  <p className="line-clamp-3">{r.body}</p>
+                  {r.body ? <p className="line-clamp-3">{r.body}</p> : <span className="text-text-muted">No text</span>}
                 </TD>
                 <TD className="text-center">{r.dateText}</TD>
                 <TD className="text-center">
