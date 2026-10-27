@@ -39,6 +39,9 @@ export const PROCESS: ProcessStep[] = [
     details:
       "The parts are fitted together to form the frame, cabinet or other main structure. Where rails meet legs, the ends are shaped to sit securely in matching openings; glue and clamps hold the connection while it sets. The frame is checked as it is assembled so its corners remain square and the legs sit evenly. Panels, shelves, drawers and doors are then fitted to the structure and checked for smooth movement and an even fit.",
     photo: "A piece being fitted, glued and clamped",
+    image: "/about/step-3-joinery-and-assembly.jpg",
+    // A tall picture: keep the joints at the top of the corner.
+    imagePosition: "50% 30%",
   },
   {
     title: "Sanding",
