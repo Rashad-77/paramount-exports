@@ -121,9 +121,9 @@ export function ProductView({ p, shop, heart, preview = false, children }: { p: 
   return (
     <div className="pdp-page">
       {sale ? <p className="sale-bar">{sale}</p> : null}
-      <div className="container-page pb-8 pt-[calc(var(--gutter)-0.5rem)] md:pb-14">
+      <div className={"container-page pb-8 pt-[calc(var(--gutter)-0.5rem)] md:pb-14" + (preview ? "" : " min-[72.01rem]:pt-[calc(var(--gutter)+2rem)]")}>
         {preview ? null : (
-          <div className="mb-3">
+          <div className="pdp-back">
             <BackLink href="/products" to="the collection" tone="dark" history />
           </div>
         )}

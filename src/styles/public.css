@@ -4906,6 +4906,8 @@ span.cat-pagebtn {
     --back-gap: 1.5rem;
     max-width: none;
     padding-inline: var(--back-gap);
+    /* Measured on the live page: on a computer the word sat 2 px lower than its distance from the left edge, so it is lifted by that much. */
+    top: calc(var(--head-h) - 1px + var(--back-gap) - 0.5rem);
   }
 }
 
@@ -6392,4 +6394,26 @@ a.acct-row {
 /* The tab names (Description, Specifications, Delivery and collection) are centred over the page ("safe" so that, if they ever overflow on a narrow screen, the first one is not cut off). */
 .ptabs-list {
   justify-content: safe center;
+}
+
+/* The title band of an inner page that has a video banner (the gallery) has the same title size as every other inner page. */
+.vhero.vhero-short h1 {
+  font-size: var(--text-display);
+}
+
+/* The Back button on a light page (a product, an order): in the flow above the content on a phone and a tablet, where its distance from the header
+   equals its distance from the left edge; on a computer it is pinned to the same place as on every other page (1.5 rem from the left edge and from the header). */
+.pdp-page {
+  position: relative;
+}
+.pdp-back {
+  margin-bottom: 0.75rem;
+}
+@media (min-width: 72.01rem) {
+  .pdp-back {
+    position: absolute;
+    left: 1.5rem;
+    top: 1rem;
+    margin: 0;
+  }
 }

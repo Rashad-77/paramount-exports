@@ -16,8 +16,8 @@ export default async function OrderConfirmedPage({ searchParams }: { searchParam
   const business = await getBusinessSettings();
   return (
     <div className="pdp-page">
-      <div className="container-page pb-[var(--section-space)] pt-[calc(var(--gutter)-0.5rem)]">
-        <div className="mb-6">
+      <div className="container-page pb-[var(--section-space)] pt-[calc(var(--gutter)-0.5rem)] min-[72.01rem]:pt-[calc(var(--gutter)+2rem)]">
+        <div className="pdp-back mb-6">
           <BackLink href="/" to="home" tone="dark" />
         </div>
         <OrderConfirmed
