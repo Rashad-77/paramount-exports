@@ -180,7 +180,8 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           </p>
           <p className="foot-built">
             <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
-              Built by Rashad<span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
+              by <span className="underline underline-offset-2">Rashad</span>
+              <span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
           </p>
         </div>
