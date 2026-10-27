@@ -10,7 +10,7 @@ import { listPremiumProducts, listPublicCategories, listPublicMaterials, listPub
 
 export const metadata: Metadata = {
   title: "Collection",
-  description: "Browse our wood furniture by category, material and finish.",
+  description: "Browse solid wood furniture by category and material. Every piece is ready-made in our showroom, or can be made to your size.",
   alternates: { canonical: "/products" },
 };
 

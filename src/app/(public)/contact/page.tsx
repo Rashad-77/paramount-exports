@@ -11,12 +11,14 @@ import { ButtonLink } from "@/components/ui/button";
 import { BackBar } from "@/components/public/back-link";
 import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
+import { JsonLd } from "@/components/json-ld";
 import { getBusinessSettings } from "@/lib/settings";
+import { localBusinessLd } from "@/lib/structured-data";
 import { listGalleryPhotos } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
   title: "Contact us",
-  description: "Visit the showroom, call us, or send an enquiry.",
+  description: "Visit the showroom, call or message us on WhatsApp, or send an enquiry. Address, opening hours and a map to find us.",
   alternates: { canonical: "/contact" },
 };
 export const revalidate = 300;
@@ -61,6 +63,7 @@ export default async function ContactPage() {
   ];
   return (
     <>
+      <JsonLd data={localBusinessLd(b, publicEnv().NEXT_PUBLIC_SITE_URL)} />
       <header className="plain-band on-wood relative text-center">
         <BackBar href="/" to="home" />
         <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">

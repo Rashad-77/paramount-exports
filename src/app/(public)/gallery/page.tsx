@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { GALLERY_VIDEO } from "@/lib/home-media";
 import { listGalleryPhotos } from "@/server/catalogue-public";
 
-export const metadata: Metadata = { title: "Gallery", description: "Photographs of our showroom and our workshop.", alternates: { canonical: "/gallery" } };
+export const metadata: Metadata = { title: "Gallery", description: "Photographs of our showroom and of the workshop where our wood furniture is made.", alternates: { canonical: "/gallery" } };
 export const revalidate = 300;
 
 export default async function GalleryPage() {

@@ -8,7 +8,7 @@ import { CUSTOM_STEPS } from "@/lib/custom-steps";
 export const metadata: Metadata = {
   title: "Custom furniture",
   description:
-    "Have a piece made to your measurements. Tell us what you need and we will respond with a quotation.",
+    "Have wood furniture made to your measurements, in the timber and finish you choose. Tell us what you need and we will reply with a quotation before any work starts.",
   alternates: { canonical: "/custom" },
 };
 

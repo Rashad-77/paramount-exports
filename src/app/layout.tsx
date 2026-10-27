@@ -21,6 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: business.name, template: `%s · ${business.name}` },
     description:
       business.tagline ?? "Ready-made and made-to-order wood furniture from our workshop, with a showroom you can visit.",
+    // How a link to any page looks when shared (each page gives its own title and description).
+    openGraph: { type: "website", siteName: business.name, locale: "en_LK" },
     // A site still showing placeholder details must not be indexed.
     robots: placeholder ? { index: false, follow: false } : { index: true, follow: true },
   };

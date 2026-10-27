@@ -49,6 +49,7 @@ export function SiteHeader({ business, accounts = false }: { business: BusinessS
 const INFORMATION = [
   { label: "About us", href: "/about" },
   { label: "Our process", href: "/about#process" },
+  { label: "Timber and care guide", href: "/guide" },
   { label: "Gallery", href: "/gallery" },
   { label: "Privacy notice", href: "/privacy" },
   { label: "Terms and conditions", href: "/terms" },

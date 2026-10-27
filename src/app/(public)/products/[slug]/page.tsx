@@ -14,7 +14,9 @@ import { customerAuthMode } from "@/lib/auth/customer";
 import { publicEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
 import { saleLabel } from "@/lib/sale";
+import { JsonLd } from "@/components/json-ld";
 import { specText } from "@/lib/specifications";
+import { breadcrumbLd } from "@/lib/structured-data";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { getPublicProduct, listRelatedProducts } from "@/server/catalogue-public";
 
@@ -54,18 +56,34 @@ export default async function ProductPage({ params }: Props) {
   // A product has one price line (the first), which is what is sold.
   const line = p.variants[0] ?? null;
   const prices = line?.price ? [line.price] : [];
+  const availabilityLd = p.availabilityState === "in_stock" ? "https://schema.org/InStock" : p.availabilityState === "sold" ? "https://schema.org/OutOfStock" : p.availabilityState === "made_to_order" ? "https://schema.org/PreOrder" : undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${site}/products/${p.slug}#product`,
     name: p.name,
     description: p.shortDescription ?? p.description ?? undefined,
     sku: p.variants[0]?.sku,
     material: p.material ?? undefined,
+    category: p.categoryName,
+    brand: { "@type": "Brand", name: business.name },
+    manufacturer: { "@id": `${site}/#business` },
     image: p.images.map((i) => i.url),
     url: `${site}/products/${p.slug}`,
+    // What the page lists under Specifications, so a search engine or an AI assistant can quote the details.
+    additionalProperty: [
+      ...(p.dimensions ? [{ "@type": "PropertyValue", name: "Dimensions", value: p.dimensions }] : []),
+      ...p.specifications.map((s) => ({ "@type": "PropertyValue", name: s.label, value: specText(s) })).filter((s) => s.value),
+    ],
     // Only describe an offer when the business chose to show prices publicly.
-    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0] } } : {}),
+    ...(prices.length ? { offers: { "@type": "Offer", priceCurrency: business.currency, price: prices[0], url: `${site}/products/${p.slug}`, ...(availabilityLd ? { availability: availabilityLd } : {}), seller: { "@id": `${site}/#business` } } } : {}),
   };
+  const crumbs = breadcrumbLd(site, [
+    { name: "Home", path: "/" },
+    { name: "Collection", path: "/products" },
+    { name: p.categoryName, path: `/products?category=${encodeURIComponent(p.categorySlug)}` },
+    { name: p.name, path: `/products/${p.slug}` },
+  ]);
 
   // A sale: the label says the amount or the percentage, as the owner entered the discount.
   const sale = saleLabel({ kind: p.discountKind, value: p.discountValue }, line?.price, line?.compare, (a) => formatMoney(a, business.currency));
@@ -163,7 +181,7 @@ export default async function ProductPage({ params }: Props) {
     <div className="pdp-page">
       {sale ? <p className="sale-bar">{sale}</p> : null}
       <div className="container-page pb-8 pt-2 md:pb-14 md:pt-3">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+        <JsonLd data={[jsonLd, crumbs]} />
         <div className="mb-3">
           <BackLink href="/products" to="the collection" tone="dark" history />
         </div>

@@ -378,7 +378,8 @@ async function getPublicProductImpl(slugValue: string) {
     seoDescription: p.seoDescription,
     availability: p.showAvailability && p.availability ? AVAILABILITY_LABEL[p.availability] : null,
     availabilityState: p.showAvailability && p.availability ? (p.availability === "on_request" ? "made_to_order" : p.availability) : null,
-    images: images.map((i) => ({ id: i.id, alt: i.alt, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
+    // Alt text says what the photograph shows: the piece, its wood and its category, and which view it is.
+    images: images.map((i, n) => ({ id: i.id, alt: `${p.name}${p.material ? `, ${p.material}` : ""} (${row.categoryName}), photo ${n + 1} of ${images.length}`, x: i.x, y: i.y, z: i.z, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })),
     variants: variants.map((v) => ({ id: v.id, sku: v.sku, label: v.label, price: p.showPrice && v.listPrice ? moneyString(v.listPrice) : null, compare: p.showPrice && v.listPrice && v.comparePrice ? moneyString(v.comparePrice) : null, stock: v.stockQuantity })),
     updatedAt: p.updatedAt,
   };

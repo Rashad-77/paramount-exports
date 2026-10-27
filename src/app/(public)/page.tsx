@@ -17,6 +17,10 @@ import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { hasDatabase } from "@/lib/env";
 import { HERO_VIDEO } from "@/lib/home-media";
 import { PROCESS } from "@/lib/process";
+import type { Metadata } from "next";
+import { JsonLd } from "@/components/json-ld";
+import { publicEnv } from "@/lib/env";
+import { localBusinessLd, placeOf, websiteLd } from "@/lib/structured-data";
 import { getAccountSettings, getBusinessSettings } from "@/lib/settings";
 import { customerAuthMode } from "@/lib/auth/customer";
 import { googleReviewLink, type GoogleReview } from "@/lib/google-reviews";
@@ -32,6 +36,21 @@ import { listSavedGoogleReviews } from "@/server/google-review-store";
 
 // Settings and catalogue change rarely; refresh the static page at most every 5 minutes.
 export const revalidate = 300;
+
+/** What the business is and where, in one plain sentence: the page description, and what AI assistants quote. */
+const aboutLine = (name: string, place: string | null) =>
+  `${name} makes solid wood furniture${place ? ` in ${place}` : ""}: ready-made pieces from the showroom, or furniture built to your measurements, in the wood and finish you choose.`;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const business = await getBusinessSettings();
+  const place = placeOf(business.address);
+  return {
+    title: { absolute: `${business.name}${place ? ` · Solid wood furniture in ${place}` : " · Solid wood furniture"}` },
+    description: aboutLine(business.name, place),
+    alternates: { canonical: "/" },
+    openGraph: { title: business.name, description: aboutLine(business.name, place), url: "/" },
+  };
+}
 
 /** One stagger step for every list on the page, so everything arrives with the same rhythm. */
 const STEP = 90;
@@ -252,6 +271,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={[localBusinessLd(business, publicEnv().NEXT_PUBLIC_SITE_URL, aboutLine(business.name, placeOf(business.address))), websiteLd(business, publicEnv().NEXT_PUBLIC_SITE_URL)]} />
       {/* 1. Hero */}
       <section aria-labelledby="hero-title" className="vhero on-wood">
         <HeroVideo
@@ -265,7 +285,7 @@ export default async function HomePage() {
               Expertise in woodworking, readymade or custom-built
             </h1>
             <p className="mt-5 max-w-md text-[clamp(1.0188rem,calc(1.0188rem_+_(100vw_-_375px)_*_0.00178),1.0625rem)] leading-relaxed text-white/80">
-              Visit our showroom or order online.
+              {placeOf(business.address) ? `Solid wood furniture from our workshop in ${placeOf(business.address)}. ` : ""}Visit our showroom or order online.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink href="/products" size="cta" variant="light">
