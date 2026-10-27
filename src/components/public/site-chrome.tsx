@@ -54,6 +54,9 @@ const INFORMATION = [
   { label: "Terms and conditions", href: "/terms" },
 ];
 
+/** The WhatsApp number behind the "Built by" link at the bottom of the footer. */
+const BUILDER_WHATSAPP = "0719825855";
+
 export function SiteFooter({ business }: { business: BusinessSettings }) {
   const [first = business.name, ...others] = business.name.trim().split(/\s+/);
   const rest = others.join(" ");
@@ -174,6 +177,11 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
         <div className="foot-bottom">
           <p>
             © {new Date().getFullYear()} {business.name}
+          </p>
+          <p>
+            <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer">
+              Built by Rashad<span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
+            </a>
           </p>
         </div>
       </div>
