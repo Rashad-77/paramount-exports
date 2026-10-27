@@ -5,12 +5,14 @@ import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
+import { SiteImage } from "@/components/public/site-image";
 import { Reveal } from "@/components/public/reveal";
 import { ButtonLink } from "@/components/ui/button";
 import { BackBar } from "@/components/public/back-link";
 import { mapEmbedUrl, whatsappLink } from "@/lib/contact";
 import { publicEnv } from "@/lib/env";
 import { getBusinessSettings } from "@/lib/settings";
+import { listGalleryPhotos } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
   title: "Contact us",
@@ -47,7 +49,9 @@ function Channel({ icon: Icon, title, value, href, cta, external = false }: { ic
 }
 
 export default async function ContactPage() {
-  const b = await getBusinessSettings();
+  const [b, photos] = await Promise.all([getBusinessSettings(), listGalleryPhotos()]);
+  // The first four photographs of the showroom in the gallery.
+  const showroom = photos.showroom.slice(0, 4);
   const mapped = Boolean(b.address && b.mapUrl);
   const embed = mapEmbedUrl(b.mapUrl);
   const channels = [
@@ -151,13 +155,16 @@ export default async function ContactPage() {
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-px bg-white md:grid-cols-4">
-          {["The main floor", "Dining tables", "Seating", "The entrance"].map((l, i) => (
-            <Reveal key={l} variant="wipe" delay={i * 120}>
-              <div className="aspect-[4/3]">
-                <ImagePlaceholder label={`Showroom — ${l}`} className="size-full" compact />
-              </div>
-            </Reveal>
-          ))}
+          {[0, 1, 2, 3].map((i) => {
+            const p = showroom[i];
+            return (
+              <Reveal key={p?.id ?? `empty-${i}`} variant="wipe" delay={i * 120}>
+                <div className="relative aspect-[4/3]">
+                  {p ? <SiteImage src={p.url} alt={p.alt} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" /> : <ImagePlaceholder label="Showroom photograph" className="size-full" compact />}
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
     </>

@@ -68,7 +68,7 @@ export function GallerySections({ sections }: { sections: GallerySectionData[] }
   return (
     <>
       <div className="bg-white pt-8 md:pt-10">
-        <div className="container-page">
+        <div className="container-page flex justify-center">
           <div className="gal-toggle" role="group" aria-label="Choose a gallery">
             {sections.map((s, si) => (
               <button key={s.anchor} type="button" aria-pressed={view === si} className={view === si ? "is-on" : undefined} onClick={() => setView(si)}>
@@ -82,7 +82,6 @@ export function GallerySections({ sections }: { sections: GallerySectionData[] }
         <section key={s.anchor} id={s.anchor} aria-labelledby={s.id} className="scroll-mt-20 bg-white section-y !pt-8">
           <div className="container-page">
             <Reveal variant="fade">
-              <p className="eyebrow">{s.eyebrow}</p>
               <h2 id={s.id} className="font-display mt-3 text-headline text-brand">
                 {s.title}
               </h2>

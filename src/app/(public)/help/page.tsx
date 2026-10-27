@@ -23,7 +23,7 @@ export default async function HelpPage() {
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Customer support" title="We are here to help you" lead="What happens from choosing a piece to having it in your room, in plain words." />
 
       <div className="container-page pb-[var(--section-space)] pt-6 md:pt-[var(--section-space)]">
-        <nav aria-label="On this page" className="help-topics flex flex-wrap gap-x-8 gap-y-3 border-b border-border pb-6">
+        <nav aria-label="On this page" className="help-topics flex flex-wrap justify-center gap-x-8 gap-y-3 border-b border-border pb-6 text-center">
           {TOPICS.map((t) => (
             <a key={t.id} href={`#${t.id}`} className="link-arrow text-text">
               {t.label}
