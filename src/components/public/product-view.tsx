@@ -1,4 +1,5 @@
 import { Store, Truck } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { BackLink } from "@/components/public/back-link";
 import { AvailabilityTag } from "@/components/public/availability-tag";
@@ -104,11 +105,12 @@ export function ProductView({ p, shop, heart, preview = false, children }: { p: 
                 ))}
               </p>
             ) : null}
+            {/* Leads to the map on the Contact page, which scrolls down to it. */}
             {shop.mapUrl ? (
-              <a href={shop.mapUrl} target="_blank" rel="noopener noreferrer" className="pdp-directions">
+              <Link href="/contact#map" className="pdp-directions">
                 Get directions
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
+                <span className="sr-only"> (the map on the contact page)</span>
+              </Link>
             ) : null}
           </div>
         </li>

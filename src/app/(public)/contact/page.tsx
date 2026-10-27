@@ -83,7 +83,7 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section aria-labelledby="visit-title">
+      <section id="map" aria-labelledby="visit-title" className="scroll-mt-16">
         <Reveal variant="wipe">
           <div className="relative h-[24rem] bg-[#e4e4e2]">
             {embed ? (
