@@ -438,13 +438,11 @@
   width: calc(100% - 1.5cm);
   justify-self: center;
 }
-/* Side by side: it stays against the outer edge of the panel, on the left in one row and on the right in the next. */
+/* Side by side: the photograph is centred in its half of the panel, and the words (title, text and button together, left aligned inside) are centred in theirs. */
 @media (min-width: 48rem) {
-  .prem-gallery-wrap {
-    justify-self: start;
-  }
-  .prem-piece:nth-child(even) .prem-gallery-wrap {
-    justify-self: end;
+  .prem-glass .prem-info {
+    width: min(100%, 28rem);
+    justify-self: center;
   }
 }
 
