@@ -434,6 +434,18 @@
 }
 .prem-gallery-wrap {
   min-width: 0;
+  /* The photograph (and the row of frames under it) is 1.5 cm narrower than its column, so 1.5 cm smaller across and about 1.9 cm shorter. */
+  width: calc(100% - 1.5cm);
+  justify-self: center;
+}
+/* Side by side: it stays against the outer edge of the panel, on the left in one row and on the right in the next. */
+@media (min-width: 48rem) {
+  .prem-gallery-wrap {
+    justify-self: start;
+  }
+  .prem-piece:nth-child(even) .prem-gallery-wrap {
+    justify-self: end;
+  }
 }
 
 /* The photograph: large and rectangular, with the row of frames under it */
