@@ -26,7 +26,7 @@ describe("navigation visibility", () => {
 
   it("no longer offers any CRM or ERP screen", () => {
     const l = pageLabels(actor(["owner"]));
-    for (const gone of ["Follow-ups", "Sales Orders", "Production", "Stock", "Materials", "Transfers", "Locations", "Suppliers", "Purchase Orders", "Deliveries", "After-Sales Service", "Invoicing", "Expenses", "Reports", "Employees"]) {
+    for (const gone of ["Follow-ups", "Sales Orders", "Production", "Stock", "Transfers", "Locations", "Suppliers", "Purchase Orders", "Deliveries", "After-Sales Service", "Invoicing", "Expenses", "Reports", "Employees"]) {
       expect(l, gone).not.toContain(gone);
     }
   });
