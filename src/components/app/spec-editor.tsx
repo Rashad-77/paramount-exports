@@ -299,7 +299,9 @@ function ListValues({
     setText("");
   };
   const typed = text.trim().toLowerCase();
-  const offered = alpha(suggestions.filter((sg) => !row.values.some((v) => v.toLowerCase() === sg.toLowerCase()) && (!typed || sg.toLowerCase().startsWith(typed))));
+  const isOn = (sg: string) => row.values.some((v) => v.toLowerCase() === sg.toLowerCase());
+  // Every suggestion is listed, as soon as it is added; the ones already on this product show ticked, and pressing one again takes it off.
+  const offered = alpha(suggestions.filter((sg) => !typed || sg.toLowerCase().startsWith(typed)));
   return (
     <div>
       {row.values.length > 0 ? (
@@ -340,9 +342,15 @@ function ListValues({
         <ul className="mt-1.5 flex max-h-[54px] flex-wrap gap-1 overflow-hidden" aria-label={`Suggested ${row.label.toLowerCase()}`}>
           {offered.map((sg) => (
             <li key={sg}>
-              <button type="button" onClick={() => commit(sg)} className="border border-dashed border-border-strong px-2 py-0.5 text-xs text-text-muted hover:bg-black/5">
-                + {sg}
-              </button>
+              {isOn(sg) ? (
+                <button type="button" aria-pressed="true" onClick={() => onChange(row.values.filter((v) => v.toLowerCase() !== sg.toLowerCase()))} className="border border-solid border-border-strong bg-linen px-2 py-0.5 text-xs text-text hover:bg-black/5">
+                  ✓ {sg}
+                </button>
+              ) : (
+                <button type="button" aria-pressed="false" onClick={() => commit(sg)} className="border border-dashed border-border-strong px-2 py-0.5 text-xs text-text-muted hover:bg-black/5">
+                  + {sg}
+                </button>
+              )}
             </li>
           ))}
         </ul>
