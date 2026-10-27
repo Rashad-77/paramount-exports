@@ -1,5 +1,6 @@
 import { focusStyle } from "@/lib/focus";
 import { Clock, Hammer, Handshake, Mail, MapPin, Phone, Quote, Ruler, Star, TreeDeciduous } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { WhatsAppIcon } from "@/components/public/whatsapp-icon";
@@ -445,11 +446,14 @@ export default async function HomePage() {
       <section aria-labelledby="space-title" className="sec sec-white">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[0.9fr_1fr] lg:gap-20">
           <Reveal variant="up">
-            <div className="zoom-frame mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
-              <ImagePlaceholder
-                label="A finished piece in place"
-                className="size-full"
-                compact
+            <div className="zoom-frame relative mx-auto aspect-[4/5] w-full max-w-sm lg:max-w-none">
+              <Image
+                src="/home/custom-woodwork.jpg"
+                alt="Boards and sheets of different woods stacked upright in the workshop, lit by the sun"
+                fill
+                sizes="(min-width: 1024px) 40vw, (min-width: 384px) 24rem, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 40%" }}
               />
             </div>
           </Reveal>
