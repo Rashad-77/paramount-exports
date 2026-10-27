@@ -9,6 +9,10 @@ import type { ActionState } from "@/lib/action-state";
 import { toCascadeGroups, treeLabel, treeOrder } from "@/lib/category-tree";
 import type { SavedSpecType, SpecEntry } from "@/lib/specifications";
 
+/** Shown greyed in an empty description, as an example of the length and tone of a premium piece (85 words, under the premium limit). */
+const SAMPLE_DESCRIPTION =
+  "Built from a single run of seasoned solid teak, this dining table is made to be the centre of the room. The top is planed and sanded by hand until the grain glows, then sealed with a low-sheen oil finish that protects without hiding the wood. Mortise and tenon joints hold the frame square for years, and the legs are shaped to leave plenty of room for chairs. Choose the size and finish that suit your space, and we will build it to your measurements.";
+
 export interface ProductFormValues {
   id?: string;
   name?: string;
@@ -64,7 +68,7 @@ export function ProductForm({
         />
       </div>
       <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="Short description shown under the product name." />
-      <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} hint="The long text, shown under the Description bar on the product page." />
+      <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} placeholder={SAMPLE_DESCRIPTION} hint="The long text, shown under the Description bar on the product page." />
       <PremiumWordCount />
 
       <fieldset className="space-y-4 border border-border p-4">
