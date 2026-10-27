@@ -64,12 +64,12 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={localBusinessLd(b, publicEnv().NEXT_PUBLIC_SITE_URL)} />
-      <header className="plain-band on-wood relative text-center">
+      <header className="plain-band on-wood relative">
         <BackBar href="/" to="home" />
         <div className="container-page pt-[clamp(8rem,12vw,10rem)] pb-[clamp(3rem,6vw,5rem)]">
           <p className="eyebrow">Contact us</p>
-          <h1 className="font-display mx-auto mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>
-          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed on-wood-muted">Call, message or visit. Or write to us below.</p>
+          <h1 className="font-display mt-4 max-w-[16ch] text-display text-white">Let&rsquo;s talk about your piece.</h1>
+          <p className="mt-5 max-w-lg text-base leading-relaxed on-wood-muted">Call, message or visit. Or write to us below.</p>
         </div>
       </header>
 
