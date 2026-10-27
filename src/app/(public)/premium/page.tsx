@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BackBar } from "@/components/public/back-link";
 import { HeroVideo } from "@/components/public/hero-video";
@@ -25,7 +26,12 @@ export default async function PremiumPage() {
       {/* Video banner, like the homepage and the gallery: a silent looping clip under a dark gradient */}
       <section aria-labelledby="premium-page-title" className="vhero vhero-short on-wood">
         <BackBar href="/" to="home" />
-        <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} />
+        {PREMIUM_VIDEO.desktop ? (
+          <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} />
+        ) : (
+          // No footage yet: a photograph of dark, richly grained timber fills the banner.
+          <Image src="/premium/banner.jpg" alt="" fill priority sizes="100vw" className="media" />
+        )}
         <div className="container-page w-full pt-24 pb-[clamp(2.5rem,6vw,4.5rem)]">
           <h1 id="premium-page-title" className="prem-title prem-title-xl">
             Premium range
