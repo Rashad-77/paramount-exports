@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Store, Truck } from "lucide-react";
 import { notFound } from "next/navigation";
-import { BackLink } from "@/components/public/back-link";
 import { AskDisclosure } from "@/components/public/ask-disclosure";
-import { AvailabilityTag } from "@/components/public/availability-tag";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductCard } from "@/components/public/product-card";
-import { ProductGallery } from "@/components/public/product-gallery";
-import { ProductTabs, type ProductTab } from "@/components/public/product-tabs";
-import { PurchasePanel } from "@/components/public/purchase-panel";
+import { ProductView } from "@/components/public/product-view";
 import { WishlistButton } from "@/components/public/wishlist-button";
 import { customerAuthMode } from "@/lib/auth/customer";
 import { publicEnv } from "@/lib/env";
-import { formatMoney } from "@/lib/money";
-import { saleLabel } from "@/lib/sale";
 import { JsonLd } from "@/components/json-ld";
 import { specText } from "@/lib/specifications";
 import { breadcrumbLd } from "@/lib/structured-data";
@@ -85,165 +78,37 @@ export default async function ProductPage({ params }: Props) {
     { name: p.name, path: `/products/${p.slug}` },
   ]);
 
-  // A sale: the label says the amount or the percentage, as the owner entered the discount.
-  const sale = saleLabel({ kind: p.discountKind, value: p.discountValue }, line?.price, line?.compare, (a) => formatMoney(a, business.currency));
-
-  // The line under the name: the short description, or else the opening of the detailed one.
-  // Under the name: only the short description. The long one, with the features and uses, is the first bar below.
-  const lead = p.shortDescription;
-
-  // Only what applies to this piece is shown: an empty section never appears. The type comes first, then the rows staff added.
-  const specs: Array<{ label: string; value: string }> = [
-    { label: "Type", value: p.kind === "made_to_order" ? "Made to order" : "Ready-made" },
-    ...p.specifications.map((s) => ({ label: s.label, value: specText(s) })),
-  ].filter((s) => s.value);
-
-  const tabs: ProductTab[] = [];
-  if (p.description) {
-    tabs.push({
-      id: "description",
-      label: "Description",
-      content: (
-        <div className="pdp-prose">
-          {p.description ? <p className="whitespace-pre-line">{p.description}</p> : null}
-        </div>
-      ),
-    });
-  }
-  if (specs.length) {
-    tabs.push({
-      id: "specifications",
-      label: "Specifications",
-      content: (
-        <dl className="pdp-specs">
-          {specs.map((s) => (
-            <div key={s.label + s.value}>
-              <dt>{s.label}</dt>
-              <dd>{s.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ),
-    });
-  }
-  const addressLines = (business.address ?? "")
-    .split(/\r?\n/)
-    .map((l) => l.trim().replace(/[,\s]+$/, ""))
-    .filter(Boolean);
-  const hours = (business.openingHours ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  tabs.push({
-    id: "delivery",
-    label: "Delivery and collection",
-    content: (
-      <ul className="pdp-info">
-        <li>
-          <Truck aria-hidden="true" strokeWidth={1.5} />
-          <div>
-            <h3>Delivery</h3>
-            <p>We deliver to your address. The delivery charge is agreed with you when we confirm your order.</p>
-            <p>
-              <strong className="font-medium text-text">Estimated delivery:</strong> 3 to 7 working days after your order is confirmed.
-            </p>
-          </div>
-        </li>
-        <li>
-          <Store aria-hidden="true" strokeWidth={1.5} />
-          <div>
-            <h3>Collect from the showroom</h3>
-            <p>Collection is free. We will tell you when your order is ready.</p>
-            {addressLines.length ? (
-              <address>
-                {addressLines.map((l) => (
-                  <span key={l}>{l}</span>
-                ))}
-              </address>
-            ) : null}
-            {hours.length ? (
-              <p className="pdp-hours">
-                {hours.map((l) => (
-                  <span key={l}>{l}</span>
-                ))}
-              </p>
-            ) : null}
-            {business.mapUrl ? (
-              <a href={business.mapUrl} target="_blank" rel="noopener noreferrer" className="pdp-directions">
-                Get directions
-                <span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            ) : null}
-          </div>
-        </li>
-      </ul>
-    ),
-  });
-
   return (
-    <div className="pdp-page">
-      {sale ? <p className="sale-bar">{sale}</p> : null}
-      <div className="container-page pb-8 pt-[calc(var(--gutter)-0.5rem)] md:pb-14">
-        <JsonLd data={[jsonLd, crumbs]} />
-        <div className="mb-3">
-          <BackLink href="/products" to="the collection" tone="dark" history />
-        </div>
-        <div className="grid gap-10 md:grid-cols-2 md:gap-8 lg:gap-14">
-          <div className="md:sticky md:top-24 md:self-start">
-            <ProductGallery
-              images={p.images}
-              name={p.name}
-              premium={p.isPremium}
-              heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined}
-            />
-          </div>
-          <div>
-            <p className="pdp-category text-text-muted">{p.categoryName}</p>
-            <h1 className="font-display mt-3 text-headline text-walnut">{p.name}</h1>
-            {p.availability && p.availabilityState ? (
-              <p className="mt-4">
-                <AvailabilityTag state={p.availabilityState}>{p.availability}</AvailabilityTag>
-              </p>
-            ) : null}
-            {lead ? <p className="pdp-lead mt-5 max-w-prose whitespace-pre-line text-text-muted">{lead}</p> : null}
+    <ProductView
+      p={p}
+      shop={business}
+      heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined}
+    >
+      <JsonLd data={[jsonLd, crumbs]} />
+      <AskDisclosure title="Have a question?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
+        <EnquiryForm
+          kind="product_enquiry"
+          wide
+          productId={p.id}
+          turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+          submitLabel="Send enquiry"
+        />
+      </AskDisclosure>
 
-            <PurchasePanel
-              productName={p.name}
-              productSlug={p.slug}
-              image={p.images[0]?.url ?? null}
-              currency={business.currency}
-              madeToOrder={p.kind === "made_to_order"}
-              option={line ? { id: line.id, label: line.label, sku: line.sku, price: line.price, compare: line.compare, stock: line.stock } : null}
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 md:mt-20">
-          <ProductTabs tabs={tabs} />
-        </div>
-
-        <AskDisclosure title="Have a question?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
-          <EnquiryForm
-            kind="product_enquiry"
-            wide
-            productId={p.id}
-            turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-            submitLabel="Send enquiry"
-          />
-        </AskDisclosure>
-
-        {related.length ? (
-          <section aria-labelledby="related-title" className="mt-16 md:mt-24">
-            <h2 id="related-title" className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.02137),1.75rem)] leading-tight text-walnut">
-              You may also like
-            </h2>
-            <ul className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {related.map((r) => (
-                <li key={r.id}>
-                  <ProductCard product={r} currency={business.currency} wishlist={accountsOn} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </div>
-    </div>
+      {related.length ? (
+        <section aria-labelledby="related-title" className="mt-16 md:mt-24">
+          <h2 id="related-title" className="font-display text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.02137),1.75rem)] leading-tight text-walnut">
+            You may also like
+          </h2>
+          <ul className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {related.map((r) => (
+              <li key={r.id}>
+                <ProductCard product={r} currency={business.currency} wishlist={accountsOn} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </ProductView>
   );
 }

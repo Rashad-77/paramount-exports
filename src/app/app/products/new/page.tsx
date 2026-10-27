@@ -33,6 +33,7 @@ export default async function NewProductPage() {
             action={createProductAction}
             categories={cats}
             currency={business.currency}
+            shop={{ address: business.address, openingHours: business.openingHours, mapUrl: business.mapUrl }}
             savedTypes={saved.types}
             savedValues={saved.values}
             savedHidden={saved.hidden}

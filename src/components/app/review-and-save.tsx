@@ -1,16 +1,13 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFormState } from "@/components/forms/action-form";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { AvailabilityTag, type AvailabilityState } from "@/components/public/availability-tag";
+import { ProductPagePreview, type PreviewInput } from "@/components/app/product-page-preview";
+import type { ProductViewShop } from "@/components/public/product-view";
 import { Alert } from "@/components/ui/status";
-import { formatMoney } from "@/lib/money";
-import { priceAfterDiscount, saleLabel } from "@/lib/sale";
-import { AVAILABILITY_LABEL } from "@/lib/schemas/catalogue";
-import { normalizeSpecs, specText, type SpecEntry } from "@/lib/specifications";
+import { normalizeSpecs, type SpecEntry } from "@/lib/specifications";
 
 interface Preview {
   name: string;
@@ -26,8 +23,8 @@ interface Preview {
   discountKind: string;
   discountValue: string;
   kind: string;
-  specs: Array<{ label: string; value: string }>;
-  photos: Array<{ key: string; url: string }>;
+  specEntries: SpecEntry[];
+  photos: Array<{ key: string; url: string; x: number; y: number; z: number }>;
 }
 
 function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>): Preview {
@@ -39,7 +36,13 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
   } catch {
     specs = [];
   }
-  const photos = [...form.querySelectorAll<HTMLInputElement>('input[name="photos"]')].map((i) => ({ key: i.dataset.key ?? "", url: i.dataset.url ?? "" })).filter((p) => p.url);
+  // Each photo input holds "id:…@x,y,z" or "file:…@x,y,z": where the photograph sits in its frame and how far it is zoomed.
+  const photos = [...form.querySelectorAll<HTMLInputElement>('input[name="photos"]')]
+    .map((i) => {
+      const at = /@(\d{1,3}),(\d{1,3})(?:,(\d{1,3}))?$/.exec(i.value);
+      return { key: i.dataset.key ?? "", url: i.dataset.url ?? "", x: at ? Number(at[1]) : 50, y: at ? Number(at[2]) : 50, z: at?.[3] ? Number(at[3]) : 100 };
+    })
+    .filter((p) => p.url);
   return {
     name: text("name"),
     category: categoryLabels[text("categoryId")] ?? "",
@@ -54,7 +57,7 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
     discountKind: text("discountKind"),
     discountValue: text("discountValue"),
     kind: text("kind"),
-    specs: specs.map((s) => ({ label: s.label, value: specText(s) })),
+    specEntries: specs,
     photos,
   };
 }
@@ -64,7 +67,7 @@ function readForm(form: HTMLFormElement, categoryLabels: Record<string, string>)
  * saves when the person confirms. If something obviously missing (the name, the category) would stop the save, it goes straight to the
  * form's own messages instead.
  */
-export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRequired = false }: { categoryLabels: Record<string, string>; currency: string; confirmLabel: string; photosRequired?: boolean }) {
+export function ReviewAndSave({ categoryLabels, currency, shop, confirmLabel, photosRequired = false }: { categoryLabels: Record<string, string>; currency: string; shop?: Omit<ProductViewShop, "currency">; confirmLabel: string; photosRequired?: boolean }) {
   const { pending } = useFormState();
   const anchor = useRef<HTMLSpanElement>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -82,9 +85,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
     setOpen(true);
   };
 
-  // Photo changes made in the preview go to the form's photo list (still unsaved), and the preview follows the list.
-  const command = (detail: { action: "move" | "remove"; key: string; to?: string }) => anchor.current?.closest("form")?.dispatchEvent(new CustomEvent("photos-command", { detail }));
-  const [dragKey, setDragKey] = useState<string | null>(null);
+  // The preview follows the form's photo list (a photo added, removed or moved there shows here at once).
   const [showroomPhoto, setShowroomPhoto] = useState(0);
   const categoryRef = useRef(categoryLabels);
   useEffect(() => {
@@ -97,7 +98,6 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
   }, [open]);
 
   const live = preview?.visibility === "published";
-  const cover = preview?.photos[0]?.url;
 
   return (
     <span ref={anchor}>
@@ -176,95 +176,25 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
               </section>
             ) : null}
 
-            {preview.premium ? <h4 className="text-sm font-semibold">On the product page and in the collection</h4> : null}
-            <div className="grid gap-5 md:grid-cols-[15rem_auto] md:justify-center md:gap-4">
-              <div>
-                {cover ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt="" className="mx-auto aspect-square w-full max-w-60 border border-border object-cover" />
-                ) : (
-                  <div className="mx-auto flex aspect-square w-full max-w-60 items-center justify-center border border-dashed border-border-strong text-sm text-text-muted">No photos</div>
-                )}
-                {preview.photos.length > 0 ? (
-                  <ul className="mx-auto mt-2 grid max-w-60 grid-cols-3 gap-1.5" aria-label="Photos in order">
-                    {preview.photos.map((p, i) => (
-                      <li
-                        key={p.key}
-                        draggable
-                        onDragStart={() => setDragKey(p.key)}
-                        onDragOver={(e) => dragKey && e.preventDefault()}
-                        onDrop={() => {
-                          if (dragKey) command({ action: "move", key: dragKey, to: p.key });
-                          setDragKey(null);
-                        }}
-                        onDragEnd={() => setDragKey(null)}
-                        className={"relative cursor-grab " + (dragKey === p.key ? "opacity-40" : "")}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={p.url} alt="" draggable={false} className="aspect-square w-full border border-border object-cover" />
-                        <span className="tabular absolute left-0.5 top-0.5 bg-walnut-dark px-1 text-[0.6875rem] text-ivory">{i + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => command({ action: "remove", key: p.key })}
-                          aria-label={`Delete photo ${i + 1}`}
-                          className="absolute right-0.5 top-0.5 inline-flex size-6 items-center justify-center rounded-full bg-white/90 shadow hover:bg-danger hover:text-ivory"
-                        >
-                          <Trash2 aria-hidden="true" className="size-3.5" />
-                        </button>
-                        {i === 0 ? <span className="absolute inset-x-0 bottom-0 bg-walnut-dark/85 text-center text-[0.6875rem] text-ivory">Thumbnail</span> : null}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {preview.photos.length > 1 ? <p className="mt-1.5 text-xs text-text-muted">Drag a photo to change its number; photo 1 is the thumbnail. Changes here are kept with the form and saved only when you confirm.</p> : null}
-              </div>
-
-              <div className="min-w-0 max-w-72">
-                <p className="text-sm text-text-muted">{preview.category}</p>
-                <h3 className="mt-0.5 text-xl font-semibold">{preview.name}</h3>
-                {preview.shortDescription ? <p className="mt-1 text-sm">{preview.shortDescription}</p> : null}
-                {(() => {
-                  const now = priceAfterDiscount(preview.price, preview.discountKind, preview.discountValue);
-                  const label = now ? saleLabel({ kind: preview.discountKind as "amount" | "percent", value: preview.discountValue }, now, preview.price, (a) => formatMoney(a, currency)) : null;
-                  if (!preview.price) return <p className="mt-3 text-lg font-medium"><span className="text-sm font-normal text-text-muted">No price: customers are asked to contact you</span></p>;
-                  if (!now) return <p className="mt-3 text-lg font-medium">{formatMoney(preview.price, currency)}</p>;
-                  return (
-                    <p className="mt-3 text-lg font-medium">
-                      <del className="mr-2 text-text-muted">{formatMoney(preview.price, currency)}</del>
-                      {formatMoney(now, currency)}
-                      {label ? <span className="ml-2 inline-flex bg-[#f4d03f] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-black">{label}</span> : null}
-                    </p>
-                  );
-                })()}
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}</AvailabilityTag> : null}
-                </div>
-
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold">Specifications</h4>
-              <dl className="mt-1.5 divide-y divide-border border-y border-border text-sm">
-                <div className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
-                  <dt className="text-text-muted">Type</dt>
-                  <dd>{preview.kind === "made_to_order" ? "Made to order" : "Ready-made"}</dd>
-                </div>
-                {preview.specs.map((s, i) => (
-                  <div key={i} className="grid grid-cols-[9rem_1fr] gap-3 py-1.5">
-                    <dt className="text-text-muted">{s.label}</dt>
-                    <dd>{s.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            {preview.description ? (
-              <div>
-                <h4 className="text-sm font-semibold">Description</h4>
-                <p className="mt-1 whitespace-pre-line text-sm">{preview.description}</p>
-              </div>
-            ) : null}
+            {preview.premium ? <h4 className="text-sm font-semibold">On the product page</h4> : null}
+            <ProductPagePreview
+              shop={{ currency, address: shop?.address ?? null, openingHours: shop?.openingHours ?? null, mapUrl: shop?.mapUrl ?? null }}
+              input={{
+                name: preview.name,
+                category: preview.category,
+                shortDescription: preview.shortDescription,
+                description: preview.description,
+                premium: preview.premium,
+                availability: preview.availability,
+                stock: preview.stock,
+                price: preview.price,
+                discountKind: preview.discountKind,
+                discountValue: preview.discountValue,
+                kind: preview.kind,
+                specEntries: preview.specEntries,
+                photos: preview.photos,
+              } satisfies PreviewInput}
+            />
 
             <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
               <Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={pending}>

@@ -71,6 +71,7 @@ export default async function ProductAdminPage({
             <ProductForm
               action={updateProductAction}
               currency={business.currency}
+            shop={{ address: business.address, openingHours: business.openingHours, mapUrl: business.mapUrl }}
               savedTypes={saved.types}
               savedValues={saved.values}
               savedHidden={saved.hidden}

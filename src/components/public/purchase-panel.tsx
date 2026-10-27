@@ -85,7 +85,7 @@ export function PurchasePanel({
       {stock.state !== "untracked" && stock.state !== "out" ? (
         <p className="pp-stock" data-state={stock.state} role="status">
           <span aria-hidden="true" className="pp-dot" />
-          {stock.state === "in" ? `In stock · ${stock.left} available` : null}
+          {stock.state === "in" ? "In stock" : null}
           {stock.state === "low" ? `Only ${stock.left} left, order soon` : null}
           {stock.state === "made_to_order" ? "Made to order" : null}
         </p>

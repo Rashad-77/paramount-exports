@@ -38,6 +38,7 @@ export function ProductForm({
   categories,
   values = {},
   currency,
+  shop,
   submitLabel,
   savedTypes,
   savedValues,
@@ -47,6 +48,8 @@ export function ProductForm({
   categories: Array<{ id: string; name: string; parentId: string | null }>;
   values?: ProductFormValues;
   currency: string;
+  /** The showroom details the product page lists under Delivery and collection (the preview shows them too). */
+  shop?: { address: string | null; openingHours: string | null; mapUrl: string | null };
   submitLabel: string;
   savedTypes?: SavedSpecType[];
   savedValues?: Record<string, string[]>;
@@ -100,6 +103,7 @@ export function ProductForm({
       </fieldset>
       <ReviewAndSave
         currency={currency}
+        shop={shop}
         confirmLabel={submitLabel === "Create product" ? "Confirm and create" : "Confirm and save"}
         photosRequired={submitLabel === "Create product"}
         categoryLabels={Object.fromEntries(treeOrder(categories).map((c) => [c.id, treeLabel(c)]))}
