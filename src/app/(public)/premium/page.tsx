@@ -42,7 +42,7 @@ export default async function PremiumPage() {
       </div>
 
       <section aria-labelledby="premium-cta" className="prem-close">
-        {/* In a solid black container, as wide as the glass panel above it */}
+        {/* In a solid black container that spreads edge to edge */}
         <div className="container-page prem-glass-wrap">
           <div className="prem-close-box">
             <Reveal variant="up" className="mx-auto max-w-2xl text-center">

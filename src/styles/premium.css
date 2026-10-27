@@ -294,11 +294,15 @@
 .prem-page .vhero {
   background: transparent;
 }
+/* The band keeps its full height, so the panel below stays where it was; the title is lifted to the top of the band and made larger. */
 .prem-page .vhero.vhero-short {
-  min-height: clamp(11rem, 28svh, 15rem);
+  align-items: flex-start;
+}
+.prem-page .vhero h1.prem-title-xl {
+  font-size: clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem);
 }
 .prem-page .vhero::before {
-  background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.75) 35%, transparent 100%);
+  background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.92) 40%, rgb(0 0 0 / 0.55) 75%, transparent 100%);
 }
 /* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
 .prem-glass-wrap {
@@ -630,9 +634,12 @@
   padding-block: 0;
   background: none;
 }
-/* The closing invitation sits in a solid black container, as wide as the glass panel. */
+/* The closing invitation sits in a solid black container that spreads the whole width of the screen. */
+.prem-close .prem-glass-wrap {
+  padding-inline: 0;
+}
 .prem-close-box {
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border-block: 1px solid rgb(255 255 255 / 0.1);
   background: #000;
   padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1rem, 3vw, 2.5rem);
 }
