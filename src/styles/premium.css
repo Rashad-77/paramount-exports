@@ -297,6 +297,9 @@
 /* The band keeps its full height, so the panel below stays where it was; the title is lifted to the top of the band and made larger. */
 .prem-page .vhero.vhero-short {
   align-items: flex-start;
+  /* The title moves 1 cm down; the band is 3 cm taller, so everything under it moves 3 cm down. */
+  padding-top: 1cm;
+  min-height: calc(clamp(22rem, 62svh, 38rem) + 3cm);
 }
 .prem-page .vhero h1.prem-title-xl {
   font-size: clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem);
