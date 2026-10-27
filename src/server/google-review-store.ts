@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import type { Actor } from "@/lib/auth/permissions";
 import { requirePermission } from "@/lib/auth/permissions";
 import { getDb } from "@/lib/db/client";
@@ -57,19 +57,22 @@ export async function addManualGoogleReview(actor: Actor, input: { author: strin
   await recordAudit(db, actor, { action: "review.added", entityType: "google_review", entityId: key });
 }
 
-export async function setGoogleReviewHidden(actor: Actor, id: string, hidden: boolean): Promise<void> {
+/** Hide the chosen reviews from the website (or show them again). A hidden review stays saved. */
+export async function setGoogleReviewsHidden(actor: Actor, ids: string[], hidden: boolean): Promise<number> {
   requirePermission(actor, "website:manage");
   const db = getDb();
-  const rows = await db.update(googleReviews).set({ hidden }).where(eq(googleReviews.id, id)).returning({ id: googleReviews.id });
-  if (rows.length === 0) throw notFound("That review could not be found.");
-  await recordAudit(db, actor, { action: hidden ? "review.hidden" : "review.shown", entityType: "google_review", entityId: id });
+  const rows = await db.update(googleReviews).set({ hidden }).where(inArray(googleReviews.id, ids)).returning({ id: googleReviews.id });
+  if (rows.length === 0) throw notFound("Those reviews could not be found.");
+  for (const r of rows) await recordAudit(db, actor, { action: hidden ? "review.hidden" : "review.shown", entityType: "google_review", entityId: r.id });
+  return rows.length;
 }
 
-/** Deletes a saved review for good. Hide it instead to keep it saved but off the website. */
-export async function deleteGoogleReview(actor: Actor, id: string): Promise<void> {
+/** Delete the chosen reviews for good. */
+export async function deleteGoogleReviews(actor: Actor, ids: string[]): Promise<number> {
   requirePermission(actor, "website:manage");
   const db = getDb();
-  const rows = await db.delete(googleReviews).where(eq(googleReviews.id, id)).returning({ id: googleReviews.id });
-  if (rows.length === 0) throw notFound("That review could not be found.");
-  await recordAudit(db, actor, { action: "review.deleted", entityType: "google_review", entityId: id });
+  const rows = await db.delete(googleReviews).where(inArray(googleReviews.id, ids)).returning({ id: googleReviews.id });
+  if (rows.length === 0) throw notFound("Those reviews could not be found.");
+  for (const r of rows) await recordAudit(db, actor, { action: "review.deleted", entityType: "google_review", entityId: r.id });
+  return rows.length;
 }

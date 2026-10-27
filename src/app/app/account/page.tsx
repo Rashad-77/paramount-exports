@@ -6,9 +6,7 @@ import { Alert } from "@/components/ui/status";
 import { Table, TableWrap } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { PASSWORD_MAX, PASSWORD_MIN } from "@/lib/schemas/accounts";
-import { mfaState } from "@/server/owner-auth";
 import { signInDetailsAvailable, staffSignInEmail } from "@/server/staff-account";
-import { MfaPanel } from "./mfa-panel";
 import { changeEmailAction, changePasswordAction, updateNameAction } from "./actions";
 
 export const metadata: Metadata = { title: "Your account" };
@@ -20,7 +18,6 @@ export default async function AccountPage() {
   const email = await staffSignInEmail();
   const roles = actor.roles.map((r) => ROLE_LABEL[r] ?? r).join(", ");
   const canChangeSignIn = signInDetailsAvailable();
-  const mfa = canChangeSignIn ? await mfaState() : null;
 
   return (
     <>
@@ -83,10 +80,6 @@ export default async function AccountPage() {
                 </TableWrap>
                 <SubmitButton>Change password</SubmitButton>
               </ActionForm>
-            </Panel>
-
-            <Panel title="Two-step sign-in" description="A code from an authenticator app on your phone, asked for after the password.">
-              <MfaPanel enabled={mfa?.enabled ?? false} />
             </Panel>
           </>
         ) : (

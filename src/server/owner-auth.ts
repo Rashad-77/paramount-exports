@@ -1,6 +1,5 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
-import { needsSecondStep } from "@/lib/auth/owner-session";
 import { getDb } from "@/lib/db/client";
 import { profiles, userRoles } from "@/lib/db/schema";
 import { publicEnv } from "@/lib/env";
@@ -45,73 +44,4 @@ export async function setOwnerPassword(newPassword: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw validation("We could not set that password. Choose a different one and try again.", { newPassword: ["Choose a different password."] });
   await supabase.auth.signOut();
-}
-
-export interface MfaState {
-  enabled: boolean;
-  factorId: string | null;
-}
-
-export async function mfaState(): Promise<MfaState> {
-  if (!hasSupabaseAuth()) return { enabled: false, factorId: null };
-  const supabase = await client();
-  const { data } = await supabase.auth.mfa.listFactors();
-  const verified = data?.totp?.[0];
-  return { enabled: Boolean(verified), factorId: verified?.id ?? null };
-}
-
-/** True when this session has only given the password and the account also needs its authenticator code. */
-export async function secondStepPending(): Promise<boolean> {
-  if (!hasSupabaseAuth()) return false;
-  const supabase = await client();
-  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  return needsSecondStep(data?.currentLevel, data?.nextLevel);
-}
-
-/** Begin switching on the authenticator code: returns the picture and the typed key to add it to an authenticator app. */
-export async function mfaStartEnroll(): Promise<{ factorId: string; qr: string; secret: string }> {
-  const supabase = await client();
-  // A half-finished set-up from before is removed so only one pending key exists.
-  const { data: all } = await supabase.auth.mfa.listFactors();
-  for (const f of all?.all ?? []) if (f.status === "unverified") await supabase.auth.mfa.unenroll({ factorId: f.id });
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Authenticator app" });
-  if (error || !data?.totp) throw validation("We could not start the set-up. Please try again.");
-  return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret };
-}
-
-/** Finish the set-up: the first code from the app proves it was added correctly. */
-export async function mfaFinishEnroll(factorId: string, code: string): Promise<void> {
-  await throttleCodes();
-  const supabase = await client();
-  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
-  if (error) throw validation("That code is not right. Check the app and try again.", { code: ["That code is not right."] });
-}
-
-/** Give the code at sign-in. */
-export async function mfaVerifyLogin(code: string): Promise<void> {
-  await throttleCodes();
-  const supabase = await client();
-  const { data } = await supabase.auth.mfa.listFactors();
-  const factor = data?.totp?.[0];
-  if (!factor) throw validation("Two-step sign-in is not switched on for this account.");
-  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
-  if (error) throw validation("That code is not right. Check the app and try again.", { code: ["That code is not right."] });
-}
-
-/** Switch the authenticator code off. The current code is asked for first, so a left-open screen cannot do it. */
-export async function mfaDisable(code: string): Promise<void> {
-  await mfaVerifyLogin(code);
-  const supabase = await client();
-  const { data } = await supabase.auth.mfa.listFactors();
-  for (const f of data?.all ?? []) await supabase.auth.mfa.unenroll({ factorId: f.id });
-}
-
-/** Six digits can be guessed, so the number of tries is limited per signed-in person. */
-async function throttleCodes(): Promise<void> {
-  const supabase = await client();
-  const { data } = await supabase.auth.getUser();
-  const id = data.user?.id;
-  if (!id) throw validation("Your session has ended. Please sign in again.");
-  const hit = await hitRateLimit(getDb(), { scope: "owner-code", value: id, limit: 8, windowSeconds: 600 });
-  if (!hit.allowed) throw rateLimited("Too many wrong codes. Please wait a few minutes and try again.");
 }

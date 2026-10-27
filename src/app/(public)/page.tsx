@@ -597,7 +597,7 @@ export default async function HomePage() {
                 <figure
                   key={i}
                   aria-hidden={i >= Math.min(reviews.length, CAROUSEL_REVIEWS) ? true : undefined}
-                  className={CARD_W + " soft-card relative flex flex-col text-center !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
+                  className={CARD_W + " soft-card relative flex flex-col text-left !px-6 !py-6 transition-shadow duration-200 hover:shadow-md"}
                 >
                   <ReviewCardButton id={t.id} name={t.name} />
                   {t.date ? <time className="rv-date">{t.date}</time> : null}
@@ -609,17 +609,17 @@ export default async function HomePage() {
                     </figcaption>
                   ) : null}
                   {t.stars ? (
-                    <div role="img" aria-label={`${t.stars} out of 5 stars`} className="rv-stars flex justify-center gap-0.5 text-[#e8a200]">
+                    <div role="img" aria-label={`${t.stars} out of 5 stars`} className="rv-stars flex justify-start gap-0.5 text-[#e8a200]">
                       {Array.from({ length: 5 }, (_, n) => (
                         <Star key={n} aria-hidden="true" className="size-5" strokeWidth={1.25} fill={n < t.stars! ? "#fbbc04" : "none"} />
                       ))}
                     </div>
                   ) : (
-                    <Quote aria-hidden="true" className="mx-auto size-6 text-timber" strokeWidth={1.25} />
+                    <Quote aria-hidden="true" className="size-6 text-timber" strokeWidth={1.25} />
                   )}
                   <ReviewQuote id={t.id} quote={t.quote} />
                   {t.photos?.length || t.samplePhotos ? (
-                    <ul className="mt-4 flex justify-center gap-2" aria-label="Photos from this customer">
+                    <ul className="mt-4 flex justify-start gap-2" aria-label="Photos from this customer">
                       {t.photos?.map((src) => (
                         <li key={src} className="relative size-14 overflow-hidden border border-border">
                           <SiteImage src={src} alt={`Photo from ${t.name ?? "a customer"}`} fill sizes="56px" className="object-cover" />

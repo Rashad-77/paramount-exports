@@ -1,12 +1,10 @@
 import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/components/forms/action-form";
-import { ConfirmSubmit } from "@/components/forms/confirm-submit";
+import { SavedReviews } from "@/components/app/saved-reviews";
 import { ModuleHeader, Panel } from "@/components/ui/page-header";
-import { StatusBadge } from "@/components/ui/status";
-import { EmptyRow, Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
 import { formatReviewDate } from "@/lib/google-reviews";
 import { listGoogleReviewsAdmin } from "@/server/google-review-store";
-import { addReviewAction, deleteReviewAction, setReviewHiddenAction } from "./actions";
+import { addReviewAction, deleteReviewsAction, setReviewsHiddenAction } from "./actions";
 
 export const metadata = { title: "Reviews" };
 
@@ -30,62 +28,12 @@ export default async function ReviewsAdminPage() {
             <SubmitButton pendingLabel="Adding…">Add review</SubmitButton>
           </ActionForm>
         </Panel>
-        <Panel title="Saved reviews" description="Newest first. Hide a review to take it off the website without losing it, or delete it for good.">
-          <TableWrap label="Saved Google reviews">
-            <Table>
-              <THead>
-                <TR>
-                  <TH>Reviewer</TH>
-                  <TH>Review</TH>
-                  <TH>Date</TH>
-                  <TH>Status</TH>
-                  <TH>
-                    <span className="sr-only">Actions</span>
-                  </TH>
-                </TR>
-              </THead>
-              <tbody>
-                {reviews.length === 0 ? (
-                  <EmptyRow colSpan={5} title="No reviews saved yet" description="Add one above." />
-                ) : (
-                  reviews.map((r) => (
-                    <TR key={r.id}>
-                      <TD>
-                        <span className="font-medium">{r.author}</span>
-                        <span className="block text-xs text-text-muted">{"★".repeat(r.rating)}</span>
-                      </TD>
-                      <TD className="max-w-md">
-                        <p className="line-clamp-3">{r.body}</p>
-                      </TD>
-                      <TD>{formatReviewDate((r.publishedAt ?? r.createdAt).toISOString()) ?? ""}</TD>
-                      <TD>
-                        <div className="flex flex-wrap gap-1.5">
-                          <StatusBadge tone={r.hidden ? "warning" : "success"}>{r.hidden ? "Hidden" : "Shown"}</StatusBadge>
-                        </div>
-                      </TD>
-                      <TD>
-                        <div className="flex flex-wrap justify-end gap-2">
-                          <ActionForm action={setReviewHiddenAction} className="space-y-0">
-                            <input type="hidden" name="id" value={r.id} />
-                            <input type="hidden" name="hidden" value={r.hidden ? "false" : "true"} />
-                            <SubmitButton variant="ghost">
-                              {r.hidden ? "Show" : "Hide"}
-                            </SubmitButton>
-                          </ActionForm>
-                          <ActionForm action={deleteReviewAction} className="space-y-0">
-                              <input type="hidden" name="id" value={r.id} />
-                              <ConfirmSubmit variant="ghost" title="Delete this review?" description="It is removed from the website and from the saved reviews." confirmLabel="Delete">
-                                Delete
-                              </ConfirmSubmit>
-                            </ActionForm>
-                        </div>
-                      </TD>
-                    </TR>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </TableWrap>
+        <Panel title="Saved reviews" description="Newest first. Press Edit, tick the reviews, then hide them to take them off the website without losing them, or delete them for good.">
+          <SavedReviews
+            reviews={reviews.map((r) => ({ id: r.id, author: r.author, rating: r.rating, body: r.body, hidden: r.hidden, dateText: formatReviewDate((r.publishedAt ?? r.createdAt).toISOString()) ?? "" }))}
+            hideAction={setReviewsHiddenAction}
+            deleteAction={deleteReviewsAction}
+          />
         </Panel>
       </div>
     </>

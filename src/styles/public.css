@@ -6178,10 +6178,10 @@ span.cat-pagebtn {
   will-change: scroll-position;
 }
 
-/* Feedback cards are centred: the picture and name sit together in the middle of the card. */
+/* Feedback cards are left aligned: the picture and name sit together at the left of the card. */
 .rv-who {
   grid-template-columns: auto auto;
-  justify-content: center;
+  justify-content: start;
   text-align: left;
 }
 
