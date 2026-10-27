@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { BackBar } from "@/components/public/back-link";
 import { HeroVideo } from "@/components/public/hero-video";
@@ -26,12 +25,8 @@ export default async function PremiumPage() {
       {/* Video banner, like the homepage and the gallery: a silent looping clip under a dark gradient */}
       <section aria-labelledby="premium-page-title" className="vhero vhero-short on-wood">
         <BackBar href="/" to="home" />
-        {PREMIUM_VIDEO.desktop ? (
-          <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} />
-        ) : (
-          // No footage yet: a photograph of dark, richly grained timber fills the banner.
-          <Image src="/premium/banner.jpg" alt="" fill priority sizes="100vw" className="media" />
-        )}
+        {/* A video, once one is supplied; until then the page backdrop shows. */}
+        {PREMIUM_VIDEO.desktop ? <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} /> : null}
         <div className="container-page w-full pt-24 pb-[clamp(2.5rem,6vw,4.5rem)]">
           <h1 id="premium-page-title" className="prem-title prem-title-xl">
             Premium range
@@ -39,7 +34,12 @@ export default async function PremiumPage() {
         </div>
       </section>
 
-      <PremiumList pieces={pieces} />
+      {/* The pieces and their descriptions, in a panel of frosted glass over the page backdrop */}
+      <div className="container-page prem-glass-wrap">
+        <div className="prem-glass">
+          <PremiumList pieces={pieces} />
+        </div>
+      </div>
 
       <section aria-labelledby="premium-cta" className="prem-close">
         <div className="container-page">

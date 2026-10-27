@@ -270,21 +270,41 @@
 }
 
 /* The showroom page */
-/* The bottom of the banner photograph melts into the page below it, with no hard edge. */
-.prem-page .vhero::after {
+/* The backdrop of the whole page: a photograph of dark, grained timber that stays where it is while the page scrolls over it.
+   It sits on a fixed layer behind everything else in the page (the header and the glass panel below show it through). */
+.page-body:has(.prem-page) {
+  background: var(--prem-bg);
+}
+.page-body:has(.prem-page)::before {
   content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 55%;
+  position: fixed;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent 0%, rgb(11 8 7 / 0.55) 55%, var(--prem-bg) 100%);
+  background: url("/premium/background.jpg") center / cover no-repeat;
 }
 .prem-page {
   color: #fff;
-  background:
-    radial-gradient(55% 40rem at 80% 0%, rgb(197 170 134 / 0.14), transparent 70%),
-    var(--prem-bg);
+}
+/* The title band has no colour of its own: the backdrop shows through. */
+.prem-page .vhero {
+  background: transparent;
+}
+/* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
+.prem-glass-wrap {
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+.prem-glass {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: linear-gradient(180deg, rgb(11 8 7 / 0.55) 0%, rgb(11 8 7 / 0.42) 100%);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
+  backdrop-filter: saturate(1.5) blur(18px);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+/* The list and its search box already sit in the page's content width: inside the panel they only need their own side room. */
+.prem-glass .container-page {
+  max-width: none;
+  padding-inline: clamp(1rem, 3vw, 2.5rem);
 }
 /* Room above the search box, under the banner, and below it before the first piece */
 .prem-searchbar {
@@ -594,10 +614,8 @@
 
 .prem-close {
   padding-block: var(--section-space);
-  border-top: 1px solid rgb(255 255 255 / 0.09);
-  background:
-    radial-gradient(60% 80% at 50% 0%, rgb(197 170 134 / 0.1), transparent 70%),
-    var(--prem-bg);
+  /* No colour of its own: the backdrop of the page shows through. */
+  background: none;
 }
 
 /* The header on the showroom page: the same bar, as dark glass with white type */
