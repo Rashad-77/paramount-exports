@@ -6418,3 +6418,8 @@ a.acct-row {
     margin: 0;
   }
 }
+
+/* The Specifications and Delivery tabs run the full width of the tab line above them (only the description is a narrower, centred block). */
+.ptabs-panel:not(:has(> .pdp-prose)) {
+  max-width: none;
+}
