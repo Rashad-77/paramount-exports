@@ -177,16 +177,16 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
             ) : null}
 
             {preview.premium ? <h4 className="text-sm font-semibold">On the product page and in the collection</h4> : null}
-            <div className="grid gap-5 md:grid-cols-[15rem_1fr]">
-              <div>
+            <div className="grid gap-5 md:grid-cols-[15rem_minmax(0,24rem)] md:justify-center">
+              <div className="text-center">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt="" className="aspect-square w-full max-w-60 border border-border object-cover" />
+                  <img src={cover} alt="" className="mx-auto aspect-square w-full max-w-60 border border-border object-cover" />
                 ) : (
-                  <div className="flex aspect-square w-full max-w-60 items-center justify-center border border-dashed border-border-strong text-sm text-text-muted">No photos</div>
+                  <div className="mx-auto flex aspect-square w-full max-w-60 items-center justify-center border border-dashed border-border-strong text-sm text-text-muted">No photos</div>
                 )}
                 {preview.photos.length > 0 ? (
-                  <ul className="mt-2 grid max-w-60 grid-cols-3 gap-1.5" aria-label="Photos in order">
+                  <ul className="mx-auto mt-2 grid max-w-60 grid-cols-3 gap-1.5" aria-label="Photos in order">
                     {preview.photos.map((p, i) => (
                       <li
                         key={p.key}
@@ -219,7 +219,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                 {preview.photos.length > 1 ? <p className="mt-1.5 text-xs text-text-muted">Drag a photo to change its number; photo 1 is the thumbnail. Changes here are kept with the form and saved only when you confirm.</p> : null}
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 text-center">
                 <p className="text-sm text-text-muted">{preview.category}</p>
                 <h3 className="mt-0.5 text-xl font-semibold">{preview.name}</h3>
                 {preview.shortDescription ? <p className="mt-1 text-sm">{preview.shortDescription}</p> : null}
@@ -236,7 +236,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                     </p>
                   );
                 })()}
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                   {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}</AvailabilityTag> : null}
                 </div>
 
