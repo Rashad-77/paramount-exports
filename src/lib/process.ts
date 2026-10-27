@@ -6,6 +6,8 @@ export interface ProcessStep {
   details: string;
   /** What the photograph for this step should show. */
   photo: string;
+  /** The photograph itself (4:5, in /public). Steps without one show a grey placeholder describing `photo`. */
+  image?: string;
 }
 
 /**
@@ -19,6 +21,7 @@ export const PROCESS: ProcessStep[] = [
     details:
       "The planks are checked for straightness, sound areas and grain before being set aside for the different parts of the furniture. Wider sections are suited to tabletops, doors and panels, while straighter lengths are used for legs and rails. The timber is kiln-dried for indoor use, which helps limit changes in shape after it has been made into furniture.",
     photo: "Timber boards being selected",
+    image: "/about/step-1-timber-selection.png",
   },
   {
     title: "Cutting",

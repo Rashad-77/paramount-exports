@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ImagePlaceholder } from "@/components/public/image-placeholder";
 import { PageIntro, Prose } from "@/components/public/prose";
@@ -81,8 +82,12 @@ export default async function AboutPage() {
             {PROCESS.map((st, i) => (
               <li key={st.title} className="grid items-center gap-6 md:grid-cols-2 md:gap-14">
                 <Reveal variant={i % 2 === 0 ? "left" : "right"} className={i % 2 === 1 ? "md:order-2" : ""}>
-                  <div className="zoom-frame aspect-[4/3]">
-                    <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
+                  <div className="zoom-frame relative mx-auto aspect-[4/5] w-full max-w-md">
+                    {st.image ? (
+                      <Image src={st.image} alt={`Step ${i + 1}: ${st.title}`} fill sizes="(min-width: 768px) 28rem, 100vw" className="object-cover" />
+                    ) : (
+                      <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
+                    )}
                   </div>
                 </Reveal>
                 <Reveal variant={i % 2 === 0 ? "right" : "left"} delay={STEP}>
