@@ -180,7 +180,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <div className="pdp-page">
       {sale ? <p className="sale-bar">{sale}</p> : null}
-      <div className="container-page pb-8 pt-2 md:pb-14 md:pt-3">
+      <div className="container-page pb-8 pt-[calc(var(--gutter)-0.5rem)] md:pb-14">
         <JsonLd data={[jsonLd, crumbs]} />
         <div className="mb-3">
           <BackLink href="/products" to="the collection" tone="dark" history />

@@ -264,7 +264,7 @@ html:has(.page-body) {
     overflow-x: clip;
   }
   /* Room under the fixed header for pages that do not start with a dark band */
-  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band, .prem-page) {
+  .page-body main .route-in > :first-child:not(.vhero, .wood-band, .plain-band, .prem-page, .pdp-page) {
     margin-top: 5.25rem;
   }
 
@@ -4890,23 +4890,22 @@ span.cat-pagebtn {
 /* On a dark banner: on a phone or tablet it lines up on the left with the banner's own content (the title and text); on a computer it is pinned
    near the screen's left edge, clear of the logo and title. */
 .back-bar {
+  /* The space from the left edge of the screen to the word, and from the bottom of the header to the word: the same. */
+  --back-gap: var(--gutter);
   position: absolute;
   z-index: 5;
   left: 0;
   right: 0;
-  top: calc(var(--head-h) + 1px + 0.5rem);
+  /* The link has 0.5rem of room above its letters of its own, taken off so that the gap is measured to the letters. */
+  top: calc(var(--head-h) + 1px + var(--back-gap) - 0.5rem);
   text-align: left;
 }
 /* Phones and tablets: lined up with the banner's own content. Only computers pin it near the screen's left edge. */
 @media (min-width: 72.01rem) {
   .back-bar {
+    --back-gap: 1.5rem;
     max-width: none;
-    padding-inline: 0.75rem;
-  }
-}
-@media (min-width: 48rem) {
-  .back-bar {
-    top: calc(var(--head-h) + 1px + 0.75rem);
+    padding-inline: var(--back-gap);
   }
 }
 
