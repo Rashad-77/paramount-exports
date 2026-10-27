@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { slugify } from "@/lib/contact";
 import { validation } from "@/lib/errors";
+import { PREMIUM_MAX_WORDS, countWords } from "@/lib/premium-copy";
 import { DIM_UNITS } from "@/lib/specifications";
 import { checkbox, enumOf, idList, optEnum, optMoney, optText, optUuid, reqText, reqUuid, slug } from "@/lib/validation";
 
@@ -133,8 +134,12 @@ const productBase = z.object({
   seoDescription: optText("Page description", 160),
 });
 
-type StaffFormFields = { discountKind?: string; discountValue?: string; visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string; photos: string[] };
+type StaffFormFields = { description?: string; isPremium?: boolean; isFeatured?: boolean; discountKind?: string; discountValue?: string; visibility?: string; availability?: string; stockQuantity?: number; showAvailability: boolean; showPrice: boolean; listPrice?: string; photos: string[] };
 const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
+  // A piece shown in the premium range has its words beside its photograph, so they are kept short enough to fit there.
+  if (v.isPremium && v.isFeatured && countWords(v.description) > PREMIUM_MAX_WORDS) {
+    ctx.addIssue({ code: "custom", path: ["description"], message: `A premium piece's description can have up to ${PREMIUM_MAX_WORDS} words (it has ${countWords(v.description)}), so that it fits beside the photograph on the premium page.` });
+  }
   if (v.discountKind || v.discountValue) {
     if (!v.discountKind) ctx.addIssue({ code: "custom", path: ["discountKind"], message: "Choose whether the discount is an amount or a percentage." });
     else if (!v.discountValue) ctx.addIssue({ code: "custom", path: ["discountValue"], message: v.discountKind === "percent" ? "Enter the percentage." : "Enter the amount." });

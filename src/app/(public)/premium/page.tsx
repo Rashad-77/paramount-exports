@@ -27,7 +27,7 @@ export default async function PremiumPage() {
         <BackBar href="/" to="home" />
         {/* A video, once one is supplied; until then the page backdrop shows. */}
         {PREMIUM_VIDEO.desktop ? <HeroVideo desktop={PREMIUM_VIDEO.desktop} mobile={PREMIUM_VIDEO.mobile} poster={PREMIUM_VIDEO.poster} /> : null}
-        <div className="container-page w-full pt-20 pb-[clamp(1.5rem,3vw,2.5rem)] text-center">
+        <div className="container-page w-full text-center">
           <h1 id="premium-page-title" className="prem-title prem-title-xl mx-auto">
             Premium range
           </h1>

@@ -294,12 +294,18 @@
 .prem-page .vhero {
   background: transparent;
 }
-/* The band keeps its full height, so the panel below stays where it was; the title is lifted to the top of the band and made larger. */
+/* The title band is only as tall as its title, with the same room above the title (from the bottom of the header) as below it (to the panel). */
+.prem-page {
+  --prem-gap: 3rem;
+}
 .prem-page .vhero.vhero-short {
   align-items: flex-start;
-  /* The title moves 1 cm down; the band is 3 cm taller, so everything under it moves 3 cm down. */
-  padding-top: 1cm;
-  min-height: calc(clamp(22rem, 62svh, 38rem) + 3cm);
+  min-height: 0;
+  padding-top: calc(var(--head-h) + 1px + var(--prem-gap));
+  padding-bottom: var(--prem-gap);
+}
+.prem-page .vhero.vhero-short > .container-page {
+  padding-block: 0;
 }
 .prem-page .vhero h1.prem-title-xl {
   font-size: clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem);
@@ -307,7 +313,7 @@
 .prem-page .vhero::before {
   /* From the top of the page down to where the title ends (the room above it, the title itself, and a little more), not further. */
   inset: 0 0 auto 0;
-  height: calc(1cm + 5rem + clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem) + 1rem);
+  height: calc(var(--head-h) + 1px + var(--prem-gap) + clamp(2.6rem, calc(2.6rem + (100vw - 375px) * 0.13), 6.25rem) + 1rem);
   background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.97) 50%, rgb(0 0 0 / 0.75) 80%, transparent 100%);
 }
 /* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
@@ -329,9 +335,18 @@
   max-width: none;
   padding-inline: clamp(1rem, 3vw, 2.5rem);
 }
-/* Room above the search box, under the banner, and below it before the first piece */
+/* The room above the search box (from the top edge of the panel) and the room below it (to the first piece) are the same. */
+.prem-glass {
+  --prem-pad: clamp(1.5rem, 3vw, 2.25rem);
+}
 .prem-searchbar {
-  padding-block: clamp(1.5rem, 3vw, 2.25rem) clamp(0.5rem, 1.5vw, 1rem);
+  padding-block: var(--prem-pad) 0;
+}
+.prem-glass .prem-list {
+  padding-top: 0;
+}
+.prem-glass .prem-list > .prem-piece:first-child {
+  padding-top: var(--prem-pad);
 }
 /* The search box runs the full width of the page, as frosted black glass: a faint sheen in the top corner fading to black, over a blur of what is behind it. */
 .prem-searchbar .cat-bar,
@@ -559,6 +574,12 @@
 /* A line break the owner typed inside a paragraph (a short list, for instance) stays a line break. */
 .prem-piece-text p {
   white-space: pre-line;
+}
+/* Words that would run past the bottom of the photograph are cut there and fade out (see FitText). */
+.prem-piece-text[data-cut="true"] {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 3rem), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 3rem), transparent 100%);
 }
 .prem-piece-text p + p {
   margin-top: 1rem;

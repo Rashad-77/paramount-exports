@@ -1,4 +1,5 @@
 import { ActionForm, FField, FTextArea } from "@/components/forms/action-form";
+import { PremiumWordCount } from "@/components/app/premium-word-count";
 import { DetailsFields } from "@/components/app/product-details-fields";
 import { FCategorySelect } from "@/components/app/cascade-filter";
 import { PhotosEditor } from "@/components/app/photos-editor";
@@ -64,6 +65,7 @@ export function ProductForm({
       </div>
       <FTextArea name="shortDescription" label="Short description" rows={2} maxLength={300} defaultValue={values.shortDescription ?? ""} hint="Short description shown under the product name." />
       <FTextArea name="description" label="Detailed description" rows={5} defaultValue={values.description ?? ""} hint="The long text, shown under the Description bar on the product page." />
+      <PremiumWordCount />
 
       <fieldset className="space-y-4 border border-border p-4">
         <legend className="px-1 text-sm font-semibold">Specifications</legend>

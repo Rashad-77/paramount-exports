@@ -2,12 +2,53 @@
 
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { PremiumGallery } from "./premium-gallery";
 import { Reveal } from "./reveal";
 import type { PremiumPiece } from "@/server/catalogue-public";
 
 const STEP = 90;
+
+/**
+ * The words beside a photograph never run past the bottom of the photograph: when the screen is wide enough for them to sit side by side, whatever
+ * would hang below it is cut off with a soft fade. (The description is also limited to a number of words, so this is only the safety net for
+ * narrower screens, where the column is narrow and the same words need more lines.)
+ */
+function FitText({ children }: { children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    const piece = el?.closest<HTMLElement>(".prem-piece");
+    const photo = piece?.querySelector<HTMLElement>(".pg-main");
+    const cta = piece?.querySelector<HTMLElement>(".prem-cta");
+    if (!el || !piece || !photo) return;
+    const side = window.matchMedia("(min-width: 48rem)");
+    const fit = () => {
+      el.style.maxHeight = "";
+      el.dataset.cut = "false";
+      if (!side.matches) return; // stacked: the words come under the photograph and have all the room they need
+      // From the top of the words to the bottom of the photograph, less the button that follows them and the space above it.
+      const room = photo.getBoundingClientRect().bottom - el.getBoundingClientRect().top - (cta ? cta.offsetHeight + parseFloat(getComputedStyle(cta).marginTop) : 0);
+      if (room > 0 && el.scrollHeight > room + 1) {
+        el.style.maxHeight = `${Math.floor(room)}px`;
+        el.dataset.cut = "true";
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(piece);
+    side.addEventListener("change", fit);
+    return () => {
+      ro.disconnect();
+      side.removeEventListener("change", fit);
+    };
+  }, []);
+  return (
+    <div ref={box} className="prem-piece-text" data-cut="false">
+      {children}
+    </div>
+  );
+}
 
 /**
  * The showroom: a search box over the premium pieces, one row for each. Typing narrows the rows straight away (name, category, wood
@@ -42,7 +83,7 @@ export function PremiumList({ pieces }: { pieces: PremiumPiece[] }) {
               <Reveal variant="up" delay={STEP} className="prem-info">
                 <h2 className="prem-piece-name">{p.name}</h2>
                 {p.description ? (
-                  <div className="prem-piece-text">
+                  <FitText>
                     {p.description
                       .split(/\n{2,}/)
                       .map((para) => para.trim())
@@ -50,7 +91,7 @@ export function PremiumList({ pieces }: { pieces: PremiumPiece[] }) {
                       .map((para, k) => (
                         <p key={k}>{para}</p>
                       ))}
-                  </div>
+                  </FitText>
                 ) : null}
                 <Link href={`/products/${p.slug}`} className="prem-cta">
                   View
