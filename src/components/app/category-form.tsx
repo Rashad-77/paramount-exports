@@ -1,6 +1,6 @@
 import { BannerImageField } from "@/components/app/banner-image-field";
 import { FPanelSelect } from "@/components/app/panel-select";
-import { ActionForm, FField, SubmitButton } from "@/components/forms/action-form";
+import { ActionForm, FField, FTextArea, SubmitButton } from "@/components/forms/action-form";
 import type { ActionState } from "@/lib/action-state";
 
 export interface CategoryFormValues {
@@ -46,6 +46,14 @@ export function CategoryForm({
           options={groups.map((g) => ({ value: g.id, label: g.name }))}
         />
       </div>
+      <FTextArea
+        name="description"
+        label="Intro for the category page"
+        rows={3}
+        maxLength={500}
+        defaultValue={values.description ?? ""}
+        hint="Shown on the category's own page, for visitors and for search engines: what the category is and what it holds, in two or three sentences."
+      />
       {values.parentId ? null : <BannerImageField initialUrl={values.bannerUrl ?? null} initialX={values.bannerX ?? 50} initialY={values.bannerY ?? 50} initialZoom={values.bannerZoom ?? 100} subNames={values.subNames ?? []} />}
       <SubmitButton>{submitLabel}</SubmitButton>
     </ActionForm>

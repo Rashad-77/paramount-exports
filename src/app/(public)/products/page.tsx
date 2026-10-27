@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import { CatalogueBrowser } from "@/components/public/catalogue-browser";
 import { PageIntro } from "@/components/public/prose";
 import { customerAuthMode } from "@/lib/auth/customer";
@@ -10,24 +11,16 @@ import { listPremiumProducts, listPublicCategories, listPublicMaterials, listPub
 
 const DESCRIPTION = "Browse solid wood furniture by category and material. Every piece is ready-made in our showroom, or can be made to your size.";
 
-/**
- * Each category is its own page for search engines (its own title, description and address), so someone searching for it can land on it.
- * A search, a material filter or a sort order is only another way of looking at the same pieces: those are kept out of the results and point back.
- */
+/** A search, a material filter or a sort order is only another way of looking at the same pieces: those are kept out of search results and point back. */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
   const sp = await searchParams;
-  const slug = one(sp.category);
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);
   const variant = Boolean(one(sp.q) || one(sp.material) || (one(sp.sort) && parseSort(one(sp.sort)) !== "newest"));
-  const found = slug ? (await listPublicCategories()).find((c) => c.slug === slug) : undefined;
-  const path = found ? `/products?category=${encodeURIComponent(found.slug)}` : "/products";
-  const paged = page > 1 && !variant ? `${path}${found ? "&" : "?"}page=${page}` : path;
   return {
-    title: (found ? `${found.name} · Collection` : "Wood furniture collection") + (page > 1 ? ` (page ${page})` : ""),
-    description: found ? (found.description?.trim().slice(0, 155) || `Browse ${found.name} from our collection of solid wood furniture. Ready-made pieces, or made to your measurements.`) : DESCRIPTION,
-    alternates: { canonical: paged },
-    // A category that does not exist, or a search, material or sort: show to visitors, not in search results.
-    robots: variant || (slug && !found) ? { index: false, follow: true } : undefined,
+    title: "Wood furniture collection" + (page > 1 ? ` (page ${page})` : ""),
+    description: DESCRIPTION,
+    alternates: { canonical: page > 1 && !variant ? `/products?page=${page}` : "/products" },
+    robots: variant ? { index: false, follow: true } : undefined,
   };
 }
 
@@ -41,6 +34,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const q = one(sp.q)?.slice(0, 80);
   const category = one(sp.category);
+  // The old address of a category (/products?category=dining-tables) now lives at /collections/dining-tables, for good.
+  if (category) {
+    const rest = new URLSearchParams();
+    for (const k of ["q", "material", "sort", "page"]) {
+      const v = one(sp[k]);
+      if (v) rest.set(k, v);
+    }
+    const qs = rest.toString();
+    permanentRedirect(`/collections/${encodeURIComponent(category)}${qs ? `?${qs}` : ""}`);
+  }
   const material = one(sp.material);
   const sort = parseSort(one(sp.sort));
   const page = Math.max(1, Number.parseInt(one(sp.page) ?? "1", 10) || 1);

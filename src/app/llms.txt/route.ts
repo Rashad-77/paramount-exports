@@ -14,7 +14,7 @@ export async function GET() {
   const site = publicEnv().NEXT_PUBLIC_SITE_URL;
   if (isPlaceholderBusiness(business)) return new Response("", { status: 404 });
   const place = placeOf(business.address);
-  const main = (await listPublicCategories().catch(() => [])).filter((c) => !c.parentId).map((c) => c.name);
+  const main = (await listPublicCategories().catch(() => [])).filter((c) => !c.parentId);
   const phones = [business.phone, business.phoneAlt].map((p) => internationalPhone(p, business.phoneCountryCode)).filter(Boolean);
   const hours = (business.openingHours ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const address = (business.address ?? "").split(/\r?\n/).map((l) => l.trim().replace(/[,\s]+$/, "")).filter(Boolean).join(", ");
@@ -31,7 +31,7 @@ export async function GET() {
     ...(hours.length ? [`- Opening hours: ${hours.join("; ")}`] : []),
     ...(business.mapUrl ? [`- Map: ${business.mapUrl}`] : []),
     "",
-    ...(main.length ? ["## What we make", ...main.map((n) => `- ${n}`), ""] : []),
+    ...(main.length ? ["## What we make", ...main.map((c) => `- [${c.name}](${site}/collections/${c.slug})`), ""] : []),
     "## Pages",
     `- [Collection](${site}/products): the pieces on sale, by category and material`,
     `- [Custom furniture](${site}/custom): furniture made to measurements, with a quotation before any work starts`,

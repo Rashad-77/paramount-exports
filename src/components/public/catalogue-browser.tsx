@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CATALOGUE_SORTS, parseSort, type CatalogueSort } from "@/lib/catalogue-sort";
 import { GlassCascade, type CascadeGroup } from "@/components/public/glass-cascade";
@@ -36,15 +37,16 @@ function pageList(current: number, count: number): Array<number | "…"> {
   return out;
 }
 
+/** A category has its own page (/collections/dining-tables); with no category it is the whole collection (/products). The other filters follow as a query. */
 function hrefFor(f: CatalogueFilters): string {
   const u = new URLSearchParams();
   if (f.q) u.set("q", f.q);
-  if (f.category) u.set("category", f.category);
   if (f.material) u.set("material", f.material);
   if (f.sort !== "newest") u.set("sort", f.sort);
   if (f.page > 1) u.set("page", String(f.page));
   const s = u.toString();
-  return s ? `/products?${s}` : "/products";
+  const base = f.category ? `/collections/${encodeURIComponent(f.category)}` : "/products";
+  return s ? `${base}?${s}` : base;
 }
 
 /**
@@ -68,6 +70,7 @@ export function CatalogueBrowser({
   /** Show the save-to-wishlist heart on each card (accounts are on). */
   wishlist?: boolean;
 }) {
+  const router = useRouter();
   const [f, setF] = useState<CatalogueFilters>(initial);
   /** The text in the search box right now; `f.q` follows it after a short pause. */
   const [typed, setTyped] = useState(initial.q);
@@ -141,7 +144,7 @@ export function CatalogueBrowser({
       <div className="cat-strip">
         <div className="container-page">
           <form method="get" action="/products" className="cat-bar" onSubmit={(e) => e.preventDefault()} role="search" aria-label="Filter the collection">
-            <GlassCascade label="Category" allLabel="All categories" groups={categories} value={f.category} onChange={(category) => set({ category })} />
+            <GlassCascade label="Category" allLabel="All categories" groups={categories} value={f.category} onChange={(category) => router.push(hrefFor({ ...f, category, page: 1 }))} />
             <div className="cat-right">
               <GlassSelect label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
               <GlassSelect

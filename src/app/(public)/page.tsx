@@ -223,7 +223,7 @@ export default async function HomePage() {
       key: g.id,
       name: g.name,
       banner: g.bannerUrl ? { url: g.bannerUrl, x: g.bannerX, y: g.bannerY, z: g.bannerZoom } : null,
-      href: `/products?category=${g.slug}`,
+      href: `/collections/${g.slug}`,
       all: kids.join(" · "),
       lines:
         kids.length > 6

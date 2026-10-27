@@ -138,6 +138,8 @@ export const SI_CATALOGUE: Record<string, string> = {
   "Choose the main category this subcategory goes under.": "මෙම උප ප්‍රවර්ගය අයත් වන ප්‍රධාන ප්‍රවර්ගය තෝරන්න.",
   "None (this is a main category)": "කිසිවක් නැත (මෙය ප්‍රධාන ප්‍රවර්ගයකි)",
   "Parent category": "මව් ප්‍රවර්ගය",
+  "Intro for the category page": "ප්‍රවර්ග පිටුව සඳහා හැඳින්වීම",
+  "Shown on the category's own page, for visitors and for search engines: what the category is and what it holds, in two or three sentences.": "ප්‍රවර්ගයේ ම පිටුවේ, අමුත්තන් සහ සෙවුම් යන්ත්‍ර සඳහා පෙන්වයි: ප්‍රවර්ගය කුමක්ද, එහි ඇත්තේ කුමක්ද යන්න වාක්‍ය දෙකකින් තුනකින්.",
   "Display order": "ප්‍රදර්ශන අනුපිළිවෙල",
   "Drag a category to change its number. Number 1 comes first in the website menus. Subcategories stay under their main category.": "ප්‍රවර්ගයක අංකය වෙනස් කිරීමට එය ඇදගෙන යන්න. 1 වන අංකය වෙබ් අඩවියේ මෙනුවල මුලින්ම එයි. උප ප්‍රවර්ග ඒවායේ ප්‍රධාන ප්‍රවර්ගය යටතේ පවතී.",
   "Main categories in order": "ප්‍රධාන ප්‍රවර්ග අනුපිළිවෙලින්",

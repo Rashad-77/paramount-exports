@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_BUSINESS } from "@/lib/settings";
-import { breadcrumbLd, faqLd, internationalPhone, localBusinessLd, parseAddress, parseHours, townOf } from "@/lib/structured-data";
+import { breadcrumbLd, collectionLd, faqLd, internationalPhone, localBusinessLd, parseAddress, parseHours, townOf } from "@/lib/structured-data";
 
 describe("structured data", () => {
   it("reads the saved address into street, town, postcode and country", () => {
@@ -63,5 +63,15 @@ describe("structured data", () => {
       ],
     });
     expect(faqLd([{ q: "Do I pay online?", a: "No." }])).toMatchObject({ mainEntity: [{ name: "Do I pay online?", acceptedAnswer: { text: "No." } }] });
+  });
+
+  it("describes a category page as a list of its pieces", () => {
+    const ld = collectionLd("https://example.lk", { name: "Dining tables", path: "/collections/dining-tables", items: [{ name: "Oak table", path: "/products/oak-table" }] });
+    expect(ld).toMatchObject({
+      "@type": "CollectionPage",
+      url: "https://example.lk/collections/dining-tables",
+      mainEntity: { "@type": "ItemList", itemListElement: [{ position: 1, name: "Oak table", url: "https://example.lk/products/oak-table" }] },
+    });
+    expect(ld).not.toHaveProperty("description");
   });
 });

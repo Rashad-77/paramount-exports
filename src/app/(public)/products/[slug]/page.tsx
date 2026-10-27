@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
   const crumbs = breadcrumbLd(site, [
     { name: "Home", path: "/" },
     { name: "Collection", path: "/products" },
-    { name: p.categoryName, path: `/products?category=${encodeURIComponent(p.categorySlug)}` },
+    { name: p.categoryName, path: `/collections/${encodeURIComponent(p.categorySlug)}` },
     { name: p.name, path: `/products/${p.slug}` },
   ]);
 

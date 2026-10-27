@@ -129,3 +129,19 @@ export function placeOf(address: string | null): string | null {
   if (!town) return null;
   return a?.addressCountry === "LK" ? `${town}, Sri Lanka` : town;
 }
+
+/** A category page: a list of the pieces on it (the first page of them), as search engines read it. */
+export function collectionLd(site: string, c: { name: string; path: string; description?: string; items: Array<{ name: string; path: string }> }): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: c.name,
+    url: `${site}${c.path}`,
+    ...(c.description ? { description: c.description } : {}),
+    isPartOf: { "@id": `${site}/#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: c.items.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: i.name, url: `${site}${i.path}` })),
+    },
+  };
+}

@@ -132,7 +132,16 @@ export function ProductView({ p, shop, heart, preview = false, children }: { p: 
             <ProductGallery images={p.images} name={p.name} premium={p.isPremium} heart={heart} />
           </div>
           <div>
-            <p className="pdp-category text-text-muted">{p.categoryName}</p>
+            <p className="pdp-category text-text-muted">
+              {/* The category links to its own page; in the preview it is only a label. */}
+              {preview || !p.categorySlug ? (
+                p.categoryName
+              ) : (
+                <Link href={`/collections/${encodeURIComponent(p.categorySlug)}`} className="underline-offset-2 hover:text-text hover:underline">
+                  {p.categoryName}
+                </Link>
+              )}
+            </p>
             <h1 className="font-display mt-3 text-headline text-walnut">{p.name}</h1>
             {p.availability && p.availabilityState ? (
               <p className="mt-4">
