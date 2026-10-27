@@ -770,18 +770,31 @@
   text-transform: uppercase;
 }
 
-/* The preview in the product form ("In the premium showroom"): the same photograph and words as the showroom, side by side, on the showroom's dark colour
-   (the showroom page itself gets its colour from the photograph behind it, so the preview needs its own). */
+/* The preview in the product form ("In the premium showroom") is a scaled copy of the showroom row as it looks on a computer screen: the photograph, the
+   title, the description, the button and the gaps all keep the same proportions to each other. On the showroom page the photograph is 28.46rem wide, the
+   title 3rem, the description 16.5px and the words 28rem wide; --s is how much smaller the preview is (it needs its own dark colour, since the showroom page
+   gets its colour from the photograph behind it). */
 .prem-preview {
+  --s: 0.77;
   background: var(--prem-bg);
 }
-@media (min-width: 40rem) {
-  .prem-preview .prem-piece {
-    /* The photograph and the words are only as wide as they need to be, and the pair sits in the middle of the box: the same room on the left and on the right. */
-    grid-template-columns: minmax(0, 17rem) minmax(0, 28rem);
-    column-gap: 2rem;
-    justify-content: center;
-  }
+.prem-preview .prem-piece-name {
+  font-size: calc(3rem * var(--s));
+}
+.prem-preview .prem-piece-text {
+  max-width: none;
+  margin-top: calc(1.1rem * var(--s));
+  font-size: calc(16.5px * var(--s));
+}
+.prem-preview .prem-cta {
+  margin-top: calc(1.5rem * var(--s));
+  min-height: calc(3rem * var(--s));
+  padding-inline: calc(1.6rem * var(--s));
+  font-size: calc(0.75rem * var(--s));
+}
+.prem-preview .pg-thumbs {
+  margin-top: calc(0.75rem * var(--s));
+  gap: calc(0.5rem * var(--s));
 }
 .prem-preview .prem-gallery-wrap {
   width: 100%;
@@ -790,4 +803,11 @@
 }
 .prem-preview .prem-info {
   width: 100%;
+}
+@media (min-width: 40rem) {
+  .prem-preview .prem-piece {
+    grid-template-columns: minmax(0, calc(28.46rem * var(--s))) minmax(0, calc(28rem * var(--s)));
+    column-gap: calc(4.77rem * var(--s));
+    justify-content: center;
+  }
 }
