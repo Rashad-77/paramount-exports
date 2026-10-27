@@ -626,9 +626,15 @@
 .js .prem-info[data-reveal].in > :nth-child(n + 7) { transition-delay: 690ms; }
 
 .prem-close {
-  padding-block: var(--section-space);
-  /* No colour of its own: the backdrop of the page shows through. */
+  /* No colour of its own (the backdrop of the page shows around the box); the room around the box comes from its wrapper. */
+  padding-block: 0;
   background: none;
+}
+/* The closing invitation sits in a solid black container, as wide as the glass panel. */
+.prem-close-box {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: #000;
+  padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1rem, 3vw, 2.5rem);
 }
 
 /* The header on the showroom page: the same bar, as dark glass with white type */

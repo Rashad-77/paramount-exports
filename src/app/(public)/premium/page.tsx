@@ -42,21 +42,24 @@ export default async function PremiumPage() {
       </div>
 
       <section aria-labelledby="premium-cta" className="prem-close">
-        <div className="container-page">
-          <Reveal variant="up" className="mx-auto max-w-2xl text-center">
-            <p className="prem-eyebrow justify-center">Made to measure</p>
-            <h2 id="premium-cta" className="prem-title mt-4">
-              Something of <em>your own</em>?
-            </h2>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <ButtonLink href="/custom#quotation" size="cta" variant="light">
-                Request a quotation
-              </ButtonLink>
-              <ButtonLink href="/contact" size="cta" variant="onDark">
-                Plan a visit
-              </ButtonLink>
-            </div>
-          </Reveal>
+        {/* In a solid black container, as wide as the glass panel above it */}
+        <div className="container-page prem-glass-wrap">
+          <div className="prem-close-box">
+            <Reveal variant="up" className="mx-auto max-w-2xl text-center">
+              <p className="prem-eyebrow justify-center">Made to measure</p>
+              <h2 id="premium-cta" className="prem-title mt-4">
+                Something of <em>your own</em>?
+              </h2>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <ButtonLink href="/custom#quotation" size="cta" variant="light">
+                  Request a quotation
+                </ButtonLink>
+                <ButtonLink href="/contact" size="cta" variant="onDark">
+                  Plan a visit
+                </ButtonLink>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
     </div>
