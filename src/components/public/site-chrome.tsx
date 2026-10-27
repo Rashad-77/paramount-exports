@@ -180,11 +180,10 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
           </p>
           <p className="foot-built">
             <a href={whatsappLink(BUILDER_WHATSAPP, business.phoneCountryCode)} target="_blank" rel="noopener noreferrer" className="gap-1">
-              by{" "}
-              {/* The line runs under the name and the arrow together. */}
-              <span className="inline-flex items-center gap-0.5 border-b border-current pb-px leading-tight">
-                Rashad
-                <ArrowUpRight aria-hidden="true" className="size-4" strokeWidth={1.75} />
+              {/* One line runs under "by", the name and the arrow, close to the letters (the arrow's extra height is pulled back so it does not push the line down). */}
+              <span className="inline-flex items-center gap-1 border-b border-current leading-none">
+                by Rashad
+                <ArrowUpRight aria-hidden="true" className="-my-1 size-4" strokeWidth={1.75} />
               </span>
               <span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
