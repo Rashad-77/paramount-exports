@@ -6388,3 +6388,8 @@ a.acct-row {
 .pdp-preview .pdp-page :is(.pdp-prose, .pdp-prose p, .pdp-specs dt, .pdp-specs dd, .pdp-info p) {
   font-size: 1.1rem;
 }
+
+/* The tab names (Description, Specifications, Delivery and collection) are centred over the page ("safe" so that, if they ever overflow on a narrow screen, the first one is not cut off). */
+.ptabs-list {
+  justify-content: safe center;
+}
