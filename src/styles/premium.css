@@ -281,22 +281,35 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: url("/premium/background.jpg") center / cover no-repeat;
+  /* Dimmed: a black layer over the photograph. */
+  background:
+    linear-gradient(rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.5)),
+    url("/premium/background.jpg") center / cover no-repeat;
 }
 .prem-page {
   color: #fff;
 }
-/* The title band has no colour of its own: the backdrop shows through. */
+/* The title band has no colour of its own: the backdrop shows through. It is shorter, so the centred title sits higher, and a black gradient
+   runs down from the top of the page (behind the header) and fades away. */
 .prem-page .vhero {
   background: transparent;
 }
+.prem-page .vhero.vhero-short {
+  min-height: clamp(11rem, 28svh, 15rem);
+}
+.prem-page .vhero::before {
+  background: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.75) 35%, transparent 100%);
+}
 /* The pieces and their descriptions sit in a panel of dark frosted glass, like the header: the backdrop shows through, blurred, while the panel scrolls. */
 .prem-glass-wrap {
+  /* Wider than the rest of the site: nearly the full width of the screen. */
+  max-width: none;
+  padding-inline: clamp(0.75rem, 2.5vw, 2rem);
   padding-bottom: clamp(2rem, 5vw, 4rem);
 }
 .prem-glass {
   border: 1px solid rgb(255 255 255 / 0.12);
-  background: linear-gradient(180deg, rgb(11 8 7 / 0.55) 0%, rgb(11 8 7 / 0.42) 100%);
+  background: linear-gradient(180deg, rgb(11 8 7 / 0.3) 0%, rgb(11 8 7 / 0.18) 100%);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   backdrop-filter: saturate(1.5) blur(18px);
   box-shadow: 0 24px 64px rgb(0 0 0 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.08);

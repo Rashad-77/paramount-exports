@@ -344,10 +344,6 @@ html:has(.page-body) {
       linear-gradient(90deg, rgb(32 15 7 / 0.72) 0%, rgb(32 15 7 / 0.25) 60%, transparent 100%),
       linear-gradient(180deg, rgb(32 15 7 / 0.2) 0%, rgb(32 15 7 / 0.15) 45%, rgb(32 15 7 / 0.9) 100%);
   }
-  /* The Premium range banner shows its photograph as it is, with no shade over it. */
-  .prem-page .vhero::before {
-    background: none;
-  }
   .vhero h1 {
     font-family: var(--font-sans);
     font-size: clamp(1.9rem, calc(1.9rem + (100vw - 375px) * 0.0855), 4rem);
