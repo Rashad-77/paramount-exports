@@ -59,12 +59,13 @@ function toProductView(i: PreviewInput): ProductViewData {
   } as ProductViewData;
 }
 
-/** The product page is laid out for a computer screen about this wide. */
-const PAGE_WIDTH = 1280;
+/** The page's own width on a computer screen (its content box is 72 rem wide): drawn at this width and shrunk, so it fills the box edge to edge. */
+const PAGE_WIDTH = 1152;
 
 /**
- * The product page as it will look, only smaller: the page itself is drawn at the width of a computer screen and shrunk to fit the box, so every size and
- * every gap keeps the proportions it has on the website. Nothing in it can be pressed.
+ * The product page as it will look, only smaller: the page itself is drawn at its full width and shrunk to fit the box, so every size and every gap keeps
+ * the proportions it has on the website. A page longer than the box scrolls inside it. The tabs (Description, Specifications, Delivery and collection) and the
+ * photograph frames work; the buying part and the links do not.
  */
 export function ProductPagePreview({ input, shop }: { input: PreviewInput; shop: ProductViewShop }) {
   const box = useRef<HTMLDivElement>(null);
@@ -79,8 +80,8 @@ export function ProductPagePreview({ input, shop }: { input: PreviewInput; shop:
     return () => ro.disconnect();
   }, []);
   return (
-    <div ref={box} className="overflow-hidden border border-border">
-      <div inert aria-hidden="true" style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px" }} className="page-body [&_.pdp-page]:min-h-0">
+    <div ref={box} className="max-h-[65vh] overflow-y-auto overflow-x-hidden border border-border">
+      <div style={{ zoom: scale, width: PAGE_WIDTH, ["--head-h" as string]: "0px" }} className="page-body [&_.pdp-page]:min-h-0 [&_a]:pointer-events-none">
         <ProductView p={toProductView(input)} shop={shop} preview />
       </div>
     </div>

@@ -139,14 +139,17 @@ export function ProductView({ p, shop, heart, preview = false, children }: { p: 
             ) : null}
             {lead ? <p className="pdp-lead mt-5 max-w-prose whitespace-pre-line text-text-muted">{lead}</p> : null}
 
-            <PurchasePanel
-              productName={p.name}
-              productSlug={p.slug}
-              image={p.images[0]?.url ?? null}
-              currency={shop.currency}
-              madeToOrder={p.kind === "made_to_order"}
-              option={line ? { id: line.id, label: line.label, sku: line.sku, price: line.price, compare: line.compare, stock: line.stock } : null}
-            />
+            {/* In the preview the buying part is shown but cannot be used (inert: no pointer, no keyboard, hidden from assistive technology). */}
+            <div inert={preview}>
+              <PurchasePanel
+                productName={p.name}
+                productSlug={p.slug}
+                image={p.images[0]?.url ?? null}
+                currency={shop.currency}
+                madeToOrder={p.kind === "made_to_order"}
+                option={line ? { id: line.id, label: line.label, sku: line.sku, price: line.price, compare: line.compare, stock: line.stock } : null}
+              />
+            </div>
           </div>
         </div>
 
