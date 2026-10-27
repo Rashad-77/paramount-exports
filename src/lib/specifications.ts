@@ -45,8 +45,6 @@ export const SPEC_CATALOG: SpecCatalogItem[] = [
   { key: "colour", label: "Colour", type: "list", group: "Material and finish", suggestions: ["Natural", "Dark brown", "Light brown", "Walnut", "Honey", "White", "Black", "Grey"] },
   { key: "treatment", label: "Wood treatment", type: "list", group: "Material and finish", suggestions: ["Kiln dried", "Air dried", "Seasoned", "Treated", "Untreated"] },
   { key: "grade", label: "Grade", type: "text", group: "Material and finish", placeholder: "e.g. Grade A" },
-  { key: "frame-material", label: "Frame material", type: "list", group: "Material and finish", suggestions: WOODS },
-  { key: "top-material", label: "Top material", type: "list", group: "Material and finish", suggestions: [...WOODS, "Glass", "Marble"] },
   { key: "upholstery", label: "Upholstery", type: "list", group: "Material and finish", suggestions: ["Fabric", "Leather", "Faux leather", "Cane", "Rattan", "None"] },
   { key: "glass", label: "Glass", type: "list", group: "Material and finish", suggestions: ["Clear", "Frosted", "Tinted", "Toughened", "Laminated"] },
   { key: "hardware", label: "Hardware and fittings", type: "text", group: "Material and finish", placeholder: "e.g. Brass hinges" },
