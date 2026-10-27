@@ -10,7 +10,7 @@ export default async function GuidePage() {
   return (
     <>
       <ModuleHeader href="/app/guide" />
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-3xl">
         <OwnerGuide />
       </div>
     </>
