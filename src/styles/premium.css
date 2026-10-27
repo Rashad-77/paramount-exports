@@ -771,3 +771,23 @@
   text-align: center;
   text-transform: uppercase;
 }
+
+/* The preview in the product form ("In the premium showroom"): the same photograph and words as the showroom, side by side, on the showroom's dark colour
+   (the showroom page itself gets its colour from the photograph behind it, so the preview needs its own). */
+.prem-preview {
+  background: var(--prem-bg);
+}
+@media (min-width: 40rem) {
+  .prem-preview .prem-piece {
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+    column-gap: 2rem;
+  }
+}
+.prem-preview .prem-gallery-wrap {
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+}
+.prem-preview .prem-info {
+  width: 100%;
+}

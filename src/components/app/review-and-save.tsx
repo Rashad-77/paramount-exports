@@ -116,7 +116,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
             {preview.premium ? (
               <section aria-label="How it appears in the premium showroom">
                 <h4 className="mb-2 text-sm font-semibold">In the premium showroom</h4>
-                <div className="prem-page border border-border">
+                <div className="prem-page prem-preview border border-border">
                   <div className="prem-piece !py-6 px-4">
                     <div className="prem-gallery-wrap w-full max-w-sm">
                       <div className="pg">
