@@ -1793,8 +1793,8 @@ html:has(.page-body) {
     color: #fff;
   }
   /* The "Built by" credit is quieter than the copyright line. */
-  .foot-bottom .foot-built,
-  .foot-bottom .foot-built a {
+  .foot .foot-bottom .foot-built,
+  .foot .foot-bottom .foot-built a {
     font-size: 0.625rem;
     letter-spacing: 0.1em;
   }
