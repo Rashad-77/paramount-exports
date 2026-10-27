@@ -70,7 +70,10 @@ export async function persistSpecs(tx: DbOrTx, specs: SpecEntry[]): Promise<Spec
     if (e.type === "list") {
       for (const v of e.values) {
         const clean = v.trim();
-        if (clean && !isBuiltinSuggestion(key, clean)) await tx.insert(specValues).values({ typeKey: key, value: clean }).onConflictDoNothing();
+        if (!clean) continue;
+        // A value put on a product joins the saved list. One of the built-in names that had been removed from the list comes back.
+        if (isBuiltinSuggestion(key, clean)) await tx.delete(specHiddenValues).where(and(eq(specHiddenValues.typeKey, key), sql`lower(${specHiddenValues.value}) = lower(${clean})`));
+        else await tx.insert(specValues).values({ typeKey: key, value: clean }).onConflictDoNothing();
       }
     }
     out.push({ ...e, key });
