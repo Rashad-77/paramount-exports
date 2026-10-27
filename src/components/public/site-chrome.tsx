@@ -184,7 +184,7 @@ export function SiteFooter({ business }: { business: BusinessSettings }) {
               {/* The line runs under the name and the arrow together. */}
               <span className="inline-flex items-center gap-0.5 border-b border-current pb-px leading-tight">
                 Rashad
-                <ArrowUpRight aria-hidden="true" className="size-3" strokeWidth={1.75} />
+                <ArrowUpRight aria-hidden="true" className="size-4" strokeWidth={1.75} />
               </span>
               <span className="sr-only"> (chat on WhatsApp, opens in a new tab)</span>
             </a>
