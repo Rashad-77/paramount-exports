@@ -13,7 +13,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
  *
  * With `autoplay` it also drifts along by itself, slowly and continuously (no stepping, so nothing jumps). It stops while the pointer or
  * keyboard focus is on it, while it is off screen or the tab is hidden, and for visitors who prefer reduced motion, and picks up
- * again from wherever it was left.
+ * again from wherever it was left. A `centered` row on a phone or tablet (one or two cards in view) does not drift: a card that is caught
+ * halfway looks off-centre, so it rests with a card exactly in the middle and glides to the next one every few seconds.
  */
 export function ScrollRow({ label, children, header, autoplay = false, pxPerSecond = 42, onDark = false, centered = false }: { label: string; children: ReactNode; header: ReactNode; autoplay?: boolean; pxPerSecond?: number; onDark?: boolean; centered?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -21,6 +22,8 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<number | undefined>(undefined);
   const [reduced, setReduced] = useState(false);
+  /** A centred row on a narrow screen: it moves a card at a time instead of drifting. */
+  const [stepping, setStepping] = useState(false);
   const held = useRef(false);
   const visible = useRef(false);
   /** After an arrow press in a centred row, the drift waits until this time so the photo stays where it was centred. */
@@ -124,7 +127,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     };
   }, [normalize, centered, centreNearest]);
 
-  const go = (dir: 1 | -1) => {
+  const go = useCallback((dir: 1 | -1) => {
     const el = ref.current;
     if (!el) return;
     // Make sure there is room to move in either direction first (an invisible jump), then glide by one card.
@@ -144,7 +147,16 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
     const card = el.querySelector<HTMLElement>('[data-copy="0"] > :first-child');
     const step = (card?.getBoundingClientRect().width ?? el.clientWidth * 0.8) + 20;
     el.scrollBy({ left: dir * step, behavior });
-  };
+  }, [centered, normalize]);
+
+  useEffect(() => {
+    if (!centered) return;
+    const mq = window.matchMedia("(max-width: 63.99rem)");
+    const apply = () => setStepping(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [centered]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -163,8 +175,21 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
   }, []);
 
   const auto = autoplay && !reduced;
+  /** Drifting along: a row that is not being stepped. */
+  const drift = auto && !stepping;
+
+  // Stepping: every few seconds the next card glides into the middle (go() also holds the next step back for a while after a press or swipe).
   useEffect(() => {
-    if (!auto) return;
+    if (!auto || !stepping) return;
+    const id = window.setInterval(() => {
+      if (held.current || !visible.current || document.hidden || Date.now() < resumeAt.current) return;
+      go(1);
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [auto, stepping, go]);
+
+  useEffect(() => {
+    if (!drift) return;
     const el = ref.current;
     if (!el) return;
     let raf = 0;
@@ -206,7 +231,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", forget);
     };
-  }, [auto, pxPerSecond, setWidth]);
+  }, [drift, pxPerSecond, setWidth]);
 
   // A mouse can drag the row (touch and trackpads already scroll it natively). A drag does not count as a click on a card.
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
@@ -295,7 +320,7 @@ export function ScrollRow({ label, children, header, autoplay = false, pxPerSeco
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className={"scroll-row relative flex gap-5 overflow-x-auto pb-2 [overflow-anchor:none] " + (auto ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
+          className={"scroll-row relative flex gap-5 overflow-x-auto pb-2 [overflow-anchor:none] " + (drift ? "" : "snap-x snap-mandatory ") + " [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}
         >
           <div ref={main} data-copy="1" className="contents">
             {children}

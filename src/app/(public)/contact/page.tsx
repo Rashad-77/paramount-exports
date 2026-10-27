@@ -137,7 +137,7 @@ export default async function ContactPage() {
       </section>
 
       <section aria-labelledby="inside-title" className="border-t border-border bg-white section-y">
-        <div className="container-page flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="container-page">
           <Reveal variant="fade">
             <p className="eyebrow">The showroom</p>
             <h2 id="inside-title" className="font-display mt-3 text-headline text-brand">
@@ -150,9 +150,6 @@ export default async function ContactPage() {
               </p>
             ) : null}
           </Reveal>
-          <Link href="/gallery#gallery" className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
-            See the gallery
-          </Link>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-px bg-white md:grid-cols-4">
           {[0, 1, 2, 3].map((i) => {
@@ -165,6 +162,11 @@ export default async function ContactPage() {
               </Reveal>
             );
           })}
+        </div>
+        <div className="container-page mt-8 text-center">
+          <Link href="/gallery#gallery" className="inline-flex items-center gap-2 text-sm font-semibold text-brand">
+            See the gallery
+          </Link>
         </div>
       </section>
     </>

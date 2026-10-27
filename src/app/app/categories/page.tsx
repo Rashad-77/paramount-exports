@@ -99,6 +99,7 @@ export default async function CategoriesPage({
       <div className="max-w-6xl">
         <ModuleHeader
           href="/app/categories"
+          actionsEnd
           actions={
             canWrite ? (
               <>

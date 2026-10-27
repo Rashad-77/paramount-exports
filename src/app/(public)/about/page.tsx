@@ -81,7 +81,8 @@ export default async function AboutPage() {
           <ol className="mt-14 space-y-14 md:space-y-20">
             {PROCESS.map((st, i) => (
               <li key={st.title} className="grid items-center gap-6 md:grid-cols-2 md:gap-14">
-                <Reveal variant={i % 2 === 0 ? "left" : "right"} className={i % 2 === 1 ? "md:order-2" : ""}>
+                {/* On a phone the explanation comes first and the picture under it; from tablet width they sit side by side, alternating. */}
+                <Reveal variant={i % 2 === 0 ? "left" : "right"} className={"order-2 " + (i % 2 === 1 ? "md:order-2" : "md:order-1")}>
                   <div className="zoom-frame relative mx-auto aspect-[4/5] w-full max-w-md">
                     {st.image ? (
                       <Image src={st.image} alt={`Step ${i + 1}: ${st.title}`} fill sizes="(min-width: 768px) 28rem, 100vw" className="object-cover" style={st.imagePosition ? { objectPosition: st.imagePosition } : undefined} />
@@ -90,7 +91,7 @@ export default async function AboutPage() {
                     )}
                   </div>
                 </Reveal>
-                <Reveal variant={i % 2 === 0 ? "right" : "left"} delay={STEP}>
+                <Reveal variant={i % 2 === 0 ? "right" : "left"} delay={STEP} className={"order-1 " + (i % 2 === 1 ? "md:order-1" : "md:order-2")}>
                   <span aria-hidden="true" className="font-display text-[clamp(1.375rem,calc(1.375rem_+_(100vw_-_375px)_*_0.03562),2.25rem)] leading-none text-timber">
                     {String(i + 1).padStart(2, "0")}
                   </span>

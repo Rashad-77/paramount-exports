@@ -145,7 +145,7 @@ const SERVICES = [
 
 /** The feedback row shows the newest this many; "View all" lists every review. */
 const CAROUSEL_REVIEWS = 12;
-const CARD_W = "w-[82%] shrink-0 snap-start sm:w-[22rem]";
+const CARD_W = "w-[82%] shrink-0 snap-center sm:w-[22rem]";
 
 export default async function HomePage() {
   const [business, categories, products, premium, accountSettings, shown] = await Promise.all([

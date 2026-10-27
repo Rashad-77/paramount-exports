@@ -9,6 +9,7 @@ export function PageHeader({
   title,
   description,
   actions,
+  actionsEnd = false,
   back,
   badges,
 }: {
@@ -17,6 +18,8 @@ export function PageHeader({
   badges?: ReactNode;
   description?: string;
   actions?: ReactNode;
+  /** Keep the buttons at the right edge at every screen size (they otherwise start at the left when the header stacks on a phone). */
+  actionsEnd?: boolean;
   back?: { href: string; to: string };
 }) {
   return (
@@ -45,7 +48,7 @@ export function PageHeader({
           ) : null}
         </div>
         {actions ? (
-          <div className="flex flex-wrap items-center gap-3">{actions}</div>
+          <div className={"flex flex-wrap items-center gap-3" + (actionsEnd ? " justify-end" : "")}>{actions}</div>
         ) : null}
       </header>
     </>
@@ -58,11 +61,13 @@ export async function ModuleHeader({
   title,
   description,
   actions,
+  actionsEnd = false,
 }: {
   href: string;
   title?: string;
   description?: string;
   actions?: ReactNode;
+  actionsEnd?: boolean;
 }) {
   const m = moduleInfo(href);
   const actor = await getActor().catch(() => null);
@@ -73,6 +78,7 @@ export async function ModuleHeader({
         title={title ?? m.title}
         description={description}
         actions={actions}
+        actionsEnd={actionsEnd}
       />
       {tabs ? (
         <ModuleTabs label={tabs.label} pages={tabs.pages} current={href} />

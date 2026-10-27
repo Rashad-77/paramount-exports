@@ -61,6 +61,7 @@ export default async function ProductsAdminPage({
     <EditProvider>
       <ModuleHeader
         href="/app/products"
+        actionsEnd
         actions={
           canWrite ? (
             <>

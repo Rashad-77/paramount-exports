@@ -5727,17 +5727,39 @@ span.cat-pagebtn {
   }
 }
 
-/* Help page, the list of topics: one under another on a phone, close together, in a smaller size. */
+/* Help page, the list of topics: a thin line between neighbours, upright in a row (in the middle of the gap) and across the width when stacked. */
+@media (min-width: 48rem) {
+  .help-topics a + a {
+    position: relative;
+  }
+  .help-topics a + a::before {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    height: 1.1em;
+    width: 1px;
+    transform: translateY(-50%);
+    background: var(--color-border-strong, #cfc8bc);
+  }
+}
+/* On a phone they sit one under another, close together, in a smaller size. */
 @media (max-width: 47.99rem) {
   .help-topics {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 0;
     padding-bottom: 0.75rem;
   }
   .help-topics a {
-    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
     font-size: 0.6875rem;
+  }
+  .help-topics a + a {
+    border-top: 1px solid var(--color-border, #e5dfd5);
   }
 }
 
