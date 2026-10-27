@@ -21,6 +21,8 @@ export async function listSpecCatalogExtras(actor: Actor): Promise<SpecCatalogEx
   const [types, values, hiddenRows] = await Promise.all([db.select().from(specTypes).orderBy(asc(specTypes.label)), db.select().from(specValues).orderBy(asc(specValues.value)), db.select().from(specHiddenValues)]);
   const byKey: Record<string, string[]> = {};
   for (const v of values) (byKey[v.typeKey] ??= []).push(v.value);
+  // The materials offered on a product are exactly the ones in the Materials table.
+  byKey[MATERIAL_KEY] = (await listMaterials(actor)).map((m) => m.name);
   const hidden: Record<string, string[]> = {};
   for (const h of hiddenRows) (hidden[h.typeKey] ??= []).push(h.value);
   // A saved type that has the same name as a built-in one is just that built-in type.
