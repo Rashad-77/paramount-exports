@@ -178,7 +178,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
 
             {preview.premium ? <h4 className="text-sm font-semibold">On the product page and in the collection</h4> : null}
             <div className="grid gap-5 md:grid-cols-[15rem_auto] md:justify-center md:gap-4">
-              <div className="text-center">
+              <div>
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={cover} alt="" className="mx-auto aspect-square w-full max-w-60 border border-border object-cover" />
@@ -219,7 +219,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                 {preview.photos.length > 1 ? <p className="mt-1.5 text-xs text-text-muted">Drag a photo to change its number; photo 1 is the thumbnail. Changes here are kept with the form and saved only when you confirm.</p> : null}
               </div>
 
-              <div className="min-w-0 max-w-72 text-center">
+              <div className="min-w-0 max-w-72">
                 <p className="text-sm text-text-muted">{preview.category}</p>
                 <h3 className="mt-0.5 text-xl font-semibold">{preview.name}</h3>
                 {preview.shortDescription ? <p className="mt-1 text-sm">{preview.shortDescription}</p> : null}
@@ -236,7 +236,7 @@ export function ReviewAndSave({ categoryLabels, currency, confirmLabel, photosRe
                     </p>
                   );
                 })()}
-                <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {preview.availability ? <AvailabilityTag state={preview.availability === "on_request" ? "made_to_order" : (preview.availability as AvailabilityState)}>{AVAILABILITY_LABEL[preview.availability as keyof typeof AVAILABILITY_LABEL]}</AvailabilityTag> : null}
                 </div>
 
