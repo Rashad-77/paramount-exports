@@ -84,7 +84,7 @@ export default async function AboutPage() {
                 <Reveal variant={i % 2 === 0 ? "left" : "right"} className={i % 2 === 1 ? "md:order-2" : ""}>
                   <div className="zoom-frame relative mx-auto aspect-[4/5] w-full max-w-md">
                     {st.image ? (
-                      <Image src={st.image} alt={`Step ${i + 1}: ${st.title}`} fill sizes="(min-width: 768px) 28rem, 100vw" className="object-cover" />
+                      <Image src={st.image} alt={`Step ${i + 1}: ${st.title}`} fill sizes="(min-width: 768px) 28rem, 100vw" className="object-cover" style={st.imagePosition ? { objectPosition: st.imagePosition } : undefined} />
                     ) : (
                       <ImagePlaceholder label={`Step ${i + 1} — ${st.photo}`} className="size-full" />
                     )}

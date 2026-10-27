@@ -8,6 +8,8 @@ export interface ProcessStep {
   photo: string;
   /** The photograph itself (4:5, in /public). Steps without one show a grey placeholder describing `photo`. */
   image?: string;
+  /** Which part of a picture that is not 4:5 stays in the frame (CSS object-position), for example "48% 50%". */
+  imagePosition?: string;
 }
 
 /**
@@ -29,6 +31,9 @@ export const PROCESS: ProcessStep[] = [
     details:
       "The timber is marked out to the dimensions needed for each part, then cut and trimmed to size. Matching parts, such as legs or cabinet sides, are prepared together so their lengths and edges line up. The cut edges are squared and checked before the parts move on, giving the frame and panels a sound fit when they are brought together.",
     photo: "Boards being measured and cut",
+    image: "/about/step-2-cutting.jpg",
+    // A wide picture: keep the end of the board and the saw blade.
+    imagePosition: "48% 50%",
   },
   {
     title: "Joinery and assembly",
