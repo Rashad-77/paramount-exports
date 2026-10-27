@@ -1,7 +1,8 @@
 "use client";
 
-import { ImagePlus, Trash2 } from "lucide-react";
+import { ImagePlus, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { ImagePlacementDialog } from "@/components/app/banner-image-field";
 import { useFormState } from "@/components/forms/action-form";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { cn } from "@/lib/cn";
@@ -14,6 +15,9 @@ interface Photo {
   /** A photo uploaded on this page and not saved yet. */
   fileId?: string;
   url: string;
+  /** Where the photograph sits in its 4:5 frame (percent from the left and from the top). */
+  x: number;
+  y: number;
   state: "uploading" | "done" | "error";
   error?: string;
 }
@@ -25,12 +29,14 @@ const MAX_BYTES = 8 * 1024 * 1024;
  * press Alt + an arrow key). Photo 1 is the thumbnail on cards and lists, and the first photo on the product page. Everything is saved
  * with the product: the form posts `photos` in the order shown.
  */
-export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: string }> }) {
+export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: string; x?: number; y?: number }> }) {
   const inputId = useId();
   const { state } = useFormState();
   const missing = state.fieldErrors?.photos?.[0];
   const root = useRef<HTMLDivElement>(null);
-  const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, state: "done" as const })));
+  const [photos, setPhotos] = useState<Photo[]>(() => initial.map((p) => ({ key: p.id, id: p.id, url: p.url, x: p.x ?? 50, y: p.y ?? 50, state: "done" as const })));
+  /** The photo whose placement window is open. */
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [overKey, setOverKey] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -57,6 +63,8 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
 
   const patch = (key: string, p: Partial<Photo>) => setPhotos((cur) => cur.map((x) => (x.key === key ? { ...x, ...p } : x)));
   const ready = photos.filter((p) => p.state === "done");
+  /** A photo's number is its place among the photos that will be saved, which is the order they show on the product page. */
+  const numberOf = (key: string) => ready.findIndex((r) => r.key === key) + 1;
 
   async function onPick(files: FileList | null) {
     if (!files?.length) return;
@@ -67,6 +75,8 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
     const added: Photo[] = picked.map((f, n) => ({
       key: `new-${Date.now()}-${n}`,
       url: URL.createObjectURL(f),
+      x: 50,
+      y: 50,
       state: f.size > MAX_BYTES ? "error" : "uploading",
       error: f.size > MAX_BYTES ? `${f.name} is over 8 MB.` : undefined,
     }));
@@ -153,7 +163,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
                 data-photo={p.key}
                 tabIndex={0}
                 draggable={p.state === "done"}
-                aria-label={`Photo ${i + 1}${p.state === "done" && p.key === ready[0]?.key ? ", thumbnail" : ""}. Drag, or press Alt and an arrow key, to change its number.`}
+                aria-label={`Photo ${numberOf(p.key) || "(not ready)"}${p.state === "done" && p.key === ready[0]?.key ? ", thumbnail" : ""}. Drag, or press Alt and an arrow key, to change its number.`}
                 onKeyDown={(e) => onKey(e, p.key, i)}
                 onDragStart={(e) => {
                   setDragKey(p.key);
@@ -176,19 +186,29 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
                   setOverKey(null);
                 }}
                 className={cn(
-                  "relative aspect-square cursor-grab touch-manipulation overflow-hidden border bg-linen outline-none focus-visible:ring-2 focus-visible:ring-walnut active:cursor-grabbing",
+                  "relative aspect-[4/5] cursor-grab touch-manipulation overflow-hidden border bg-linen outline-none focus-visible:ring-2 focus-visible:ring-walnut active:cursor-grabbing",
                   p.state === "error" ? "border-danger" : "border-border",
                   dragKey === p.key && "opacity-40",
                   overKey === p.key && dragKey !== p.key && "ring-2 ring-walnut",
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.url} alt="" draggable={false} className={cn("size-full object-cover", p.state === "uploading" && "opacity-50")} />
-                <span className="tabular absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center bg-walnut-dark text-xs font-semibold text-ivory">{i + 1}</span>
+                <img src={p.url} alt="" draggable={false} className={cn("size-full object-cover", p.state === "uploading" && "opacity-50")} style={{ objectPosition: `${p.x}% ${p.y}%` }} />
+                {numberOf(p.key) > 0 ? <span className="tabular absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center bg-walnut-dark text-xs font-semibold text-ivory">{numberOf(p.key)}</span> : null}
+                {p.state === "done" ? (
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey(p.key)}
+                    aria-label={`Edit photo ${numberOf(p.key)}: choose which part shows`}
+                    className="absolute right-11 top-1.5 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-text shadow transition-colors hover:bg-walnut-dark hover:text-ivory focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    <Pencil aria-hidden="true" className="size-4" />
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => remove(p.key)}
-                  aria-label={`Delete photo ${i + 1}`}
+                  aria-label={`Delete photo ${numberOf(p.key) || i + 1}`}
                   className="absolute right-1.5 top-1.5 inline-flex size-8 items-center justify-center rounded-full bg-white/90 text-text shadow transition-colors hover:bg-danger hover:text-ivory focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   <Trash2 aria-hidden="true" className="size-4" />
@@ -205,9 +225,29 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
         <p className="text-sm text-text-muted">No photos yet.</p>
       )}
 
+      {photos.map((p) =>
+        p.key === editingKey ? (
+          <ImagePlacementDialog
+            key={p.key}
+            open
+            url={p.url}
+            start={{ x: p.x, y: p.y }}
+            ratio="4 / 5"
+            title={`Photo ${numberOf(p.key)}`}
+            description="Drag the photo to choose which part shows in the 4:5 frame, as on the product cards and pages."
+            boxClassName="mx-auto w-full max-w-[18rem]"
+            onClose={() => setEditingKey(null)}
+            onSave={(pos) => {
+              patch(p.key, pos);
+              setEditingKey(null);
+            }}
+          />
+        ) : null,
+      )}
+
       {/* What the form posts: the photos in order. */}
       {ready.map((p) => (
-        <input key={p.key} type="hidden" name="photos" value={p.id ? `id:${p.id}` : `file:${p.fileId}`} data-url={p.url} data-key={p.key} />
+        <input key={p.key} type="hidden" name="photos" value={`${p.id ? `id:${p.id}` : `file:${p.fileId}`}@${p.x},${p.y}`} data-url={p.url} data-key={p.key} data-x={p.x} data-y={p.y} />
       ))}
     </div>
   );

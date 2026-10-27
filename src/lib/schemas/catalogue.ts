@@ -83,10 +83,10 @@ const specificationsField = z.preprocess(
   z.array(specEntrySchema, { error: "The specifications could not be read. Reload the page and try again." }).max(40, "Add at most 40 specifications.").optional(),
 );
 
-/** "id:<existing photo>" or "file:<newly uploaded file>", in the order the photos are shown. */
+/** "id:<existing photo>" or "file:<newly uploaded file>", each with its place in the frame as "@x,y" (percent), in the order the photos are shown. */
 const photosField = z.preprocess(
   (v) => (v === undefined || v === "" ? [] : Array.isArray(v) ? v.filter((x) => x !== "") : [v]),
-  z.array(z.string().regex(/^(id|file):[0-9a-fA-F-]{36}$/, "A photo could not be read. Reload the page and try again.")).max(MAX_PHOTOS, `Add up to ${MAX_PHOTOS} photos.`),
+  z.array(z.string().regex(/^(id|file):[0-9a-fA-F-]{36}(@\d{1,3},\d{1,3})?$/, "A photo could not be read. Reload the page and try again.")).max(MAX_PHOTOS, `Add up to ${MAX_PHOTOS} photos.`),
 );
 
 const optInt = (label: string, max: number) =>

@@ -21,6 +21,7 @@ export function ProductCard({ product, currency, priority = false, wishlist = fa
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               priority={priority}
               className="object-cover"
+              style={{ objectPosition: `${product.imageX}% ${product.imageY}%` }}
             />
           ) : (
             <ImagePlaceholder label={product.name} className="absolute inset-0" />

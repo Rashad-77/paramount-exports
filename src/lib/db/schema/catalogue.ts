@@ -136,6 +136,9 @@ export const productImages = pgTable(
       .references(() => uploadedFiles.id, { onDelete: "restrict" }),
     altText: text("alt_text").notNull(),
     position: integer("position").notNull().default(0),
+    /** Where the photograph sits in its 4:5 frame (percent from the left and from the top), as set with the pencil on the product form. */
+    focusX: integer("focus_x").notNull().default(50),
+    focusY: integer("focus_y").notNull().default(50),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("product_images_product_idx").on(t.productId), unique("product_images_file_key").on(t.fileId)],

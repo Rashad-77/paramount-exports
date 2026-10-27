@@ -1,7 +1,7 @@
 "use client";
 
 import { ImagePlus } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { uploadToStorage } from "@/components/forms/file-uploader";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -159,8 +159,44 @@ export function BannerImageField({ initialUrl = null, initialX = 50, initialY = 
   );
 }
 
-/** The pop-up: the band as it will look, with the text fixed and the picture underneath it, dragged with the mouse (or a finger). */
+/** The banner's pop-up: the band as it will look, with the text fixed and the picture underneath it. */
 function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { open: boolean; url: string; start: { x: number; y: number }; name: string; subs: string[]; onClose: () => void; onSave: (p: { x: number; y: number }) => void }) {
+  return <ImagePlacementDialog open={open} url={url} start={start} ratio={BAND_RATIO} title="Banner picture" description="Drag the picture to choose which part shows. The text stays where it is." wide overlay={<BandText name={name} subs={subs} />} onClose={onClose} onSave={onSave} />;
+}
+
+/**
+ * A pop-up in which a picture sits under a fixed frame of the given shape and is dragged with the mouse (or a finger) to choose which part
+ * shows. The picture never pokes out of the frame. Save is at the bottom right and the cross at the top right closes without saving.
+ * Used by the category banners and the product photographs.
+ */
+export function ImagePlacementDialog({
+  open,
+  url,
+  start,
+  ratio,
+  title,
+  description,
+  wide = false,
+  boxClassName = "w-full",
+  overlay,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  url: string;
+  start: { x: number; y: number };
+  /** The frame's shape as a CSS aspect-ratio, e.g. "4 / 5". */
+  ratio: string;
+  title: string;
+  description?: string;
+  wide?: boolean;
+  /** Classes for the frame's width, e.g. "mx-auto w-full max-w-xs". */
+  boxClassName?: string;
+  /** Anything laid over the picture and kept in place (the banner's text). */
+  overlay?: ReactNode;
+  onClose: () => void;
+  onSave: (p: { x: number; y: number }) => void;
+}) {
   const [pos, setPos] = useState(start);
   const box = useRef<HTMLDivElement>(null);
   const natural = useRef<{ w: number; h: number } | null>(null);
@@ -194,7 +230,7 @@ function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { op
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title="Banner picture" description="Drag the picture to choose which part shows. The text stays where it is." wide plainClose>
+    <Dialog open={open} onClose={onClose} title={title} description={description} wide={wide} plainClose>
       <div className="space-y-5">
         <div
           ref={box}
@@ -202,8 +238,8 @@ function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { op
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
-          className={"@container relative w-full touch-none select-none overflow-hidden bg-linen " + (dragging ? "cursor-grabbing" : "cursor-grab")}
-          style={{ aspectRatio: BAND_RATIO }}
+          className={"@container relative touch-none select-none overflow-hidden bg-linen " + boxClassName + " " + (dragging ? "cursor-grabbing" : "cursor-grab")}
+          style={{ aspectRatio: ratio }}
         >
           {/* The picture is the lowest layer and is clipped by the band: it never pokes out. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -217,7 +253,7 @@ function PlacementDialog({ open, url, start, name, subs, onClose, onSave }: { op
             className="absolute inset-0 size-full object-cover"
             style={{ objectPosition: `${pos.x}% ${pos.y}%` }}
           />
-          <BandText name={name} subs={subs} />
+          {overlay}
         </div>
         <div className="flex justify-end">
           <Button type="button" onClick={() => onSave(pos)}>

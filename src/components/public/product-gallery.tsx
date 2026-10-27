@@ -16,7 +16,7 @@ export function ProductGallery({
   saleLabel,
   premium = false,
 }: {
-  images: Array<{ id: string; url: string; alt: string }>;
+  images: Array<{ id: string; url: string; alt: string; x?: number; y?: number }>;
   name: string;
   heart?: ReactNode;
   saleLabel?: string;
@@ -47,6 +47,7 @@ export function ProductGallery({
                 "object-cover transition-opacity duration-300 motion-reduce:transition-none",
                 i === active ? "opacity-100" : "opacity-0",
               )}
+              style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }}
             />
           ))
         ) : (
@@ -82,6 +83,7 @@ export function ProductGallery({
                   fill
                   sizes="96px"
                   className="object-cover"
+                  style={{ objectPosition: `${img.x ?? 50}% ${img.y ?? 50}%` }}
                 />
               </button>
             </li>

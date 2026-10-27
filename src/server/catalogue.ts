@@ -265,13 +265,13 @@ export async function getProductAdmin(actor: Actor, id: string) {
   const [variants, images] = await Promise.all([
     db.select().from(productVariants).where(eq(productVariants.productId, id)).orderBy(asc(productVariants.sortOrder), asc(productVariants.createdAt)),
     db
-      .select({ id: productImages.id, alt: productImages.altText, position: productImages.position, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+      .select({ id: productImages.id, alt: productImages.altText, position: productImages.position, x: productImages.focusX, y: productImages.focusY, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
       .from(productImages)
       .innerJoin(uploadedFiles, eq(uploadedFiles.id, productImages.fileId))
       .where(eq(productImages.productId, id))
       .orderBy(asc(productImages.position)),
   ]);
-  return { product, variants, images: images.map((i) => ({ id: i.id, alt: i.alt, position: i.position, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })) };
+  return { product, variants, images: images.map((i) => ({ id: i.id, alt: i.alt, position: i.position, x: i.x, y: i.y, url: publicFileUrl({ bucket: i.bucket, objectKey: i.key }) })) };
 }
 
 async function assertCategoryUsable(tx: DbOrTx, categoryId: string) {
@@ -343,10 +343,20 @@ function resolveFields(input: ProductFormInput) {
  * Makes the product's photos match the list the form sent: removes the ones left out, adds the new uploads, saves the order and
  * the thumbnail. Returns the files of removed photos, to delete from storage once the transaction has committed.
  */
+/** One entry of the form's photo list: "id:<photo>" or "file:<upload>", then "@x,y" for where it sits in its frame. */
+function parsePhotoItem(item: string): { kind: string; ref: string; x: number; y: number } {
+  const colon = item.indexOf(":");
+  const at = item.indexOf("@");
+  const ref = item.slice(colon + 1, at < 0 ? undefined : at);
+  const [rx, ry] = at < 0 ? [] : item.slice(at + 1).split(",");
+  const pct = (v: string | undefined) => Math.min(100, Math.max(0, Math.round(Number(v ?? 50)) || 0));
+  return { kind: item.slice(0, colon), ref, x: rx === undefined ? 50 : pct(rx), y: ry === undefined ? 50 : pct(ry) };
+}
+
 async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: string[], verified: VerifiedFile[]): Promise<string[]> {
   const existing = await tx.select().from(productImages).where(eq(productImages.productId, productId));
   const byId = new Map(existing.map((i) => [i.id, i]));
-  const keep = new Set(items.filter((i) => i.startsWith("id:")).map((i) => i.slice(3)));
+  const keep = new Set(items.map(parsePhotoItem).filter((i) => i.kind === "id").map((i) => i.ref));
   for (const id of keep) if (!byId.has(id)) throw validation("A photo on this page has changed. Reload the page and try again.", { photos: ["Reload the page and try again."] });
   const removed = existing.filter((i) => !keep.has(i.id));
   if (removed.length) await tx.delete(productImages).where(inArray(productImages.id, removed.map((r) => r.id)));
@@ -354,16 +364,14 @@ async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: st
   const verifiedIds = new Set(verified.map((v) => v.id));
   const ids: string[] = [];
   for (let i = 0; i < items.length; i++) {
-    const item = items[i]!;
-    const kind = item.slice(0, item.indexOf(":"));
-    const ref = item.slice(item.indexOf(":") + 1);
+    const { kind, ref, x, y } = parsePhotoItem(items[i]!);
     const alt = `${name}, photo ${i + 1}`;
     if (kind === "id") {
-      await tx.update(productImages).set({ position: i, altText: alt }).where(eq(productImages.id, ref));
+      await tx.update(productImages).set({ position: i, altText: alt, focusX: x, focusY: y }).where(eq(productImages.id, ref));
       ids.push(ref);
     } else {
       if (!verifiedIds.has(ref)) throw validation("A photo could not be attached. Upload it again.", { photos: ["Upload the photo again."] });
-      const [row] = await tx.insert(productImages).values({ productId, fileId: ref, altText: alt, position: i }).returning({ id: productImages.id });
+      const [row] = await tx.insert(productImages).values({ productId, fileId: ref, altText: alt, position: i, focusX: x, focusY: y }).returning({ id: productImages.id });
       ids.push(row!.id);
     }
   }
@@ -373,7 +381,7 @@ async function syncPhotos(tx: DbOrTx, productId: string, name: string, items: st
   return removed.map((r) => r.fileId);
 }
 
-const photoFileIds = (items: string[]) => items.filter((i) => i.startsWith("file:")).map((i) => i.slice(5));
+const photoFileIds = (items: string[]) => items.map(parsePhotoItem).filter((i) => i.kind === "file").map((i) => i.ref);
 
 export async function createProduct(actor: Actor, input: ProductInput): Promise<string> {
   requirePermission(actor, "products:write");

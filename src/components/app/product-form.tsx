@@ -25,7 +25,7 @@ export interface ProductFormValues {
   listPrice?: string | null;
   discountKind?: string | null;
   discountValue?: string | null;
-  images?: Array<{ id: string; url: string }>;
+  images?: Array<{ id: string; url: string; x?: number; y?: number }>;
 }
 
 export function ProductForm({
