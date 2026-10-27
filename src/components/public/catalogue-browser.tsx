@@ -85,9 +85,29 @@ export function CatalogueBrowser({
     return () => window.clearTimeout(t);
   }, [typed, f.q]);
 
+  /** Results already fetched on this visit: going back to a filter shown in the last minute is instant, with no request at all. */
+  const recent = useRef<Map<string, { at: number; data: CatalogueResult }>>(null);
+
   useEffect(() => {
     const key = JSON.stringify(f);
+    const memory = (recent.current ??= new Map());
     if (key === shown.current) return;
+    const show = (data: CatalogueResult) => {
+      shown.current = key;
+      setResult(data);
+      setFailed(false);
+      setLoading(false);
+      if (scrollAfter.current) {
+        scrollAfter.current = false;
+        window.requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
+      window.history.replaceState(null, "", hrefFor(f));
+    };
+    const kept = memory.get(key);
+    if (kept && Date.now() - kept.at < 60_000) {
+      show(kept.data);
+      return;
+    }
     const ctl = new AbortController();
     setLoading(true);
     const u = new URLSearchParams({ sort: f.sort, page: String(f.page) });
@@ -97,15 +117,8 @@ export function CatalogueBrowser({
     fetch(`/api/catalogue?${u}`, { signal: ctl.signal, cache: "no-store" })
       .then((r) => (r.ok ? (r.json() as Promise<CatalogueResult>) : Promise.reject(new Error("failed"))))
       .then((data) => {
-        shown.current = key;
-        setResult(data);
-        setFailed(false);
-        setLoading(false);
-        if (scrollAfter.current) {
-          scrollAfter.current = false;
-          window.requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-        }
-        window.history.replaceState(null, "", hrefFor(f));
+        memory.set(key, { at: Date.now(), data });
+        show(data);
       })
       .catch((e: unknown) => {
         if (e instanceof DOMException && e.name === "AbortError") return;

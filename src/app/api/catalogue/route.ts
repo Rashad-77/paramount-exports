@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db/client";
 import { hasDatabase } from "@/lib/env";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 import { parseSort } from "@/lib/catalogue-sort";
-import { listPublicProducts } from "@/server/catalogue-public";
+import { isKeptQuery, listPublicProducts } from "@/server/catalogue-public";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,9 @@ export async function GET(req: NextRequest) {
     page: Math.min(500, Math.max(1, Number.parseInt(sp.get("page") ?? "1", 10) || 1)),
   };
 
-  if (hasDatabase()) {
+  // A search reads the database every time, so it is limited per address. Filters and pages are answered from the shared kept copy and
+  // cost the database nothing, so they skip the limit (which itself is a database write).
+  if (hasDatabase() && !isKeptQuery(query)) {
     const hit = await hitRateLimit(getDb(), { scope: "catalogue-ip", value: clientIp(req.headers) ?? "unknown", limit: 300, windowSeconds: 60 });
     if (!hit.allowed) {
       return NextResponse.json({ error: "Too many searches. Please wait a moment." }, { status: 429, headers: { "Retry-After": String(hit.retryAfterSeconds), "Cache-Control": "no-store" } });

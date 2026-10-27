@@ -421,16 +421,20 @@ const listPublicCategoriesKept = kept(listPublicCategoriesImpl, "categories");
 const listPremiumProductsKept = kept(listPremiumProductsImpl, "premium");
 
 /** A search is typed by the visitor and could be anything, so searches are never stored; neither are oddly long filters or far-off pages. */
+export const isKeptQuery = (query: CatalogueQuery) => !query.q && (query.category?.length ?? 0) <= 80 && (query.material?.length ?? 0) <= 80 && (query.page ?? 1) <= 50;
 export const listPublicProducts = (query: CatalogueQuery) => {
-  if (query.q || (query.category?.length ?? 0) > 80 || (query.material?.length ?? 0) > 80 || (query.page ?? 1) > 50) return listPublicProductsImpl(query);
+  if (!isKeptQuery(query)) return listPublicProductsImpl(query);
   // The same list asked for in different words (no sort or "newest", no page or page 1) is kept once, not once per wording.
   const key: CatalogueQuery = { sort: query.sort ?? "newest", page: Math.max(1, query.page ?? 1) };
   if (query.category) key.category = query.category;
   if (query.material) key.material = query.material;
   return duringBuildSafe("listPublicProducts", { items: [] as PublicCard[], total: 0, page: 1, pageCount: 1 }, () => listPublicProductsKept(key));
 };
-/** Two small reads, and always fresh: the list follows the suggestions staff edit on a product without anything being cleared. */
-export const listPublicMaterials = () => listPublicMaterialsImpl();
+/**
+ * Kept like the catalogue: saving a product clears it at once (a material typed on a product joins the list then). A suggestion added or
+ * removed in the Material window alone clears nothing (that would reload the open product form), so it shows here within a minute.
+ */
+export const listPublicMaterials = keptRead(listPublicMaterialsImpl, ["catalogue", "materials"], [CATALOGUE_TAG], 60);
 
 /* Build-safe public readers (see duringBuildSafe). */
 export const listFeaturedProducts = (...args: Parameters<typeof listFeaturedProductsImpl>) => duringBuildSafe("listFeaturedProducts", [] as Awaited<ReturnType<typeof listFeaturedProductsImpl>>, () => listFeaturedProductsImpl(...args));
