@@ -92,7 +92,6 @@ export default async function ProductPage({ params }: Props) {
           sectionId="quote"
           opensOn={OPEN_QUOTE_EVENT}
           title="Request a quotation"
-          text="The piece is already filled in. Add the size and the amount you need, and we reply with a quotation within one working day."
           openLabel="Request quotation"
         >
           <EnquiryForm

@@ -8,7 +8,7 @@ import { OPEN_ENQUIRY_EVENT } from "@/lib/page-events";
  * "Have a question about this piece?": one line and a button. Pressing it opens the form in place, so a product page stays short.
  * The form is already on the page (only hidden), so its anti-spam token is ready by the time it is opened.
  */
-export function AskDisclosure({ title, text, openLabel, children, sectionId = "enquire", opensOn = OPEN_ENQUIRY_EVENT }: { title: string; text: string; openLabel: string; children: ReactNode; sectionId?: string; opensOn?: string }) {
+export function AskDisclosure({ title, text, openLabel, children, sectionId = "enquire", opensOn = OPEN_ENQUIRY_EVENT }: { title: string; text?: string; openLabel: string; children: ReactNode; sectionId?: string; opensOn?: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const region = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export function AskDisclosure({ title, text, openLabel, children, sectionId = "e
       <div className="ask-head">
         <div>
           <h2 id={`${id}-title`}>{title}</h2>
-          <p>{text}</p>
+          {text ? <p>{text}</p> : null}
         </div>
         <button type="button" className="ask-btn" aria-expanded={open} aria-controls={`${id}-form`} onClick={toggle}>
           {open ? <X aria-hidden="true" strokeWidth={1.5} /> : <MessageCircle aria-hidden="true" strokeWidth={1.5} />}
