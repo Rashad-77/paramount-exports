@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { HONEYPOT_FIELD } from "@/lib/form-guard";
+import { DIMENSION_UNIT_VALUES } from "@/lib/enquiry-form-labels";
 import { enumOf, idList, optDate, optEmail, optEnum, optText, optUuid, reqPhone, reqText } from "@/lib/validation";
 
 export const ENQUIRY_KINDS = ["general", "product_enquiry", "custom"] as const;
@@ -19,6 +20,7 @@ export const enquirySchema = z
     // Custom furniture details
     furnitureType: optText("Furniture type", 120),
     dimensions: optText("Dimensions", 200),
+    dimensionUnit: optEnum(DIMENSION_UNIT_VALUES, "unit"),
     material: optText("Wood or material", 120),
     finish: optText("Finish", 120),
     budgetRange: optText("Budget range", 80),

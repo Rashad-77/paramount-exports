@@ -9,6 +9,16 @@ export const CONTACT_LABELS = {
   preferredContact: "Best way to reach you",
 } as const;
 
+/** The units the Dimensions box offers. */
+export const DIMENSION_UNIT_VALUES = ["cm", "mm", "m", "in", "ft"] as const;
+export const DIMENSION_UNITS = [
+  { value: "cm", label: "cm" },
+  { value: "mm", label: "mm" },
+  { value: "m", label: "m" },
+  { value: "in", label: "inches" },
+  { value: "ft", label: "feet" },
+] as const;
+
 /** The "About the piece" part of the made-to-measure form. */
 export const PIECE_FIELDS = [
   { key: "furnitureType", label: "What would you like made?" },

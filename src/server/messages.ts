@@ -2,6 +2,7 @@ import "server-only";
 import { quoteRef } from "@/lib/quotation-ui";
 import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { phoneKey } from "@/lib/contact";
+import { withUnit } from "@/lib/dimensions";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
 import { customerAccounts, messages, orderItems, orders, productVariants, products, uploadedFiles } from "@/lib/db/schema";
@@ -64,7 +65,7 @@ export async function submitEnquiry(input: EnquiryInput, ctx: { ip: string | nul
     input.kind === "custom"
       ? {
           furnitureType: input.furnitureType ?? null,
-          dimensions: input.dimensions ?? null,
+          dimensions: withUnit(input.dimensions, input.dimensionUnit),
           material: input.material ?? null,
           finish: input.finish ?? null,
           budgetRange: input.budgetRange ?? null,

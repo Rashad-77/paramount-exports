@@ -73,20 +73,32 @@ function describedBy(hint: string | undefined, error: string | undefined, ids: {
 
 export interface TextFieldProps extends FieldShellProps, Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {
   inputClassName?: string;
+  /** A small control shown inside the right edge of the box (a unit chooser, for example). Give the input `inputClassName="pr-…"` to leave room for it. */
+  adornment?: ReactNode;
 }
 
-export function TextField({ label, hint, error, required, showOptional, className, inputClassName, id: idProp, ...props }: TextFieldProps) {
+export function TextField({ label, hint, error, required, showOptional, className, inputClassName, adornment, id: idProp, ...props }: TextFieldProps) {
   const ids = useFieldIds(idProp);
+  const input = (
+    <input
+      id={ids.id}
+      required={required}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={describedBy(hint, error, ids)}
+      className={cn(control, inputClassName)}
+      {...props}
+    />
+  );
   return (
     <Shell {...ids} {...{ label, hint, error, required, showOptional, className }}>
-      <input
-        id={ids.id}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(hint, error, ids)}
-        className={cn(control, inputClassName)}
-        {...props}
-      />
+      {adornment ? (
+        <div className="relative">
+          {input}
+          {adornment}
+        </div>
+      ) : (
+        input
+      )}
     </Shell>
   );
 }

@@ -7,7 +7,8 @@ import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
 import { QuotePrefill, type QuotePrefillData } from "@/components/public/quote-prefill";
-import { CONTACT_CHOICE_LABEL, CONTACT_LABELS, CUSTOM_MESSAGE_LABEL, MESSAGE_LABEL, PHOTOS_LABEL, PIECE_FIELDS, PIECE_HEADING } from "@/lib/enquiry-form-labels";
+import { ChevronDown } from "lucide-react";
+import { CONTACT_CHOICE_LABEL, CONTACT_LABELS, CUSTOM_MESSAGE_LABEL, DIMENSION_UNITS, MESSAGE_LABEL, PHOTOS_LABEL, PIECE_FIELDS, PIECE_HEADING } from "@/lib/enquiry-form-labels";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 
 export interface VariantOption {
@@ -93,7 +94,26 @@ export function EnquiryForm({
           <legend className="font-display text-lg text-walnut">{PIECE_HEADING}</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             <FField name="furnitureType" kind="title" label={pieceLabel("furnitureType")} placeholder="e.g. dining table, wardrobe" maxLength={120} required />
-            <FField name="dimensions" kind="dimensions" label={pieceLabel("dimensions")} placeholder="e.g. 180 × 90 × 75 cm" maxLength={200} />
+            <FField
+              name="dimensions"
+              kind="dimensions"
+              label={pieceLabel("dimensions")}
+              placeholder="e.g. 180 × 90 × 75"
+              maxLength={200}
+              inputClassName="pr-28"
+              adornment={
+                <span className="absolute inset-y-px right-px flex items-center border-l border-border-strong bg-surface">
+                  <select name="dimensionUnit" aria-label="Unit" defaultValue="cm" className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-8 fl-input text-text focus-visible:outline-none">
+                    {DIMENSION_UNITS.map((u) => (
+                      <option key={u.value} value={u.value}>
+                        {u.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 size-4 text-text-muted" strokeWidth={1.75} />
+                </span>
+              }
+            />
             <FField name="material" kind="title" label={pieceLabel("material")} placeholder="If you have a preference" maxLength={120} />
             <FField name="finish" kind="title" label={pieceLabel("finish")} placeholder="e.g. natural oil, dark stain" maxLength={120} />
             <FField name="budgetRange" kind="budget" label={pieceLabel("budgetRange")} maxLength={80} />
