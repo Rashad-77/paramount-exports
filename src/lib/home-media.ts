@@ -6,9 +6,9 @@
  *  - poster: a still frame (JPG/WebP) shown while loading and to visitors who prefer reduced motion
  */
 export const HERO_VIDEO: { desktop: string | null; mobile: string | null; poster: string | null } = {
-  // The workshop footage: 1280x720 for computers (3.8 MB), 640x360 for phones (0.9 MB), no sound; both made from the owner's HDR phone clip (the second clip, TSXPE1193).
+  // The workshop footage: 1280x720 for computers (3.8 MB), a portrait crop at full source quality (406x720, 2.7 MB) for phones, no sound; both made from the owner's HDR phone clip (the second clip, TSXPE1193).
   desktop: "/media/hero2-1280.mp4",
-  mobile: "/media/hero2-640.mp4",
+  mobile: "/media/hero3-portrait.mp4",
   poster: "/media/hero2-poster.jpg",
 };
 
