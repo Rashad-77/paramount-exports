@@ -37,6 +37,14 @@ export function forgetAccount() {
   for (const l of listeners) l(null);
 }
 
+/** Asks the server again who is signed in, whatever the last answer was, and tells everything on the page. Used when the page changes (an account deleted, a sign-in finished). */
+export function refreshAccount() {
+  shared = null;
+  void lookup().then((c) => {
+    for (const l of listeners) l(c);
+  });
+}
+
 /** Who is signed in: `undefined` while we are asking, `null` for a visitor, or the customer's own details. */
 export function useAccount(enabled: boolean): AccountMe | null | undefined {
   const [me, setMe] = useState<AccountMe | null | undefined>(undefined);

@@ -4,9 +4,9 @@ import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { CartLink } from "./cart-link";
-import { useAccount } from "./use-account";
+import { refreshAccount, useAccount } from "./use-account";
 
 export interface NavLink {
   label: string;
@@ -27,6 +27,15 @@ export function PublicHeader({ name, links, accountHref }: { name: string; links
   const id = useId();
   // When a customer is signed in and has a picture (uploaded, or from Google), it replaces the plain account icon.
   const me = useAccount(accountHref === "/account");
+  // Whenever the visitor moves to another page, ask again who is signed in: an account deleted (or one just signed in to) shows in the header at once, without a refresh.
+  const firstPage = useRef(true);
+  useEffect(() => {
+    if (firstPage.current) {
+      firstPage.current = false;
+      return;
+    }
+    if (accountHref === "/account") refreshAccount();
+  }, [path, accountHref]);
   const [first = name, ...others] = name.trim().split(/\s+/);
   const rest = others.join(" ");
 
