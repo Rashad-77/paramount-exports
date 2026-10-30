@@ -6516,3 +6516,56 @@ a.acct-row {
 dialog:not([open]) {
   display: none !important;
 }
+
+/* Edit and Delete on a saved address: one box, one font, one baseline. (Edit is a link and Delete is a button from another component, so everything that could make them differ is set here, last.) */
+.acct-address .acct-actions > :not(dialog) {
+  display: flex;
+  align-items: center;
+  height: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+.acct-address .acct-actions :is(a, button):not(dialog *) {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 1.5rem !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-family: inherit !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  transform: none !important;
+  vertical-align: middle !important;
+  color: #1c1916 !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* "Add another address": a plain button; the form then opens in a bordered box. */
+.acct-add-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 1.1rem;
+  border: 1px solid rgb(28 25 22 / 0.3);
+  background: none;
+  font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1c1916;
+  cursor: pointer;
+}
+.acct-add-btn:hover {
+  background: rgb(28 25 22 / 0.05);
+}
+.acct-add-box {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid rgb(28 25 22 / 0.2);
+}

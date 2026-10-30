@@ -3,7 +3,7 @@
 import { Heart, LayoutDashboard, LogOut, Package, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   changePasswordAction,
   claimOrderAction,
@@ -243,7 +243,7 @@ export function QuotationResponse({ reference, amount }: { reference: string; am
 }
 
 /** Add or edit a saved address. */
-export function AddressForm({ address, cancelHref, inline = false }: { address?: { id: string; address: string }; cancelHref?: string; inline?: boolean }) {
+export function AddressForm({ address, cancelHref, onCancel, inline = false }: { address?: { id: string; address: string }; cancelHref?: string; onCancel?: () => void; inline?: boolean }) {
   const lines = address ? splitAddress(address.address) : undefined;
   return (
     <ActionForm key={address?.id ?? "new"} action={saveAddressAction}>
@@ -261,9 +261,29 @@ export function AddressForm({ address, cancelHref, inline = false }: { address?:
             Cancel
           </Link>
         ) : null}
+        {onCancel ? (
+          <button type="button" onClick={onCancel} className="acct-link">
+            Cancel
+          </button>
+        ) : null}
         <SubmitButton size="cta">{inline ? "Save" : "Save address"}</SubmitButton>
       </div>
     </ActionForm>
+  );
+}
+
+/** "Add another address": just a button; pressed, the form opens in a bordered box with Cancel beside Save. */
+export function AddAddress() {
+  const [open, setOpen] = useState(false);
+  return open ? (
+    <div className="acct-add-box">
+      <h3 className="acct-sub-h">Add an address</h3>
+      <AddressForm onCancel={() => setOpen(false)} />
+    </div>
+  ) : (
+    <button type="button" className="acct-add-btn" onClick={() => setOpen(true)}>
+      Add another address
+    </button>
   );
 }
 

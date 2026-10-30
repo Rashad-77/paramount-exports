@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AddressActions, AddressForm, AvatarForm, DeleteForm, PasswordForm, ProfileForm } from "@/components/public/account-forms";
+import { AddAddress, AddressActions, AddressForm, AvatarForm, DeleteForm, PasswordForm, ProfileForm } from "@/components/public/account-forms";
 import { Pill } from "@/components/public/account-ui";
 import { ToastOnMount } from "@/components/ui/toaster";
 import { customerAuthMode, requireCustomer } from "@/lib/auth/customer";
@@ -63,12 +63,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
             </ul>
           ) : null}
           {addresses.length > 0 ? (
-            <details className="acct-add">
-              <summary>Add another address</summary>
-              <div className="acct-add-body">
-                <AddressForm />
-              </div>
-            </details>
+            <AddAddress key={addresses.length} />
           ) : (
             <AddressForm />
           )}
