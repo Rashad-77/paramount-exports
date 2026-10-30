@@ -5458,12 +5458,19 @@ span.cat-pagebtn {
    are spaced evenly, and the social icons sit at the right of the bottom bar, opposite the copyright. */
 @media (min-width: 48rem) {
   .foot .foot-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr);
+    /* A tablet: three across (Information, Collection, Customer support), then Contact us and Visit us under them. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 2rem;
     padding-block: 2.5rem 2rem;
   }
   .foot .foot-grid > .foot-about {
     grid-column: 1 / -1;
+  }
+}
+/* A computer: all five lists in one row under the brand: Information, Collection, Customer support, Contact us and Visit us. */
+@media (min-width: 64rem) {
+  .foot .foot-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1.25fr);
   }
 }
 .foot .foot-list {
