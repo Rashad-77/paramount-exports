@@ -11,7 +11,6 @@ import { addGalleryPhotosAction, removeGalleryPhotoAction } from "./actions";
 export const metadata = { title: "Gallery" };
 
 const HINT: Record<(typeof GALLERY_AREAS)[number], string> = {
-  showroom: "Shown under “Inside the showroom” on the Gallery page.",
   workshop: "Shown under “Inside the workshop” on the Gallery page.",
 };
 
@@ -20,7 +19,7 @@ export default async function GalleryAdminPage() {
   const photos = await listGalleryPhotosAdmin(actor);
   return (
     <>
-      <ModuleHeader href="/app/gallery" description="The Gallery page has two sections: the showroom and the workshop. Add photos to each; they appear on the website straight away." />
+      <ModuleHeader href="/app/gallery" description="The Gallery page shows photos of the workshop. Add photos here; they appear on the website straight away." />
       <div className="min-w-0 space-y-6">
         {GALLERY_AREAS.map((area) => {
           const list = photos[area];

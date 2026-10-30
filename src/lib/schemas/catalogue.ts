@@ -180,10 +180,10 @@ export const productUpdateSchema = productBase.omit({ sku: true }).superRefine((
 });
 export type ProductUpdateInput = z.output<typeof productUpdateSchema>;
 
-/** The gallery has two sections, each a set of photographs: the showroom and the workshop. */
-export const GALLERY_AREAS = ["showroom", "workshop"] as const;
+/** The gallery is one set of photographs: the workshop. (Older showroom photographs may still be stored; they are no longer shown or managed.) */
+export const GALLERY_AREAS = ["workshop"] as const;
 export type GalleryArea = (typeof GALLERY_AREAS)[number];
-export const GALLERY_AREA_LABEL: Record<GalleryArea, string> = { showroom: "Showroom photos", workshop: "Workshop photos" };
+export const GALLERY_AREA_LABEL: Record<GalleryArea, string> = { workshop: "Workshop photos" };
 /** Photographs in one section. */
 export const MAX_GALLERY_PHOTOS = 30;
 export const galleryAddSchema = z.object({

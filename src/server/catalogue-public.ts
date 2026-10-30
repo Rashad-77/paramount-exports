@@ -385,9 +385,9 @@ async function getPublicProductImpl(slugValue: string) {
   };
 }
 
-/** The photographs of the two gallery sections, each in the order the owner arranged them. */
-async function listGalleryPhotosImpl(): Promise<Record<"showroom" | "workshop", Array<{ id: string; alt: string; url: string }>>> {
-  const out = { showroom: [] as Array<{ id: string; alt: string; url: string }>, workshop: [] as Array<{ id: string; alt: string; url: string }> };
+/** The workshop photographs, in the order the owner arranged them. (Showroom photographs, if any are still stored, are not shown.) */
+async function listGalleryPhotosImpl(): Promise<Record<"workshop", Array<{ id: string; alt: string; url: string }>>> {
+  const out = { workshop: [] as Array<{ id: string; alt: string; url: string }> };
   if (!hasDatabase()) return out;
   const rows = await getDb()
     .select({ id: galleryPhotos.id, area: galleryPhotos.area, alt: galleryPhotos.altText, bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
@@ -395,7 +395,7 @@ async function listGalleryPhotosImpl(): Promise<Record<"showroom" | "workshop", 
     .innerJoin(uploadedFiles, eq(uploadedFiles.id, galleryPhotos.fileId))
     .where(eq(uploadedFiles.status, "linked"))
     .orderBy(asc(galleryPhotos.position), asc(galleryPhotos.createdAt));
-  for (const r of rows) if (r.area === "showroom" || r.area === "workshop") out[r.area].push({ id: r.id, alt: r.alt, url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }) });
+  for (const r of rows) if (r.area === "workshop") out.workshop.push({ id: r.id, alt: r.alt, url: publicFileUrl({ bucket: r.bucket, objectKey: r.key }) });
   return out;
 
 }
@@ -443,5 +443,5 @@ export const listPremiumProducts = (...args: Parameters<typeof listPremiumProduc
 export const listPublicCategories = (...args: Parameters<typeof listPublicCategoriesImpl>) => duringBuildSafe("listPublicCategories", [] as Awaited<ReturnType<typeof listPublicCategoriesImpl>>, () => listPublicCategoriesKept(...args));
 // The page and its title both ask for the product: within one visit it is read once.
 export const getPublicProduct = cache((slugValue: string) => duringBuildSafe("getPublicProduct", null as Awaited<ReturnType<typeof getPublicProductImpl>>, () => getPublicProductImpl(slugValue)));
-export const listGalleryPhotos = (...args: Parameters<typeof listGalleryPhotosImpl>) => duringBuildSafe("listGalleryPhotos", { showroom: [], workshop: [] } as Awaited<ReturnType<typeof listGalleryPhotosImpl>>, () => listGalleryPhotosImpl(...args));
+export const listGalleryPhotos = (...args: Parameters<typeof listGalleryPhotosImpl>) => duringBuildSafe("listGalleryPhotos", { workshop: [] } as Awaited<ReturnType<typeof listGalleryPhotosImpl>>, () => listGalleryPhotosImpl(...args));
 export const listPublishedProductSlugs = (...args: Parameters<typeof listPublishedProductSlugsImpl>) => duringBuildSafe("listPublishedProductSlugs", [] as Awaited<ReturnType<typeof listPublishedProductSlugsImpl>>, () => listPublishedProductSlugsImpl(...args));

@@ -44,7 +44,7 @@ export const SI_COMMON: Record<string, string> = {
   "The furniture shown on the website: options, prices, photographs and what is published.": "වෙබ් අඩවියේ පෙන්වන ගෘහ භාණ්ඩ: විකල්ප, මිල ගණන්, ඡායාරූප සහ ප්‍රකාශිත දේ.",
   "The categories and subcategories the furniture is filed under, which visitors use to browse the collection.":
     "ගෘහ භාණ්ඩ ගොනු කර ඇති ප්‍රවර්ග සහ උප ප්‍රවර්ග, අමුත්තන් එකතුව බලන්නේ මේවා හරහාය.",
-  "The photos on the Gallery page, in two sections: the showroom and the workshop.": "ගැලරි පිටුවේ ඡායාරූප, කොටස් දෙකකින්: ප්‍රදර්ශන ශාලාව සහ වැඩපළ.",
+  "The workshop photos on the Gallery page.": "ගැලරි පිටුවේ වැඩපළේ ඡායාරූප.",
   "Google reviews shown on the homepage: add one by hand, hide one, or fetch the latest from Google. Reviews are written on Google only.":
     "මුල් පිටුවේ පෙන්වන Google සමාලෝචන: අතින් එකක් එක් කරන්න, එකක් සඟවන්න, හෝ Google වෙතින් අලුත්ම ඒවා ලබා ගන්න. සමාලෝචන ලියන්නේ Google හි පමණි.",
   "People who have ordered, asked for a quotation or written to you, with their contact details and history.":

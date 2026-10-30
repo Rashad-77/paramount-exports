@@ -59,7 +59,7 @@ export const NAV: NavGroup[] = [
       },
       {
         label: "Gallery",
-        description: "The photos on the Gallery page, in two sections: the showroom and the workshop.",
+        description: "The workshop photos on the Gallery page.",
         pages: [page("Gallery", "/app/gallery", "website:manage")],
       },
       {

@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { GALLERY_VIDEO } from "@/lib/home-media";
 import { listGalleryPhotos } from "@/server/catalogue-public";
 
-export const metadata: Metadata = { title: "Showroom and workshop photos", description: "Photographs of our furniture showroom and of the workshop where every piece of wood furniture is made, from timber to finished piece.", alternates: { canonical: "/gallery" } };
+export const metadata: Metadata = { title: "Workshop photos", description: "Photographs of the workshop where every piece of our wood furniture is made, from timber to finished piece.", alternates: { canonical: "/gallery" } };
 export const revalidate = 300;
 
 export default async function GalleryPage() {
@@ -23,14 +23,13 @@ export default async function GalleryPage() {
             <h1 id="gallery-title" className="mt-4">
               Gallery
             </h1>
-            <p className="mt-5 max-w-lg fl-e leading-relaxed text-white/90">Our showroom and our workshop.</p>
+            <p className="mt-5 max-w-lg fl-e leading-relaxed text-white/90">The workshop where every piece is made.</p>
           </div>
         </div>
       </section>
       <div id="gallery">
         <GallerySections
           sections={[
-            { id: "showroom-title", anchor: "showroom", eyebrow: "The showroom", title: "Inside the showroom.", label: "Showroom photograph", photos: photos.showroom },
             { id: "workshop-title", anchor: "workshop", eyebrow: "The workshop", title: "Inside the workshop.", label: "Workshop photograph", photos: photos.workshop },
           ]}
         />

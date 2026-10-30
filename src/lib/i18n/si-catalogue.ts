@@ -151,7 +151,7 @@ export const SI_CATALOGUE: Record<string, string> = {
   "Remove this photo?": "මෙම ඡායාරූපය ඉවත් කරන්නද?",
   "It is removed from the website and deleted from storage.": "එය වෙබ් අඩවියෙන් ඉවත් කර ගබඩාවෙන් මකා දමයි.",
   "No photos yet. Until you add some, the website shows empty frames here.": "තවමත් ඡායාරූප නැත. ඔබ ඒවා එක් කරන තෙක් වෙබ් අඩවිය මෙහි හිස් රාමු පෙන්වයි.",
-  "The Gallery page has two sections: the showroom and the workshop. Add photos to each; they appear on the website straight away.": "ගැලරි පිටුවේ කොටස් දෙකක් ඇත: ප්‍රදර්ශන ශාලාව සහ වැඩපළ. එක් එක් කොටසට ඡායාරූප එක් කරන්න; ඒවා වහාම වෙබ් අඩවියේ පෙනේ.",
+  "The Gallery page shows photos of the workshop. Add photos here; they appear on the website straight away.": "ගැලරි පිටුවේ වැඩපළේ ඡායාරූප පෙන්වයි. මෙහි ඡායාරූප එක් කරන්න; ඒවා වහාම වෙබ් අඩවියේ පෙනේ.",
   "This section is full. Remove a photo to add another.": "මෙම කොටස පිරී ඇත. තවත් එකක් එක් කිරීමට ඡායාරූපයක් ඉවත් කරන්න.",
 
   // Reviews

@@ -158,16 +158,16 @@ describe.skipIf(!hasTestDb)("catalogue (real Postgres)", () => {
     await expect(uploadTestFile("catalogue", JPEG, "image/jpeg", { actor: outsider })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
-  it("keeps showroom and workshop photos apart, in the order they were added, at most 30 to a section", async () => {
+  it("keeps the workshop photos in the order they were added, at most 30 of them", async () => {
     const one = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
     const two = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
     const three = await uploadTestFile("gallery", JPEG, "image/jpeg", { actor: manager });
-    await addGalleryPhotos(manager, "showroom", [one, two]);
+    await addGalleryPhotos(manager, "workshop", [one, two]);
     await addGalleryPhotos(manager, "workshop", [three]);
-    await expect(addGalleryPhotos(manager, "showroom", [])).rejects.toMatchObject({ code: "VALIDATION" });
+    await expect(addGalleryPhotos(manager, "workshop", [])).rejects.toMatchObject({ code: "VALIDATION" });
     const list = await listGalleryPhotos();
-    expect([list.showroom.length, list.workshop.length]).toEqual([2, 1]);
-    expect(list.showroom[0]!.alt).toMatch(/showroom/i);
+    expect(list.workshop.length).toBe(3);
+    expect(list.workshop[0]!.alt).toMatch(/workshop/i);
   });
 
   it("paginates the public list", async () => {

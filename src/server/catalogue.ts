@@ -671,7 +671,7 @@ export async function addGalleryPhotos(actor: Actor, area: GalleryArea, fileIds:
       .where(eq(galleryPhotos.area, area));
     if (n + verified.length > MAX_GALLERY_PHOTOS) throw validation(`A section can hold up to ${MAX_GALLERY_PHOTOS} photos.`, { fileIds: [`A section can hold up to ${MAX_GALLERY_PHOTOS} photos.`] });
     let pos = m + 1;
-    const alt = area === "showroom" ? "Photograph of our showroom" : "Photograph of our workshop";
+    const alt = "Photograph of our workshop";
     await linkUploads(tx, verified, { type: "gallery", id: area });
     await tx.insert(galleryPhotos).values(verified.map((f) => ({ area, fileId: f.id, altText: alt, position: pos++ })));
     await recordAudit(tx, actor, { action: "gallery.photos_added", entityType: "gallery", entityId: area, after: { count: verified.length } });

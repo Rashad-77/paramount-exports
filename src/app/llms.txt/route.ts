@@ -37,7 +37,7 @@ export async function GET() {
     `- [Custom furniture](${site}/custom): furniture made to measurements, with a quotation before any work starts`,
     `- [About us](${site}/about): who we are and how a piece is made, from timber selection to finishing`,
     `- [Support](${site}/help): how ordering, delivery and payment work (payment is made to us directly, never online)`,
-    `- [Gallery](${site}/gallery): photographs of the showroom and workshop`,
+    `- [Gallery](${site}/gallery): photographs of the workshop where every piece is made`,
     `- [Contact](${site}/contact): address, opening hours, map and enquiry form`,
     "",
   ];

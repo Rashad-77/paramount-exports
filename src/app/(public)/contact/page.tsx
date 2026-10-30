@@ -52,8 +52,8 @@ function Channel({ icon: Icon, title, value, href, cta, external = false }: { ic
 
 export default async function ContactPage() {
   const [b, photos] = await Promise.all([getBusinessSettings(), listGalleryPhotos()]);
-  // The first four photographs of the showroom in the gallery.
-  const showroom = photos.showroom.slice(0, 4);
+  // The first four photographs of the workshop in the gallery.
+  const workshop = photos.workshop.slice(0, 4);
   const mapped = Boolean(b.address && b.mapUrl);
   const embed = mapEmbedUrl(b.mapUrl);
   const channels = [
@@ -142,9 +142,9 @@ export default async function ContactPage() {
       <section aria-labelledby="inside-title" className="border-t border-border bg-white section-y">
         <div className="container-page">
           <Reveal variant="fade">
-            <p className="eyebrow">The showroom</p>
+            <p className="eyebrow">The workshop</p>
             <h2 id="inside-title" className="font-display mt-3 text-headline text-brand">
-              Come and see it.
+              Come and see our workshop.
             </h2>
             {b.address ? (
               <p className="mt-5 flex max-w-md items-start gap-2.5 text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text">
@@ -156,11 +156,11 @@ export default async function ContactPage() {
         </div>
         <div className="mt-8 grid grid-cols-2 gap-px bg-white md:grid-cols-4">
           {[0, 1, 2, 3].map((i) => {
-            const p = showroom[i];
+            const p = workshop[i];
             return (
               <Reveal key={p?.id ?? `empty-${i}`} variant="wipe" delay={i * 120}>
                 <div className="relative aspect-[4/3]">
-                  {p ? <SiteImage src={p.url} alt={p.alt} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" /> : <ImagePlaceholder label="Showroom photograph" className="size-full" compact />}
+                  {p ? <SiteImage src={p.url} alt={p.alt} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" /> : <ImagePlaceholder label="Workshop photograph" className="size-full" compact />}
                 </div>
               </Reveal>
             );

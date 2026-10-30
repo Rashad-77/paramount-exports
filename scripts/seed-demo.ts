@@ -95,8 +95,7 @@ async function main() {
   }
 
   if (withImages) {
-    await addGalleryPhotos(owner, "showroom", [await upload("gallery", 800, 600), await upload("gallery", 800, 600)]);
-    await addGalleryPhotos(owner, "workshop", [await upload("gallery", 800, 600)]);
+    await addGalleryPhotos(owner, "workshop", [await upload("gallery", 800, 600), await upload("gallery", 800, 600), await upload("gallery", 800, 600)]);
   }
 
   // Messages from the website
