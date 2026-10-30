@@ -45,7 +45,7 @@ describe("structured data", () => {
       email: "paramountkapila@yahoo.com",
       description: "Solid wood furniture",
       geo: { "@type": "GeoCoordinates", latitude: 6.7602757, longitude: 80.3677279 },
-      sameAs: ["https://facebook.com/paramount.export", "https://www.tiktok.com/@paramountexportindustrie"],
+      sameAs: ["https://facebook.com/paramount.export", "https://www.tiktok.com/@paramountexportindustrie", DEFAULT_BUSINESS.mapUrl],
     });
     const bare = localBusinessLd({ ...DEFAULT_BUSINESS, phone: null, phoneAlt: null, email: null, address: null, mapUrl: null, openingHours: null, facebook: null, tiktok: null }, "https://example.lk");
     expect(bare).not.toHaveProperty("telephone");

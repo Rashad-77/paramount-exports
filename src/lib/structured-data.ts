@@ -68,7 +68,8 @@ export function localBusinessLd(b: BusinessSettings, site: string, description?:
   const hours = parseHours(b.openingHours);
   const pin = pinOf(b.mapUrl);
   const address = parseAddress(b.address);
-  const sameAs = [b.facebook, b.tiktok].filter((u): u is string => Boolean(u));
+  // The social pages and the Google Maps listing: the same business, found in the places people look for it.
+  const sameAs = [b.facebook, b.tiktok, b.mapUrl].filter((u): u is string => Boolean(u));
   return {
     "@context": "https://schema.org",
     "@type": "FurnitureStore",
