@@ -7,7 +7,7 @@ import { customerAuthMode, requireCustomer } from "@/lib/auth/customer";
 import { one, type SP } from "@/lib/list-params";
 import { addressRows } from "@/lib/address-lines";
 import { listAddresses } from "@/server/accounts";
-import { avatarsFor } from "@/server/avatars";
+import { avatarsFor, hasUploadedAvatar } from "@/server/avatars";
 
 export const metadata: Metadata = { title: "Profile Details" };
 
@@ -17,6 +17,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
   const sp = await searchParams;
   const addresses = await listAddresses(customer.id);
   const avatar = (await avatarsFor([customer.id])).get(customer.id) ?? null;
+  const ownPicture = await hasUploadedAvatar(customer.id);
   const editId = one(sp.edit);
   const editing = editId ? addresses.find((a) => a.id === editId) : undefined;
   const notice = one(sp.notice);
@@ -34,7 +35,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
 
         <div className="acct-part">
           <h2 className="acct-part-h">Profile picture</h2>
-          <AvatarForm current={avatar} />
+          <AvatarForm current={avatar} removable={ownPicture} />
         </div>
 
         <div className="acct-part" id="address-form">

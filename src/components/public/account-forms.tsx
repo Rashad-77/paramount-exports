@@ -116,7 +116,7 @@ export function ProfileForm({ fullName, email, phone }: { fullName: string; emai
 }
 
 /** The customer's profile picture: shown beside their name on the reviews they write. */
-export function AvatarForm({ current }: { current: string | null }) {
+export function AvatarForm({ current, removable }: { current: string | null; /** The customer uploaded this picture themselves (a picture from Google is shown but cannot be removed here). */ removable: boolean }) {
   /** How many files are chosen. Save and Cancel show only while there is one; Remove shows only when there is a picture and nothing new is chosen. */
   const [chosen, setChosen] = useState(0);
   /** Cancel starts the chooser again, which empties it. */
@@ -143,7 +143,7 @@ export function AvatarForm({ current }: { current: string | null }) {
             </div>
           ) : null}
         </ActionForm>
-        {current && chosen === 0 ? (
+        {removable && chosen === 0 ? (
           <ActionForm action={removeAvatarAction}>
             <div className="flex justify-end">
               <SubmitButton size="cta" variant="secondary" className="acct-act-danger">

@@ -49,6 +49,16 @@ export async function removeAvatar(accountId: string): Promise<void> {
   await dropOld(accountId);
 }
 
+/** Whether this customer has uploaded a picture of their own (the one Google gave them does not count: there is nothing of theirs to remove). */
+export async function hasUploadedAvatar(accountId: string): Promise<boolean> {
+  const [row] = await getDb()
+    .select({ id: uploadedFiles.id })
+    .from(uploadedFiles)
+    .where(and(eq(uploadedFiles.entityType, ENTITY), eq(uploadedFiles.status, "linked"), eq(uploadedFiles.entityId, accountId)))
+    .limit(1);
+  return Boolean(row);
+}
+
 /** The profile pictures of these accounts (those without one are left out). */
 export async function avatarsFor(
   accountIds: string[],
