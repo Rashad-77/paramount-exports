@@ -391,8 +391,7 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
   const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
   const [rows, setRows] = useState<ValueRow[]>(() => alpha(uniqueValues([...selected, ...suggestions])).map((v) => ({ orig: v, name: v, on: selected.some((x) => same(x, v)), was: selected.some((x) => same(x, v)), removed: false })));
   const [asking, setAsking] = useState(false);
-  /** Delete mode: a tick box appears at the end of each row, and the one Delete button above the list removes the ticked values. */
-  const [deleting, setDeleting] = useState(false);
+  /** Every row has a tick box, and the one Delete button above the list removes the ticked values. */
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig) || r.on !== r.was);
   const patchRow = (orig: string, p: Partial<ValueRow>) => setRows((cur) => cur.map((r) => (r.orig === orig ? { ...r, ...p } : r)));
@@ -420,17 +419,10 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
           <>
             {rows.some((r) => !r.removed) ? (
               <DeleteControls
-                deleting={deleting}
                 count={picked.size}
-                onStart={() => setDeleting(true)}
-                onCancel={() => {
-                  setDeleting(false);
-                  setPicked(new Set());
-                }}
                 onDelete={() => {
                   setRows((cur) => cur.map((r) => (picked.has(r.orig) ? { ...r, removed: true } : r)));
                   setPicked(new Set());
-                  setDeleting(false);
                 }}
               />
             ) : null}
@@ -448,24 +440,22 @@ function ValuesDialogBody({ onClose, title, selected, suggestions, onRename, onD
             .filter((r) => !r.removed)
             .map((r) => (
               <li key={r.orig} className="flex items-center gap-2">
-                {/* The tick box is only for choosing what to delete, so it shows only after Delete is pressed (its room is kept, so the names do not shift). */}
+                {/* The tick box chooses what Delete removes. */}
                 <span className="inline-flex size-6 shrink-0 items-center justify-center">
-                  {deleting ? (
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${r.orig} to delete`}
-                      checked={picked.has(r.orig)}
-                      onChange={(e) =>
-                        setPicked((cur) => {
-                          const next = new Set(cur);
-                          if (e.target.checked) next.add(r.orig);
-                          else next.delete(r.orig);
-                          return next;
-                        })
-                      }
-                      className="size-5 accent-[var(--color-danger)]"
-                    />
-                  ) : null}
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${r.orig} to delete`}
+                    checked={picked.has(r.orig)}
+                    onChange={(e) =>
+                      setPicked((cur) => {
+                        const next = new Set(cur);
+                        if (e.target.checked) next.add(r.orig);
+                        else next.delete(r.orig);
+                        return next;
+                      })
+                    }
+                    className="size-5 accent-[var(--color-danger)]"
+                  />
                 </span>
                 <input
                   aria-label={`Name of ${r.orig}`}
@@ -719,20 +709,11 @@ function AddSpecification({
   );
 }
 
-/** The red Delete button in the top right of an edit window, left of Save. Pressed, tick boxes appear on the rows and it becomes Cancel and "Delete (n)". */
-function DeleteControls({ deleting, count, onStart, onCancel, onDelete }: { deleting: boolean; count: number; onStart: () => void; onCancel: () => void; onDelete: () => void }) {
-  return deleting ? (
-    <>
-      <Button type="button" size="md" variant="secondary" onClick={onCancel}>
-        Cancel
-      </Button>
-      <Button type="button" size="md" variant="danger" disabled={count === 0} onClick={onDelete}>
-        Delete{count > 0 ? ` (${count})` : ""}
-      </Button>
-    </>
-  ) : (
-    <Button type="button" size="md" variant="danger" onClick={onStart}>
-      Delete
+/** The red Delete button in the top right of an edit window, left of Save. Every row has a tick box; the button is pale until something is ticked, then it shows "Delete (n)". */
+function DeleteControls({ count, onDelete }: { count: number; onDelete: () => void }) {
+  return (
+    <Button type="button" size="md" variant="danger" disabled={count === 0} onClick={onDelete}>
+      Delete{count > 0 ? ` (${count})` : ""}
     </Button>
   );
 }
@@ -741,8 +722,7 @@ function DeleteControls({ deleting, count, onStart, onCancel, onDelete }: { dele
 function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCatalogItem[]; onRename: (key: string, label: string) => void; onDelete: (key: string) => void; onClose: () => void }) {
   const [rows, setRows] = useState(() => types.map((t) => ({ key: t.key, orig: t.label, name: t.label, removed: false })));
   const [asking, setAsking] = useState(false);
-  /** Delete mode, as in the values window: tick boxes at the end of each row and one Delete button above the list. */
-  const [deleting, setDeleting] = useState(false);
+  /** As in the values window: a tick box on each row and one Delete button above the list. */
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const dirty = rows.some((r) => r.removed || (r.name.trim() !== "" && r.name.trim() !== r.orig));
   const patchRow = (key: string, p: Partial<(typeof rows)[number]>) => setRows((cur) => cur.map((r) => (r.key === key ? { ...r, ...p } : r)));
@@ -764,17 +744,10 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
           <>
             {shown.length > 0 ? (
               <DeleteControls
-                deleting={deleting}
                 count={picked.size}
-                onStart={() => setDeleting(true)}
-                onCancel={() => {
-                  setDeleting(false);
-                  setPicked(new Set());
-                }}
                 onDelete={() => {
                   setRows((cur) => cur.map((r) => (picked.has(r.key) ? { ...r, removed: true } : r)));
                   setPicked(new Set());
-                  setDeleting(false);
                 }}
               />
             ) : null}
@@ -801,22 +774,20 @@ function OwnTypesDialog({ types, onRename, onDelete, onClose }: { types: SpecCat
                 onChange={(e) => patchRow(r.key, { name: e.target.value })}
               />
               <span className="inline-flex size-9 shrink-0 items-center justify-center">
-                {deleting ? (
-                  <input
-                    type="checkbox"
-                    aria-label={`Select ${r.orig} to delete`}
-                    checked={picked.has(r.key)}
-                    onChange={(e) =>
-                      setPicked((cur) => {
-                        const next = new Set(cur);
-                        if (e.target.checked) next.add(r.key);
-                        else next.delete(r.key);
-                        return next;
-                      })
-                    }
-                    className="size-5 accent-[var(--color-danger)]"
-                  />
-                ) : null}
+                <input
+                  type="checkbox"
+                  aria-label={`Select ${r.orig} to delete`}
+                  checked={picked.has(r.key)}
+                  onChange={(e) =>
+                    setPicked((cur) => {
+                      const next = new Set(cur);
+                      if (e.target.checked) next.add(r.key);
+                      else next.delete(r.key);
+                      return next;
+                    })
+                  }
+                  className="size-5 accent-[var(--color-danger)]"
+                />
               </span>
             </li>
           ))}
