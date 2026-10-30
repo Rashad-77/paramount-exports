@@ -10,6 +10,8 @@ export const IMAGE_SMALL_SIZES = [96, 256, 384] as const;
  * 1280 on phones), the collection cards (640) and the thumbnail row (96, or 256 on a sharp screen).
  */
 export const WARM_WIDTHS = [640, 1280, 960, 256, 96] as const;
+/** The full-width category bands on the home page: a phone asks for about 1280, a computer for 1920 (a small window for 640). */
+export const BANNER_WIDTHS = [1280, 1920, 640] as const;
 
 /**
  * The share of `items` to handle on a given day when only `perRun` can be handled at a time: the same share all day, the next share
@@ -22,7 +24,7 @@ export function pickWindow<T>(items: T[], dayIndex: number, perRun: number): T[]
 }
 
 /** The addresses that make Next.js prepare each photograph at each warm width, as a browser would ask for them. */
-export function warmTargets(siteUrl: string, photoUrls: string[]): string[] {
+export function warmTargets(siteUrl: string, photoUrls: string[], widths: readonly number[] = WARM_WIDTHS): string[] {
   const origin = siteUrl.replace(/\/+$/, "");
-  return photoUrls.flatMap((u) => WARM_WIDTHS.map((w) => `${origin}/_next/image?url=${encodeURIComponent(u)}&w=${w}&q=75`));
+  return photoUrls.flatMap((u) => widths.map((w) => `${origin}/_next/image?url=${encodeURIComponent(u)}&w=${w}&q=75`));
 }

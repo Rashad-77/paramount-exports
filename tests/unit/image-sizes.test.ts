@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import nextConfig from "../../next.config";
-import { IMAGE_DEVICE_SIZES, IMAGE_SMALL_SIZES, WARM_WIDTHS, pickWindow, warmTargets } from "@/lib/image-sizes";
+import { BANNER_WIDTHS, IMAGE_DEVICE_SIZES, IMAGE_SMALL_SIZES, WARM_WIDTHS, pickWindow, warmTargets } from "@/lib/image-sizes";
 
 describe("image sizes", () => {
   it("match the sizes in next.config.ts", () => {
@@ -40,6 +40,12 @@ describe("warmTargets", () => {
     const out = warmTargets("https://example.lk/", [photo]);
     expect(out).toHaveLength(WARM_WIDTHS.length);
     expect(out[0]).toBe(`https://example.lk/_next/image?url=${encodeURIComponent(photo)}&w=${WARM_WIDTHS[0]}&q=75`);
+  });
+
+  it("uses the widths it is given, and every one of them is a width next/image will really serve", () => {
+    expect(warmTargets("https://example.lk", ["https://x.co/a.jpg"], BANNER_WIDTHS)).toHaveLength(BANNER_WIDTHS.length);
+    const served: readonly number[] = [...IMAGE_DEVICE_SIZES, ...IMAGE_SMALL_SIZES];
+    for (const w of [...WARM_WIDTHS, ...BANNER_WIDTHS]) expect(served).toContain(w);
   });
 
   it("does nothing for no photographs", () => {

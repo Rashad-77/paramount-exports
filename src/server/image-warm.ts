@@ -2,9 +2,9 @@ import "server-only";
 import { and, asc, eq, inArray, isNull, type SQL } from "drizzle-orm";
 import { after } from "next/server";
 import { getDb } from "@/lib/db/client";
-import { productImages, products, uploadedFiles } from "@/lib/db/schema";
+import { productCategories, productImages, products, uploadedFiles } from "@/lib/db/schema";
 import { publicEnv } from "@/lib/env";
-import { pickWindow, warmTargets } from "@/lib/image-sizes";
+import { BANNER_WIDTHS, pickWindow, warmTargets } from "@/lib/image-sizes";
 import { publicFileUrl } from "./files";
 
 /** A bulk publish can touch hundreds of products: prepare the first photographs of the first products and leave the rest to their first visitors. */
@@ -31,6 +31,28 @@ async function photoUrls(extra: SQL | undefined, limit?: number): Promise<string
   return rows.map((r) => publicFileUrl({ bucket: r.bucket, objectKey: r.key }));
 }
 
+/** Public addresses of the pictures behind the category bands on the home page. */
+async function bannerUrls(): Promise<string[]> {
+  const rows = await getDb()
+    .select({ bucket: uploadedFiles.bucket, key: uploadedFiles.objectKey })
+    .from(productCategories)
+    .innerJoin(uploadedFiles, eq(uploadedFiles.id, productCategories.bannerFileId))
+    .where(and(isNull(productCategories.archivedAt), eq(productCategories.isActive, true), eq(uploadedFiles.status, "linked")));
+  return rows.map((r) => publicFileUrl({ bucket: r.bucket, objectKey: r.key }));
+}
+
+/** The pages that show these products: the home page, the collection, each product's category page and each product page. */
+async function pagePaths(productIds: string[]): Promise<string[]> {
+  const rows = await getDb()
+    .select({ slug: products.slug, category: productCategories.slug })
+    .from(products)
+    .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
+    .where(and(inArray(products.id, productIds), eq(products.isPublished, true), isNull(products.archivedAt)))
+    .limit(MAX_PHOTOS);
+  const categories = [...new Set(rows.map((r) => r.category))];
+  return ["/", "/products", ...categories.map((c) => `/collections/${encodeURIComponent(c)}`), ...rows.map((r) => `/products/${r.slug}`)];
+}
+
 /** Requests each address a few at a time until they are done or `deadline` passes. Returns how many were answered and how many were not. */
 async function requestAll(targets: string[], deadline: number): Promise<{ ok: number; failed: number }> {
   const queue = [...targets];
@@ -55,6 +77,9 @@ async function requestAll(targets: string[], deadline: number): Promise<{ ok: nu
 async function warm(productIds: string[]): Promise<void> {
   const site = publicEnv().NEXT_PUBLIC_SITE_URL;
   if (onThisComputer(site)) return;
+  // The pages first: asking for a page that has just been refreshed rebuilds it now, so the first visitor is served a stored copy.
+  const origin = site.replace(/\/+$/, "");
+  await requestAll((await pagePaths(productIds)).map((p) => `${origin}${p}`), Date.now() + 20_000);
   const { failed } = await requestAll(warmTargets(site, await photoUrls(inArray(productImages.productId, productIds), MAX_PHOTOS)), Date.now() + 45_000);
   if (failed > 0) console.warn(`[image-warm] ${failed} photo sizes could not be prepared ahead of time; they will be made on first visit.`);
 }
@@ -75,6 +100,27 @@ export function warmProductPhotos(productIds: string[]): void {
 }
 
 /**
+ * After a category (and its home page picture) is saved, prepares the pictures behind the home page bands at the sizes phones and computers ask for.
+ * Runs after the response is sent; never affects the save. Production only.
+ */
+export function warmCategoryBanners(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  const run = async () => {
+    const site = publicEnv().NEXT_PUBLIC_SITE_URL;
+    if (onThisComputer(site)) return;
+    const origin = site.replace(/\/+$/, "");
+    await requestAll([`${origin}/`], Date.now() + 15_000);
+    await requestAll(warmTargets(site, await bannerUrls(), BANNER_WIDTHS), Date.now() + 40_000);
+  };
+  const guarded = () => run().catch((e) => console.warn("[image-warm] banners skipped:", e instanceof Error ? e.message : "unknown error"));
+  try {
+    after(guarded);
+  } catch {
+    void guarded();
+  }
+}
+
+/**
  * The daily job: asks for a rotating share of all published photographs at the customer sizes. A copy that is still stored answers at once;
  * one the network has thrown away is made now, while nobody is waiting. Returns how many sizes were answered.
  */
@@ -82,7 +128,8 @@ export async function refreshPublishedPhotos(): Promise<number> {
   const site = publicEnv().NEXT_PUBLIC_SITE_URL;
   if (onThisComputer(site)) return 0;
   const today = pickWindow(await photoUrls(undefined), Math.floor(Date.now() / 86_400_000), PHOTOS_PER_DAY);
-  const { ok, failed } = await requestAll(warmTargets(site, today), Date.now() + DAILY_BUDGET_MS);
+  const banners = warmTargets(site, await bannerUrls(), BANNER_WIDTHS);
+  const { ok, failed } = await requestAll([...warmTargets(site, today), ...banners], Date.now() + DAILY_BUDGET_MS);
   if (failed > 0) console.warn(`[image-warm] daily refresh: ${failed} photo sizes did not answer.`);
   return ok;
 }

@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { clearCatalogueCache } from "@/server/catalogue-cache";
+import { warmCategoryBanners } from "@/server/image-warm";
 import { categoryCreateSchema, categorySchema } from "@/lib/schemas/catalogue";
 import { validation } from "@/lib/errors";
 import { reqUuid } from "@/lib/validation";
@@ -24,6 +25,8 @@ const refresh = () => {
   revalidatePath("/");
   revalidatePath("/premium");
   revalidatePath("/products/[slug]", "page");
+  // Rebuild the home page and prepare the band pictures now, so the first visitor after a save is not the one who waits.
+  warmCategoryBanners();
 };
 
 export async function createCategoryAction(
