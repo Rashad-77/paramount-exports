@@ -88,6 +88,7 @@ export default async function CollectionCategoryPage({ params, searchParams }: P
       <div className="bg-white pt-8 pb-16">
         <Breadcrumbs trail={trail} className="container-page mb-6" />
         <CatalogueBrowser
+          key={cat.slug}
           wishlist={accounts.enabled && customerAuthMode() !== "off"}
           categories={toGroups(categories)}
           materials={materials}

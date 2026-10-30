@@ -132,6 +132,11 @@ export function CatalogueBrowser({
   }, [f]);
 
   const set = useCallback((patch: Partial<CatalogueFilters>) => setF((cur) => ({ ...cur, ...patch, page: patch.page ?? 1 })), []);
+  /**
+   * With the timber category (or one of its timbers) chosen, the wood or material list is only the timbers under it (Mahogany, Acacia and so
+   * on), and picking one opens that timber's own page. For every other category the list is the materials the products are made of.
+   */
+  const timber = categories.find((g) => /timber/i.test(g.name) && (g.slug === f.category || g.children.some((k) => k.slug === f.category)));
   const filtered = Boolean(f.q || f.category || f.material || typed);
   const clear = () => {
     setTyped("");
@@ -146,7 +151,17 @@ export function CatalogueBrowser({
           <form method="get" action="/products" className="cat-bar" onSubmit={(e) => e.preventDefault()} role="search" aria-label="Filter the collection">
             <GlassCascade label="Category" allLabel="All categories" groups={categories} value={f.category} onChange={(category) => router.push(hrefFor({ ...f, category, page: 1 }))} />
             <div className="cat-right">
-              <GlassSelect scroll label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
+              {timber ? (
+                <GlassSelect
+                  scroll
+                  label="Wood or material"
+                  value={f.category === timber.slug ? "" : f.category}
+                  onChange={(slug) => router.push(hrefFor({ ...f, category: slug || timber.slug, material: "", page: 1 }))}
+                  options={[{ value: "", label: "All timbers" }, ...timber.children.map((k) => ({ value: k.slug, label: k.name }))]}
+                />
+              ) : (
+                <GlassSelect scroll label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
+              )}
               <GlassSelect
                 label="Sort by"
                 value={f.sort}
