@@ -434,13 +434,24 @@ export async function listCustomers(actor: Actor, f: { q?: string; filter?: Cust
       SELECT phone_key, id::text AS id, reference, customer_name AS name, phone, email, created_at, 'order' AS what, (status = 'new') AS open, (account_id IS NOT NULL) AS has_account FROM online_orders
       UNION ALL
       SELECT phone_key, id::text AS id, reference, name, phone, email, created_at, CASE WHEN kind = 'custom' THEN 'quotation' ELSE 'enquiry' END, NOT is_handled, (account_id IS NOT NULL) FROM messages
+      UNION ALL
+      -- Everyone with a website account (Google sign-ins included) is a customer from the day they sign up. An account joins the person's orders by phone, or
+      -- through the orders and messages made while signed in; one with neither stands alone, under a key made from its id.
+      SELECT coalesce(
+               a.phone_key,
+               (SELECT o.phone_key FROM online_orders o WHERE o.account_id = a.id LIMIT 1),
+               (SELECT m.phone_key FROM messages m WHERE m.account_id = a.id LIMIT 1),
+               'acct-' || a.id::text
+             ) AS phone_key,
+             a.id::text AS id, 'ACCOUNT' AS reference, a.full_name AS name, coalesce(a.phone, '') AS phone, a.email, a.created_at, 'account' AS what, false AS open, true AS has_account
+        FROM customer_accounts a
     )`;
   const item = sql`json_build_object('id', id, 'reference', reference, 'at', created_at, 'open', open)`;
   const rows = (await db.execute(sql`
     ${source}
     SELECT phone_key AS "phoneKey",
            (array_agg(name ORDER BY created_at DESC))[1] AS name,
-           (array_agg(phone ORDER BY created_at DESC))[1] AS phone,
+           coalesce((array_agg(phone ORDER BY created_at DESC) FILTER (WHERE phone <> ''))[1], '') AS phone,
            (array_agg(email ORDER BY created_at DESC) FILTER (WHERE email IS NOT NULL))[1] AS email,
            coalesce(json_agg(${item} ORDER BY created_at DESC) FILTER (WHERE what = 'order'), '[]'::json) AS "orderRefs",
            coalesce(json_agg(${item} ORDER BY created_at DESC) FILTER (WHERE what = 'quotation'), '[]'::json) AS "quotationRefs",
@@ -491,9 +502,11 @@ export async function deleteCustomers(actor: Actor, keys: string[]): Promise<{ c
     for (const key of unique) {
       const theirOrders = await tx.select({ id: orders.id, reference: orders.reference, name: orders.customerName, accountId: orders.accountId }).from(orders).where(eq(orders.phoneKey, key)).for("update");
       const theirMessages = await tx.select({ id: messages.id, name: messages.name, accountId: messages.accountId }).from(messages).where(eq(messages.phoneKey, key)).for("update");
-      if (theirOrders.length === 0 && theirMessages.length === 0) continue;
-      const accountIds = [...new Set([...theirOrders.map((o) => o.accountId), ...theirMessages.map((m) => m.accountId)].filter((a): a is string => a !== null))];
-      const name = theirOrders[0]?.name ?? theirMessages[0]?.name ?? key;
+      const keyIsId = /^acct-[0-9a-f-]{36}$/i.test(key);
+      const theirAccounts = await tx.select({ id: customerAccounts.id, name: customerAccounts.fullName }).from(customerAccounts).where(keyIsId ? eq(customerAccounts.id, key.slice(5)) : eq(customerAccounts.phoneKey, key));
+      if (theirOrders.length === 0 && theirMessages.length === 0 && theirAccounts.length === 0) continue;
+      const accountIds = [...new Set([...theirOrders.map((o) => o.accountId), ...theirMessages.map((m) => m.accountId), ...theirAccounts.map((a) => a.id)].filter((a): a is string => a !== null))];
+      const name = theirOrders[0]?.name ?? theirMessages[0]?.name ?? theirAccounts[0]?.name ?? key;
       if (theirMessages.length) {
         await tx.delete(messages).where(inArray(messages.id, theirMessages.map((m) => m.id)));
         // With the messages gone, the "several messages from this phone number" limit starts again from zero.
@@ -527,21 +540,24 @@ export async function getCustomer(actor: Actor, key: string) {
       .where(eq(messages.phoneKey, key))
       .orderBy(desc(messages.createdAt)),
   ]);
-  if (list.length === 0 && notes.length === 0) throw notFound("That customer could not be found.");
+  // Website accounts that belong to this key: by phone, or the one account a key like acct-<id> stands for.
+  const isId = /^acct-[0-9a-f-]{36}$/i.test(key);
+  const accts = await db.select().from(customerAccounts).where(isId ? eq(customerAccounts.id, key.slice(5)) : eq(customerAccounts.phoneKey, key));
+  if (list.length === 0 && notes.length === 0 && accts.length === 0) throw notFound("That customer could not be found.");
   // Addresses the customer saved on their website account, and those used on their orders.
-  const accountIds = [...new Set([...list.map((o) => o.accountId), ...notes.map((m) => m.accountId)].filter((a): a is string => a !== null))];
+  const accountIds = [...new Set([...list.map((o) => o.accountId), ...notes.map((m) => m.accountId), ...accts.map((a) => a.id)].filter((a): a is string => a !== null))];
   const saved = accountIds.length
     ? await db.select({ label: customerAddresses.label, address: customerAddresses.address, isDefault: customerAddresses.isDefault }).from(customerAddresses).where(inArray(customerAddresses.accountId, accountIds)).orderBy(desc(customerAddresses.isDefault), asc(customerAddresses.createdAt))
     : [];
   const latest = list[0];
-  const contact = latest ?? notes[0]!;
+  const contact = latest ?? notes[0];
   const spent = sum(list.filter((o) => o.status !== "cancelled").map((o) => o.total));
   return {
     phoneKey: key,
-    name: latest ? latest.customerName : (notes[0]!.name),
-    phone: contact.phone,
-    email: list.find((o) => o.email)?.email ?? notes.find((m) => m.email)?.email ?? null,
-    hasAccount: list.some((o) => o.accountId !== null) || notes.some((m) => m.accountId !== null),
+    name: latest ? latest.customerName : (notes[0]?.name ?? accts[0]!.fullName),
+    phone: contact?.phone ?? accts[0]?.phone ?? "",
+    email: list.find((o) => o.email)?.email ?? notes.find((m) => m.email)?.email ?? accts[0]?.email ?? null,
+    hasAccount: accts.length > 0 || list.some((o) => o.accountId !== null) || notes.some((m) => m.accountId !== null),
     addresses: [...new Set(list.map((o) => o.address).filter((a): a is string => Boolean(a)))].slice(0, 3),
     savedAddresses: saved,
     currency: latest?.currency ?? "LKR",
