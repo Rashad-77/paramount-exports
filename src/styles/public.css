@@ -344,6 +344,20 @@ html:has(.page-body) {
       linear-gradient(90deg, rgb(32 15 7 / 0.72) 0%, rgb(32 15 7 / 0.25) 60%, transparent 100%),
       linear-gradient(180deg, rgb(32 15 7 / 0.2) 0%, rgb(32 15 7 / 0.15) 45%, rgb(32 15 7 / 0.9) 100%);
   }
+  /* Home page: a black gradient from the left, where the words are, fading out to the right so the footage shows. The bottom fade stays. */
+  .vhero.vhero-home::before {
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 0.88) 0%, rgb(0 0 0 / 0.62) 32%, rgb(0 0 0 / 0.2) 66%, transparent 100%),
+      linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.1) 45%, rgb(32 15 7 / 0.9) 100%);
+  }
+  @media (max-width: 47.99rem) {
+    /* On a phone the words span the width, so the black reaches further across. */
+    .vhero.vhero-home::before {
+      background:
+        linear-gradient(90deg, rgb(0 0 0 / 0.82) 0%, rgb(0 0 0 / 0.6) 55%, rgb(0 0 0 / 0.4) 100%),
+        linear-gradient(180deg, rgb(0 0 0 / 0.18) 0%, rgb(0 0 0 / 0.1) 45%, rgb(32 15 7 / 0.9) 100%);
+    }
+  }
   .vhero h1 {
     font-family: var(--font-sans);
     font-size: clamp(1.9rem, calc(1.9rem + (100vw - 375px) * 0.0855), 4rem);

@@ -43,7 +43,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [...(supabaseHost ? [{ protocol: "https" as const, hostname: supabaseHost, pathname: "/storage/v1/object/public/public-media/**" }] : []), { protocol: "https" as const, hostname: "*.googleusercontent.com", pathname: "/**" }],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The videos and stills in /public/media: kept by browsers and the network for a day, and shown while a newer copy is fetched for a week.
+      { source: "/media/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
+    ];
   },
   // The website's own address is the one search engines should list. The old Vercel addresses forward to it (permanently), so there is only one
   // copy of every page. The daily housekeeping job is left alone: Vercel calls it on the old address and does not follow a redirect.

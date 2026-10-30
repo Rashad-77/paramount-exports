@@ -276,7 +276,7 @@ export default async function HomePage() {
     <>
       <JsonLd data={[localBusinessLd(business, publicEnv().NEXT_PUBLIC_SITE_URL, aboutLine(business.name, placeOf(business.address))), websiteLd(business, publicEnv().NEXT_PUBLIC_SITE_URL)]} />
       {/* 1. Hero */}
-      <section aria-labelledby="hero-title" className="vhero on-wood">
+      <section aria-labelledby="hero-title" className="vhero vhero-home on-wood">
         <HeroVideo
           desktop={HERO_VIDEO.desktop}
           mobile={HERO_VIDEO.mobile}

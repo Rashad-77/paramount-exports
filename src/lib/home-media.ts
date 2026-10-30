@@ -6,9 +6,10 @@
  *  - poster: a still frame (JPG/WebP) shown while loading and to visitors who prefer reduced motion
  */
 export const HERO_VIDEO: { desktop: string | null; mobile: string | null; poster: string | null } = {
-  desktop: null,
-  mobile: null,
-  poster: null,
+  // The workshop footage: 1280x720 for computers (3.8 MB), 640x360 for phones (0.9 MB), no sound; both made from the owner's HDR phone clip.
+  desktop: "/media/hero-1280.mp4",
+  mobile: "/media/hero-640.mp4",
+  poster: "/media/hero-poster.jpg",
 };
 
 /** Gallery page hero video. Same rules as above: leave null until the footage is supplied. */
