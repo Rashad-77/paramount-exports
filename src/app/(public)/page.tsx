@@ -377,7 +377,7 @@ export default async function HomePage() {
         <div>
           <ul className="mt-12">
             {rows.map((r, i) => (
-              <Reveal as="li" key={r.key} variant="up" delay={i * 60}>
+              <Reveal as="li" key={r.key} variant="up" delay={Math.min(i, 3) * 60} early>
                 <Link href={r.href} className="prow group">
                   {r.banner ? (
                     <>

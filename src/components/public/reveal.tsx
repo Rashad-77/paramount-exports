@@ -13,6 +13,7 @@ export function Reveal({
   as = "div",
   variant: _variant = "up",
   delay = 0,
+  early = false,
   className,
   children,
 }: {
@@ -20,6 +21,8 @@ export function Reveal({
   variant?: Variant;
   /** Milliseconds, for staggering siblings. */
   delay?: number;
+  /** Show it as soon as it is about a quarter of a screen away from view (for wide bands that should already be there when the visitor reaches them), instead of once part of it is on screen. */
+  early?: boolean;
   className?: string;
   children?: ReactNode;
 }) {
@@ -42,11 +45,11 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+      early ? { threshold: 0, rootMargin: "0px 0px 25% 0px" } : { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [early]);
 
   const style = delay ? ({ "--d": `${delay}ms` } as CSSProperties) : undefined;
   return (
