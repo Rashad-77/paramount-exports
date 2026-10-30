@@ -17,6 +17,7 @@ export function ConfirmSubmit({
   destructive = true,
   variant = "secondary",
   size,
+  className,
 }: {
   children: ReactNode;
   title: string;
@@ -25,13 +26,15 @@ export function ConfirmSubmit({
   destructive?: boolean;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "cta";
+  /** Extra classes on the button itself. */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLSpanElement>(null);
   const { pending } = useFormState();
   return (
     <span ref={anchor}>
-      <Button variant={variant} size={size} onClick={() => setOpen(true)} disabled={pending}>
+      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} disabled={pending}>
         {children}
       </Button>
       <ConfirmDialog

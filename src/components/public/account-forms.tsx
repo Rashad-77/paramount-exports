@@ -257,12 +257,12 @@ export function AddressForm({ address, cancelHref, onCancel, inline = false }: {
       </div>
       <div className={inline ? "acct-actions" : "flex flex-wrap items-center gap-4"}>
         {cancelHref ? (
-          <Link href={cancelHref} className="acct-link">
+          <Link href={cancelHref} className="acct-link uppercase">
             Cancel
           </Link>
         ) : null}
         {onCancel ? (
-          <button type="button" onClick={onCancel} className="acct-link">
+          <button type="button" onClick={onCancel} className="acct-link uppercase">
             Cancel
           </button>
         ) : null}
@@ -281,7 +281,7 @@ export function AddAddress() {
       <AddressForm onCancel={() => setOpen(false)} />
     </div>
   ) : (
-    <button type="button" className="acct-add-btn" onClick={() => setOpen(true)}>
+    <button type="button" className="acct-add-btn uppercase" onClick={() => setOpen(true)}>
       Add another address
     </button>
   );
@@ -305,7 +305,7 @@ export function AddressActions({ id, isDefault, label }: { id: string; isDefault
       )}
       <ActionForm action={deleteAddressAction} className="space-y-0">
         <input type="hidden" name="id" value={id} />
-        <ConfirmSubmit variant="ghost" title="Delete this address?" description={`“${label}” will be removed from your account.`} confirmLabel="Delete address" destructive>
+        <ConfirmSubmit variant="ghost" className="acct-act-danger" title="Delete this address?" description={`“${label}” will be removed from your account.`} confirmLabel="Delete address" destructive>
           Delete
         </ConfirmSubmit>
       </ActionForm>

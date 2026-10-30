@@ -26,7 +26,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
       {notice === "saved" ? <ToastOnMount message="Your address is saved." /> : null}
       {notice === "deleted" ? <ToastOnMount message="The address has been deleted." /> : null}
 
-      <section aria-label="Profile details" className="acct-card acct-stack">
+      <section aria-label="Profile details" className="acct-card acct-stack acct-textbuttons">
         <div className="acct-part">
           <h2 className="acct-part-h">Details</h2>
           <ProfileForm fullName={customer.fullName} email={customer.email} phone={customer.phone} />
@@ -75,7 +75,7 @@ export default async function AccountProfilePage({ searchParams }: { searchParam
               <h2 id="password-title" className="acct-part-h">
                 Change password
               </h2>
-              <Link href="/account/forgot" className="acct-link">
+              <Link href="/account/forgot" className="acct-link uppercase">
                 Forgot your password?
               </Link>
             </div>

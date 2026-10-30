@@ -6569,3 +6569,44 @@ dialog:not([open]) {
   padding: clamp(1.25rem, 3vw, 1.75rem);
   border: 1px solid rgb(28 25 22 / 0.2);
 }
+
+/* Profile page: every button is plain tracked capitals like Edit and Delete, no box. The colour says what it does: the site's brown for Save and Add,
+   red for anything that deletes, dark grey for the rest (Cancel and Forgot your password are a shade lighter). Pop-up windows keep their own buttons. */
+.acct-textbuttons :is(button.btn, a.btn, .acct-link, .acct-add-btn):not(dialog *) {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 1.5rem !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  transform: none !important;
+  color: #1c1916 !important;
+}
+.acct-textbuttons :is(button.btn, a.btn):not(dialog *) {
+  gap: 0.5rem !important;
+}
+.acct-textbuttons.acct-textbuttons :is(.btn-solid, .acct-add-btn):not(dialog *) {
+  color: #331c11 !important;
+  font-weight: 700 !important;
+}
+.acct-textbuttons.acct-textbuttons :is(.bg-danger, .acct-act-danger):not(dialog *) {
+  color: var(--color-danger) !important;
+}
+.acct-textbuttons.acct-textbuttons :is(.acct-link:not(.btn)):not(dialog *) {
+  color: rgb(28 25 22 / 0.7) !important;
+}
+.acct-textbuttons :is(button.btn, a.btn, .acct-link, .acct-add-btn):not(dialog *):hover {
+  text-decoration: underline !important;
+  text-underline-offset: 0.35em;
+}
