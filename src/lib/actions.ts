@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { headers as nextHeaders } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/lib/action-state";
 import { getActor } from "@/lib/auth/session";
@@ -81,7 +81,8 @@ export async function runAction<S extends z.ZodType>(
     return { error: `${GENERIC_ERROR_MESSAGE} (reference ${ref})`, values };
   }
 
-  if (outcome?.redirectTo) redirect(outcome.redirectTo);
+  // The page after a save replaces the form in the history, so Back from it does not return to an empty or stale form.
+  if (outcome?.redirectTo) redirect(outcome.redirectTo, RedirectType.replace);
   return { ok: true, message: outcome?.message, data: outcome?.data };
 }
  

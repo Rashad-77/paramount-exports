@@ -29,7 +29,8 @@ export async function createProductAction(
     const id = await createProduct(actor!, input);
     refresh(id);
     warmProductPhotos([id]);
-    return { redirectTo: `/app/products/${id}` };
+    // Back to the table of products, with the new one in it.
+    return { redirectTo: "/app/products" };
   });
 }
 
