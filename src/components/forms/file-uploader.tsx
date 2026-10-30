@@ -51,7 +51,9 @@ export async function uploadToStorage(picked: File, purpose: string): Promise<st
     // Loaded only when a file is actually uploaded, so pages with an uploader do not ship the Supabase client up front.
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { error } = await supabase.storage.from(s.bucket).uploadToSignedUrl(s.key, s.token!, file, { contentType: file.type });
+    // A website photograph never changes under its address (every upload gets a new one), so browsers and CDNs may keep it for a year. Private files are not cached.
+    const cacheControl = s.bucket === "public-media" ? "31536000" : undefined;
+    const { error } = await supabase.storage.from(s.bucket).uploadToSignedUrl(s.key, s.token!, file, { contentType: file.type, ...(cacheControl ? { cacheControl } : {}) });
     if (error) throw new Error("The upload failed. Please try again.");
   }
   return s.fileId;

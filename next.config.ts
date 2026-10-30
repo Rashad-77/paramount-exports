@@ -45,6 +45,18 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The website's own address is the one search engines should list. The old Vercel addresses forward to it (permanently), so there is only one
+  // copy of every page. The daily housekeeping job is left alone: Vercel calls it on the old address and does not follow a redirect.
+  async redirects() {
+    const site = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!site || /\.vercel\.app/.test(site)) return [];
+    return ["paramount-exports.vercel.app", "paramount-exports-r-builds.vercel.app"].map((host) => ({
+      source: "/:path((?!api/cron).*)",
+      has: [{ type: "host" as const, value: host }],
+      destination: `${site.replace(/\/$/, "")}/:path`,
+      permanent: true,
+    }));
+  },
 };
 
 export default nextConfig;

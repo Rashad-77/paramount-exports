@@ -381,8 +381,8 @@ export default async function HomePage() {
                   {r.banner ? (
                     <>
                       {/* The picture is the lowest layer and the band clips it; the dark wash keeps the white words readable. */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.banner.url} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" style={focusStyle({ x: r.banner.x, y: r.banner.y, z: r.banner.z })} />
+                      {/* Resized and compressed for the screen (the original upload is several times larger than a band needs). */}
+                      <SiteImage src={r.banner.url} alt="" fill sizes="100vw" className="object-cover" style={focusStyle({ x: r.banner.x, y: r.banner.y, z: r.banner.z })} />
                       <span aria-hidden="true" className="prow-shade absolute inset-0" />
                     </>
                   ) : (
