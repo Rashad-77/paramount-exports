@@ -4004,8 +4004,9 @@ a.acct-row {
 }
 @media (min-width: 64rem) {
   .foot .foot-grid {
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.4fr);
-    gap: 2.5rem;
+    /* One row: the logo, then Information, Collection, Customer support, Contact us and Visit us. */
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1.3fr);
+    gap: 2rem;
     padding-block: 3rem 2.25rem;
   }
   .foot .foot-grid > .foot-about {
