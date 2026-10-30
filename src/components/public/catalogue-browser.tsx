@@ -146,7 +146,7 @@ export function CatalogueBrowser({
           <form method="get" action="/products" className="cat-bar" onSubmit={(e) => e.preventDefault()} role="search" aria-label="Filter the collection">
             <GlassCascade label="Category" allLabel="All categories" groups={categories} value={f.category} onChange={(category) => router.push(hrefFor({ ...f, category, page: 1 }))} />
             <div className="cat-right">
-              <GlassSelect label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
+              <GlassSelect scroll label="Wood or material" value={f.material} onChange={(material) => set({ material })} options={[{ value: "", label: "All materials" }, ...materials.map((m) => ({ value: m, label: m }))]} />
               <GlassSelect
                 label="Sort by"
                 value={f.sort}

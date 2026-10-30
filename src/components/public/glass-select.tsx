@@ -35,9 +35,11 @@ export interface GlassSelectProps {
   invalid?: boolean;
   describedBy?: string;
   className?: string;
+  /** A long list: the open list is cropped to about seven rows and scrolls, with a scrollbar you can see. */
+  scroll?: boolean;
 }
 
-export function GlassSelect({ label, value, defaultValue, options, onChange, name, id: idProp, disabled, variant = "bar", invalid, describedBy, className }: GlassSelectProps) {
+export function GlassSelect({ label, value, defaultValue, options, onChange, name, id: idProp, disabled, variant = "bar", invalid, describedBy, className, scroll }: GlassSelectProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const root = useRef<HTMLDivElement>(null);
@@ -77,6 +79,11 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
   }, [open]);
+
+  // In a cropped, scrolling list the option the cursor is on (by keyboard, or the chosen one when the list opens) is kept in view.
+  useEffect(() => {
+    if (open && scroll) document.getElementById(`${id}-${active}`)?.scrollIntoView({ block: "nearest" });
+  }, [open, scroll, active, id]);
 
   const show = () => {
     setActive(selected);
@@ -150,7 +157,7 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
         </span>
       </button>
       {open ? (
-        <ul id={`${id}-list`} role="listbox" aria-label={label} className="gs-panel">
+        <ul id={`${id}-list`} role="listbox" aria-label={label} className={"gs-panel" + (scroll ? " gs-scroll" : "")}>
           {options.map((o, i) => (
             <li
               key={o.value}
