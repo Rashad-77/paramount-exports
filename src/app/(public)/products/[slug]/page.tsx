@@ -91,7 +91,8 @@ export default async function ProductPage({ params }: Props) {
         openLabel={prices.length ? "Ask a question" : "Request quotation"}
       >
         <EnquiryForm
-          kind="product_enquiry"
+          kind={prices.length ? "product_enquiry" : "custom"}
+          quoteFor={prices.length ? undefined : p.name}
           wide
           productId={p.id}
           turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}

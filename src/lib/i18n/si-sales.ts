@@ -99,6 +99,7 @@ export const SI_SALES: Record<string, string> = {
   "Customer enquiry": "ගනුදෙනුකරු විමසීම",
   "Customer request": "ගනුදෙනුකරු ඉල්ලීම",
   "Enquiry about": "විමසීම ගැන",
+  "Asked from the product": "නිෂ්පාදනයෙන් ඉල්ලා ඇත",
   "Enquiry received": "විමසීම ලැබුණි",
   "No preference": "කැමැත්තක් නැත",
   "Request received": "ඉල්ලීම ලැබුණි",

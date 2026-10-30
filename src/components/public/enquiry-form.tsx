@@ -25,6 +25,7 @@ const pieceLabel = (key: (typeof PIECE_FIELDS)[number]["key"]) => PIECE_FIELDS.f
 export function EnquiryForm({
   kind,
   productId,
+  quoteFor,
   variants,
   turnstileSiteKey,
   submitLabel = "Send enquiry",
@@ -32,6 +33,8 @@ export function EnquiryForm({
 }: {
   kind: "general" | "product_enquiry" | "custom";
   productId?: string;
+  /** The product a quotation is asked for (a piece with no price): the form then asks only for the size and amount needed, and the request is kept with the product. */
+  quoteFor?: string;
   variants?: VariantOption[];
   turnstileSiteKey?: string;
   submitLabel?: string;
@@ -57,7 +60,7 @@ export function EnquiryForm({
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="formToken" value={token} />
       {productId ? <input type="hidden" name="productId" value={productId} /> : null}
-      {kind === "custom" ? (
+      {kind === "custom" && !quoteFor ? (
         <Suspense fallback={null}>
           <QuotePrefill />
         </Suspense>
@@ -85,7 +88,15 @@ export function EnquiryForm({
         <input type="hidden" name="variantId" value={variants[0]!.id} />
       ) : null}
 
-      {kind === "custom" ? (
+      {kind === "custom" && quoteFor ? (
+        <>
+          <input type="hidden" name="furnitureType" value={quoteFor} />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FField name="dimensions" kind="dimensions" label="Size and amount you need" placeholder="e.g. 2 × 6 inches, 12 ft long, 20 pieces" maxLength={200} required />
+            <FField name="targetDate" label="Needed by" type="date" min={new Date().toISOString().slice(0, 10)} />
+          </div>
+        </>
+      ) : kind === "custom" ? (
         <fieldset className="space-y-5">
           <legend className="font-display text-lg text-walnut">{PIECE_HEADING}</legend>
           <div className="grid gap-5 sm:grid-cols-2">

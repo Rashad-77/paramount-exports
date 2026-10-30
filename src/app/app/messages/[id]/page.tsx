@@ -119,6 +119,13 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
                   </Field>
                 );
               })}
+              {product ? (
+                <Field label="Asked from the product" wide>
+                  <Link href={`/app/products/${product.id}`} className="font-medium text-walnut underline">
+                    {product.name}
+                  </Link>
+                </Field>
+              ) : null}
               <Field label={STAFF_PHOTOS_LABEL} wide>
                 {files.length > 0 ? (
                   <ul className="space-y-1">

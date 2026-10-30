@@ -124,7 +124,7 @@ export const GUIDE: GuideItem[] = [
     question: "How do I set a price, a discount, or availability?",
     answer: "Enter the price in the product form. Add a discount as an amount or a percentage. Leave the price empty to show Price on request.",
     steps: [
-      "Enter the regular price. Leave it empty for a piece that cannot be priced easily (timber, for example): visitors then see Price on request and a Request quotation button, and their request reaches you in Enquiries.",
+      "Enter the regular price. Leave it empty for a piece that cannot be priced easily (timber, for example): visitors then see Price on request and a Request quotation button, and their request reaches you in Quotations, with the product.",
       "For a sale, choose the discount type (amount off or percentage off) and enter the value. The regular price must be filled in first. A percentage must be from 1 to 99, and an amount must be less than the price.",
       "Choose the availability: Available (enter how many only if you want them counted; leave it blank to just show Available), Made to order, or Not available.",
       "Press Preview to check how it looks, then save.",
