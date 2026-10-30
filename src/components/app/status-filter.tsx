@@ -25,9 +25,9 @@ export const STATUS_GROUPS: Array<{
   {
     label: "Availability",
     items: [
-      { value: "in_stock", label: "In stock" },
+      { value: "in_stock", label: "Available" },
       { value: "made_to_order", label: "Made to order" },
-      { value: "sold", label: "Out of stock" },
+      { value: "sold", label: "Not available" },
     ],
   },
 ];

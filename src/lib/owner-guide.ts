@@ -126,10 +126,10 @@ export const GUIDE: GuideItem[] = [
     steps: [
       "Enter the regular price. Leave it empty for a piece that cannot be priced easily (timber, for example): visitors then see Price on request and a Request quotation button, and their request reaches you in Enquiries.",
       "For a sale, choose the discount type (amount off or percentage off) and enter the value. The regular price must be filled in first. A percentage must be from 1 to 99, and an amount must be less than the price.",
-      "Choose the availability: In stock (enter how many you have), Made to order, or Sold (shown as out of stock).",
+      "Choose the availability: Available (enter how many only if you want them counted; leave it blank to just show Available), Made to order, or Not available.",
       "Press Preview to check how it looks, then save.",
     ],
-    tips: ["Customers see just In stock; when only a few are left they see, for example, Only 2 left, order soon.", "A sold piece shows a disabled Sold out button instead of Add to cart."],
+    tips: ["Customers see just Available. If you enter an amount and only a few are left, they see, for example, Only 2 left, order soon.", "A piece that is not available shows a disabled Not available button instead of Add to cart."],
     keywords: "cost lkr money sale offer discount percent stock quantity out of stock sold price on request availability",
     link: { href: "/app/products", label: "Products" },
   },
@@ -352,7 +352,7 @@ export const GUIDE: GuideItem[] = [
     steps: [
       "Read the red message under the field and fix that field.",
       "A new product needs a name, a category, at least one material and at least one photo.",
-      "In stock needs the number you have. A discount needs the price first.",
+      "The available amount is optional: leave it blank to show just Available. A discount needs the price first.",
       "A premium and featured piece's description can have up to 160 words.",
       "Press Preview again and confirm.",
     ],

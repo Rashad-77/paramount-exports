@@ -100,6 +100,7 @@ export const SI_COMMON: Record<string, string> = {
   None: "කිසිවක් නැත",
   "Not given": "ලබා දී නැත",
   "Not available": "නොමැත",
+  "Available": "ලබා ගත හැක",
   "Not shown": "නොපෙන්වයි",
   "Not paid": "ගෙවා නැත",
   Paid: "ගෙවා ඇත",

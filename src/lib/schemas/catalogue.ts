@@ -12,10 +12,10 @@ export const DISCOUNT_KINDS = ["amount", "percent"] as const;
 /** What staff can choose. The database enum still holds "on_request" from before it was merged into made to order. */
 export const AVAILABILITY = ["in_stock", "made_to_order", "sold"] as const;
 export const AVAILABILITY_LABEL: Record<(typeof AVAILABILITY)[number] | "on_request", string> = {
-  in_stock: "In stock",
+  in_stock: "Available",
   made_to_order: "Made to order",
   on_request: "Made to order",
-  sold: "Out of stock",
+  sold: "Not available",
 };
 
 /** Slug may be left blank; it is then derived from the name. */
@@ -119,7 +119,7 @@ const productBase = z.object({
   /** Money off ("amount") or a percentage off ("percent"), with its value. Both blank: no discount. */
   discountKind: optEnum(DISCOUNT_KINDS, "discount type"),
   discountValue: optMoney("Discount"),
-  /** How many are in stock; needed when the availability is "In stock". */
+  /** How many are available; optional. Left blank, the piece just shows as available and is not counted. */
   stockQuantity: optInt("Available amount", 1000000),
   /** Draft, published or archived. Present only on the staff form, where it takes the place of the older tick boxes below. */
   visibility: optEnum(VISIBILITY, "visibility"),
@@ -149,7 +149,6 @@ const productRules = (v: StaffFormFields, ctx: z.RefinementCtx) => {
   }
   if (v.visibility !== undefined) {
     // The staff form: in stock needs an amount; what is shown publicly follows what was filled in.
-    if (v.availability === "in_stock" && v.stockQuantity === undefined) ctx.addIssue({ code: "custom", path: ["stockQuantity"], message: "Enter how many are available." });
     // Customers must never see a product with no picture.
     if (v.visibility === "published" && v.photos.length === 0) ctx.addIssue({ code: "custom", path: ["photos"], message: "A published product needs at least one photo. Add one, or save it as a draft." });
     return;

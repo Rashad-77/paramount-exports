@@ -48,11 +48,10 @@ describe("specification rows", () => {
 });
 
 describe("product form rules", () => {
-  it("needs an amount when the piece is in stock", () => {
-    const r = productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock" });
-    expect(r.success).toBe(false);
-    expect(r.error?.issues[0]?.path).toEqual(["stockQuantity"]);
-    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock", stockQuantity: "4", photos: ["id:0f043c10-69bf-40e5-8180-df1f73005e47"] }).success).toBe(true);
+  it("does not need an amount when the piece is available (it is then not counted), but takes one if given", () => {
+    const photos = ["id:0f043c10-69bf-40e5-8180-df1f73005e47"];
+    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock", photos }).success).toBe(true);
+    expect(productUpdateSchema.safeParse({ ...base, visibility: "published", availability: "in_stock", stockQuantity: "4", photos }).success).toBe(true);
     expect(productUpdateSchema.safeParse({ ...base, visibility: "draft", availability: "made_to_order" }).success).toBe(true);
   });
 

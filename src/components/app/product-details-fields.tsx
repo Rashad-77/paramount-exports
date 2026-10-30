@@ -61,7 +61,7 @@ export function DetailsFields({
           hint="Shown to customers on the product page."
         />
         {avail === "in_stock" ? (
-          <FField name="stockQuantity" label="Available amount" required kind="integer" defaultValue={stockQuantity ?? ""} hint="How many are in stock. Orders take from this." />
+          <FField name="stockQuantity" label="Available amount (optional)" kind="integer" defaultValue={stockQuantity ?? ""} hint="Leave blank to show just Available. Enter a number to count them: orders take from it, and customers see Only N left when it runs low." />
         ) : null}
       </div>
 

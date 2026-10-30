@@ -86,7 +86,7 @@ export function PurchasePanel({
       {stock.state !== "untracked" && stock.state !== "out" ? (
         <p className="pp-stock" data-state={stock.state} role="status">
           <span aria-hidden="true" className="pp-dot" />
-          {stock.state === "in" ? "In stock" : null}
+          {stock.state === "in" ? "Available" : null}
           {stock.state === "low" ? `Only ${stock.left} left, order soon` : null}
           {stock.state === "made_to_order" ? "Made to order" : null}
         </p>
@@ -137,7 +137,7 @@ export function PurchasePanel({
         ) : null}
         {soldOut ? (
           <Button type="button" size="cta" variant="secondary" disabled>
-            Sold out
+            Not available
           </Button>
         ) : null}
         {/* No price (timber and other pieces whose price depends on the size): the button opens the quotation form further down the page. */}
