@@ -117,19 +117,39 @@ export function ProfileForm({ fullName, email, phone }: { fullName: string; emai
 
 /** The customer's profile picture: shown beside their name on the reviews they write. */
 export function AvatarForm({ current }: { current: string | null }) {
+  /** How many files are chosen. Save and Cancel show only while there is one; Remove shows only when there is a picture and nothing new is chosen. */
+  const [chosen, setChosen] = useState(0);
+  /** Cancel starts the chooser again, which empties it. */
+  const [round, setRound] = useState(0);
   return (
     <div className="flex flex-wrap items-start gap-5">
       <ReviewAvatar src={current} className="size-20" />
       <div className="min-w-0 flex-1 space-y-4">
         <ActionForm action={setAvatarAction}>
-          <FileUploader name="fileIds" purpose="avatar" label="Choose a picture" hint="JPEG, PNG or WebP, up to 4 MB." maxFiles={1} />
-          <SubmitButton size="cta">Save picture</SubmitButton>
+          <FileUploader key={round} name="fileIds" purpose="avatar" label="Choose a picture" hint="JPEG, PNG or WebP, up to 4 MB." maxFiles={1} onCountChange={setChosen} />
+          {chosen > 0 ? (
+            <div className="flex items-center justify-end gap-6">
+              <button
+                type="button"
+                className="acct-link uppercase"
+                onClick={() => {
+                  setRound((n) => n + 1);
+                  setChosen(0);
+                }}
+              >
+                Cancel
+              </button>
+              <SubmitButton size="cta">Save picture</SubmitButton>
+            </div>
+          ) : null}
         </ActionForm>
-        {current ? (
+        {current && chosen === 0 ? (
           <ActionForm action={removeAvatarAction}>
-            <SubmitButton size="cta" variant="secondary">
-              Remove picture
-            </SubmitButton>
+            <div className="flex justify-end">
+              <SubmitButton size="cta" variant="secondary" className="acct-act-danger">
+                Remove picture
+              </SubmitButton>
+            </div>
           </ActionForm>
         ) : null}
       </div>

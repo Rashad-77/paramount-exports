@@ -1,7 +1,7 @@
 "use client";
 
 import { Paperclip, X } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useFormState } from "@/components/forms/action-form";
 import { Alert } from "@/components/ui/status";
 import { prepareImage } from "@/lib/image-prep";
@@ -72,6 +72,7 @@ export function FileUploader({
   hint,
   accept = "image/jpeg,image/png,image/webp",
   maxFiles = 5,
+  onCountChange,
 }: {
   name?: string;
   purpose: string;
@@ -79,12 +80,17 @@ export function FileUploader({
   hint?: string;
   accept?: string;
   maxFiles?: number;
+  /** Told how many files are in the list (chosen or sent), so a form can show Save and Cancel only when there is something to save. */
+  onCountChange?: (count: number) => void;
 }) {
   const inputId = useId();
   const root = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<Item[]>([]);
   const uploading = items.some((i) => i.state === "uploading");
   const { state } = useFormState();
+  useEffect(() => {
+    onCountChange?.(items.length);
+  }, [items.length, onCountChange]);
 
   // Once the form has been saved the files are on the record: the list starts empty again, so they are not sent a second time.
   const [seen, setSeen] = useState(state);
