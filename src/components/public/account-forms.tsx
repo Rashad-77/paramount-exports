@@ -4,6 +4,7 @@ import { Heart, LayoutDashboard, LogOut, Package, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { forgetAccount } from "@/components/public/use-account";
 import {
   changePasswordAction,
   claimOrderAction,
@@ -218,7 +219,7 @@ export function AccountNav() {
         options={[...TABS.map((t) => ({ value: t.href, label: t.label })), { value: "log-out", label: "Log out" }]}
         onChange={(v) => (v === "log-out" ? signOut.current?.requestSubmit() : router.push(v))}
       />
-      <form ref={signOut} action={signOutAction} hidden />
+      <form ref={signOut} action={signOutAction} onSubmit={forgetAccount} hidden />
     </div>
     <nav aria-label="Your account" className="acct-nav">
       {TABS.map(({ href, label, Icon }) => (
@@ -227,7 +228,7 @@ export function AccountNav() {
           {label}
         </Link>
       ))}
-      <form action={signOutAction} className="acct-signout">
+      <form action={signOutAction} onSubmit={forgetAccount} className="acct-signout">
         <button type="submit">
           <LogOut aria-hidden="true" strokeWidth={1.5} />
           Log out
