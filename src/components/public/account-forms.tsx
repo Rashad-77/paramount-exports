@@ -291,13 +291,14 @@ export function AddAddress() {
 export function AddressActions({ id, isDefault, label }: { id: string; isDefault: boolean; label: string }) {
   return (
     <div className="acct-actions">
-      <Link href={`/account/profile?edit=${id}#address-form`} className="acct-link">
+      {/* "uppercase" keeps the site's general text rules off these two, as they already are for the Delete button, so Edit, Make default and Delete share one font and baseline. */}
+      <Link href={`/account/profile?edit=${id}#address-form`} className="acct-link uppercase">
         Edit
       </Link>
       {isDefault ? null : (
         <ActionForm action={defaultAddressAction} className="space-y-0">
           <input type="hidden" name="id" value={id} />
-          <button type="submit" className="acct-link">
+          <button type="submit" className="acct-link uppercase">
             Make default
           </button>
         </ActionForm>
