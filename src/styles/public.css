@@ -1419,10 +1419,15 @@ html:has(.page-body) {
     overflow-y: scroll;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    /* The site hides scrollbars everywhere else (controls.css); this list turns them back on. */
+    scrollbar-width: auto;
+    scrollbar-color: auto;
   }
   /* The bar is drawn here (not left to the phone or the system) so it is always showing, with a track behind it. */
   .gs-panel.gs-scroll::-webkit-scrollbar {
+    display: block;
     width: 8px;
+    height: 8px;
   }
   .gs-panel.gs-scroll::-webkit-scrollbar-track {
     background: rgb(28 25 22 / 0.1);
