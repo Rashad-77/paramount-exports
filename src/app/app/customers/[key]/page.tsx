@@ -1,12 +1,9 @@
 import { addressStacked } from "@/lib/address-lines";
-import { Mail } from "lucide-react";
 import { plainPhone } from "@/lib/contact";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { CallButton } from "@/components/app/call-button";
 import { EnquiryTag, OrderTag, QuoteTag } from "@/components/app/tags";
-import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Table, TableWrap, TD, TH, THead, TR } from "@/components/ui/table";
 import { requireActor } from "@/lib/auth/session";
@@ -91,21 +88,6 @@ export default async function CustomerPage({
         back={{ href: "/app/customers", to: "customers" }}
         title={c.name}
         description={`CUS-${c.phoneKey} · ${count(c.orders.length, "order", "orders")}, ${count(c.quotations.length, "quotation", "quotations")}, ${count(c.enquiries.length, "enquiry", "enquiries")}`}
-        actions={
-          <>
-            <CallButton phone={c.phone} />
-            {c.email ? (
-              <ButtonLink variant="secondary" href={`mailto:${c.email}`}>
-                <Mail
-                  aria-hidden="true"
-                  className="size-4"
-                  strokeWidth={1.75}
-                />
-                Email
-              </ButtonLink>
-            ) : null}
-          </>
-        }
       />
 
       <div className="space-y-6">
