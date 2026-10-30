@@ -610,6 +610,22 @@
 .prem-piece-text p + p {
   margin-top: 1rem;
 }
+/* Phones: the glass panel runs edge to edge (no room at its sides), and the piece's name and description are a size smaller. */
+@media (max-width: 47.99rem) {
+  .prem-glass-wrap {
+    padding-inline: 0;
+  }
+  .prem-glass {
+    border-inline: 0;
+  }
+  .prem-piece-name {
+    font-size: clamp(1.3rem, calc(1.3rem + (100vw - 375px) * 0.04), 1.6rem);
+  }
+  .prem-piece-text {
+    font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.004), 0.875rem);
+    line-height: 1.7;
+  }
+}
 /* Beside the photograph the words keep a comfortable line length; on phones they use the full width */
 @media (min-width: 48rem) {
   .prem-piece-text {
