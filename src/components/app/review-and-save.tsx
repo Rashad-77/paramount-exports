@@ -77,7 +77,8 @@ export function ReviewAndSave({ categoryLabels, currency, shop, confirmLabel, ph
     const form = anchor.current?.closest("form");
     if (!form) return;
     const p = readForm(form, categoryLabels);
-    if (!p.name || !p.category || (p.availability === "in_stock" && !p.stock) || (photosRequired && p.photos.length === 0)) {
+    // (An available piece does not need an amount: left blank it is just shown as available.)
+    if (!p.name || !p.category || (photosRequired && p.photos.length === 0)) {
       form.requestSubmit();
       return;
     }
