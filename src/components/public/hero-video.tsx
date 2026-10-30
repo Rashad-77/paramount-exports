@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
  * Visitors who prefer reduced motion get the poster still instead. A pause button is always offered while it plays.
  * With no video configured it renders a neutral placeholder block.
  */
-export function HeroVideo({ desktop, mobile, poster }: { desktop: string | null; mobile: string | null; poster: string | null }) {
+export function HeroVideo({ desktop, mobile, poster, showPause = true }: { desktop: string | null; mobile: string | null; poster: string | null; showPause?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
   const [still, setStill] = useState(false);
@@ -51,9 +51,11 @@ export function HeroVideo({ desktop, mobile, poster }: { desktop: string | null;
         {mobile ? <source src={mobile} type="video/mp4" media="(max-width: 767px)" /> : null}
         <source src={desktop} type="video/mp4" />
       </video>
-      <button type="button" className="pause" onClick={toggle} aria-label={playing ? "Pause background video" : "Play background video"}>
-        {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
-      </button>
+      {showPause ? (
+        <button type="button" className="pause" onClick={toggle} aria-label={playing ? "Pause background video" : "Play background video"}>
+          {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
+        </button>
+      ) : null}
     </>
   );
 }

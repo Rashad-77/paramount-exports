@@ -281,6 +281,7 @@ export default async function HomePage() {
           desktop={HERO_VIDEO.desktop}
           mobile={HERO_VIDEO.mobile}
           poster={HERO_VIDEO.poster}
+          showPause={false}
         />
         <div className="container-page w-full pt-28 pb-16">
           <div className="max-w-xl">
