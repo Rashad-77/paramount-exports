@@ -19,6 +19,15 @@ export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() || undefined;
 
+/** The intro as a search result shows it: whole sentence(s) if they fit in 155 characters, otherwise cut at a word and ended with "…". */
+function snippet(text: string | null | undefined): string | undefined {
+  const t = text?.trim().replace(/\s+/g, " ");
+  if (!t) return undefined;
+  if (t.length <= 155) return t;
+  const cut = t.slice(0, 154);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 100)).replace(/[\s,;:.-]+$/, "")}…`;
+}
+
 /**
  * A category's own page: its own address (/collections/dining-tables), title, description, heading and introduction, so that someone searching for
  * the category can land on it. A search, a material filter or a sort order inside it is only another view of the same pieces: those stay out of search results.
@@ -31,7 +40,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const variant = Boolean(one(sp.q) || one(sp.material) || (one(sp.sort) && parseSort(one(sp.sort)) !== "newest"));
   const place = placeOf(business.address);
   const path = `/collections/${encodeURIComponent(cat.slug)}`;
-  const description = cat.description?.trim().slice(0, 155) || `${cat.name}: solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made from our showroom, or built to your measurements.`;
+  const description = snippet(cat.description) ||`${cat.name}: solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made from our showroom, or built to your measurements.`;
   return {
     title: `${cat.name} · Solid wood furniture${page > 1 ? ` (page ${page})` : ""}`,
     description,
