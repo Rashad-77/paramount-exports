@@ -79,11 +79,13 @@ export function PremiumList({ pieces }: { pieces: PremiumPiece[] }) {
         <ol className="prem-list container-page">
           {shown.map((p, i) => (
             <li key={p.id} className="prem-piece">
+              {/* On a phone the name sits above the photograph (this copy); on a wider screen it is beside it (the copy in the words). Only one is shown. */}
+              <h2 className="prem-piece-name prem-name-top">{p.name}</h2>
               <Reveal variant="up" className={"prem-gallery-wrap" + (i % 2 === 1 ? " md:order-2" : "")}>
                 <PremiumGallery images={p.images} name={p.name} priority={i === 0} />
               </Reveal>
               <Reveal variant="up" delay={STEP} className="prem-info">
-                <h2 className="prem-piece-name">{p.name}</h2>
+                <h2 className="prem-piece-name prem-name-side">{p.name}</h2>
                 {p.description ? (
                   <FitText>
                     {p.description

@@ -625,6 +625,31 @@
     font-size: clamp(0.8125rem, calc(0.8125rem + (100vw - 375px) * 0.004), 0.875rem);
     line-height: 1.7;
   }
+  /* More room between the search box and the first piece. */
+  .prem-glass .prem-list > .prem-piece:first-child {
+    padding-top: 2.75rem;
+  }
+  /* The name comes first, above the photograph; the description and the button follow it. */
+  .prem-piece {
+    gap: 1.25rem;
+  }
+  .prem-glass .prem-name-top {
+    display: block;
+    margin-top: 0;
+  }
+  .prem-glass .prem-name-side {
+    display: none;
+  }
+  .prem-glass .prem-piece-text {
+    margin-top: 0;
+  }
+  .prem-glass .prem-cta {
+    margin-top: 0.5rem;
+  }
+}
+/* On a wider screen the name is beside the photograph, in the words. */
+.prem-name-top {
+  display: none;
 }
 /* Beside the photograph the words keep a comfortable line length; on phones they use the full width */
 @media (min-width: 48rem) {

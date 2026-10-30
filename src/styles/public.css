@@ -5565,6 +5565,36 @@ span.cat-pagebtn {
 .foot .foot-bottom a {
   font-size: clamp(0.6875rem, calc(0.6875rem + (100vw - 375px) * 0.00254), 0.75rem);
 }
+/* Phones: smaller footer type, and two lists side by side in every row (Information and Collection, Customer support and Contact us), with Visit us,
+   the last one, across the full width. */
+@media (max-width: 47.99rem) {
+  .foot,
+  .foot .foot-list a,
+  .foot .foot-list button,
+  .foot .foot-list li,
+  .foot .foot-list li.plain,
+  .foot ul.foot-list > li > span,
+  .foot .foot-tag {
+    font-size: 0.6875rem;
+  }
+  .foot .foot-head {
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+  }
+  .foot .foot-bottom,
+  .foot .foot-bottom a {
+    font-size: 0.625rem;
+  }
+  .foot .foot-grid {
+    gap: 1.5rem 1rem;
+  }
+  .foot .foot-grid > div:not(.foot-about) {
+    grid-column: auto;
+  }
+  .foot .foot-grid > div:last-child:not(.foot-about) {
+    grid-column: 1 / -1;
+  }
+}
 
 /* Header text, a step smaller: the brand name, its second line and the menu links. */
 .phead .logo b {
