@@ -6,7 +6,7 @@ import { ActionForm, FField, FSelect, FTextArea, SubmitButton } from "@/componen
 import { FileUploader } from "@/components/forms/file-uploader";
 import { submitEnquiryAction } from "@/app/(public)/enquiry-actions";
 import { PrefillFromAccount } from "@/components/public/prefill-from-account";
-import { QuotePrefill } from "@/components/public/quote-prefill";
+import { QuotePrefill, type QuotePrefillData } from "@/components/public/quote-prefill";
 import { CONTACT_CHOICE_LABEL, CONTACT_LABELS, CUSTOM_MESSAGE_LABEL, MESSAGE_LABEL, PHOTOS_LABEL, PIECE_FIELDS, PIECE_HEADING } from "@/lib/enquiry-form-labels";
 import { HONEYPOT_FIELD } from "@/lib/form-guard-constants";
 
@@ -25,7 +25,7 @@ const pieceLabel = (key: (typeof PIECE_FIELDS)[number]["key"]) => PIECE_FIELDS.f
 export function EnquiryForm({
   kind,
   productId,
-  quoteFor,
+  prefill,
   variants,
   turnstileSiteKey,
   submitLabel = "Send enquiry",
@@ -33,8 +33,8 @@ export function EnquiryForm({
 }: {
   kind: "general" | "product_enquiry" | "custom";
   productId?: string;
-  /** The product a quotation is asked for (a piece with no price): the form then asks only for the size and amount needed, and the request is kept with the product. */
-  quoteFor?: string;
+  /** For a quotation asked from a product page: the form is the same, with the piece already filled in from the product, and the request is kept with the product. */
+  prefill?: QuotePrefillData;
   variants?: VariantOption[];
   turnstileSiteKey?: string;
   submitLabel?: string;
@@ -60,9 +60,9 @@ export function EnquiryForm({
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="formToken" value={token} />
       {productId ? <input type="hidden" name="productId" value={productId} /> : null}
-      {kind === "custom" && !quoteFor ? (
+      {kind === "custom" ? (
         <Suspense fallback={null}>
-          <QuotePrefill />
+          <QuotePrefill prefill={prefill} />
         </Suspense>
       ) : null}
 
@@ -88,15 +88,7 @@ export function EnquiryForm({
         <input type="hidden" name="variantId" value={variants[0]!.id} />
       ) : null}
 
-      {kind === "custom" && quoteFor ? (
-        <>
-          <input type="hidden" name="furnitureType" value={quoteFor} />
-          <div className="grid gap-5 sm:grid-cols-2">
-            <FField name="dimensions" kind="dimensions" label="Size and amount you need" placeholder="e.g. 2 × 6 inches, 12 ft long, 20 pieces" maxLength={200} required />
-            <FField name="targetDate" label="Needed by" type="date" min={new Date().toISOString().slice(0, 10)} />
-          </div>
-        </>
-      ) : kind === "custom" ? (
+      {kind === "custom" ? (
         <fieldset className="space-y-5">
           <legend className="font-display text-lg text-walnut">{PIECE_HEADING}</legend>
           <div className="grid gap-5 sm:grid-cols-2">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AskDisclosure } from "@/components/public/ask-disclosure";
+import { OPEN_QUOTE_EVENT } from "@/lib/page-events";
 import { EnquiryForm } from "@/components/public/enquiry-form";
 import { ProductCard } from "@/components/public/product-card";
 import { ProductView } from "@/components/public/product-view";
@@ -85,19 +86,26 @@ export default async function ProductPage({ params }: Props) {
       heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined}
     >
       <JsonLd data={[jsonLd, crumbs]} />
-      <AskDisclosure
-        title={prices.length ? "Have a question?" : "Request a quotation"}
-        text={prices.length ? "We reply within one working day." : "Tell us the size and the amount you need. We reply with a quotation within one working day."}
-        openLabel={prices.length ? "Ask a question" : "Request quotation"}
-      >
-        <EnquiryForm
-          kind={prices.length ? "product_enquiry" : "custom"}
-          quoteFor={prices.length ? undefined : p.name}
-          wide
-          productId={p.id}
-          turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-          submitLabel={prices.length ? "Send enquiry" : "Request quotation"}
-        />
+      {/* A piece with no price has a quotation form (the Custom page's form, with the piece filled in) and a question form; a priced piece only the question form. */}
+      {prices.length === 0 ? (
+        <AskDisclosure
+          sectionId="quote"
+          opensOn={OPEN_QUOTE_EVENT}
+          title="Request a quotation"
+          text="The piece is already filled in. Add the size and the amount you need, and we reply with a quotation within one working day."
+          openLabel="Request quotation"
+        >
+          <EnquiryForm
+            kind="custom"
+            wide
+            prefill={{ productId: p.id, item: p.name, wood: p.material ?? undefined }}
+            turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            submitLabel="Request quotation"
+          />
+        </AskDisclosure>
+      ) : null}
+      <AskDisclosure title="Have a question?" text="We reply within one working day." openLabel="Ask a question">
+        <EnquiryForm kind="product_enquiry" wide productId={p.id} turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitLabel="Send enquiry" />
       </AskDisclosure>
 
       {related.length ? (

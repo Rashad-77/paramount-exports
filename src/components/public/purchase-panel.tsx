@@ -4,7 +4,7 @@ import { Check, FileText, Minus, Plus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { OPEN_ENQUIRY_EVENT } from "@/components/public/ask-disclosure";
+import { OPEN_QUOTE_EVENT } from "@/lib/page-events";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
@@ -142,7 +142,7 @@ export function PurchasePanel({
         ) : null}
         {/* No price (timber and other pieces whose price depends on the size): the button opens the quotation form further down the page. */}
         {!option?.price ? (
-          <Button type="button" size="cta" onClick={() => window.dispatchEvent(new Event(OPEN_ENQUIRY_EVENT))}>
+          <Button type="button" size="cta" onClick={() => window.dispatchEvent(new Event(OPEN_QUOTE_EVENT))}>
             <FileText aria-hidden="true" className="size-4" />
             Request quotation
           </Button>

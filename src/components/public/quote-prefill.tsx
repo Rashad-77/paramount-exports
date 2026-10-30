@@ -10,14 +10,23 @@ const clean = (v: string | null, max: number) => (v ?? "").replace(/[\u0000-\u00
  * It fills only boxes that are still empty, links the quotation to the product, and says so above the fields.
  * (The product number in the address is checked again on the server; a wrong one is simply refused.)
  */
-export function QuotePrefill() {
+export interface QuotePrefillData {
+  productId?: string;
+  item?: string;
+  wood?: string;
+  finish?: string;
+  size?: string;
+}
+
+export function QuotePrefill({ prefill }: { prefill?: QuotePrefillData }) {
   const params = useSearchParams();
   const box = useRef<HTMLDivElement>(null);
-  const productId = /^[0-9a-f-]{36}$/i.test(params.get("product") ?? "") ? params.get("product")! : "";
-  const item = clean(params.get("item"), 120);
-  const wood = clean(params.get("wood"), 120);
-  const finish = clean(params.get("finish"), 120);
-  const size = clean(params.get("size"), 200);
+  // What the product page gives wins; otherwise what is in the address (a link from a product page).
+  const productId = prefill?.productId ?? (/^[0-9a-f-]{36}$/i.test(params.get("product") ?? "") ? params.get("product")! : "");
+  const item = clean(prefill?.item ?? params.get("item"), 120);
+  const wood = clean(prefill?.wood ?? params.get("wood"), 120);
+  const finish = clean(prefill?.finish ?? params.get("finish"), 120);
+  const size = clean(prefill?.size ?? params.get("size"), 200);
 
   useEffect(() => {
     const form = box.current?.closest("form");

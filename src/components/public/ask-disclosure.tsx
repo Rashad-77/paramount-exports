@@ -2,15 +2,13 @@
 
 import { MessageCircle, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-
-/** Sent by the "Request quotation" button beside the price: opens this form and brings it into view. */
-export const OPEN_ENQUIRY_EVENT = "open-enquiry";
+import { OPEN_ENQUIRY_EVENT } from "@/lib/page-events";
 
 /**
  * "Have a question about this piece?": one line and a button. Pressing it opens the form in place, so a product page stays short.
  * The form is already on the page (only hidden), so its anti-spam token is ready by the time it is opened.
  */
-export function AskDisclosure({ title, text, openLabel, children }: { title: string; text: string; openLabel: string; children: ReactNode }) {
+export function AskDisclosure({ title, text, openLabel, children, sectionId = "enquire", opensOn = OPEN_ENQUIRY_EVENT }: { title: string; text: string; openLabel: string; children: ReactNode; sectionId?: string; opensOn?: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const region = useRef<HTMLDivElement>(null);
@@ -23,9 +21,9 @@ export function AskDisclosure({ title, text, openLabel, children }: { title: str
         region.current?.scrollIntoView({ block: "center", behavior: "smooth" });
       });
     };
-    window.addEventListener(OPEN_ENQUIRY_EVENT, openIt);
-    return () => window.removeEventListener(OPEN_ENQUIRY_EVENT, openIt);
-  }, []);
+    window.addEventListener(opensOn, openIt);
+    return () => window.removeEventListener(opensOn, openIt);
+  }, [opensOn]);
 
   const toggle = () => {
     const next = !open;
@@ -40,7 +38,7 @@ export function AskDisclosure({ title, text, openLabel, children }: { title: str
   };
 
   return (
-    <section id="enquire" aria-labelledby={`${id}-title`} className="ask">
+    <section id={sectionId} aria-labelledby={`${id}-title`} className="ask">
       <div className="ask-head">
         <div>
           <h2 id={`${id}-title`}>{title}</h2>
