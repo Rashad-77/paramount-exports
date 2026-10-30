@@ -89,7 +89,7 @@ export function ProductView({ p, shop, heart, preview = false, children }: { p: 
         <li>
           <Store aria-hidden="true" strokeWidth={1.5} />
           <div>
-            <h3>Collect from the showroom</h3>
+            <h3>Collect from the workshop</h3>
             <p>Collection is free. We will tell you when your order is ready.</p>
             {addressLines.length ? (
               <address>

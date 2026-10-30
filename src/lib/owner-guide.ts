@@ -236,7 +236,7 @@ export const GUIDE: GuideItem[] = [
     answer: "Open the order. Press Mark as paid when the payment arrives, or use the cancel and refund buttons. A refund puts the items back in stock.",
     steps: [
       "Open the order from the Orders list.",
-      "When payment arrives (on delivery, by bank transfer, or at the showroom), record it with Mark as paid so the order shows as paid. A payment recorded by mistake can be voided.",
+      "When payment arrives (on delivery, by bank transfer, or at the workshop), record it with Mark as paid so the order shows as paid. A payment recorded by mistake can be voided.",
       "To cancel an order, use the cancel button and confirm.",
       "To refund, mark the order as refunded. The items go back into stock. If you did this by mistake, the refund can be undone.",
     ],
@@ -324,7 +324,7 @@ export const GUIDE: GuideItem[] = [
     answer: "Open Settings. The business details there are shown on the website's footer, the Contact page and the product pages.",
     steps: [
       "Open Settings and edit the details: name, short description, telephones, WhatsApp, email, map link, Facebook and TikTok links.",
-      "Write the showroom address with one part on each line: the street, the town, the postcode, then the country. Search engines read the town and postcode from it.",
+      "Write the workshop address with one part on each line: the street, the town, the postcode, then the country. Search engines read the town and postcode from it.",
       "Write the opening hours one line per day or range, for example Monday to Saturday: 8:00 am – 5:00 pm and Sunday: Closed.",
       "Add the bank details if customers may pay by transfer: they are shown to them after you confirm the order.",
       "Save each part.",

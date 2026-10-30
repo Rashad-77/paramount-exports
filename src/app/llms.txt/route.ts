@@ -22,10 +22,10 @@ export async function GET() {
   const lines = [
     `# ${business.name}`,
     "",
-    `> ${business.name} makes solid wood furniture${place ? ` in ${place}` : ""}: ready-made pieces from the showroom, and furniture made to the customer's measurements in the wood and finish they choose.`,
+    `> ${business.name} makes solid wood furniture${place ? ` in ${place}` : ""}: ready-made pieces from our workshop, and furniture made to the customer's measurements in the wood and finish they choose.`,
     "",
     "## Contact",
-    ...(address ? [`- Showroom and workshop: ${address}`] : []),
+    ...(address ? [`- Workshop: ${address}`] : []),
     ...(phones.length ? [`- Telephone: ${phones.join(", ")}`] : []),
     ...(business.email ? [`- Email: ${business.email}`] : []),
     ...(hours.length ? [`- Opening hours: ${hours.join("; ")}`] : []),

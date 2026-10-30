@@ -114,7 +114,7 @@ export default async function AboutPage() {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
-              { eyebrow: "Ready-made", title: "Visit the showroom.", body: "Come and see the timber, the finishes and the joinery in person, and sit at the pieces.", href: "/contact", cta: "Plan a visit" },
+              { eyebrow: "Ready-made", title: "Visit the workshop.", body: "Come and see the timber, the finishes and the joinery in person, and the pieces themselves.", href: "/contact", cta: "Plan a visit" },
               { eyebrow: "Made to measure", title: "Have something built for you.", body: "Tell us the piece you have in mind, with its size and wood, and we will quote before we start.", href: "/custom#quotation", cta: "Request quotation" },
             ].map((c, i) => (
               <Reveal key={c.href} variant={i === 0 ? "left" : "right"} delay={i * 60}>

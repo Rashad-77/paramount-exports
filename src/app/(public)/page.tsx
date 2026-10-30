@@ -40,13 +40,13 @@ export const revalidate = 300;
 
 /** What the business is and where, in one plain sentence: the page description, and what AI assistants quote. */
 const aboutLine = (name: string, place: string | null) =>
-  `${name} makes solid wood furniture${place ? ` in ${place}` : ""}: ready-made pieces from the showroom, or furniture built to your measurements, in the wood and finish you choose.`;
+  `${name} makes solid wood furniture${place ? ` in ${place}` : ""}: ready-made pieces from our workshop, or furniture built to your measurements, in the wood and finish you choose.`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const business = await getBusinessSettings();
   const place = placeOf(business.address);
   // Search results show about 155 characters of the description: this one fits whole.
-  const description = `Solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made pieces to see in our showroom, or furniture built to your measurements.`;
+  const description = `Solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made pieces to see at our workshop, or furniture built to your measurements.`;
   return {
     title: { absolute: `${business.name}${place ? ` · Solid wood furniture in ${place}` : " · Solid wood furniture"}` },
     description,
@@ -135,19 +135,19 @@ const WHY = [
   {
     icon: Hammer,
     title: "Built in our workshop",
-    body: "Ready-made and custom pieces are made by the people whose showroom you can visit.",
+    body: "Ready-made and custom pieces are made by the people whose workshop you can visit.",
   },
   {
     icon: Handshake,
     title: "Order your way",
-    body: "Order online and pay on delivery, by bank transfer, or at the showroom.",
+    body: "Order online and pay on delivery, by bank transfer, or at the workshop.",
   },
 ];
 
 const SERVICES = [
   {
     title: "Ready-made pieces",
-    body: "See and sit at them on the showroom floor.",
+    body: "See and try them at our workshop.",
   },
   {
     title: "Made to measure",
@@ -161,7 +161,7 @@ const SERVICES = [
     title: "Delivery arranged",
     body: "We agree the charge and the day with you.",
   },
-  { title: "Showroom visits", body: "Come and see the timber in person." },
+  { title: "Workshop visits", body: "Come and see the timber in person." },
   { title: "Pay when it arrives", body: "Nothing is charged on this website." },
 ];
 
@@ -289,7 +289,7 @@ export default async function HomePage() {
               Expertise in woodworking, readymade or custom-built
             </h1>
             <p className="mt-5 max-w-md text-[clamp(1.0188rem,calc(1.0188rem_+_(100vw_-_375px)_*_0.00178),1.0625rem)] leading-relaxed text-white/80">
-              {placeOf(business.address) ? `Solid wood furniture from our workshop in ${placeOf(business.address)}. ` : ""}Visit our showroom or order online.
+              {placeOf(business.address) ? `Solid wood furniture from our workshop in ${placeOf(business.address)}. ` : ""}Visit our workshop or order online.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink href="/products" size="cta" variant="light">
@@ -468,7 +468,7 @@ export default async function HomePage() {
                 Made for Your Space
               </h2>
               <p className="mt-4 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
-                Choose something from the showroom floor, or tell us the size of
+                Choose something ready-made, or tell us the size of
                 the room and we will build to fit.
               </p>
             </Reveal>
@@ -568,10 +568,10 @@ export default async function HomePage() {
               </h2>
               <p className="mt-5 max-w-lg fl-a leading-relaxed text-text-muted sm:mt-6">
                 {business.tagline ??
-                  "A showroom and workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}
+                  "A workshop making ready-made and made-to-order wood furniture, from the choice of timber to the final finish."}
               </p>
               <p className="mt-3 max-w-lg fl-a leading-relaxed text-text-muted sm:mt-4">
-                Come to the showroom to see the timber and the joinery in
+                Come to the workshop to see the timber and the joinery in
                 person, or order from home and have it delivered. Whether the
                 job is a single piece or a whole room, the aim is the same:
                 sound material, careful work and a straightforward service.
@@ -600,7 +600,7 @@ export default async function HomePage() {
                 title="What Our Customers Say"
                 center
               />
-              <p className="mt-4 text-center text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] text-text-muted">Been to the showroom or bought from us? Tell others what you think.</p>
+              <p className="mt-4 text-center text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] text-text-muted">Been to our workshop or bought from us? Tell others what you think.</p>
             </div>
           ) : null}
           {reviews.length > 0 ? (
@@ -686,7 +686,7 @@ export default async function HomePage() {
             </h2>
             <p className="mx-auto mt-5 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-white/70">
               Ask about a piece, request a quotation, or arrange a visit to the
-              showroom.
+              workshop.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <ButtonLink href="/contact" size="cta" variant="light">
@@ -709,7 +709,7 @@ export default async function HomePage() {
               }
             >
               <div>
-                <p className="eyebrow">Visit the showroom</p>
+                <p className="eyebrow">Visit the workshop</p>
                 <h3 className="font-display mt-3 fl-b leading-tight text-text">
                   Come and see it in person.
                 </h3>
@@ -804,7 +804,7 @@ export default async function HomePage() {
               {mapEmbedUrl(business.mapUrl) ? (
                 <div className="relative min-h-[14rem] overflow-hidden rounded-2xl bg-[#e4e4e2]">
                   <iframe
-                    title="Map showing the showroom"
+                    title="Map showing the workshop"
                     src={mapEmbedUrl(business.mapUrl)!}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"

@@ -40,7 +40,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const variant = Boolean(one(sp.q) || one(sp.material) || (one(sp.sort) && parseSort(one(sp.sort)) !== "newest"));
   const place = placeOf(business.address);
   const path = `/collections/${encodeURIComponent(cat.slug)}`;
-  const description = snippet(cat.description) ||`${cat.name}: solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made from our showroom, or built to your measurements.`;
+  const description = snippet(cat.description) ||`${cat.name}: solid wood furniture${place ? ` made in ${place}` : ""}. Ready-made from our workshop, or built to your measurements.`;
   return {
     title: `${cat.name} · Solid wood furniture${page > 1 ? ` (page ${page})` : ""}`,
     description,
@@ -84,7 +84,7 @@ export default async function CollectionCategoryPage({ params, searchParams }: P
           breadcrumbLd(site, trail.map((c) => ({ name: c.name, path: c.href }))),
         ]}
       />
-      <PageIntro back={{ href: "/", to: "home" }} plain title={cat.name} lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements." eyebrow="Collection" action={{ href: "/custom#quotation", label: "Request quotation" }} />
+      <PageIntro back={{ href: "/", to: "home" }} plain title={cat.name} lead="Ready-made pieces from our workshop. Don't see what you need? We can make it to your measurements." eyebrow="Collection" action={{ href: "/custom#quotation", label: "Request quotation" }} />
       <div className="bg-white pt-8 pb-16">
         <Breadcrumbs trail={trail} className="container-page mb-6" />
         <CatalogueBrowser
@@ -103,7 +103,7 @@ export default async function CollectionCategoryPage({ params, searchParams }: P
               About our {cat.name.toLowerCase()}
             </h2>
             <p className="mt-4 max-w-prose text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-text-muted">
-              {intro ?? `${cat.name} made from solid wood${place ? ` in ${place}` : ""}. Choose a ready-made piece from the showroom, or tell us the size, wood and finish you want and we will make it for you.`}
+              {intro ?? `${cat.name} made from solid wood${place ? ` in ${place}` : ""}. Choose a ready-made piece from our workshop, or tell us the size, wood and finish you want and we will make it for you.`}
             </p>
             <p className="mt-4 text-sm">
               <Link href="/custom#quotation" className="link-arrow text-text">

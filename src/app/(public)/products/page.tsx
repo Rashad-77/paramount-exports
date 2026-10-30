@@ -9,7 +9,7 @@ import { toGroups } from "@/lib/category-tree";
 import { PremiumBanner } from "@/components/public/premium";
 import { listPremiumProducts, listPublicCategories, listPublicMaterials, listPublicProducts } from "@/server/catalogue-public";
 
-const DESCRIPTION = "Browse solid wood furniture by category and material. Every piece is ready-made in our showroom, or can be made to your size.";
+const DESCRIPTION = "Browse solid wood furniture by category and material. Every piece is ready-made at our workshop, or can be made to your size.";
 
 /** A search, a material filter or a sort order is only another way of looking at the same pieces: those are kept out of search results and point back. */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }): Promise<Metadata> {
@@ -62,7 +62,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       <PageIntro back={{ href: "/", to: "home" }}
         plain
         title="Collection"
-        lead="Ready-made pieces from the showroom. Don't see what you need? We can make it to your measurements."
+        lead="Ready-made pieces from our workshop. Don't see what you need? We can make it to your measurements."
         action={{ href: "/custom#quotation", label: "Request quotation" }}
       />
       <div className="bg-white pt-10 pb-16">

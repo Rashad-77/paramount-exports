@@ -58,7 +58,7 @@ export const checkoutSchema = z
       if (!v.postalCode) ctx.addIssue({ code: "custom", path: ["postalCode"], message: "Enter the postal code." });
     }
     if (v.fulfilment === "pickup" && v.paymentMethod === "on_delivery") {
-      ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose bank transfer or pay at the showroom for a showroom pickup." });
+      ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose bank transfer or pay at the workshop for a pickup." });
     }
     if (v.fulfilment === "delivery" && v.paymentMethod === "at_showroom") {
       ctx.addIssue({ code: "custom", path: ["paymentMethod"], message: "Choose pay on delivery or bank transfer for a delivery." });

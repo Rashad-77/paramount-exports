@@ -17,8 +17,8 @@ import { localBusinessLd } from "@/lib/structured-data";
 import { listGalleryPhotos } from "@/server/catalogue-public";
 
 export const metadata: Metadata = {
-  title: "Contact and showroom visit",
-  description: "Visit the showroom, call or message us on WhatsApp, or send an enquiry. Address, opening hours and a map to find us.",
+  title: "Contact and workshop visit",
+  description: "Visit the workshop, call or message us on WhatsApp, or send an enquiry. Address, opening hours and a map to find us.",
   alternates: { canonical: "/contact" },
 };
 export const revalidate = 300;
@@ -87,11 +87,11 @@ export default async function ContactPage() {
         <Reveal variant="wipe">
           <div className="relative h-[24rem] bg-[#e4e4e2]">
             {embed ? (
-              <iframe title="Map showing the showroom" src={embed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" />
+              <iframe title="Map showing the workshop" src={embed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="absolute inset-0 size-full border-0" />
             ) : (
               <>
-                {b.mapUrl ? <a href={b.mapUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Open the showroom location in maps (opens in a new tab)" /> : null}
-                <ImagePlaceholder label="Map of the showroom" className="size-full" compact />
+                {b.mapUrl ? <a href={b.mapUrl} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10" aria-label="Open the workshop location in maps (opens in a new tab)" /> : null}
+                <ImagePlaceholder label="Map of the workshop" className="size-full" compact />
                 <span className="ct-ring" aria-hidden="true" />
                 <span className="ct-ring" aria-hidden="true" />
                 <span className="ct-pin" aria-hidden="true">
@@ -107,9 +107,9 @@ export default async function ContactPage() {
             <div>
               <p className="eyebrow">Find us</p>
               <h2 id="visit-title" className="font-display mt-3 text-[clamp(1.225rem,calc(1.225rem_+_(100vw_-_375px)_*_0.02137),1.75rem)] leading-tight text-brand">
-                Visit the showroom
+                Visit the workshop
               </h2>
-              <p className="mt-3 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.address ?? "Showroom address to be added."}</p>
+              <p className="mt-3 whitespace-pre-line text-lg font-medium leading-snug text-text">{b.address ?? "Workshop address to be added."}</p>
             </div>
             <div className="md:border-l md:border-[var(--leaf)] md:pl-8">
               <p className="text-[clamp(0.6875rem,calc(0.6875rem_+_(100vw_-_375px)_*_0.00254),0.75rem)] font-semibold uppercase tracking-[0.2em] text-text-muted">Opening hours</p>

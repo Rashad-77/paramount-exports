@@ -16,7 +16,7 @@ export const SI_SETTINGS: Record<string, string> = {
   "TikTok link": "TikTok සබැඳිය",
   "Google Place ID": "Google Place ID",
   "Google review link": "Google සමාලෝචන සබැඳිය",
-  "Showroom address": "ප්‍රදර්ශන ශාලාවේ ලිපිනය",
+  "Workshop address": "වැඩපළේ ලිපිනය",
   "Opening hours": "විවෘත වේලාවන්",
   "Bank details for transfers": "මුදල් හුවමාරු සඳහා බැංකු විස්තර",
   "Currency code": "මුදල් කේතය",

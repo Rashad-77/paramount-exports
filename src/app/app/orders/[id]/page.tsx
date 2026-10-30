@@ -167,7 +167,7 @@ export default async function OrderPage({
               ? "Agree the delivery day with the customer, then press “Mark as delivered” once it has arrived."
               : o.paymentMethod === "at_showroom"
                 ? "Tell the customer it can be collected. Take the payment at the counter, record it, then press “Mark as collected”."
-                : "Tell the customer it can be collected from the showroom, then press “Mark as collected” once they have it."
+                : "Tell the customer it can be collected from the workshop, then press “Mark as collected” once they have it."
           }
         />
       ) : null}
@@ -247,7 +247,7 @@ export default async function OrderPage({
                       <TD className="whitespace-pre-line">
                         {delivery
                           ? addressStacked(o.address ?? "")
-                          : "The customer will collect from the showroom."}
+                          : "The customer will collect from the workshop."}
                       </TD>
                     </TR>
                     <TR className="hover:bg-transparent">

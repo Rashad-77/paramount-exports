@@ -71,10 +71,10 @@ export function nextStep(o: FlowOrder): string | null {
     case "ready":
       return delivery
         ? "Agree the delivery day with the customer. When it has been delivered, press “Mark as delivered”."
-        : "Tell the customer it can be collected from the showroom" + (o.paymentMethod === "at_showroom" ? ", and take the payment when they arrive" : o.isPaid ? "" : ", once the transfer has arrived") + ". When they have it, press “Mark as collected”.";
+        : "Tell the customer it can be collected from the workshop" + (o.paymentMethod === "at_showroom" ? ", and take the payment when they arrive" : o.isPaid ? "" : ", once the transfer has arrived") + ". When they have it, press “Mark as collected”.";
     case "out_for_delivery":
       return o.paymentMethod === "on_delivery"
-        ? "When it arrives and the cash is collected, press “Mark as delivered”, then “Mark as paid” once the money is back at the showroom."
+        ? "When it arrives and the cash is collected, press “Mark as delivered”, then “Mark as paid” once the money is back at the workshop."
         : "When it arrives, press “Mark as delivered”.";
     case "delivered":
       return o.isPaid ? null : "The order has been " + (delivery ? "delivered" : "collected") + ". Press “Mark as paid” when the money has been received.";

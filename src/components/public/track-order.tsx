@@ -34,7 +34,7 @@ function stepsFor(o: TrackedOrder) {
       at: o.confirmedAt,
       note: delivery ? "Your order is confirmed. We will arrange the delivery charge and the day with you." : "Your order is confirmed. We will tell you when it is ready to collect.",
     },
-    { key: "ready", label: "Ready", at: o.readyAt, note: (delivery ? "Your order is ready and will be sent out soon." : "Your order is ready. You can collect it from the showroom.") + planned },
+    { key: "ready", label: "Ready", at: o.readyAt, note: (delivery ? "Your order is ready and will be sent out soon." : "Your order is ready. You can collect it from the workshop.") + planned },
   ];
   return steps;
 }

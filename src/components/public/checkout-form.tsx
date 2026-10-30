@@ -126,7 +126,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
               checked={fulfilment === f}
               onChange={() => chooseFulfilment(f)}
               title={FULFILMENT_LABEL[f]}
-              help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our showroom. No delivery charge."}
+              help={f === "delivery" ? "We deliver to your address. The delivery charge is agreed with you when we confirm." : "Collect it from our workshop. No delivery charge."}
             />
           ))}
           {fulfilment === "delivery" ? (
@@ -202,7 +202,7 @@ export function CheckoutForm({ currency, bankDetails, turnstileSiteKey, requireA
             <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text-muted">Pay on delivery, by bank transfer or at the showroom. No payment is taken online.</p>
+        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text-muted">Pay on delivery, by bank transfer or at the workshop. No payment is taken online.</p>
         <p className="mt-3 text-sm">
           <Link href="/cart" className="underline">
             Edit cart

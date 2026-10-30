@@ -142,11 +142,11 @@ export default async function SettingsPage() {
                         hint="Optional. The review link from your Google Business Profile, used for the button when there is no Place ID."
                       />
                     </SettingRow>
-                    <SettingRow label="Showroom address">
+                    <SettingRow label="Workshop address">
                       <FTextArea
                         name="address"
                         kind="address"
-                        label="Showroom address"
+                        label="Workshop address"
                         rows={3}
                         defaultValue={business.address ?? ""}
                       />

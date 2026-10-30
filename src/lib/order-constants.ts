@@ -8,8 +8,8 @@ export type Fulfilment = (typeof FULFILMENT)[number];
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
-export const FULFILMENT_LABEL: Record<Fulfilment, string> = { delivery: "Delivery", pickup: "Collect from the showroom" };
-export const PAYMENT_LABEL: Record<PaymentMethod, string> = { on_delivery: "Pay on delivery", bank_transfer: "Bank transfer", at_showroom: "Pay at the showroom" };
+export const FULFILMENT_LABEL: Record<Fulfilment, string> = { delivery: "Delivery", pickup: "Collect from the workshop" };
+export const PAYMENT_LABEL: Record<PaymentMethod, string> = { on_delivery: "Pay on delivery", bank_transfer: "Bank transfer", at_showroom: "Pay at the workshop" };
 export const STATUS_LABEL: Record<OrderStatus, string> = {
   new: "New",
   confirmed: "Confirmed",

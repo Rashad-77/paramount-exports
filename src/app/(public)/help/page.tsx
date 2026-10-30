@@ -22,8 +22,8 @@ const TOPICS = [
 /** The questions this page answers, worded as the sections below say it (also given to search engines and AI assistants). */
 const FAQS = [
   { q: "How do I order?", a: "Open a piece, pick the size or finish you want and add it to your order. At checkout, tell us your name and phone number, whether you would like it delivered or want to collect it, and how you plan to pay. We then call or message you to confirm your order and agree the details, and you get an order number to follow your order." },
-  { q: "Do I pay online?", a: "No. Nothing is paid online and the website never asks for card or bank details. You pay us directly: on delivery, by bank transfer once we have confirmed your order, or at the showroom if you collect it yourself." },
-  { q: "How does delivery work?", a: "The delivery charge depends on where the order is going, so we agree it with you when we call to confirm, together with the day. If you would rather collect, the order is ready for you at the showroom and we tell you when." },
+  { q: "Do I pay online?", a: "No. Nothing is paid online and the website never asks for card or bank details. You pay us directly: on delivery, by bank transfer once we have confirmed your order, or at the workshop if you collect it yourself." },
+  { q: "How does delivery work?", a: "The delivery charge depends on where the order is going, so we agree it with you when we call to confirm, together with the day. If you would rather collect, the order is ready for you at the workshop and we tell you when." },
   { q: "Can furniture be made to my measurements?", a: "Yes. If you need a different size, wood or finish, or something that is not in the collection, tell us what you have in mind on the custom enquiry page. We reply with a quotation, and no work starts until you agree it." },
   { q: "Can I change or cancel an order?", a: "An order cannot be edited on the website once it is placed. If you need to correct something, change a piece or cancel, please contact us and quote your order number, and we will sort it out with you." },
 ];
@@ -91,11 +91,11 @@ export default async function HelpPage() {
                     <strong className="font-medium text-text">Bank transfer.</strong> Please wait until we have confirmed your order, then transfer and quote your order number. We give you our bank details when we confirm.
                   </li>
                   <li>
-                    <strong className="font-medium text-text">Pay at the showroom</strong> if you are collecting your order yourself.
+                    <strong className="font-medium text-text">Pay at the workshop</strong> if you are collecting your order yourself.
                   </li>
                 </ul>
                 <p>
-                  <strong className="font-medium text-text">Delivery.</strong> The delivery charge depends on where it is going, so we agree it with you when we call to confirm, together with the day. If you would rather collect, the order is ready for you at the showroom and we tell you when.
+                  <strong className="font-medium text-text">Delivery.</strong> The delivery charge depends on where it is going, so we agree it with you when we call to confirm, together with the day. If you would rather collect, the order is ready for you at the workshop and we tell you when.
                 </p>
                 <p>We mark your order as paid when we have received the payment, and you can see that when you track your order.</p>
               </div>

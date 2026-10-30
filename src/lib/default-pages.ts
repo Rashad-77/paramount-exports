@@ -16,7 +16,7 @@ When you place an order or send a message through this website, we collect the d
 
 ## Why we collect it
 
-We use this information only to confirm and deliver your order, to answer your message or request, and to arrange a visit or delivery. This website does not take payments: you pay on delivery, by bank transfer or at the showroom, and no card or bank details are collected here.
+We use this information only to confirm and deliver your order, to answer your message or request, and to arrange a visit or delivery. This website does not take payments: you pay on delivery, by bank transfer or at the workshop, and no card or bank details are collected here.
 
 ## How it is protected
 
@@ -40,7 +40,7 @@ Placing an order on this website is a request to buy. It becomes an order when w
 
 ## Payment
 
-You pay offline: on delivery, by bank transfer after we confirm your order, or at the showroom. The total shown on this website does not include delivery, which is agreed with you before we confirm.
+You pay offline: on delivery, by bank transfer after we confirm your order, or at the workshop. The total shown on this website does not include delivery, which is agreed with you before we confirm.
 
 ## Cancelling and changes
 

@@ -89,7 +89,7 @@ export function CartView({ currency, suggestions }: { currency: string; suggesti
             <dd className="tabular-nums">{formatMoney(subtotal, currency)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text-muted">We call to confirm your order and the delivery charge. Pay on delivery, by bank transfer or at the showroom.</p>
+        <p className="mt-4 text-[clamp(0.7313rem,calc(0.7313rem_+_(100vw_-_375px)_*_0.00331),0.8125rem)] leading-relaxed text-text-muted">We call to confirm your order and the delivery charge. Pay on delivery, by bank transfer or at the workshop.</p>
         <ButtonLink href="/checkout" size="cta" className="mt-6 w-full justify-center">
           Proceed to checkout
         </ButtonLink>

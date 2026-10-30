@@ -62,7 +62,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
       case "on_delivery":
         return `${due} is payable in cash on delivery.`;
       case "at_showroom":
-        return `${due} is payable at the showroom when the order is collected.`;
+        return `${due} is payable at the workshop when the order is collected.`;
       case "bank_transfer":
         return `${due} is payable by bank transfer. Please quote ${o.reference} as the payment reference.`;
     }
@@ -104,7 +104,7 @@ export function OrderDocument({ order: o, items, payments, business, mode }: { o
               <p>
                 <strong>{business.name}</strong>
               </p>
-              <p>Showroom collection</p>
+              <p>Collection from the workshop</p>
             </>
           )}
         </div>
