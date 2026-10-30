@@ -84,19 +84,20 @@ export function SiteFooter({ business, collection = [] }: { business: BusinessSe
                 </li>
               ))}
             </ul>
-            {collection.length > 0 ? (
-              <>
-                <p className="foot-head mt-6">Collection</p>
-                <ul className="foot-list">
-                  {collection.map((c) => (
-                    <li key={c.slug}>
-                      <Link href={`/collections/${c.slug}`}>{c.name}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
           </nav>
+          {/* Its own column, so its heading lines up with the others. */}
+          {collection.length > 0 ? (
+            <nav aria-label="Collection">
+              <p className="foot-head">Collection</p>
+              <ul className="foot-list">
+                {collection.map((c) => (
+                  <li key={c.slug}>
+                    <Link href={`/collections/${c.slug}`}>{c.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ) : null}
           <nav aria-label="Customer support">
             <p className="foot-head">Customer support</p>
             <ul className="foot-list">
