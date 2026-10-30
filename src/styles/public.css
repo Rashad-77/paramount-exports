@@ -6610,3 +6610,19 @@ dialog:not([open]) {
   text-decoration: underline !important;
   text-underline-offset: 0.35em;
 }
+
+/* Profile page: the action under a form (Save changes, Save picture, Change password, Delete my account and the others) sits at the right. */
+.acct-textbuttons form > button.btn:not(dialog *) {
+  display: flex !important;
+  width: fit-content;
+  margin-left: auto !important;
+}
+.acct-textbuttons form > span:has(> button.btn) {
+  display: flex;
+  justify-content: flex-end;
+}
+.acct-textbuttons .acct-part > .acct-add-btn {
+  display: flex !important;
+  width: fit-content;
+  margin-left: auto !important;
+}

@@ -255,7 +255,7 @@ export function AddressForm({ address, cancelHref, onCancel, inline = false }: {
         <FField name="city" kind="place" label="City" autoComplete="address-level2" maxLength={80} defaultValue={lines?.city} required />
         <FField name="postalCode" kind="postal" label="Postal code" autoComplete="postal-code" maxLength={20} defaultValue={lines?.postalCode} required />
       </div>
-      <div className={inline ? "acct-actions" : "flex flex-wrap items-center gap-4"}>
+      <div className={inline ? "acct-actions" : "flex flex-wrap items-center justify-end gap-4"}>
         {cancelHref ? (
           <Link href={cancelHref} className="acct-link uppercase">
             Cancel
