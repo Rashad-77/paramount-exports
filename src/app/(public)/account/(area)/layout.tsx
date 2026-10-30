@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AccountNav } from "@/components/public/account-forms";
 import { PageIntro } from "@/components/public/prose";
+import { ScrollTop } from "@/components/public/scroll-top";
 import { redirect } from "next/navigation";
 import { getCustomer, isStaffSignedIn } from "@/lib/auth/customer";
 import { requireAccountsOn } from "../gate";
@@ -21,6 +22,7 @@ export default async function AccountAreaLayout({ children }: { children: ReactN
   const first = customer.fullName.trim().split(/\s+/)[0] ?? "";
   return (
     <>
+      <ScrollTop />
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title={first ? `Hello, ${first}` : "Your account"} />
       <div className="container-page pb-16 pt-8">
         <div className="acct-shell">

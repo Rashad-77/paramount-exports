@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SignInForm, SignUpForm } from "@/components/public/account-forms";
+import { ScrollTop } from "@/components/public/scroll-top";
 import { PageIntro } from "@/components/public/prose";
 import { Alert } from "@/components/ui/status";
 import { customerAuthMode, getCustomer, googleSignInEnabled } from "@/lib/auth/customer";
@@ -23,6 +24,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
   const checkEmail = one(sp.notice) === "check-email";
   return (
     <>
+      <ScrollTop />
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title="Sign in" lead="See your orders, and keep your details ready for next time. You can still order without an account." />
       <div className="container-page grid gap-10 py-[var(--section-space)] lg:grid-cols-2 lg:gap-16">
         <section aria-labelledby="signin-title" className="soft-card space-y-5">
@@ -60,6 +62,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
 function NotAvailable() {
   return (
     <>
+      <ScrollTop />
       <PageIntro back={{ href: "/", to: "home" }} plain eyebrow="Your account" title="Accounts are coming soon" lead="You do not need an account to order from us or to follow an order." />
       <div className="container-page max-w-xl py-[var(--section-space)]">
         <div className="soft-card space-y-5">
