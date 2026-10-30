@@ -40,7 +40,7 @@ export const SI_CATALOGUE: Record<string, string> = {
   "Shown in the premium range only when Featured is ticked too.": "ප්‍රිමියම් ගණයේ පෙන්වන්නේ විශේෂිත ද ටික් කර ඇති විට පමණි.",
   "Archiving hides the product from the website and keeps it on record. Restore it by choosing Draft or Published.":
     "සංරක්ෂණය කිරීමෙන් නිෂ්පාදිතය වෙබ් අඩවියෙන් සැඟවී වාර්තාවේ රැඳී පවතී. කෙටුම්පත හෝ ප්‍රකාශිත තෝරා එය ප්‍රතිසාධනය කරන්න.",
-  "The regular price, shown on the website when entered. Leave blank if it is not priced yet.": "සාමාන්‍ය මිල, ඇතුළත් කළ විට වෙබ් අඩවියේ පෙන්වයි. තවම මිල නියම කර නැත්නම් හිස්ව තබන්න.",
+  "The regular price, shown on the website when entered. Leave it blank for a piece that cannot be priced easily (timber, for example): its page then shows a Request quotation button instead of a price.": "සාමාන්‍ය මිල, ඇතුළත් කළ විට වෙබ් අඩවියේ පෙන්වයි. පහසුවෙන් මිල නියම කළ නොහැකි භාණ්ඩයක් සඳහා (උදාහරණයක් ලෙස ලී) එය හිස්ව තබන්න: එවිට එහි පිටුවේ මිලක් වෙනුවට “Request quotation” බොත්තමක් පෙන්වයි.",
   "Add discount": "වට්ටමක් එක් කරන්න",
   "Remove discount": "වට්ටම ඉවත් කරන්න",
   "Discount type": "වට්ටම් වර්ගය",

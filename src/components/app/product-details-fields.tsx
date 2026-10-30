@@ -65,7 +65,7 @@ export function DetailsFields({
         ) : null}
       </div>
 
-      <FField name="listPrice" label={`Price (${currency})`} kind="money" defaultValue={price ?? ""} hint="The regular price, shown on the website when entered. Leave blank if it is not priced yet." className="max-w-md" />
+      <FField name="listPrice" label={`Price (${currency})`} kind="money" defaultValue={price ?? ""} hint="The regular price, shown on the website when entered. Leave it blank for a piece that cannot be priced easily (timber, for example): its page then shows a Request quotation button instead of a price." className="max-w-md" />
 
       {discountOpen ? (
         <div className="max-w-md space-y-4 border border-border p-4">

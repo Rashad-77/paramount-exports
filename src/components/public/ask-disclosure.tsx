@@ -1,7 +1,10 @@
 "use client";
 
 import { MessageCircle, X } from "lucide-react";
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+
+/** Sent by the "Request quotation" button beside the price: opens this form and brings it into view. */
+export const OPEN_ENQUIRY_EVENT = "open-enquiry";
 
 /**
  * "Have a question about this piece?": one line and a button. Pressing it opens the form in place, so a product page stays short.
@@ -11,6 +14,18 @@ export function AskDisclosure({ title, text, openLabel, children }: { title: str
   const [open, setOpen] = useState(false);
   const id = useId();
   const region = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const openIt = () => {
+      setOpen(true);
+      requestAnimationFrame(() => {
+        region.current?.querySelector<HTMLInputElement>("input:not([type=hidden]):not([tabindex='-1'])")?.focus({ preventScroll: true });
+        region.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
+    };
+    window.addEventListener(OPEN_ENQUIRY_EVENT, openIt);
+    return () => window.removeEventListener(OPEN_ENQUIRY_EVENT, openIt);
+  }, []);
 
   const toggle = () => {
     const next = !open;

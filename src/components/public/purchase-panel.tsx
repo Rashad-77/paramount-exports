@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import { Check, FileText, Minus, Plus, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { OPEN_ENQUIRY_EVENT } from "@/components/public/ask-disclosure";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { formatMoney } from "@/lib/money";
@@ -139,6 +140,13 @@ export function PurchasePanel({
             Sold out
           </Button>
         ) : null}
+        {/* No price (timber and other pieces whose price depends on the size): the button opens the quotation form further down the page. */}
+        {!option?.price ? (
+          <Button type="button" size="cta" onClick={() => window.dispatchEvent(new Event(OPEN_ENQUIRY_EVENT))}>
+            <FileText aria-hidden="true" className="size-4" />
+            Request quotation
+          </Button>
+        ) : null}
       </div>
 
       {/* The button itself says "Added to cart"; this is only for screen readers. */}
@@ -151,7 +159,7 @@ export function PurchasePanel({
         </p>
       ) : !option?.price ? (
         <p className="pp-note">
-          Ask us for the price on the <Link href="/contact" className="underline">contact page</Link>. We reply within one working day.
+          The price depends on the size and the amount, so we send a quotation. We reply within one working day.
         </p>
       ) : null}
     </section>

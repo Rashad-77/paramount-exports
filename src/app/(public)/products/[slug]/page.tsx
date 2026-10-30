@@ -85,13 +85,17 @@ export default async function ProductPage({ params }: Props) {
       heart={accountsOn ? <WishlistButton productId={p.id} slug={p.slug} variant="icon" size="photo" /> : undefined}
     >
       <JsonLd data={[jsonLd, crumbs]} />
-      <AskDisclosure title="Have a question?" text="We reply within one working day." openLabel={prices.length ? "Ask a question" : "Enquire about this piece"}>
+      <AskDisclosure
+        title={prices.length ? "Have a question?" : "Request a quotation"}
+        text={prices.length ? "We reply within one working day." : "Tell us the size and the amount you need. We reply with a quotation within one working day."}
+        openLabel={prices.length ? "Ask a question" : "Request quotation"}
+      >
         <EnquiryForm
           kind="product_enquiry"
           wide
           productId={p.id}
           turnstileSiteKey={publicEnv().NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-          submitLabel="Send enquiry"
+          submitLabel={prices.length ? "Send enquiry" : "Request quotation"}
         />
       </AskDisclosure>
 
