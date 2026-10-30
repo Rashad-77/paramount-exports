@@ -44,7 +44,8 @@ export default async function EnquiriesPage({
   const rows = result.rows.map((r) => ({
     id: r.id,
     reference: r.reference,
-    summary: r.message ?? "—",
+    // An enquiry made on a product page starts with that product's name.
+    summary: r.productName ? `${r.productName}: ${r.message ?? "—"}` : (r.message ?? "—"),
     name: r.name,
     phone: plainPhone(r.phone),
     handled: r.isHandled,

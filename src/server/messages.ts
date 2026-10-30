@@ -346,8 +346,9 @@ export async function listEnquiries(actor: Actor, f: { state?: EnquiryState; q?:
   const db = getDb();
   const [rows, [totalRow], [nNew], [nDone]] = await Promise.all([
     db
-      .select({ id: messages.id, reference: messages.reference, kind: messages.kind, isHandled: messages.isHandled, inProgress: messages.inProgress, name: messages.name, phone: messages.phone, message: messages.message, createdAt: messages.createdAt })
+      .select({ id: messages.id, reference: messages.reference, kind: messages.kind, isHandled: messages.isHandled, inProgress: messages.inProgress, name: messages.name, phone: messages.phone, message: messages.message, createdAt: messages.createdAt, productName: products.name })
       .from(messages)
+      .leftJoin(products, eq(products.id, messages.productId))
       .where(cond)
       .orderBy(f.sort === "oldest" ? asc(messages.createdAt) : desc(messages.createdAt))
       .limit(f.pageSize)

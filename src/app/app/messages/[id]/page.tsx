@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { addressStacked } from "@/lib/address-lines";
 import { notFound } from "next/navigation";
 import { plainPhone } from "@/lib/contact";
@@ -136,7 +137,9 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
           ) : product ? (
             <Group title="Product">
               <Field label="Enquiry about" wide>
-                {product.name}
+                <Link href={`/app/products/${product.id}`} className="font-medium text-walnut underline">
+                  {product.name}
+                </Link>
               </Field>
             </Group>
           ) : null}

@@ -3,7 +3,7 @@ import { quoteRef } from "@/lib/quotation-ui";
 import { eq } from "drizzle-orm";
 import { after } from "next/server";
 import { getDb } from "@/lib/db/client";
-import { orderItems, orders, messages } from "@/lib/db/schema";
+import { orderItems, orders, messages, products } from "@/lib/db/schema";
 import { publicEnv, serverEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
 import { getBusinessSettings } from "@/lib/settings";
@@ -130,6 +130,7 @@ export function notifyNewMessage(messageId: string): void {
     // A quotation request is numbered QUO-… everywhere the staff see it, so the email says the same.
     const ref = m.kind === "custom" ? quoteRef(m.reference) : m.reference;
     const what = m.kind === "custom" ? "quotation request" : m.kind === "product_enquiry" ? "product enquiry" : "message";
+    const [product] = m.productId ? await getDb().select({ name: products.name, slug: products.slug }).from(products).where(eq(products.id, m.productId)).limit(1) : [];
     const details = m.kind === "custom" && m.payload && typeof m.payload === "object" ? Object.entries(m.payload as Record<string, unknown>).filter(([, v]) => v).map(([k, v]) => `  ${k}: ${String(v)}`) : [];
     await sendToOwner(
       `New ${what} ${ref} - ${m.name}`,
@@ -141,6 +142,7 @@ export function notifyNewMessage(messageId: string): void {
         `Phone: ${m.phone}`,
         m.email ? `Email: ${m.email}` : null,
         m.preferredContact ? `Prefers: ${m.preferredContact}` : null,
+        product ? `Product: ${product.name} (${staffLink(`/products/${product.slug}`)})` : null,
         ...(details.length ? [``, ...details] : []),
         m.message ? `\n${m.message}` : null,
         ``,
