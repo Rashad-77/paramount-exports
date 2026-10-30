@@ -33,7 +33,15 @@ export interface AccountOrderRow {
 }
 
 export async function listAccountOrders(accountId: string, limit = 50): Promise<AccountOrderRow[]> {
-  const rows = await getDb()
+  // The orders and their lines are asked for together (the lines of the same latest orders), not one after the other.
+  const latest = getDb().select({ id: orders.id }).from(orders).where(eq(orders.accountId, accountId)).orderBy(desc(orders.createdAt)).limit(limit);
+  const linesQuery = getDb()
+    .select({ orderId: orderItems.orderId, productId: orderItems.productId, name: orderItems.productName, variant: orderItems.variantLabel, quantity: orderItems.quantity, unitPrice: orderItems.unitPrice })
+    .from(orderItems)
+    .where(inArray(orderItems.orderId, latest))
+    .orderBy(asc(orderItems.orderId), asc(orderItems.position));
+  const [rows, lines] = await Promise.all([
+    getDb()
     .select({
       id: orders.id,
       reference: orders.reference,
@@ -46,15 +54,9 @@ export async function listAccountOrders(accountId: string, limit = 50): Promise<
     .from(orders)
     .where(eq(orders.accountId, accountId))
     .orderBy(desc(orders.createdAt))
-    .limit(limit);
-  const ids = rows.map((r) => r.id);
-  const lines = ids.length
-    ? await getDb()
-        .select({ orderId: orderItems.orderId, productId: orderItems.productId, name: orderItems.productName, variant: orderItems.variantLabel, quantity: orderItems.quantity, unitPrice: orderItems.unitPrice })
-        .from(orderItems)
-        .where(inArray(orderItems.orderId, ids))
-        .orderBy(asc(orderItems.orderId), asc(orderItems.position))
-    : [];
+    .limit(limit),
+    linesQuery,
+  ]);
   const pics = await firstImages(lines.map((l) => l.productId).filter((v): v is string => Boolean(v)));
   return rows.map((r) => ({
     reference: r.reference,

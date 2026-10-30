@@ -86,9 +86,10 @@ function googlePicture(meta: Record<string, unknown> | undefined): string | null
 /** Make sure a verified sign-in identity has its account row (created on first sign-in, so email confirmation can happen later). */
 async function ensureAccount(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): Promise<Customer | null> {
   if (!user.email) return null;
-  if (await isStaffId(user.id)) return null;
   const db = getDb();
-  const [found] = await db.select().from(customerAccounts).where(eq(customerAccounts.id, user.id)).limit(1);
+  // Both questions at once: is this a staff member, and is there already an account row.
+  const [staff, [found]] = await Promise.all([isStaffId(user.id), db.select().from(customerAccounts).where(eq(customerAccounts.id, user.id)).limit(1)]);
+  if (staff) return null;
   const picture = googlePicture(user.user_metadata);
   if (found) {
     if (picture && found.avatarUrl !== picture) await db.update(customerAccounts).set({ avatarUrl: picture }).where(eq(customerAccounts.id, user.id));
