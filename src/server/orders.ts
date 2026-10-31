@@ -15,6 +15,15 @@ import { recordUpdate } from "./account-updates";
 import { emailCustomer } from "./notify";
 import { discountFrom, setOrderPaidShortcut, syncOrderMoney } from "./order-money";
 
+/** The website accounts that belong to a customer key: by phone, by the same email on their orders or messages, or the one account a key like acct-<id> stands for. */
+function accountsOfKey(key: string) {
+  if (/^acct-[0-9a-f-]{36}$/i.test(key)) return eq(customerAccounts.id, key.slice(5));
+  return or(
+    eq(customerAccounts.phoneKey, key),
+    sql`${customerAccounts.emailLower} IN (SELECT lower(email) FROM online_orders WHERE phone_key = ${key} AND email IS NOT NULL UNION SELECT lower(email) FROM messages WHERE phone_key = ${key} AND email IS NOT NULL)`,
+  )!;
+}
+
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export const ORDER_LIMITS = {
@@ -441,6 +450,9 @@ export async function listCustomers(actor: Actor, f: { q?: string; filter?: Cust
                a.phone_key,
                (SELECT o.phone_key FROM online_orders o WHERE o.account_id = a.id LIMIT 1),
                (SELECT m.phone_key FROM messages m WHERE m.account_id = a.id LIMIT 1),
+               -- A guest order or message that used the same email address is the same person.
+               (SELECT o.phone_key FROM online_orders o WHERE lower(o.email) = a.email_lower LIMIT 1),
+               (SELECT m.phone_key FROM messages m WHERE lower(m.email) = a.email_lower LIMIT 1),
                'acct-' || a.id::text
              ) AS phone_key,
              a.id::text AS id, 'ACCOUNT' AS reference, a.full_name AS name, coalesce(a.phone, '') AS phone, a.email, a.created_at, 'account' AS what, false AS open, true AS has_account
@@ -502,8 +514,7 @@ export async function deleteCustomers(actor: Actor, keys: string[]): Promise<{ c
     for (const key of unique) {
       const theirOrders = await tx.select({ id: orders.id, reference: orders.reference, name: orders.customerName, accountId: orders.accountId }).from(orders).where(eq(orders.phoneKey, key)).for("update");
       const theirMessages = await tx.select({ id: messages.id, name: messages.name, accountId: messages.accountId }).from(messages).where(eq(messages.phoneKey, key)).for("update");
-      const keyIsId = /^acct-[0-9a-f-]{36}$/i.test(key);
-      const theirAccounts = await tx.select({ id: customerAccounts.id, name: customerAccounts.fullName }).from(customerAccounts).where(keyIsId ? eq(customerAccounts.id, key.slice(5)) : eq(customerAccounts.phoneKey, key));
+      const theirAccounts = await tx.select({ id: customerAccounts.id, name: customerAccounts.fullName }).from(customerAccounts).where(accountsOfKey(key));
       if (theirOrders.length === 0 && theirMessages.length === 0 && theirAccounts.length === 0) continue;
       const accountIds = [...new Set([...theirOrders.map((o) => o.accountId), ...theirMessages.map((m) => m.accountId), ...theirAccounts.map((a) => a.id)].filter((a): a is string => a !== null))];
       const name = theirOrders[0]?.name ?? theirMessages[0]?.name ?? theirAccounts[0]?.name ?? key;
@@ -541,8 +552,7 @@ export async function getCustomer(actor: Actor, key: string) {
       .orderBy(desc(messages.createdAt)),
   ]);
   // Website accounts that belong to this key: by phone, or the one account a key like acct-<id> stands for.
-  const isId = /^acct-[0-9a-f-]{36}$/i.test(key);
-  const accts = await db.select().from(customerAccounts).where(isId ? eq(customerAccounts.id, key.slice(5)) : eq(customerAccounts.phoneKey, key));
+  const accts = await db.select().from(customerAccounts).where(accountsOfKey(key));
   if (list.length === 0 && notes.length === 0 && accts.length === 0) throw notFound("That customer could not be found.");
   // Addresses the customer saved on their website account, and those used on their orders.
   const accountIds = [...new Set([...list.map((o) => o.accountId), ...notes.map((m) => m.accountId), ...accts.map((a) => a.id)].filter((a): a is string => a !== null))];
