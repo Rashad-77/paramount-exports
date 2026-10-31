@@ -19,7 +19,7 @@ export const reqText = (label: string, max = 200) =>
 export const optText = (label: string, max = 500) =>
   z.preprocess(emptyToUndefined, z.string().trim().max(max, `${label} must be ${max} characters or fewer.`).optional());
 
-export const optEmail = z.preprocess(emptyToUndefined, z.email("Enter a valid email address.").max(200).optional());
+export const optEmail = z.preprocess((v) => emptyToUndefined(typeof v === "string" ? v.trim() : v), z.email("Enter a valid email address.").max(200).optional());
 
 export const reqPhone = z
   .string({ error: "Phone number is required." })
