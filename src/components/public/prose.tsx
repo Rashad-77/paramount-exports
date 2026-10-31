@@ -19,7 +19,7 @@ export function Prose({ text }: { text: string }) {
       );
     } else if (block.split("\n").every((l) => l.startsWith("- "))) {
       out.push(
-        <ul key={i} className="list-disc space-y-1 pl-6">
+        <ul key={i} className="list-inside list-disc space-y-1">
           {block.split("\n").map((l, j) => (
             <li key={j}>{l.slice(2)}</li>
           ))}

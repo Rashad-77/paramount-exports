@@ -11,7 +11,7 @@ export default async function Page() {
   return (
     <>
       <PageIntro back={{ href: "/", to: "home" }} title="Privacy notice" />
-      <div className="container-page py-[var(--section-space)]">
+      <div className="container-page flex justify-center py-[var(--section-space)] text-center">
         <Prose text={pages.privacy ?? DEFAULT_PRIVACY} />
       </div>
     </>

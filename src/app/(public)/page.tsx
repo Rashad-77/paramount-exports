@@ -684,10 +684,6 @@ export default async function HomePage() {
             >
               Let&rsquo;s Build Something Beautiful in Wood.
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-[clamp(0.8438rem,calc(0.8438rem_+_(100vw_-_375px)_*_0.00381),0.9375rem)] leading-relaxed text-white/70">
-              Ask about a piece, request a quotation, or arrange a visit to the
-              workshop.
-            </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <ButtonLink href="/contact" size="cta" variant="light">
                 Contact us

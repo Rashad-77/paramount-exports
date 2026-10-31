@@ -29,10 +29,7 @@ This public website does not use advertising or tracking cookies. Your basket is
 ## Your choices
 
 You can ask us what we hold about you, to correct it, or to delete it, by contacting us using the details on the Contact page.
-
-## Review
-
-${DRAFT_NOTICE}`;
+`;
 
 export const DEFAULT_TERMS = `## Orders
 
@@ -48,8 +45,4 @@ Contact us as soon as you can if you want to change or cancel an order, quoting 
 
 ## Made-to-order furniture
 
-Custom pieces are priced and agreed with you in writing before we start. A custom request sent through this website is not an order.
-
-## Review
-
-The business must replace this page with its own terms. ${DRAFT_NOTICE}`;
+Custom pieces are priced and agreed with you in writing before we start. A custom request sent through this website is not an order.`;
