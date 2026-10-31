@@ -19,11 +19,13 @@ const ROLE_LABEL: Record<string, string> = {
 function NavList({
   actor,
   currentPath,
+  unseen,
 }: {
   actor: Actor;
   currentPath?: string;
+  unseen?: Record<string, boolean>;
 }) {
-  return <AppNav groups={visibleNav(actor)} previewPath={currentPath} />;
+  return <AppNav groups={visibleNav(actor)} previewPath={currentPath} unseen={unseen} />;
 }
 
 export function AppShell({
@@ -31,6 +33,7 @@ export function AppShell({
   businessName,
   currentPath,
   signOutAction,
+  unseen,
   children,
 }: {
   actor: Actor;
@@ -38,6 +41,8 @@ export function AppShell({
   currentPath?: string;
   /** Server Action that signs out. Omitted in the sample preview, where no session exists. */
   signOutAction?: () => Promise<void>;
+  /** Menu entries (by href) with something new since they were last opened. */
+  unseen?: Record<string, boolean>;
   children: ReactNode;
 }) {
   const roles = actor.roles.map((r) => ROLE_LABEL[r] ?? r).join(", ");
@@ -69,7 +74,7 @@ export function AppShell({
           <StaffBrand name={businessName} />
         </div>
         <div className="app-scroll flex-1 overflow-y-auto p-3">
-          <NavList actor={actor} currentPath={currentPath} />
+          <NavList actor={actor} currentPath={currentPath} unseen={unseen} />
         </div>
         {/* Who is signed in, at the foot of the sidebar */}
         <div className="border-t border-border px-3 pt-3 pb-0">
@@ -92,7 +97,7 @@ export function AppShell({
           <div className="flex items-center gap-2">
             <LanguageSwitch />
           <AppNavMobile>
-            <NavList actor={actor} currentPath={currentPath} />
+            <NavList actor={actor} currentPath={currentPath} unseen={unseen} />
             <div className="mt-6 border-t border-border pt-4">
               {account}
               <div className="mt-2">{signOut}</div>

@@ -2856,10 +2856,10 @@ a.acct-row {
   font-size: clamp(0.7313rem, calc(0.7313rem + (100vw - 375px) * 0.00331), 0.8125rem);
   color: var(--color-text-muted);
 }
-/* The four steps: dots joined by a line, labels underneath */
+/* The three steps: dots joined by a line, labels underneath */
 .ot-bar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;

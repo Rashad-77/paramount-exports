@@ -11,6 +11,7 @@ import { demoDeploymentEnabled } from "@/lib/auth/demo-deployment";
 import { requireActor } from "@/lib/auth/session";
 import { Alert } from "@/components/ui/status";
 import { getBusinessSettings } from "@/lib/settings";
+import { getUnseen, SEEN_COOKIE_PREFIX, SEEN_SECTIONS, type SeenTimes } from "@/server/unseen";
 
 export const metadata: Metadata = {
   title: "Staff area",
@@ -32,11 +33,17 @@ export default async function InternalLayout({
   ]);
   // The language the owner last picked (English or Sinhala); the words are translated in the browser, see DashLanguage.
   const lang = parseLang(jar.get(LANG_COOKIE)?.value);
+  // A red dot on a menu entry when something new arrived since the owner last opened that section.
+  const seen = Object.fromEntries(
+    (Object.keys(SEEN_SECTIONS) as (keyof SeenTimes)[]).map((k) => [k, Number(jar.get(SEEN_COOKIE_PREFIX + k)?.value) || 0]),
+  ) as SeenTimes;
+  const unseen = await getUnseen(seen);
   return (
     <DashLanguage initial={lang}>
     <AppShell
       actor={actor}
       businessName={business.name}
+      unseen={unseen}
       signOutAction={signOut}
     >
       {demoDeploymentEnabled() ? (
