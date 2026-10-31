@@ -11,7 +11,9 @@ import { one, pageOf, type SP } from "@/lib/list-params";
 import {
   listCategories,
   listProductsAdmin,
+  PRODUCT_SORTS,
   PRODUCT_STATUSES,
+  type ProductSort,
   type ProductStatus,
 } from "@/server/catalogue";
 import { archiveProductsAction, deleteProductsAction } from "./actions";
@@ -35,6 +37,8 @@ export default async function ProductsAdminPage({
   const q = one(sp.q)?.slice(0, 80);
   const statuses = statusesOf(sp.status);
   const categoryIds = (Array.isArray(sp.category) ? sp.category : sp.category ? [sp.category] : []).filter((c) => /^[0-9a-f-]{36}$/i.test(c));
+  const sortValue = one(sp.sort);
+  const sort: ProductSort = PRODUCT_SORTS.find((s) => s.value === sortValue)?.value ?? "name";
   const page = pageOf(sp);
   const [cats, result] = await Promise.all([
     listCategories(actor),
@@ -42,6 +46,7 @@ export default async function ProductsAdminPage({
       q,
       statuses,
       categoryIds,
+      sort,
       page,
       pageSize: PAGE_SIZE,
     }),
@@ -51,6 +56,7 @@ export default async function ProductsAdminPage({
     if (q) u.set("q", q);
     for (const c of categoryIds) u.append("category", c);
     for (const s of statuses) u.append("status", s);
+    if (sort !== "name") u.set("sort", sort);
     u.set("page", String(n));
     return `/app/products?${u.toString()}`;
   };
@@ -81,6 +87,8 @@ export default async function ProductsAdminPage({
         q={q}
         categoryIds={categoryIds}
         statuses={statuses}
+        sort={sort}
+        sorts={PRODUCT_SORTS}
         categories={toCascadeGroups(cats.filter((c) => !c.archivedAt))}
       />
         <ProductsTable

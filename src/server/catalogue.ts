@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import Decimal from "decimal.js";
 import { priceAfterDiscount } from "@/lib/sale";
-import { and, asc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { requirePermission, type Actor } from "@/lib/auth/permissions";
 import { alias } from "drizzle-orm/pg-core";
 import { getDb, withTx, type DbOrTx } from "@/lib/db/client";
@@ -191,10 +191,21 @@ export async function setCategoryArchived(actor: Actor, id: string, archived: bo
 export const PRODUCT_STATUSES = ["published", "draft", "archived", "featured", "premium", "in_stock", "made_to_order", "sold"] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 
+export const PRODUCT_SORTS = [
+  { value: "name", label: "Name, A to Z" },
+  { value: "name_desc", label: "Name, Z to A" },
+  { value: "newest", label: "Newest added" },
+  { value: "oldest", label: "Oldest added" },
+  { value: "updated", label: "Recently edited" },
+  { value: "category", label: "Category" },
+] as const;
+export type ProductSort = (typeof PRODUCT_SORTS)[number]["value"];
+
 export interface ProductListFilters {
   q?: string;
   statuses: ProductStatus[];
   categoryIds?: string[];
+  sort?: ProductSort;
   page: number;
   pageSize: number;
 }
@@ -249,7 +260,14 @@ export async function listProductsAdmin(actor: Actor, f: ProductListFilters) {
       .innerJoin(productCategories, eq(productCategories.id, products.categoryId))
       .leftJoin(parent, eq(parent.id, productCategories.parentId))
       .where(cond)
-      .orderBy(sql`lower(${products.name})`, asc(products.name))
+      .orderBy(...(
+        f.sort === "name_desc" ? [sql`lower(${products.name}) DESC`, desc(products.name)]
+        : f.sort === "newest" ? [desc(products.createdAt), asc(products.name)]
+        : f.sort === "oldest" ? [asc(products.createdAt), asc(products.name)]
+        : f.sort === "updated" ? [desc(products.updatedAt), asc(products.name)]
+        : f.sort === "category" ? [sql`lower(${productCategories.name})`, sql`lower(${products.name})`]
+        : [sql`lower(${products.name})`, asc(products.name)]
+      ))
       .limit(f.pageSize)
       .offset((f.page - 1) * f.pageSize),
     db.select({ n: sql<number>`count(*)::int` }).from(products).where(cond),
