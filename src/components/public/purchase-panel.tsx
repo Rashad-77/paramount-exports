@@ -45,7 +45,7 @@ export function PurchasePanel({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const { add, setQuantity } = useCart();
+  const { add, setQuantity: setLineQuantity } = useCart();
   const router = useRouter();
 
   const stock = stockState(madeToOrder, option?.stock);
@@ -129,7 +129,7 @@ export function PurchasePanel({
                 // Buy now is this piece, in the amount chosen: if it is already in the basket (from Add to cart) its amount is set, not added to.
                 if (option?.price) {
                   addToCart();
-                  setQuantity(option.id, quantity);
+                  setLineQuantity(option.id, quantity);
                 }
                 router.push("/checkout");
               }}
