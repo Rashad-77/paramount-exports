@@ -1,5 +1,6 @@
 "use client";
 
+import { opensUpward } from "@/lib/panel-placement";
 import { useEffect, useId, useRef, useState } from "react";
 
 export interface GlassOption {
@@ -45,6 +46,7 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
   const root = useRef<HTMLDivElement>(null);
   const hidden = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
   const [inner, setInner] = useState(defaultValue ?? "");
   const current = value ?? inner;
   const selected = Math.max(0, options.findIndex((o) => o.value === current));
@@ -86,6 +88,8 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
   }, [open, scroll, active, id]);
 
   const show = () => {
+    // A form drop-down near the bottom of the screen opens upward.
+    setUp(variant === "field" && root.current ? opensUpward(root.current, 250) : false);
     setActive(selected);
     setOpen(true);
   };
@@ -130,7 +134,7 @@ export function GlassSelect({ label, value, defaultValue, options, onChange, nam
   };
 
   return (
-    <div ref={root} className={"gs" + (variant === "field" ? " gs-field" : "")} data-open={open || undefined}>
+    <div ref={root} className={"gs" + (variant === "field" ? " gs-field" : "")} data-open={open || undefined} data-up={(open && up) || undefined}>
       {name ? <input ref={hidden} type="hidden" name={name} value={options[selected]?.value ?? ""} disabled={disabled} /> : null}
       <button
         id={id}

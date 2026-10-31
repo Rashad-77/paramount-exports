@@ -53,8 +53,9 @@ export function ProductFilters({
   };
 
   return (
-    <div role="search" className="app-filter mb-4 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-end">
+    <div role="search" className="app-filter mb-4 grid gap-4 border border-border bg-surface p-4 sm:grid-cols-3 sm:items-end">
       <TextField
+        className="sm:col-span-3"
         showOptional={false}
         label="Search"
         type="search"

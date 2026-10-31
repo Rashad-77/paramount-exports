@@ -2,6 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { opensUpward } from "@/lib/panel-placement";
 
 export const STATUS_GROUPS: Array<{
   label: string;
@@ -50,6 +51,7 @@ export function StatusFilter({
   emptyLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
   const [picked, setPicked] = useState(() => new Set(selected));
   const root = useRef<HTMLDivElement>(null);
   const id = useId();
@@ -94,7 +96,10 @@ export function StatusFilter({
           data-filter-trigger
           aria-expanded={open}
           aria-haspopup="true"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            if (root.current) setUp(opensUpward(root.current, 330));
+            setOpen((o) => !o);
+          }}
           className="text-[0.8125rem] flex min-h-11 w-full items-center justify-between gap-2 border border-border-strong bg-surface px-3 py-2 text-left md:min-h-10"
         >
           <span id={`${id}-value`} className="truncate">
@@ -104,7 +109,10 @@ export function StatusFilter({
         </button>
         <div
           hidden={!open}
-          className="absolute left-0 top-full z-30 mt-1 w-full min-w-60 border border-border-strong bg-surface p-2 shadow-lg"
+          className={
+            "absolute left-0 z-30 max-h-[min(26rem,60vh)] w-full min-w-60 overflow-y-auto border border-border-strong bg-surface p-2 shadow-lg " +
+            (up ? "bottom-full mb-1" : "top-full mt-1")
+          }
         >
           {groups.map((g) => (
             <fieldset key={g.label} className="mb-1 last:mb-0">

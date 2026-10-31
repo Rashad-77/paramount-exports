@@ -6626,3 +6626,9 @@ dialog:not([open]) {
   width: fit-content;
   margin-left: auto !important;
 }
+
+/* A form drop-down with no room below the box opens upward instead. */
+.gs-field[data-up] .gs-panel {
+  top: auto;
+  bottom: 100%;
+}

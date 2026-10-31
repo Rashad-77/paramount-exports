@@ -1,9 +1,10 @@
 "use client";
 
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useFormState } from "@/components/forms/action-form";
 import { cn } from "@/lib/cn";
+import { opensUpward } from "@/lib/panel-placement";
 
 export interface CascadeGroup {
   id: string;
@@ -51,8 +52,11 @@ export function CascadeFilter({
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState<string | null>(null);
   const root = useRef<HTMLDivElement>(null);
-  /** Opens the second panel on the left when there is no room for it on the right of the screen. */
-  const [flip, setFlip] = useState(false);
+  /** The main panel opens upward when there is no room below the box. */
+  const [up, setUp] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const sideRef = useRef<HTMLDivElement>(null);
+  const intent = useRef<ReturnType<typeof setTimeout>>(undefined);
   const picked = new Set(selected);
 
   useEffect(() => {
@@ -68,6 +72,36 @@ export function CascadeFilter({
       document.removeEventListener("keydown", esc);
     };
   }, [open]);
+
+  // The second panel starts level with the group it belongs to, on whichever side has room, and is kept on the screen.
+  useLayoutEffect(() => {
+    const side = sideRef.current;
+    const panel = panelRef.current;
+    if (!open || !side || !panel || !shown) return;
+    const row = panel.querySelector<HTMLElement>(`[data-gid="${shown}"]`);
+    if (!row) return;
+    const p = panel.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    const w = side.offsetWidth;
+    const toLeft = p.right + w > window.innerWidth - 8 && p.left - w >= 8;
+    side.style.left = toLeft ? "auto" : "calc(100% - 1px)";
+    side.style.right = toLeft ? "calc(100% - 1px)" : "auto";
+    // Level with the row: the panel's own padding and border sit above its first line, as they do in the main panel.
+    let top = r.top - p.top - 10;
+    side.style.top = `${top}px`;
+    const over = side.getBoundingClientRect().bottom - (window.innerHeight - 8);
+    if (over > 0) {
+      top = Math.max(top - over, -(p.top - 8));
+      side.style.top = `${top}px`;
+    }
+  }, [open, shown]);
+
+  // Moving the pointer from a group toward its list passes over the groups in between; the list changes only if the pointer stays on another group.
+  const point = (next: string | null) => {
+    clearTimeout(intent.current);
+    if (shown && next !== shown) intent.current = setTimeout(() => setShown(next), 140);
+    else setShown(next);
+  };
 
   const names = new Map<string, string>();
   for (const g of groups) {
@@ -144,10 +178,9 @@ export function CascadeFilter({
           aria-haspopup="true"
           aria-expanded={open}
           onClick={() => {
-            setFlip(
-              (root.current?.getBoundingClientRect().right ?? 0) + 256 >
-                window.innerWidth,
-            );
+            if (root.current) setUp(opensUpward(root.current, Math.min(groups.length * 36 + 70, 340)));
+            clearTimeout(intent.current);
+            setShown(null);
             setOpen((o) => !o);
           }}
           className={cn(
@@ -166,17 +199,23 @@ export function CascadeFilter({
           <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
         </button>
         <div
+          ref={panelRef}
           hidden={!open}
           className={cn(
-            "absolute left-0 top-full z-30 mt-1 w-full min-w-60",
+            "absolute left-0 z-30 w-full min-w-60",
+            up ? "bottom-full mb-1" : "top-full mt-1",
             panel,
           )}
         >
+          <div
+            onScroll={() => setShown(null)}
+            className="max-h-[min(24rem,55vh)] overflow-y-auto"
+          >
           {multiple ? (
             <button
               type="button"
               onClick={() => onChange([])}
-              onPointerEnter={() => setShown(null)}
+              onPointerEnter={() => point(null)}
               className={cn(
                 "flex min-h-9 w-full items-center justify-between px-1 text-left text-[0.8125rem]",
                 row,
@@ -197,7 +236,7 @@ export function CascadeFilter({
                 picked.has(g.id) || (hasKids && kidsOn === g.children.length);
               const some = !all && kidsOn > 0;
               return (
-                <li key={g.id} onPointerEnter={() => setShown(g.id)}>
+                <li key={g.id} data-gid={g.id} onPointerEnter={() => point(g.id)}>
                   <div
                     className={cn(
                       "flex min-h-9 items-center gap-2 px-1",
@@ -280,11 +319,13 @@ export function CascadeFilter({
               );
             })}
           </ul>
+          </div>
           {active && active.children.length > 0 ? (
             <div
+              ref={sideRef}
+              onPointerEnter={() => clearTimeout(intent.current)}
               className={cn(
-                "absolute top-0 z-30 hidden w-60",
-                flip ? "right-full mr-1" : "left-full ml-1",
+                "absolute left-full top-0 z-30 hidden w-60 max-h-[min(24rem,70vh)] overflow-y-auto",
                 " md:block",
                 panel,
               )}
