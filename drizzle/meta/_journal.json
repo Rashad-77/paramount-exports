@@ -337,6 +337,13 @@
       "when": 1794585200000,
       "tag": "0047_picture_zoom",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794671600000,
+      "tag": "0048_product_published_at",
+      "breakpoints": true
     }
   ]
 }

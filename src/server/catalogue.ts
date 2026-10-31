@@ -412,6 +412,7 @@ export async function createProduct(actor: Actor, input: ProductInput): Promise<
           discountKind: line.kind,
           discountValue: line.value,
           isPublished: f.isPublished && !f.archived,
+          publishedAt: f.isPublished && !f.archived ? new Date() : null,
           isFeatured: input.isFeatured,
           isPremium: input.isPremium,
           showAvailability: f.showAvailability,
@@ -474,6 +475,7 @@ export async function updateProduct(actor: Actor, id: string, input: ProductUpda
           shortDescription: input.shortDescription ?? null,
           ...(f.staff ? { discountKind: line.kind, discountValue: line.value } : {}),
           isPublished: nowPublished,
+          ...(nowPublished && !before.isPublished ? { publishedAt: new Date() } : {}),
           isFeatured: input.isFeatured,
           isPremium: input.isPremium,
           showAvailability: f.showAvailability,
@@ -542,7 +544,7 @@ export async function setProductsPublished(actor: Actor, ids: string[]): Promise
     let changed = 0;
     for (const p of rows) {
       if (p.isPublished || p.archivedAt) continue;
-      await tx.update(products).set({ isPublished: true }).where(eq(products.id, p.id));
+      await tx.update(products).set({ isPublished: true, publishedAt: new Date() }).where(eq(products.id, p.id));
       await recordAudit(tx, actor, { action: "product.published", entityType: "product", entityId: p.id });
       changed++;
     }

@@ -75,6 +75,8 @@ export const products = pgTable(
     discountKind: text("discount_kind"),
     discountValue: numeric("discount_value", { precision: 14, scale: 2 }),
     isPublished: boolean("is_published").notNull().default(false),
+    /** When it was last put on the website. The "New" tag counts from here. */
+    publishedAt: timestamp("published_at", { withTimezone: true }),
     /** Shown in the homepage "featured" section. */
     isFeatured: boolean("is_featured").notNull().default(false),
     /** Part of the premium range: shown in the homepage premium section and the premium showroom, as well as in the normal collection. */

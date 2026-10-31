@@ -68,8 +68,8 @@ export async function firstImages(productIds: string[]): Promise<Map<string, { u
   return out;
 }
 
-/** A product counts as new for this many days after it is added. */
-const NEW_FOR_DAYS = 30;
+/** A product counts as new for this many days after it is put on the website. */
+const NEW_FOR_DAYS = 14;
 
 async function toCards(rows: Array<typeof products.$inferSelect & { categoryName: string; categorySlug: string }>, firstImagesOf?: Map<string, { url: string; alt: string; x: number; y: number; z: number }>): Promise<PublicCard[]> {
   const ids = rows.map((r) => r.id);
@@ -104,7 +104,7 @@ async function toCards(rows: Array<typeof products.$inferSelect & { categoryName
     discountKind: r.showPrice && priceBy.get(r.id)?.compare ? (r.discountKind as "amount" | "percent" | null) : null,
     discountValue: r.showPrice && priceBy.get(r.id)?.compare && r.discountKind ? (r.discountValue ? moneyString(r.discountValue) : null) : null,
     availability: r.showAvailability && r.availability ? AVAILABILITY_LABEL[r.availability] : null,
-    isNew: Date.now() - r.createdAt.getTime() < NEW_FOR_DAYS * 86400000,
+    isNew: Date.now() - (r.publishedAt ?? r.createdAt).getTime() < NEW_FOR_DAYS * 86400000,
   }));
 }
 
