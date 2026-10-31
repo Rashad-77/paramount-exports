@@ -57,7 +57,7 @@ const INFORMATION = [
 /** The WhatsApp number behind the "Built by" link at the bottom of the footer. */
 const BUILDER_WHATSAPP = "0719825855";
 
-export function SiteFooter({ business, collection = [] }: { business: BusinessSettings; /** The main categories, each linked to its own page. */ collection?: Array<{ name: string; slug: string }> }) {
+export function SiteFooter({ business }: { business: BusinessSettings }) {
   const [first = business.name, ...others] = business.name.trim().split(/\s+/);
   const rest = others.join(" ");
   const phones = [business.phone, business.phoneAlt].filter((p): p is string => Boolean(p));
@@ -85,19 +85,6 @@ export function SiteFooter({ business, collection = [] }: { business: BusinessSe
               ))}
             </ul>
           </nav>
-          {/* Its own column, so its heading lines up with the others. */}
-          {collection.length > 0 ? (
-            <nav aria-label="Collection">
-              <p className="foot-head">Collection</p>
-              <ul className="foot-list">
-                {collection.map((c) => (
-                  <li key={c.slug}>
-                    <Link href={`/collections/${c.slug}`}>{c.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ) : null}
           <nav aria-label="Customer support">
             <p className="foot-head">Customer support</p>
             <ul className="foot-list">

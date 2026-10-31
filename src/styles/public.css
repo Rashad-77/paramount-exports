@@ -5520,7 +5520,7 @@ span.cat-pagebtn {
 /* A computer: all five lists in one row under the brand: Information, Collection, Customer support, Contact us and Visit us. */
 @media (min-width: 64rem) {
   .foot .foot-grid {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1.25fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1.25fr);
   }
 }
 .foot .foot-list {
