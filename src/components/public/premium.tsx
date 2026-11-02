@@ -51,7 +51,7 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
       >
         {tiles.map((t) => (
           <Link key={t.n} href={`/products/${t.piece.slug}`} aria-label={t.piece.name} aria-hidden={t.repeat || undefined} tabIndex={t.repeat ? -1 : undefined} className={TILE_W + " pm-tile"}>
-            {t.url ? <SiteImage src={t.url} alt={t.repeat ? "" : t.alt} fill sizes="(min-width: 64rem) 17rem, (min-width: 40rem) 34vw, 58vw" className="object-cover" style={focusStyle({ x: t.x, y: t.y, z: t.z })} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
+            <span className="pm-frame">{t.url ? <SiteImage src={t.url} alt={t.repeat ? "" : t.alt} fill sizes="(min-width: 64rem) 17rem, (min-width: 40rem) 34vw, 58vw" className="object-cover" style={focusStyle({ x: t.x, y: t.y, z: t.z })} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}</span>
             <span className="pm-name" aria-hidden="true">
               {t.piece.name}
             </span>
