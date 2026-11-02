@@ -1,7 +1,10 @@
 "use server";
 
+import { inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getDb } from "@/lib/db/client";
+import { products } from "@/lib/db/schema";
 import type { ActionState } from "@/lib/action-state";
 import { runAction } from "@/lib/actions";
 import { productSchema, productUpdateSchema } from "@/lib/schemas/catalogue";
@@ -21,6 +24,16 @@ const refresh = (id?: string) => {
   revalidatePath("/products/[slug]", "page");
 };
 
+/** Refreshes the stored copy of each of these products' own pages by address, in case the general refresh of every product page does not reach it. */
+const refreshProductPages = async (ids: string[]) => {
+  try {
+    const rows = await getDb().select({ slug: products.slug }).from(products).where(inArray(products.id, ids));
+    for (const r of rows) revalidatePath(`/products/${r.slug}`);
+  } catch {
+    // The general refresh above still applies.
+  }
+};
+
 export async function createProductAction(
   _p: ActionState,
   fd: FormData,
@@ -28,6 +41,7 @@ export async function createProductAction(
   return runAction(fd, productSchema, async (input, { actor }) => {
     const id = await createProduct(actor!, input);
     refresh(id);
+    await refreshProductPages([id]);
     warmProductPhotos([id]);
     // Back to the table of products, with the new one in it.
     return { redirectTo: "/app/products" };
@@ -44,6 +58,7 @@ export async function updateProductAction(
     async (input, { actor }) => {
       await updateProduct(actor!, input.id, input);
       refresh(input.id);
+      await refreshProductPages([input.id]);
       warmProductPhotos([input.id]);
       return { message: `Product "${input.name}" saved.` };
     },
@@ -67,6 +82,7 @@ export async function archiveProductsAction(
       if (input.mode === "publish") {
         const n = await setProductsPublished(actor!, input.ids);
         refresh();
+        await refreshProductPages(input.ids);
         warmProductPhotos(input.ids);
         return { message: `${n} ${n === 1 ? "product" : "products"} published on the website.` };
       }
