@@ -6,10 +6,10 @@ import { ScrollRow } from "./scroll-row";
 import { SiteImage } from "./site-image";
 import type { PremiumPiece } from "@/server/catalogue-public";
 
-/** Same card width as the customer reviews row, so the two endless rows share one rhythm. */
-const TILE_W = "w-[78%] shrink-0 snap-center sm:w-[47%] lg:w-[31%]";
-/** The row always shows at least this many cards; the ones with no premium piece behind them stay as empty frames. */
-const MIN_TILES = 5;
+/** Compact cards, so several show at once. */
+const TILE_W = "w-[58%] shrink-0 snap-center sm:w-[34%] lg:w-[22%]";
+/** The row always has at least this many cards: when there are fewer pieces, they repeat in turn so no frame is ever empty. */
+const MIN_TILES = 6;
 
 /**
  * Homepage section under the hero: a dark banner and an endless, slowly drifting row of premium cards (pictures only: no names or
@@ -19,9 +19,9 @@ const MIN_TILES = 5;
 export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
   if (pieces.length === 0) return null;
   const tiles = Array.from({ length: Math.max(pieces.length, MIN_TILES) }, (_, n) => {
-    const p = pieces[n];
-    const first = p?.images[0];
-    return { n, piece: p ?? null, url: (first?.url ?? null) as string | null, alt: first?.alt || p?.name || "", x: first?.x ?? 50, y: first?.y ?? 50, z: first?.z ?? 100 };
+    const p = pieces[n % pieces.length]!;
+    const first = p.images[0];
+    return { n, repeat: n >= pieces.length, piece: p, url: (first?.url ?? null) as string | null, alt: first?.alt || p.name, x: first?.x ?? 50, y: first?.y ?? 50, z: first?.z ?? 100 };
   });
   return (
     <section aria-labelledby="premium-title" className="prem-sec">
@@ -49,20 +49,14 @@ export function PremiumTeaser({ pieces }: { pieces: PremiumPiece[] }) {
           </>
         }
       >
-        {tiles.map((t) =>
-          t.piece ? (
-            <Link key={t.n} href={`/products/${t.piece.slug}`} aria-label={t.piece.name} className={TILE_W + " pm-tile"}>
-              {t.url ? <SiteImage src={t.url} alt={t.alt} fill sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 47vw, 78vw" className="object-cover" style={focusStyle({ x: t.x, y: t.y, z: t.z })} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
-              <span className="pm-name" aria-hidden="true">
-                {t.piece.name}
-              </span>
-            </Link>
-          ) : (
-            <div key={t.n} aria-hidden="true" className={TILE_W + " pm-tile"}>
-              <ImagePlaceholder label="" className="absolute inset-0" compact />
-            </div>
-          ),
-        )}
+        {tiles.map((t) => (
+          <Link key={t.n} href={`/products/${t.piece.slug}`} aria-label={t.piece.name} aria-hidden={t.repeat || undefined} tabIndex={t.repeat ? -1 : undefined} className={TILE_W + " pm-tile"}>
+            {t.url ? <SiteImage src={t.url} alt={t.repeat ? "" : t.alt} fill sizes="(min-width: 64rem) 17rem, (min-width: 40rem) 34vw, 58vw" className="object-cover" style={focusStyle({ x: t.x, y: t.y, z: t.z })} /> : <ImagePlaceholder label={t.piece.name} className="absolute inset-0" compact />}
+            <span className="pm-name" aria-hidden="true">
+              {t.piece.name}
+            </span>
+          </Link>
+        ))}
       </ScrollRow>
     </section>
   );

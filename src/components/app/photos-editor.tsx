@@ -169,7 +169,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
 
       {photos.length > 0 ? (
         <>
-          <ul aria-label="Photos, in order" className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+          <ul aria-label="Photos, in order" className="grid min-w-0 grid-cols-[repeat(3,minmax(0,1fr))] gap-3 sm:grid-cols-[repeat(4,minmax(0,1fr))] lg:grid-cols-[repeat(5,minmax(0,1fr))]">
             {photos.map((p, i) => (
               <li
                 key={p.key}

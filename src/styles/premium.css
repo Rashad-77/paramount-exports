@@ -131,7 +131,9 @@
   display: block;
   aspect-ratio: 4 / 5;
   overflow: hidden;
+  isolation: isolate;
   background: #1b1511;
+  outline: none;
 }
 .pm-tile::after {
   content: "";
@@ -165,6 +167,9 @@
 }
 .pm-tile img {
   transition: transform 1400ms var(--prem-ease-out);
+  /* Its own layer, so the zoom on hover never leaves a hairline of the page showing at an edge of the card. */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .pm-tile .image-placeholder {
   background: #1b1511;
