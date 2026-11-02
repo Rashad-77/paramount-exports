@@ -206,7 +206,7 @@ export function PhotosEditor({ initial }: { initial: Array<{ id: string; url: st
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.url} alt="" draggable={false} className={cn("size-full object-cover", p.state === "uploading" && "opacity-50")} style={focusStyle(p)} />
+                <img src={p.url} alt="" draggable={false} className={cn("absolute inset-0 size-full object-cover", p.state === "uploading" && "opacity-50")} style={focusStyle(p)} />
                 {numberOf(p.key) > 0 ? <span className="tabular absolute left-1.5 top-1.5 inline-flex size-6 items-center justify-center bg-walnut-dark text-xs font-semibold text-ivory">{numberOf(p.key)}</span> : null}
                 {p.state === "done" ? (
                   <button
